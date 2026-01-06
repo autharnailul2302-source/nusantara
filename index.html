@@ -2,9 +2,15 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nusantara Arsa: Rise of Student</title>
     
+    <!-- PWA / Mobile Web App Meta Tags (Agar Full Screen saat Add to Home Screen) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -44,7 +50,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Dynamic Viewport Height (Mobile Friendly) */
             width: 100vw;
             background: linear-gradient(rgba(15, 23, 42, 0.3), rgba(0, 0, 0, 0.5)), url('images/bg.png');
             background-size: cover;
@@ -104,6 +111,10 @@
             display: flex;
             justify-content: space-between;
             padding: 15px 20px;
+            /* PERBAIKAN HUD TERPOTONG: Gunakan Safe Area untuk HP berponi & tambah padding */
+            padding-top: max(25px, env(safe-area-inset-top)); 
+            padding-left: max(20px, env(safe-area-inset-left));
+            padding-right: max(20px, env(safe-area-inset-right));
             background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8), transparent);
             /* PERBAIKAN: Aktifkan pointer events agar tooltip bisa di-hover/klik */
             pointer-events: auto; 
@@ -172,6 +183,11 @@
 
         .stat-item.time-container:hover .time-info-box {
             display: block;
+        }
+        
+        /* TOMBOL FULLSCREEN DI HUD DIHAPUS (Hidden) AGAR LEBIH BERSIH */
+        #fullscreen-hud-btn {
+            display: none !important; 
         }
 
         /* Dialogue System Container (Wrapper) */
@@ -681,7 +697,7 @@
             font-family: 'Cinzel', serif;
             font-weight: bold;
             cursor: pointer;
-            width: 280px;
+            min-width: 280px; /* Diubah min-width agar tombol flexible */
             transition: 0.3s;
             position: relative;
             overflow: hidden;
@@ -1182,11 +1198,11 @@ button, .round-btn, .d-btn, .auth-btn {
 
         <h1>NUSANTARA ARSA</h1>
         <h2>Rise of Student</h2>
-        <div style="z-index: 10;">
+        <div style="z-index: 10; display:flex; flex-direction:column; align-items:center;">
             <button class="main-menu-btn" onclick="goToLogin()">START GAME</button>
             <button class="main-menu-btn" onclick="showLeaderboard()">RANKING</button>
         </div>
-        <p style="position: absolute; bottom: 20px; font-size: 12px; color: #94a3b8; font-family: 'Exo 2'; z-index: 10;">Ver 4.3 - Epic Title Update</p>
+        <p style="position: absolute; bottom: 20px; font-size: 12px; color: #94a3b8; font-family: 'Exo 2'; z-index: 10;">Ver 4.4 - Fullscreen Mobile Support</p>
     </div>
     
     <!-- 3. LOGIN SCREEN -->
@@ -1411,6 +1427,9 @@ button, .round-btn, .d-btn, .auth-btn {
 
     <!-- UI LAYER (GAME) -->
     <div id="ui-layer" class="hidden">
+        <!-- TOMBOL FULLSCREEN DI HUD DIHAPUS -->
+        <!-- <button id="fullscreen-hud-btn" onclick="toggleFullScreen()">⛶</button> -->
+
         <div class="hud-top">
             <div class="stat-box">
                 <div class="stat-item">❤️ <span id="hp-display">100</span></div>
@@ -1874,12 +1893,62 @@ function checkSession(titleEl) {
     STATE.screen = 'title'; 
 }
 
+// NEW: FUNCTION TOGGLE FULLSCREEN
+function toggleFullScreen() {
+    if (!document.fullscreenElement &&    // Standard
+        !document.webkitFullscreenElement && // Safari/Chrome lama
+        !document.mozFullScreenElement && // Firefox lama
+        !document.msFullscreenElement) {  // IE/Edge lama
+        
+        // Minta Fullscreen
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(err => console.log(err)); // Catch error jika ditolak
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.msRequestFullscreen();
+        }
+    }
+}
+
 function logout() {
     localStorage.removeItem(SESSION_KEY);
-    location.reload();
+    // location.reload(); <-- HAPUS BARIS INI (Penyebab refresh ke splash screen)
+
+    // --- LOGIKA BARU: SOFT LOGOUT ---
+    DataService.user = null; // Hapus data user di memori
+    
+    // 1. Reset Form Input
+    if(document.getElementById('form-siswa')) document.getElementById('form-siswa').reset();
+    if(document.getElementById('form-guru')) document.getElementById('form-guru').reset();
+
+    // 2. Sembunyikan Semua Layar Game/Dashboard
+    document.getElementById('teacher-dashboard').style.display = 'none';
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('ui-layer').classList.add('hidden'); // Sembunyikan HUD
+    document.getElementById('game-over-screen').style.display = 'none';
+    document.getElementById('ending-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none'; 
+    document.getElementById('prologue-screen').style.display = 'none';
+    document.getElementById('gender-screen').style.display = 'none';
+
+    // 3. Tampilkan Title Screen
+    document.getElementById('title-screen').classList.remove('hidden');
+    STATE.screen = 'title';
+
+    // 4. Reset Audio ke Musik Opening
+    if(typeof AudioService !== 'undefined' && AudioService.enabled) {
+        AudioService.playBGM('opening');
+    }
+
+    showToast("Logged Out");
 }
 
 function goToLogin() {
+    // FITUR OTOMATIS FULLSCREEN: Trigger saat klik tombol Start
+    toggleFullScreen();
+    
     document.getElementById('title-screen').classList.add('hidden');
     document.getElementById('login-screen').style.display = 'flex';
     STATE.screen = 'login';
@@ -2226,6 +2295,9 @@ async function populateTeacherSelect() {
 
 async function handleAuth(role, btnElement) {
     try {
+        // FITUR OTOMATIS FULLSCREEN: Trigger saat klik Login juga (backup)
+        toggleFullScreen();
+
         const email = document.getElementById(role + '-email').value;
         const pass = document.getElementById(role + '-pass').value;
         if(!email || !pass) { alert("Email & Password Required!"); return; }
@@ -2913,6 +2985,7 @@ function initGame() {
     // --- REGENERATE HOUSE MAP BASED ON LEVEL ---
     regenerateHouseMap();
 
+    // Coba fullscreen lagi saat init game (mungkin diblokir browser jika async, tapi worth trying)
     if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(()=>{});
     }
@@ -3010,17 +3083,25 @@ function runTutorial() {
         "Ah, akhirnya bangun juga kamu, " + name + ". Nyenyak tidurnya?",
         [{text: "Siap, Pak!", action: () => {
              showDialogue("MENTOR BUDI", 
-                "Selamat datang di Nusantara Arsa. Kamu memiliki 5 Tahun (dalam game) untuk membuktikan diri.",
-                [{text: "Apa tujuan saya?", action: () => {
+                "Selamat datang di Nusantara Arsa. Aturan main di sini ketat: Kamu akan menjalani **Masa Trial selama 3 Tahun**.",
+                [{text: "Hanya 3 tahun?", action: () => {
                     showDialogue("MENTOR BUDI", 
-                    "Pilih jalan hidupmu dengan bijak. Setiap pilihan akan membuka fasilitas tertentu dan mengunci yang lain hingga masa Trial (3 Tahun) selesai.", 
-                    [{text: "Paham", action: () => {
-                        showDialogue("TAKDIR HIDUP", "Tentukan spesialisasi awalmu sekarang:", [
-                            {text: "Bekerja (Fighter)", action: () => setRole('worker')},
-                            {text: "Kuliah (Mage)", action: () => setRole('student')},
-                            {text: "Wirausaha (Support)", action: () => setRole('entrepreneur')},
-                            {text: "Menikah (Family)", action: () => setRole('family')}
-                        ]);
+                    "Jika kamu berhasil membuktikan diri, kamu bisa melanjutkannya hingga **5 Tahun**. Namun ingat tujuan akhirnya...", 
+                    [{text: "Apa itu?", action: () => {
+                        showDialogue("MENTOR BUDI", 
+                        "Setelah 5 tahun usai, kamu akan dikirim ke **Pulau Javana** untuk menjalani **kehidupan yang sesungguhnya** di dunia nyata. Jadi, belajarlah dengan serius di sini!", 
+                        [{text: "Saya Mengerti!", action: () => {
+                            showDialogue("MENTOR BUDI", "Bagus. Sekarang, tentukan langkah awalmu. Pilihan ini akan mengunci takdirmu selama masa Trial.", [
+                                {text: "Pilih Jalan Hidup", action: () => {
+                                    showDialogue("TAKDIR HIDUP", "Tentukan spesialisasi awalmu sekarang:", [
+                                        {text: "Bekerja (Fighter)", action: () => setRole('worker')},
+                                        {text: "Kuliah (Mage)", action: () => setRole('student')},
+                                        {text: "Wirausaha (Support)", action: () => setRole('entrepreneur')},
+                                        {text: "Menikah (Family)", action: () => setRole('family')}
+                                    ]);
+                                }}
+                            ]);
+                        }}]);
                     }}]);
                 }}]
             );
@@ -3707,12 +3788,16 @@ function processTeleport(b) {
     } 
     else if(b.id === 'shop_exit') {
         STATE.location = 'village';
+        // FIX STUCK: Bersihkan area spawn dari NPC/Hewan sebelum pemain muncul
+        clearSpawnZone('village', 26, 28);
         STATE.player.x = 26 * TILE_SIZE; 
         STATE.player.y = 28 * TILE_SIZE;
         showToast("Keluar Toko");
     }
     else if(b.id === 'house_exit') {
         STATE.location = 'village';
+        // FIX STUCK: Bersihkan area spawn dari NPC/Hewan sebelum pemain muncul
+        clearSpawnZone('village', 21, 13);
         STATE.player.x = 21 * TILE_SIZE; 
         // UPDATE: Geser spawn point ke bawah (dari 12 ke 13) agar menjauh dari pintu masuk
         STATE.player.y = 13 * TILE_SIZE; 
@@ -3725,10 +3810,55 @@ function processTeleport(b) {
     }
     else if(b.id === 'dungeon_exit') {
         STATE.location = 'village';
+        // FIX STUCK: Bersihkan area spawn dari NPC/Hewan sebelum pemain muncul
+        clearSpawnZone('village', 48, 22);
         STATE.player.x = 48 * TILE_SIZE; 
         STATE.player.y = 22 * TILE_SIZE;
         showToast("Kembali ke Desa");
     }
+}
+
+// --- NEW FUNCTION: ANTI-STUCK SPAWN ---
+function clearSpawnZone(mapId, spawnTileX, spawnTileY) {
+    const map = maps[mapId];
+    if(!map || !map.npcs) return;
+
+    // Radius aman (dalam satuan tile)
+    const safeRadius = 3; 
+
+    map.npcs.forEach(npc => {
+        // Hitung jarak NPC ke titik spawn pemain
+        const dist = Math.hypot(npc.x - spawnTileX, npc.y - spawnTileY);
+        
+        // Jika NPC berada terlalu dekat dengan titik spawn (< 3 tile)
+        if (dist < safeRadius) {
+            // Pindahkan NPC menjauh secara paksa
+            // Cari arah menjauh
+            const dirX = npc.x < spawnTileX ? -1 : 1;
+            const dirY = npc.y < spawnTileY ? -1 : 1;
+            
+            // Pindahkan 3-4 tile menjauh
+            let newX = npc.x + (dirX * 4);
+            let newY = npc.y + (dirY * 4);
+
+            // Pastikan tidak melempar NPC ke luar batas map (sederhana)
+            if (newX < 1) newX = 1;
+            if (newX >= map.w - 1) newX = map.w - 2;
+            if (newY < 1) newY = 1;
+            if (newY >= map.h - 1) newY = map.h - 2;
+
+            // Terapkan posisi baru
+            npc.x = newX;
+            npc.y = newY;
+            
+            // Hentikan pergerakan sesaat agar tidak langsung balik
+            npc.vx = 0; 
+            npc.vy = 0;
+            
+            // Log debug (opsional)
+            // console.log(`Menyingkirkan ${npc.name} dari jalur spawn.`);
+        }
+    });
 }
 
 function updateEnemies() {
