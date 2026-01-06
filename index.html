@@ -30,6 +30,12 @@
             --bg-ui: rgba(15, 23, 42, 0.85); /* Slate Dark Glass */
             --text: #f8fafc;
             
+            /* Stat Colors */
+            --col-str: #ef4444; /* Merah */
+            --col-int: #3b82f6; /* Biru */
+            --col-rep: #d946ef; /* Ungu/Pink */
+            --col-biz: #10b981; /* Hijau */
+            
             /* Dashboard Colors */
             --dash-bg: #f1f5f9;
             --dash-sidebar: #0f172a;
@@ -107,43 +113,153 @@
             justify-content: space-between;
         }
 
+        /* HUD TOP REDESIGN */
         .hud-top {
             display: flex;
             justify-content: space-between;
-            padding: 15px 20px;
-            /* PERBAIKAN HUD TERPOTONG: Gunakan Safe Area untuk HP berponi & tambah padding */
-            padding-top: max(25px, env(safe-area-inset-top)); 
-            padding-left: max(20px, env(safe-area-inset-left));
-            padding-right: max(20px, env(safe-area-inset-right));
-            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8), transparent);
-            /* PERBAIKAN: Aktifkan pointer events agar tooltip bisa di-hover/klik */
+            align-items: flex-start;
+            padding: 10px 15px;
+            padding-top: max(15px, env(safe-area-inset-top)); 
+            background: linear-gradient(to bottom, rgba(2, 6, 23, 0.9), transparent);
             pointer-events: auto; 
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .stat-box {
+        /* 1. SECTION PROFIL (Kiri) */
+        .hud-profile-section {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
         }
 
-        .stat-item {
-            background: rgba(30, 58, 138, 0.6);
-            padding: 8px 15px;
-            border-left: 3px solid var(--secondary);
-            border-radius: 0 10px 0 10px; /* Angled corners */
-            color: #fff;
-            font-weight: bold;
+        .hud-avatar-wrapper {
+            position: relative;
+            width: 55px; height: 55px;
+        }
+
+        .hud-avatar-circle {
+            width: 55px; height: 55px;
+            border-radius: 50%;
+            border: 2px solid var(--secondary);
+            overflow: hidden;
+            background: #1e293b;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .hud-avatar-circle img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+        .hud-role-icon {
+            position: absolute;
+            bottom: -5px; right: -5px;
+            width: 24px; height: 24px;
+            background: var(--primary);
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
             font-size: 14px;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        .hud-info-bars {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 4px;
+            width: 120px;
+        }
+
+        .hud-level-text {
+            font-size: 12px; font-weight: bold; color: var(--secondary);
+            font-family: 'Cinzel', serif;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        /* Generic Bar Style */
+        .bar-container {
+            width: 100%; height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .bar-fill { height: 100%; width: 50%; transition: width 0.3s; }
+        .bar-text {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            font-size: 6px; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; text-shadow: 0 0 2px black;
+        }
+
+        /* Colors for bars */
+        .exp-fill { background: linear-gradient(90deg, #6366f1, #a855f7); }
+        .energy-fill { background: linear-gradient(90deg, #eab308, #fbbf24); }
+        .hp-fill { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+
+        /* 2. SECTION STATS (Tengah) */
+        .hud-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px 15px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(2px);
+        }
+
+        .stat-pill {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: bold; color: #cbd5e1;
+        }
+        .stat-val { color: white; }
+        
+        .ic-str { color: var(--col-str); }
+        .ic-int { color: var(--col-int); }
+        .ic-rep { color: var(--col-rep); }
+        .ic-biz { color: var(--col-biz); }
+
+        /* 3. SECTION META (Kanan) */
+        .hud-meta-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
             gap: 5px;
         }
-        
-        .stat-item.money {
+
+        .money-badge {
+            background: linear-gradient(90deg, rgba(15,23,42,0.8), rgba(30,58,138,0.8));
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--secondary);
             color: var(--secondary);
-            border-color: var(--accent);
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+        }
+
+        .time-badge {
+            font-size: 12px; color: #e2e8f0;
+            text-align: right;
+            text-shadow: 1px 1px 2px black;
+        }
+        .time-clock { font-size: 16px; font-weight: bold; font-family: 'Exo 2'; color: white; }
+
+        /* 4. COMBAT HUD (Floating HP Bar - Hidden by Default) */
+        #combat-hud {
+            position: absolute;
+            bottom: 220px; /* Di atas kontrol */
+            left: 50%; transform: translateX(-50%);
+            width: 200px;
+            display: none; /* JS will toggle this */
+            z-index: 45;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+        .hp-bar-big {
+            width: 100%; height: 15px;
+            background: #1f2937; border: 2px solid #7f1d1d;
+            border-radius: 10px; position: relative; overflow: hidden;
         }
 
         /* INDIKATOR TUTUP/BUKA PADA BANGUNAN */
@@ -986,59 +1102,7 @@
         textarea { width: 100%; height: 120px; padding: 15px; margin: 15px 0; border: 1px solid #475569; border-radius: 6px; font-family: 'Exo 2', sans-serif; background: #0f172a; color: white; box-sizing: border-box;}
         textarea:focus { outline: 1px solid var(--accent); }
 
-
-	/* HUD PLAYER (Kanan Atas) - BARU */
-.hud-player-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(15, 23, 42, 0.9);
-    padding: 8px 15px 8px 20px;
-    border: 2px solid var(--secondary);
-    border-radius: 30px 10px 10px 30px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    pointer-events: auto; 
-}
-
-.hud-details {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    line-height: 1.2;
-}
-
-.hud-name {
-    font-family: 'Cinzel', serif;
-    font-weight: bold;
-    color: var(--secondary);
-    font-size: 14px;
-    text-transform: uppercase;
-}
-
-.hud-role {
-    font-size: 11px;
-    color: #94a3b8;
-}
-
-.hud-avatar-frame {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: #334155;
-    border: 2px solid var(--accent);
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.hud-avatar-frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* PERBAIKAN: Fokus ke wajah (atas) karena pakai gambar full body */
-    object-position: top; 
-}
+/* --- REMOVED OLD HUD STYLES TO REPLACE WITH NEW REDESIGN --- */
 
 button, .round-btn, .d-btn, .auth-btn { 
     cursor: pointer !important; 
@@ -1047,7 +1111,7 @@ button, .round-btn, .d-btn, .auth-btn {
 /* --- NEW: MINIMAP STYLES --- */
 #minimap-container {
     position: absolute;
-    top: 90px; /* Di bawah HP/Energy bar */
+    top: 90px; /* Di bawah HUD baru */
     left: 20px;
     width: 120px;
     height: 90px; /* Aspect Ratio mendekati map */
@@ -1427,44 +1491,79 @@ button, .round-btn, .d-btn, .auth-btn {
 
     <!-- UI LAYER (GAME) -->
     <div id="ui-layer" class="hidden">
-        <!-- TOMBOL FULLSCREEN DI HUD DIHAPUS -->
-        <!-- <button id="fullscreen-hud-btn" onclick="toggleFullScreen()">⛶</button> -->
-
+        <!-- REDESIGNED HUD (3 COLUMNS) -->
         <div class="hud-top">
-            <div class="stat-box">
-                <div class="stat-item">❤️ <span id="hp-display">100</span></div>
-                <div class="stat-item" style="border-color: var(--accent); color: var(--accent);">⚡ <span id="energy-display">100</span></div>
-            </div>
-			<!-- KANAN: PLAYER AVATAR HUD (BARU) -->
-            <div class="hud-player-info">
-                <div class="hud-details">
-                    <div class="hud-name" id="hud-name">Player</div>
-                    <div class="hud-role" id="hud-role">Novice Student</div>
+            <!-- 1. LEFT: PROFILE & BARS -->
+            <div class="hud-profile-section">
+                <div class="hud-avatar-wrapper">
+                    <div class="hud-avatar-circle">
+                        <img id="hud-avatar-img" src="images/boy.png" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjAiIGZpbGw9IiMzYjgyZjYiLz48L3N2Zz4='">
+                    </div>
+                    <!-- Role Icon Indicator -->
+                    <div class="hud-role-icon" id="hud-role-icon" title="Role Aktif">?</div>
                 </div>
-                <div class="hud-avatar-frame">
-                    <!-- Foto akan berubah sesuai gender via JS -->
-                    <img id="hud-avatar-img" src="images/boy.png" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjAiIGZpbGw9IiMzYjgyZjYiLz48L3N2Zz4='">
+                <div class="hud-info-bars">
+                    <div class="hud-level-text">LV <span id="level-display">1</span> - <span id="hud-name">Player</span></div>
+                    
+                    <!-- EXP Bar -->
+                    <div class="bar-container" title="Experience Point">
+                        <div class="bar-fill exp-fill" id="exp-bar" style="width: 0%;"></div>
+                        <div class="bar-text">EXP</div>
+                    </div>
+                    
+                    <!-- Energy Bar (Always Visible - Stamina Logic) -->
+                    <div class="bar-container" title="Energy / Stamina">
+                        <div class="bar-fill energy-fill" id="energy-bar" style="width: 100%;"></div>
+                        <div class="bar-text">⚡ <span id="energy-text">100</span></div>
+                    </div>
                 </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-item money">💰 <span id="money-display">50.000</span></div>
-                <!-- Time & Weather Indicator UPDATED -->
+
+            <!-- 2. CENTER: CORE STATS MATRIX -->
+            <div class="hud-stats-grid">
+                <div class="stat-pill ic-str" title="Strength (Jalur Pekerja)">
+                    <span>💪 STR</span> <span class="stat-val" id="stat-str">5</span>
+                </div>
+                <div class="stat-pill ic-int" title="Intelligence (Jalur Mahasiswa)">
+                    <span>🧠 INT</span> <span class="stat-val" id="stat-int">5</span>
+                </div>
+                <div class="stat-pill ic-rep" title="Reputation (Jalur Keluarga)">
+                    <span>❤️ REP</span> <span class="stat-val" id="stat-rep">0</span>
+                </div>
+                <div class="stat-pill ic-biz" title="Business Skill (Jalur Wirausaha)">
+                    <span>📈 BIZ</span> <span class="stat-val" id="stat-biz">0</span>
+                </div>
+            </div>
+
+            <!-- 3. RIGHT: META INFO (Time/Money) -->
+            <div class="hud-meta-section">
+                <div class="money-badge">💰 <span id="money-display">50.000</span></div>
+                
                 <div class="stat-item time-container" onclick="this.querySelector('.time-info-box').style.display = (this.querySelector('.time-info-box').style.display == 'block' ? 'none' : 'block')" style="border:none; background:rgba(15, 23, 42, 0.6); display:flex; flex-direction:column; align-items:flex-end; font-size:10px; cursor: help; padding: 5px 10px; border-radius: 8px;">
-                    <div style="font-size: 14px; color: var(--secondary); font-family: 'Exo 2'; font-weight: bold;">🕘 <span id="clock-display">06:00</span></div>
-                    <div style="color:#fff;">📅 <span id="full-date-display">Spring Y1</span></div>
-                    <div id="weather-display" style="color:#aaa;">Cerah</div>
+                    <div class="time-clock">🕘 <span id="clock-display">06:00</span></div>
+                    <div style="color:#cbd5e1;">📅 <span id="full-date-display">Spring Y1</span></div>
+                    <div id="weather-display" style="color:#94a3b8; font-size:9px;">Cerah</div>
                     <div style="font-size: 9px; color: var(--danger); margin-top: 2px;">⏳ Trial: <span id="trial-display">30 Hari</span></div>
                     
                     <!-- HOVER INFO BOX -->
                     <div class="time-info-box">
-                        <strong style="color:var(--secondary)">ℹ️ INFO WAKTU GAME</strong><br>
-                        1 Jam Game = ±37 Detik Real<br>
-                        1 Tahun Game = 4 Musim (120 Hari)<br>
-                        -------------------------<br>
-                        🎯 Target: Bertahan 5 Tahun<br>
-                        🔐 Unlock Role Lain: Tahun ke-3
+                        <strong style="color:var(--secondary)">ℹ️ INFO WAKTU</strong><br>
+                        1 Jam = ±37 Detik<br>
+                        <hr style="border-color:rgba(255,255,255,0.1)">
+                        ⚠️ <strong style="color:#ef4444">PERINGATAN STAMINA</strong><br>
+                        - Energi 0 = Pingsan (Denda)<br>
+                        - Energi < 20% saat tidur = Bangun Kesiangan
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 4. FLOATING COMBAT HUD (HP BAR ONLY IN DUNGEON) -->
+        <div id="combat-hud">
+            <div style="color:var(--danger); font-weight:bold; font-size:12px; margin-bottom:2px; text-shadow:0 0 2px black;">HP PLAYER</div>
+            <div class="hp-bar-big">
+                <div class="bar-fill hp-fill" id="hp-bar" style="width: 100%;"></div>
+                <div class="bar-text" style="font-size:10px;">❤️ <span id="hp-text">100</span></div>
             </div>
         </div>
 
@@ -2182,13 +2281,27 @@ const DataService = {
             return { success: true, msg: "Registration Success!" };
         } else {
             try {
+                // TIMEOUT ADDED: Mencegah loading stuck saat register
                 const docRef = db.collection('users').doc(data.email);
-                const doc = await docRef.get();
+                
+                const timeout = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Koneksi Timeout (Terlalu Lama)")), 5000)
+                );
+
+                const doc = await Promise.race([docRef.get(), timeout]);
+                
                 if (doc.exists) return { success: false, msg: "Email already registered!" };
                 await docRef.set(userData);
                 return { success: true, msg: "Cloud Registration Success!" };
             } catch (e) {
-                return { success: false, msg: "Error: " + e.message };
+                // Fallback Register ke Local jika Cloud Gagal
+                console.warn("Cloud Register Failed, Fallback Local", e);
+                const dbLocal = this.getDB();
+                if(dbLocal[data.email]) return { success: false, msg: "Email already registered (Local)!" };
+                dbLocal[data.email] = userData;
+                this.saveDB(dbLocal);
+                this.mode = 'local'; // Switch mode
+                return { success: true, msg: "Server Sibuk. Akun dibuat secara LOKAL (Offline)." };
             }
         }
     },
@@ -2203,32 +2316,72 @@ const DataService = {
             return { success: true, user: this.user };
         } else {
             try {
+                // PERBAIKAN "LEMOT": Tambah Timeout 5 Detik
                 const docRef = db.collection('users').doc(email);
-                const doc = await docRef.get();
+                
+                const timeout = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Server Timeout")), 5000)
+                );
+
+                // Balapan antara ambil data vs timeout
+                const doc = await Promise.race([docRef.get(), timeout]);
+                
                 if (!doc.exists) return { success: false, msg: "User not found!" };
                 const userData = doc.data();
                 if (userData.password !== password) return { success: false, msg: "Wrong password!" };
                 this.user = { email: email, ...userData };
                 return { success: true, user: this.user };
             } catch (e) {
-                return { success: false, msg: "Login Error: " + e.message };
+                console.warn("Login Error / Offline, trying local fallback...", e);
+                
+                // FITUR ANTI-STUCK: Cek Local Storage jika Server Error/Offline
+                const dbLocal = this.getDB();
+                const user = dbLocal[email];
+                
+                if(user && user.password === password) {
+                    this.mode = 'local'; // Paksa pindah ke Local Mode
+                    this.user = { email: email, ...user };
+                    return { success: true, user: this.user, msg: "⚠️ Masuk dalam Mode Offline (Koneksi Bermasalah)" };
+                }
+
+                return { success: false, msg: "Gagal Login: Koneksi tidak stabil & Data lokal tidak ditemukan." };
             }
         }
     },
 
     saveGame: async function(gameState) {
         if(!this.user) return;
-        if(this.mode === 'local') {
-            const dbLocal = this.getDB();
-            if(dbLocal[this.user.email]) {
-                const existing = dbLocal[this.user.email].saveData || {};
-                dbLocal[this.user.email].saveData = { ...existing, ...gameState, lastActive: Date.now() };
-                this.saveDB(dbLocal);
+        
+        // 1. UPDATE: SELALU Simpan ke Local Storage (Hybrid Save)
+        // Ini menjamin data aman di HP meski internet putus nyambung
+        const dbLocal = this.getDB();
+        if(!dbLocal[this.user.email]) {
+             // Jika user baru dari cloud, buat entry local
+             dbLocal[this.user.email] = { ...this.user, saveData: gameState };
+        } else {
+             const existing = dbLocal[this.user.email].saveData || {};
+             dbLocal[this.user.email].saveData = { ...existing, ...gameState, lastActive: Date.now() };
+        }
+        this.saveDB(dbLocal);
+
+        // 2. UPDATE: Auto-Sync ke Cloud jika ada Internet
+        if (navigator.onLine) {
+            try {
+                // Coba upload ke server
+                await db.collection('users').doc(this.user.email).update({ saveData: gameState });
+                
+                // Jika berhasil upload, pastikan mode kembali ke 'firebase' (Online)
+                if(this.mode === 'local') {
+                    console.log("Koneksi Kembali: Auto-Sync ke Cloud Berhasil!");
+                    this.mode = 'firebase';
+                }
+            } catch (e) {
+                // Jika gagal (auth expired atau putus lagi), tetap di mode local tanpa error mengganggu
+                // console.warn("Cloud save failed (Background):", e);
+                this.mode = 'local';
             }
         } else {
-            try {
-                await db.collection('users').doc(this.user.email).update({ saveData: gameState });
-            } catch (e) { showToast("Save Failed"); }
+            this.mode = 'local'; // Pastikan mode offline jika navigator offline
         }
     },
 
@@ -2740,9 +2893,17 @@ const STATE = {
         hp: 100, maxHp: 100,
         energy: 100,
         money: 10000,
-        str: 5,
-        int: 5,
-        reputation: 0,
+        
+        // NEW STATS
+        level: 1,
+        exp: 0,
+        maxExp: 100,
+        
+        str: 5, // Strength (Fighter/Worker)
+        int: 5, // Intelligence (Mage/Student)
+        reputation: 0, // Reputation (Tanker/Family)
+        biz: 0, // Business Skill (Support/Entrepreneur) -- NEW STAT ADDED
+        
         married: false,
         spouseId: null, 
         houseLevel: 1,
@@ -2938,8 +3099,16 @@ function initGame() {
     if(saved) {
         STATE.day = saved.day || 1;
         STATE.player.money = saved.money || 1000;
+        
+        // Load Stats
+        STATE.player.level = saved.level || 1;
+        STATE.player.exp = saved.exp || 0;
+        STATE.player.maxExp = saved.maxExp || 100;
         STATE.player.str = saved.str || 5;
         STATE.player.int = saved.int || 5;
+        STATE.player.reputation = saved.reputation || 0; // Reputation fix
+        STATE.player.biz = saved.biz || 0; // Load BIZ stat
+        
         STATE.player.role = saved.role || 'none';
         STATE.player.reflections = saved.reflections || [];
         STATE.player.messages = saved.messages || [];
@@ -3012,8 +3181,16 @@ function initGame() {
             DataService.saveGame({
                 day: STATE.day,
                 money: STATE.player.money,
+                
+                // SAVE NEW STATS
+                level: STATE.player.level,
+                exp: STATE.player.exp,
+                maxExp: STATE.player.maxExp,
                 str: STATE.player.str,
                 int: STATE.player.int,
+                reputation: STATE.player.reputation,
+                biz: STATE.player.biz,
+                
                 role: STATE.player.role,
                 gender: STATE.player.gender,
                 location: STATE.location,
@@ -3091,15 +3268,13 @@ function runTutorial() {
                         showDialogue("MENTOR BUDI", 
                         "Setelah 5 tahun usai, kamu akan dikirim ke **Pulau Javana** untuk menjalani **kehidupan yang sesungguhnya** di dunia nyata. Jadi, belajarlah dengan serius di sini!", 
                         [{text: "Saya Mengerti!", action: () => {
-                            showDialogue("MENTOR BUDI", "Bagus. Sekarang, tentukan langkah awalmu. Pilihan ini akan mengunci takdirmu selama masa Trial.", [
-                                {text: "Pilih Jalan Hidup", action: () => {
-                                    showDialogue("TAKDIR HIDUP", "Tentukan spesialisasi awalmu sekarang:", [
-                                        {text: "Bekerja (Fighter)", action: () => setRole('worker')},
-                                        {text: "Kuliah (Mage)", action: () => setRole('student')},
-                                        {text: "Wirausaha (Support)", action: () => setRole('entrepreneur')},
-                                        {text: "Menikah (Family)", action: () => setRole('family')}
-                                    ]);
-                                }}
+                            showDialogue("MENTOR BUDI", "Bagus. Sekarang, tentukan langkah awalmu. Pilihan ini akan mengunci takdirmu dan Status Dasarmu.", [
+                                {text: "Jelaskan Status Dulu", action: () => {
+                                     showDialogue("MENTOR BUDI", 
+                                     "Dengar baik-baik, ini bekal hidupmu:\n💪 STR (Strength): Kekuatan fisik untuk Bekerja Kasar & Bertarung.\n🧠 INT (Intelligence): Kecerdasan untuk Kuliah & Beasiswa.\n📈 BIZ (Business): Skill dagang untuk Wirausaha.\n❤️ REP (Reputation): Pesona sosial untuk Keluarga & Menikah.",
+                                     [{text: "Paham, Pilih Jalan Hidup", action: () => openRoleSelection()}], 'images/mentor.png');
+                                }},
+                                {text: "Langsung Pilih", action: () => openRoleSelection()}
                             ]);
                         }}]);
                     }}]);
@@ -3110,23 +3285,33 @@ function runTutorial() {
     );
 }
 
+function openRoleSelection() {
+    showDialogue("TAKDIR HIDUP", "Tentukan spesialisasi awalmu sekarang:", [
+        {text: "Bekerja (Fighter) - STR++", action: () => setRole('worker')},
+        {text: "Kuliah (Mage) - INT++", action: () => setRole('student')},
+        {text: "Wirausaha (Support) - BIZ++", action: () => setRole('entrepreneur')},
+        {text: "Menikah (Family) - REP++", action: () => setRole('family')}
+    ]);
+}
+
 function setRole(role) {
     STATE.player.role = role;
     if(role === 'worker') { 
         STATE.player.str += 5; STATE.player.hp += 20; 
-        showToast("Jalur BEKERJA dipilih. Masuk ke Gedung Merchant untuk Melamar!"); 
+        showToast("Jalur BEKERJA dipilih. STR Meningkat!"); 
     }
     else if(role === 'student') { 
         STATE.player.int += 5; STATE.player.energy += 20; 
-        showToast("Jalur PENDIDIKAN dipilih. Kampus Terbuka!"); 
+        showToast("Jalur PENDIDIKAN dipilih. INT Meningkat!"); 
     }
     else if(role === 'entrepreneur') { 
-        STATE.player.money += 50000; 
-        showToast("Jalur WIRAUSAHA dipilih. Toko Terbuka!"); 
+        STATE.player.biz += 5; // New BIZ stat
+        STATE.player.money += 20000; 
+        showToast("Jalur WIRAUSAHA dipilih. BIZ Skill & Modal Awal!"); 
     }
     else if(role === 'family') { 
         STATE.player.reputation += 20;
-        showToast("Jalur MENIKAH dipilih. Balai Nikah Terbuka!"); 
+        showToast("Jalur MENIKAH dipilih. REP Meningkat Drastis!"); 
     }
     
     showToast("Cek Buku Petunjuk di Rumah!");
@@ -3135,16 +3320,52 @@ function setRole(role) {
 }
 
 function updateHUDInfo() {
+    const p = STATE.player;
     const name = DataService.user ? DataService.user.name : "Player";
-    document.getElementById('hud-name').innerText = name.length > 10 ? name.substring(0,8)+".." : name;
-
-    let roleText = "Novice Student";
-    if(STATE.player.role === 'worker') roleText = "Fighter (Pekerja)";
-    else if(STATE.player.role === 'student') roleText = "Mage (Akademisi)";
-    else if(STATE.player.role === 'entrepreneur') roleText = "Support (Wirausaha)";
-    else if(STATE.player.role === 'family') roleText = "Tanker (Keluarga)";
     
-    document.getElementById('hud-role').innerText = roleText;
+    // Update Name & Level
+    document.getElementById('hud-name').innerText = name.length > 8 ? name.substring(0,6)+".." : name;
+    document.getElementById('level-display').innerText = p.level;
+
+    // Role Icon & Color Logic
+    const roleIcon = document.getElementById('hud-role-icon');
+    let icon = "?";
+    let color = "#cbd5e1"; // Default Gray
+
+    if(p.role === 'worker') { icon = "💪"; color = "#ef4444"; } // Red
+    else if(p.role === 'student') { icon = "🧠"; color = "#3b82f6"; } // Blue
+    else if(p.role === 'entrepreneur') { icon = "📈"; color = "#10b981"; } // Green
+    else if(p.role === 'family') { icon = "❤️"; color = "#d946ef"; } // Pink
+    
+    roleIcon.innerText = icon;
+    roleIcon.style.backgroundColor = color;
+
+    // Update Stats Matrix
+    document.getElementById('stat-str').innerText = p.str;
+    document.getElementById('stat-int').innerText = p.int;
+    document.getElementById('stat-rep').innerText = p.reputation;
+    document.getElementById('stat-biz').innerText = p.biz;
+
+    // Update Bars Width
+    const hpPct = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
+    const enPct = Math.max(0, Math.min(100, (p.energy / 100) * 100)); // Energy max is static 100 usually
+    const expPct = Math.max(0, Math.min(100, (p.exp / p.maxExp) * 100));
+
+    document.getElementById('hp-bar').style.width = hpPct + "%";
+    document.getElementById('energy-bar').style.width = enPct + "%";
+    document.getElementById('exp-bar').style.width = expPct + "%";
+
+    // Text inside bars
+    document.getElementById('hp-text').innerText = Math.floor(p.hp);
+    document.getElementById('energy-text').innerText = Math.floor(p.energy);
+    
+    // Toggle Combat HUD based on Location
+    const combatHud = document.getElementById('combat-hud');
+    if(STATE.location === 'dungeon') {
+        combatHud.style.display = 'flex';
+    } else {
+        combatHud.style.display = 'none';
+    }
 }
 
 function triggerGameOver() {
@@ -3351,6 +3572,12 @@ function update() {
         randomizeWeather();
 
         showToast(`Day ${STATE.day} (${STATE.season.toUpperCase()})`);
+    }
+
+    // --- NEW: FAINTING MECHANIC (PINGSAN KARENA LELAH) ---
+    if(STATE.player.energy <= 0) {
+        handleFaint();
+        return; // Hentikan update frame ini
     }
 
     const btnAction = document.getElementById('btn-action');
@@ -3678,9 +3905,8 @@ function update() {
     if (STATE.player.attackCooldown > 0) STATE.player.attackCooldown--;
     // Removed STATE.player.skillCooldown decrement logic
     
-    document.getElementById('hp-display').innerText = Math.floor(STATE.player.hp);
-    document.getElementById('energy-display').innerText = Math.floor(STATE.player.energy);
-    document.getElementById('money-display').innerText = STATE.player.money.toLocaleString('id-ID');
+    // UPDATE HUD VIA FUNCTION NOW
+    updateHUDInfo();
 
     STATE.particles.forEach((p,i) => {
         p.x += p.vx; p.y += p.vy; p.life--;
@@ -4622,9 +4848,18 @@ function interactObject(obj) {
             questText = "QUEST PEKERJA:\n1. Pergi ke Merchant (Gedung).\n2. Bicara pada Bos & Lamar Kerja.\n3. Masuk kerja jam 08:00 setiap pagi.\n4. Jangan terlambat agar tidak dipecat!";
         } else if(STATE.player.role === 'student') {
             questText = "QUEST SISWA:\n1. Masuk Kampus setiap pagi.\n2. Baca buku di rumah untuk INT.\n3. Kejar Beasiswa.";
+        } else if(STATE.player.role === 'entrepreneur') {
+             questText = "QUEST WIRAUSAHA:\n1. Beli murah di Merchant.\n2. Jual saat harga naik di Menu Trading.\n3. Kumpulkan 100k Gold.";
+        } else if(STATE.player.role === 'family') {
+             questText = "QUEST KELUARGA:\n1. Sapa tetangga (Interact).\n2. Cari pasangan di desa.\n3. Nabung untuk nikah.";
         }
 
         showDialogue("BUKU HARIAN", questText, [
+            {text: "ℹ️ Penjelasan Status", action: () => {
+                 showDialogue("PANDUAN STATUS", 
+                 "💪 STR: Kekuatan fisik. Berguna untuk kerja kasar & lawan monster.\n🧠 INT: Kecerdasan. Berguna untuk nilai kuliah & dialog pintar.\n📈 BIZ: Bisnis. Meningkatkan profit dagang & diskon.\n❤️ REP: Reputasi. Penting untuk hubungan sosial & menikah.",
+                 [{text: "Kembali", action: () => interactObject(obj)}], 'images/buku.png');
+            }},
             {text: "✍️ Menulis Jurnal (Save)", action: () => {
                 manualSave();
                 showToast("Data Tersimpan! ✅");
@@ -4672,10 +4907,33 @@ function checkFishing() {
         if(!STATE.player.inventory['ikan_segar']) STATE.player.inventory['ikan_segar'] = 0;
         STATE.player.inventory['ikan_segar']++;
         
+        // Reward EXP for success
+        gainExp(15);
+
         showToast(`BERHASIL! Dapat ${caught} (Harga: ${value})`);
         createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
     } else {
         showToast("GAGAL... Ikan lepas.");
+    }
+}
+
+// --- NEW FUNCTION: GAIN EXP ---
+function gainExp(amount) {
+    STATE.player.exp += amount;
+    showToast(`+${amount} EXP`);
+    if(STATE.player.exp >= STATE.player.maxExp) {
+        STATE.player.exp = 0;
+        STATE.player.maxExp = Math.floor(STATE.player.maxExp * 1.5);
+        STATE.player.level++;
+        STATE.player.energy = 100; // Heal on level up
+        STATE.player.hp = STATE.player.maxHp;
+        showToast(`LEVEL UP! LV ${STATE.player.level} 🆙`);
+        createParticle(STATE.player.x, STATE.player.y, '#6366f1');
+        // Bonus Stat based on Role
+        if(STATE.player.role === 'worker') STATE.player.str++;
+        if(STATE.player.role === 'student') STATE.player.int++;
+        if(STATE.player.role === 'entrepreneur') STATE.player.biz++;
+        if(STATE.player.role === 'family') STATE.player.reputation++;
     }
 }
 
@@ -4686,8 +4944,16 @@ function manualSave() {
         season: STATE.season,
         weather: STATE.weather, 
         money: STATE.player.money,
+        
+        // SAVE NEW STATS
+        level: STATE.player.level,
+        exp: STATE.player.exp,
+        maxExp: STATE.player.maxExp,
         str: STATE.player.str,
         int: STATE.player.int,
+        reputation: STATE.player.reputation,
+        biz: STATE.player.biz,
+
         role: STATE.player.role,
         gender: STATE.player.gender,
         location: STATE.location,
@@ -4711,12 +4977,63 @@ function manualSave() {
     });
 }
 
+// --- NEW FUNCTION: FAINT LOGIC ---
+function handleFaint() {
+    showToast("😵 KAMU PINGSAN KARENA KELELAHAN!");
+    
+    // Blackout overlay
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0'; overlay.style.left = '0';
+    overlay.style.width = '100%'; overlay.style.height = '100%';
+    overlay.style.background = '#000';
+    overlay.style.zIndex = '9999';
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 2s';
+    overlay.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100%; color:red; font-family:Cinzel; font-size:20px; text-align:center;">KAMU PINGSAN...<br>Dibawa ke Klinik (-500 Gold)</div>';
+    document.body.appendChild(overlay);
+
+    // Fade to black
+    setTimeout(() => overlay.style.opacity = '1', 100);
+
+    setTimeout(() => {
+        // Logic Reset
+        STATE.day++;
+        STATE.time = 800; // Bangun jam 8 pagi (telat karena sakit)
+        STATE.player.energy = 50; // Bangun tidak full energy
+        STATE.player.hp = STATE.player.maxHp;
+        
+        // Penalty
+        const penalty = 500;
+        STATE.player.money = Math.max(0, STATE.player.money - penalty);
+        
+        // Respawn at Clinic
+        STATE.location = 'village';
+        STATE.player.x = 20 * TILE_SIZE; // Depan klinik
+        STATE.player.y = 19 * TILE_SIZE;
+
+        manualSave();
+
+        // Fade In
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+            showToast("Bangun di Klinik. Biaya: 500G");
+            updateHUDInfo();
+        }, 2000);
+    }, 4000);
+}
+
 // --- NEW FUNCTION: SLEEP LOGIC ---
 function handleSleep() {
     closeDialogue();
     
-    // Efek Layar Gelap (Menggunakan ui-layer opacity atau overlay sederhana)
-    // Kita gunakan toast untuk feedback instan
+    let oversleep = false;
+    // MECHANIC: OVERSLEEP IF ENERGY LOW
+    if(STATE.player.energy < 20) {
+        oversleep = true;
+    }
+
     showToast("Zzz... Tidur...");
     
     // Overlay Hitam Sementara
@@ -4738,7 +5055,13 @@ function handleSleep() {
         // LOGIKA GANTI HARI DI BALIK LAYAR
         setTimeout(() => {
             STATE.day++;
-            STATE.time = 600; // Set ke jam 06:00 Pagi
+            
+            if (oversleep) {
+                STATE.time = 1000; // Bangun jam 10:00 (Telat)
+            } else {
+                STATE.time = 600; // Bangun jam 06:00
+            }
+            
             STATE.player.energy = 100; // Pulihkan Energi
             STATE.player.hp = STATE.player.maxHp; // Pulihkan HP
             
@@ -4755,10 +5078,15 @@ function handleSleep() {
             overlay.style.opacity = '0';
             setTimeout(() => {
                 document.body.removeChild(overlay);
-                showToast(`Selamat Pagi! Day ${STATE.day}`);
+                if(oversleep) {
+                    showToast(`⚠️ KESIANGAN! Bangun jam 10:00 karena kelelahan.`);
+                } else {
+                    showToast(`Selamat Pagi! Day ${STATE.day}`);
+                }
+                
                 // Update tampilan tanggal/jam segera
                 document.getElementById('full-date-display').innerText = `Day ${STATE.day} ${STATE.season.toUpperCase()}`;
-                document.getElementById('clock-display').innerText = "06:00";
+                document.getElementById('clock-display').innerText = oversleep ? "10:00" : "06:00";
             }, 1000);
 
         }, 2000); // Durasi layar hitam
@@ -4804,6 +5132,10 @@ function checkJobApp() {
         STATE.player.jobStatus = 'employed';
         STATE.player.bossReputation = 50;
         alert("SELAMAT! Lamaran diterima. Datanglah besok jam 08:00.");
+        
+        // Reward EXP for getting job
+        gainExp(50);
+        
         closeMinigame();
     } else {
         alert("Lamaran ditolak! Susunan kalimat kurang sopan. Coba lagi.");
@@ -4822,6 +5154,7 @@ function buyFurniture(id, cost) {
         if(!STATE.player.furniture.includes(id)) {
             STATE.player.money -= cost;
             STATE.player.furniture.push(id);
+            gainExp(20); // Shopping gives exp
             showToast("Item terbeli! 🛋️");
             closeDialogue();
         } else {
@@ -4846,6 +5179,7 @@ function upgradeHouse() {
         STATE.player.houseLevel = nextLevel;
         showToast(`RUMAH UPGRADE KE LEVEL ${nextLevel}! 🏰`);
         createParticle(18*TILE_SIZE, 8*TILE_SIZE, '#fbbf24');
+        gainExp(200); // Big EXP for upgrade
         
         // --- REGENERATE MAP AFTER UPGRADE ---
         regenerateHouseMap();
@@ -4890,7 +5224,7 @@ function spawnEnemies() {
 function gameOver() {
     showDialogue("DEFEAT", "Kamu dikalahkan monster. Gold berkurang 10%.", [{text:"Respawn (Klinik)", action:()=>{
         STATE.player.hp = 100;
-        STATE.player.energy = 100;
+        STATE.player.energy = 50; // Respawn tired
         STATE.player.money = Math.floor(STATE.player.money * 0.9);
         
         STATE.location = 'village';
