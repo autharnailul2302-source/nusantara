@@ -85,9 +85,25 @@
 
         #game-container {
             position: relative;
-            width: 100%;
-            max-width: 960px; /* HD Size Container */
+            
+            /* --- UPDATE: PRECISI MOBILE SCALING --- */
+            /* Menggunakan logika aspect-ratio yang mengunci dimensi agar pas di viewport */
+            /* width: min(100% layar, tinggi layar dikali rasio 16:9) */
+            width: min(100vw, 177.78dvh); 
+            
+            /* Paksa rasio 16:9 */
             aspect-ratio: 16/9;
+            
+            /* Tinggi otomatis mengikuti lebar berdasarkan rasio */
+            height: auto;
+            
+            /* Batas maksimal agar tidak pernah lebih tinggi dari layar */
+            max-height: 100dvh;
+            max-width: 100vw;
+            
+            /* Center di tengah layar */
+            margin: auto;
+            
             background: #000;
             box-shadow: 0 0 50px rgba(6, 182, 212, 0.2);
             overflow: hidden;
