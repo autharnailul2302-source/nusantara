@@ -568,6 +568,117 @@
             width: 50px; height: 50px; font-size: 18px; 
         }
 
+        /* --- NEW: INVENTORY BAG STYLES (PREMIUM GLASS) --- */
+        #bag-btn {
+            position: absolute;
+            bottom: 30px; /* Sedikit naik agar sejajar visual */
+            right: 140px; /* Di sebelah kiri tombol aksi utama */
+            width: 70px; 
+            height: 70px;
+            
+            /* Glassmorphism & Bubble Effect */
+            background-color: rgba(15, 23, 42, 0.5); /* Base dark tint transparan */
+            background-size: 55%; /* Icon size inside bubble */
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2); /* Ring tipis */
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            
+            cursor: pointer;
+            z-index: 60;
+            
+            /* Shadows for 3D Depth */
+            box-shadow: 
+                0 8px 20px rgba(0,0,0,0.5), /* Drop shadow */
+                inset 0 3px 10px rgba(255,255,255,0.2), /* Top highlight */
+                inset 0 -3px 10px rgba(0,0,0,0.4); /* Bottom shade */
+                
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy transition */
+            animation: uiFloat 4s ease-in-out infinite; /* Animasi Melayang */
+        }
+
+        /* Efek Kilauan Kaca (Reflection) */
+        #bag-btn::before {
+            content: '';
+            position: absolute;
+            top: 10%; left: 20%;
+            width: 25%; height: 15%;
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.1));
+            filter: blur(2px);
+            pointer-events: none;
+        }
+
+        /* Hover State - Glowing & Scaling */
+        #bag-btn:hover {
+            transform: scale(1.15) rotate(-5deg);
+            background-color: rgba(251, 191, 36, 0.2); /* Gold tint on hover */
+            border-color: var(--secondary);
+            box-shadow: 
+                0 0 25px rgba(251, 191, 36, 0.5), /* Glow Emas */
+                inset 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+
+        /* Active/Click State */
+        #bag-btn:active { 
+            transform: scale(0.95);
+            filter: brightness(0.8);
+        }
+
+        /* Animasi Melayang */
+        @keyframes uiFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        #inventory-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 1500;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 0.2s;
+        }
+
+        .inv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .inv-item {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        .inv-item img { width: 32px; height: 32px; margin-bottom: 5px; }
+        .inv-item span { font-size: 10px; font-family: 'Exo 2'; }
+        .inv-qty {
+            position: absolute; top: 2px; right: 5px;
+            font-size: 10px; font-weight: bold; color: var(--secondary);
+        }
+        .inv-empty-msg {
+            color: #64748b; font-family: 'Exo 2'; margin-top: 50px; font-style: italic;
+        }
+
         /* --- SCREENS STYLES --- */
 
         /* Splash Screen */
@@ -599,6 +710,11 @@
             justify-content: center;
             align-items: center;
             text-align: center;
+            /* UPDATE: Tambahan padding agar tidak tertutup notch/pinggiran HP */
+            padding: 20px;
+            padding-left: max(20px, env(safe-area-inset-left));
+            padding-right: max(20px, env(safe-area-inset-right));
+            box-sizing: border-box; 
         }
 
         /* Prologue Screen */
@@ -1251,11 +1367,14 @@ button, .round-btn, .d-btn, .auth-btn {
 
     <!-- NEW: AUDIO PROMPT -->
     <div id="audio-prompt">
-        <h1 style="color: var(--secondary); margin-bottom: 20px; text-shadow: 0 0 10px var(--secondary);">🔊 AUDIO SETTING</h1>
-        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 30px;">Nyalakan musik latar dan efek suara untuk pengalaman bermain yang lebih baik?</p>
-        <div style="display: flex; gap: 20px;">
-            <button class="main-menu-btn" onclick="handleAudioChoice(true)" style="width: auto; padding: 15px 30px;">YA, NYALAKAN</button>
-            <button class="main-menu-btn" onclick="handleAudioChoice(false)" style="width: auto; padding: 15px 30px; border-color: #64748b; color: #64748b;">TIDAK</button>
+        <h1 style="color: var(--secondary); margin-bottom: 20px; text-shadow: 0 0 10px var(--secondary); font-size: 24px;">🔊 AUDIO SETTING</h1>
+        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 30px; line-height: 1.5; font-size: 14px;">Nyalakan musik latar dan efek suara untuk pengalaman bermain yang lebih baik?</p>
+        
+        <!-- UPDATE: Flex wrap ditambahkan agar tombol turun ke bawah jika layar sempit -->
+        <!-- UPDATE: Min-width tombol diperkecil dari 280px ke 120px agar muat bersebelahan -->
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%;">
+            <button class="main-menu-btn" onclick="handleAudioChoice(true)" style="width: auto; min-width: 120px; padding: 12px 25px; font-size: 14px;">YA (ON)</button>
+            <button class="main-menu-btn" onclick="handleAudioChoice(false)" style="width: auto; min-width: 120px; padding: 12px 25px; border-color: #64748b; color: #64748b; font-size: 14px;">TIDAK (OFF)</button>
         </div>
     </div>
 
@@ -1281,6 +1400,7 @@ button, .round-btn, .d-btn, .auth-btn {
         <div style="z-index: 10; display:flex; flex-direction:column; align-items:center;">
             <button class="main-menu-btn" onclick="goToLogin()">START GAME</button>
             <button class="main-menu-btn" onclick="showLeaderboard()">RANKING</button>
+            <button class="main-menu-btn" onclick="toggleFullScreen()">FULL SCREEN</button>
         </div>
         <p style="position: absolute; bottom: 20px; font-size: 12px; color: #94a3b8; font-family: 'Exo 2'; z-index: 10;">Ver 4.4 - Fullscreen Mobile Support</p>
     </div>
@@ -1505,6 +1625,15 @@ button, .round-btn, .d-btn, .auth-btn {
         <button onclick="closeMinigame()" style="margin-top:10px; background:transparent; border:none; color:#ef4444;">BATAL</button>
     </div>
 
+    <!-- NEW: INVENTORY SCREEN OVERLAY -->
+    <div id="inventory-screen">
+        <h2 style="color:var(--secondary); font-family:'Cinzel'; border-bottom:1px solid #475569; padding-bottom:10px; width:100%; text-align:center;">TAS PENYIMPANAN</h2>
+        <div id="inventory-grid" class="inv-grid">
+            <!-- Item akan digenerate JS -->
+        </div>
+        <button class="main-menu-btn" onclick="toggleInventory()" style="margin-top:20px; width:auto; padding:10px 30px;">TUTUP TAS</button>
+    </div>
+
     <!-- UI LAYER (GAME) -->
     <div id="ui-layer" class="hidden">
         <!-- REDESIGNED HUD (3 COLUMNS) -->
@@ -1602,7 +1731,8 @@ button, .round-btn, .d-btn, .auth-btn {
                 <div class="d-btn d-right" id="btn-right"></div>
             </div>
             <div class="action-btns">
-                <!-- REMOVED: Journal Button (Green) as requested -->
+                <!-- NEW: TOMBOL TAS INVENTORI -->
+                <div id="bag-btn" onclick="toggleInventory()" style="background-image: url('images/tas-kosong.png');"></div>
                 
                 <!-- Action Button: Hidden by default, shown via JS when interactive -->
                 <div class="round-btn" id="btn-action" style="display: none;">💬</div>
@@ -1653,16 +1783,7 @@ let analytics;
 const SESSION_KEY = 'sc_session_email';
 
 // --- ASSET LOADER (UPDATED FOR NEW BG & TREES) ---
-const tilesetImage = new Image();
-tilesetImage.src = 'images/tileset.png'; 
-let tilesetLoaded = false;
-tilesetImage.onload = () => { 
-    tilesetLoaded = true; 
-    console.log("Tileset PNG Loaded Successfully!");
-};
-tilesetImage.onerror = () => {
-    console.error("Gagal memuat images/tileset.png!");
-};
+// REMOVED: tileset.png loader (deprecated)
 
 const treeAssets = {
     // shadow: new Image(), // SHADOW DIHAPUS (Tidak diload)
@@ -1679,6 +1800,20 @@ const treeFallbacks = {
     sakuraTrunk: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMTIiIHk9IjQiIHdpZHRoPSI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjNWQ0MDM3Ii8+PC9zdmc+', 
     sakuraCanopy: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjgiIGZpbGw9IiZmNDcyYjYiIHN0cm9rZT0iI2RiMjc3NyIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+' 
 };
+
+// NEW: ASSET TAS (Load gambar tas)
+const bagAssets = {
+    empty: new Image(),
+    full: new Image()
+};
+// Set src
+bagAssets.empty.src = 'images/tas-kosong.png';
+bagAssets.full.src = 'images/tas-isi.png';
+// Fallback visual tas jika gambar tidak ada
+const bagFallback = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHBhdGggZD0iTTIwIDIwIEw0NCAyMCBMNTQgNTAgTDEwIDUwIFoiIGZpbGw9IiM3ODM1MGYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTI2IDIwIEwyNiAxMCBZMzggMTAgTDM4IDIwIiBzdHJva2U9IiNmZmYiIGZpbGw9Im5vbmUiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==';
+
+bagAssets.empty.onerror = function() { this.src = bagFallback; };
+bagAssets.full.onerror = function() { this.src = bagFallback; }; // Bisa dibedakan warnanya nanti jika mau
 
 // Load Images (Trunk & Canopy Only)
 ['trunk', 'canopy', 'sakuraTrunk', 'sakuraCanopy'].forEach(key => {
@@ -1752,13 +1887,26 @@ houseBgAssets.level5.src = 'images/rumahindoor_level5.png';
 const dungeonAssets = {
     wall: new Image(),
     floor: new Image(),
-    enemy: new Image(),
-    rock: new Image() // Tambahkan aset khusus batu dungeon
+    rock: new Image(),
+    // UPDATE: Asset Monster Berjenjang
+    enemy1: new Image(),
+    enemy2: new Image(),
+    enemy3: new Image(),
+    enemy4: new Image(),
+    enemy5: new Image(), // NEW: Monster Level 5
+    boss: new Image()
 };
 dungeonAssets.wall.src = 'images/dungeon_wall.png';   // Ukuran 30x30
 dungeonAssets.floor.src = 'images/dungeon_floor.png'; // Ukuran 30x30
-dungeonAssets.enemy.src = 'images/monster.png';       // Ukuran 24x24 (atau 30x30)
 dungeonAssets.rock.src = 'images/batudidungeon.png';  // Set gambar batu khusus
+
+// Load Monster Images
+dungeonAssets.enemy1.src = 'images/monster.png';
+dungeonAssets.enemy2.src = 'images/monster-lvl2.png';
+dungeonAssets.enemy3.src = 'images/monster-lvl3.png';
+dungeonAssets.enemy4.src = 'images/monster-lvl4.png';
+dungeonAssets.enemy5.src = 'images/monster-lvl5.png'; // NEW
+dungeonAssets.boss.src = 'images/monster-boss.png';
 
 let bgLoadedCount = 0;
 const onBgLoad = () => {
@@ -2963,7 +3111,10 @@ const STATE = {
         targetWidth: 0
     },
     // NEW: Cooldown agar tidak langsung teleport balik saat spawn
-    teleportCooldown: 0
+    teleportCooldown: 0,
+    // NEW: Dungeon Level Tracker
+    dungeonLevel: 1,
+    bossSpawned: false // NEW: Status apakah Boss sudah muncul
 };
 
 const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -3097,6 +3248,8 @@ function regenerateHouseMap() {
         objects: [
             // UPDATE: Menggunakan gambar buku.png, posisi digeser agak ke kanan (x:6)
             {x: 6, y: 2, type: 'diary', icon: '📔', img: 'images/buku.png'},
+            // NEW: Kalender Dinding (Sebelah Buku) -- UPDATE POSISI y:1 (Agak ke atas/nempel tembok)
+            {x: 8, y: 1, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
             // UPDATE: Katalog diganti Telpon, digeser agak ke bawah (y:8)
             {x: 2, y: 8, type: 'catalog', icon: '☎️', img: 'images/telpon.png'} 
         ]
@@ -3169,6 +3322,9 @@ function initGame() {
 
     // --- REGENERATE HOUSE MAP BASED ON LEVEL ---
     regenerateHouseMap();
+    
+    // UPDATE BAG ICON ON LOAD
+    updateBagIcon();
 
     // Coba fullscreen lagi saat init game (mungkin diblokir browser jika async, tapi worth trying)
     if (document.documentElement.requestFullscreen) {
@@ -3381,6 +3537,83 @@ function updateHUDInfo() {
         combatHud.style.display = 'flex';
     } else {
         combatHud.style.display = 'none';
+    }
+    
+    // ALWAYS UPDATE BAG ICON
+    updateBagIcon();
+}
+
+// --- NEW FUNCTION: UPDATE BAG ICON ---
+function updateBagIcon() {
+    const inv = STATE.player.inventory || {};
+    // Hitung total item yang jumlahnya > 0
+    let totalItems = 0;
+    for (let key in inv) {
+        if (inv[key] > 0) totalItems += inv[key];
+    }
+    
+    const bagBtn = document.getElementById('bag-btn');
+    if (totalItems > 0) {
+        bagBtn.style.backgroundImage = "url('images/tas-isi.png')";
+        // Fallback jika image gagal load, dihandle oleh CSS background atau JS event listener, 
+        // tapi karena ini css background-image, kita pastikan logic visualnya benar
+    } else {
+        bagBtn.style.backgroundImage = "url('images/tas-kosong.png')";
+    }
+}
+
+// --- NEW FUNCTION: TOGGLE INVENTORY SCREEN ---
+function toggleInventory() {
+    const screen = document.getElementById('inventory-screen');
+    const isHidden = screen.style.display === 'none' || screen.style.display === '';
+    
+    if (isHidden) {
+        screen.style.display = 'flex';
+        renderInventory();
+        STATE.screen = 'modal'; // Pause game input
+    } else {
+        screen.style.display = 'none';
+        STATE.screen = 'play'; // Resume game
+    }
+}
+
+// --- NEW FUNCTION: RENDER INVENTORY ITEMS ---
+function renderInventory() {
+    const grid = document.getElementById('inventory-grid');
+    grid.innerHTML = '';
+    
+    const inv = STATE.player.inventory || {};
+    let hasItem = false;
+
+    // DATABASE ITEM SEDERHANA UNTUK NAMA & IKON
+    const ITEM_DB = {
+        'ikan_segar': { name: 'Ikan Segar', icon: '🐟' },
+        'gandum': { name: 'Gandum', icon: '🌾' },
+        'kain': { name: 'Kain Sutra', icon: '🧵' },
+        'permata': { name: 'Berlian', icon: '💎' },
+        'coklat': { name: 'Coklat', icon: '🍫' },
+        'bunga': { name: 'Bunga', icon: '🌹' },
+        'buku_tesis': { name: 'Tesis', icon: '📖' }
+    };
+
+    for (let key in inv) {
+        if (inv[key] > 0) {
+            hasItem = true;
+            const itemData = ITEM_DB[key] || { name: key.toUpperCase(), icon: '📦' };
+            
+            const div = document.createElement('div');
+            div.className = 'inv-item';
+            div.innerHTML = `
+                <div class="inv-qty">${inv[key]}</div>
+                <div style="font-size:30px; margin-bottom:5px;">${itemData.icon}</div>
+                <span>${itemData.name}</span>
+            `;
+            grid.appendChild(div);
+        }
+    }
+
+    if (!hasItem) {
+        grid.innerHTML = '<div class="inv-empty-msg">Tas Kosong...<br>Belum ada item yang didapat.</div>';
     }
 }
 
@@ -3700,7 +3933,8 @@ function update() {
 
     if(STATE.location === 'village' && STATE.time < 1800) {
         
-        if(STATE.season === 'summer') {
+        // UPDATE: Burung sekarang muncul di Spring, Summer, dan Autumn (Kecuali Winter)
+        if(STATE.season !== 'winter') {
             if(Math.random() < 0.01) {
                 STATE.critters.push({
                     type: 'bird',
@@ -3968,7 +4202,7 @@ function checkAutoTeleport() {
             // UPDATE: Jarak deteksi diperbesar sedikit (dari 25 ke 30) agar lebih responsif
             if(dist < 30) {
                 // Daftar bangunan/trigger yang bisa auto-teleport
-                const autoTeleporters = ['player_house', 'dungeon_gate', 'merchant', 'shop_exit', 'house_exit', 'dungeon_exit'];
+                const autoTeleporters = ['player_house', 'dungeon_gate', 'merchant', 'shop_exit', 'house_exit', 'dungeon_exit', 'dungeon_next'];
                 if (autoTeleporters.includes(b.id)) {
                     processTeleport(b);
                     return; // Stop checking agar tidak double trigger
@@ -4020,8 +4254,9 @@ function processTeleport(b) {
     else if(b.id === 'dungeon_gate') {
         STATE.location = 'dungeon';
         STATE.player.x = TILE_SIZE * 3; STATE.player.y = TILE_SIZE * 3;
+        STATE.dungeonLevel = 1; // Reset ke Level 1 saat masuk baru
         spawnEnemies(); 
-        showToast("⚠️ ENTERING DUNGEON ⚠️");
+        showToast("⚠️ ENTERING DUNGEON LEVEL 1 ⚠️");
     } 
     else if(b.id === 'merchant') {
         STATE.location = 'merchant_interior';
@@ -4057,6 +4292,18 @@ function processTeleport(b) {
         STATE.player.x = 48 * TILE_SIZE; 
         STATE.player.y = 22 * TILE_SIZE;
         showToast("Kembali ke Desa");
+    }
+    // --- NEW: LOGIC NEXT LEVEL DUNGEON ---
+    else if(b.id === 'dungeon_next') {
+        STATE.dungeonLevel++;
+        STATE.player.x = TILE_SIZE * 3; 
+        STATE.player.y = TILE_SIZE * 3;
+        
+        // Efek transisi
+        showToast(`🌀 WARPING TO LEVEL ${STATE.dungeonLevel}...`);
+        createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
+        
+        spawnEnemies(); // Spawn musuh baru sesuai level
     }
 }
 
@@ -4130,9 +4377,92 @@ function updateEnemies() {
             STATE.enemies.splice(i, 1);
             STATE.player.money += 2500;
             STATE.player.reputation += 1;
-            showToast("+2.500 Gold");
+            
+            // --- NEW: LOGIKA DROP ITEM RANDOM (LEVEL 1 / BIASA) ---
+            // Monster biasa menjatuhkan item komoditas dasar
+            const dropChance = 0.5; // 50% Kemungkinan drop item
+            let dropText = "";
+            
+            if (Math.random() < dropChance) {
+                // Daftar Item Biasa (Common Items)
+                const commonDrops = ['gandum', 'kain', 'coklat', 'bunga'];
+                const randomItem = commonDrops[Math.floor(Math.random() * commonDrops.length)];
+                
+                // Tambah ke inventory
+                if (!STATE.player.inventory[randomItem]) STATE.player.inventory[randomItem] = 0;
+                STATE.player.inventory[randomItem]++;
+                
+                // Format teks untuk notifikasi
+                dropText = ` & Dapat ${randomItem.toUpperCase()} 📦`;
+            }
+
+            showToast(`+2.500 Gold${dropText}`);
             createParticle(en.x, en.y, '#fbbf24');
         }
+    });
+
+    // --- NEW: CEK KONDISI DUNGEON CLEARED ---
+    if (STATE.location === 'dungeon' && STATE.enemies.length === 0) {
+        // LOGIC BARU: WAVE BOSS LEVEL 5
+        if (STATE.dungeonLevel === 5 && !STATE.bossSpawned) {
+            spawnFinalBoss(); // Panggil Boss jika wave awal habis
+            return; // Jangan spawn portal dulu
+        }
+
+        const map = maps['dungeon'];
+        // Cek apakah portal sudah ada, jika belum spawn portal
+        const hasPortal = map.buildings.find(b => b.id === 'dungeon_next');
+        
+        if (!hasPortal) {
+            if (STATE.dungeonLevel < 5) {
+                // Spawn Portal ke Level Selanjutnya di tengah ruangan
+                map.buildings.push({ 
+                    id: 'dungeon_next', 
+                    x: 20, y: 15, w: 2, h: 2, 
+                    type: 'trigger', 
+                    entrance: {x: 21, y: 16, map: 'dungeon'}, 
+                    name: `Portal Level ${STATE.dungeonLevel + 1}`,
+                    open24h: true
+                });
+                showToast("🌀 PORTAL TERBUKA! Lanjut ke Level Berikutnya.");
+            } else {
+                // Level 5 (Boss) Selesai (Boss sudah mati)
+                showToast("🏆 DUNGEON CLEARED! Kamu mengalahkan BOSS!");
+                // Beri hadiah besar
+                STATE.player.money += 50000;
+                STATE.player.reputation += 50;
+                gainExp(500);
+                
+                // Paksa keluar atau beri portal keluar yang nyaman
+                // Kita gunakan portal exit biasa yang sudah ada di (2,2) tapi beri notif
+            }
+        }
+    }
+}
+
+// --- NEW FUNCTION: SPAWN FINAL BOSS (PHASE 2) ---
+function spawnFinalBoss() {
+    STATE.bossSpawned = true;
+    
+    // Efek Dramatis
+    showToast("👹 THE BOSS HAS AWAKENED!");
+    createParticle(20 * TILE_SIZE, 15 * TILE_SIZE, '#7f1d1d');
+    createParticle(20 * TILE_SIZE, 15 * TILE_SIZE, '#000');
+
+    // Spawn Boss Besar
+    STATE.enemies.push({
+        x: 20 * TILE_SIZE,
+        y: 15 * TILE_SIZE,
+        w: 100, h: 100, // Sangat Besar
+        hp: 5000, 
+        maxHp: 5000,
+        speed: 2.0, // Sangat Cepat
+        knockback: {x:0, y:0},
+        color: '#7f1d1d', // Merah darah
+        animOffset: 0,
+        angle: 0,
+        isBoss: true,
+        imgKey: 'boss'
     });
 }
 
@@ -4434,19 +4764,30 @@ function handleAction() {
 
     if(STATE.location === 'dungeon') {
         if(STATE.player.attackCooldown <= 0) {
-            STATE.player.isAttacking = true;
-            STATE.player.attackCooldown = 20;
+            // UPDATE: Integrasi Stamina untuk Bertarung
+            const attackCost = 2; // Biaya stamina per pukulan
             
-            setTimeout(() => STATE.player.isAttacking = false, 200);
-            
-            STATE.enemies.forEach(en => {
-                const dist = Math.hypot(STATE.player.x - en.x, STATE.player.y - en.y);
-                if(dist < 60) {
-                    en.hp -= STATE.player.str;
-                    en.knockback = { x: (en.x - STATE.player.x)*0.8, y: (en.y - STATE.player.y)*0.8 };
-                    createParticle(en.x, en.y, '#fff'); 
-                }
-            });
+            if(STATE.player.energy >= attackCost) {
+                STATE.player.energy -= attackCost; // Kurangi stamina
+                STATE.player.isAttacking = true;
+                STATE.player.attackCooldown = 20;
+                
+                setTimeout(() => STATE.player.isAttacking = false, 200);
+                
+                // Efek visual stamina berkurang (kecil di atas kepala)
+                // (Implementasi visual sederhana lewat HUD bar yang otomatis update)
+                
+                STATE.enemies.forEach(en => {
+                    const dist = Math.hypot(STATE.player.x - en.x, STATE.player.y - en.y);
+                    if(dist < 60) {
+                        en.hp -= STATE.player.str;
+                        en.knockback = { x: (en.x - STATE.player.x)*0.8, y: (en.y - STATE.player.y)*0.8 };
+                        createParticle(en.x, en.y, '#fff'); 
+                    }
+                });
+            } else {
+                showToast("Terlalu lelah untuk menyerang! (Stamina Habis)");
+            }
         }
     } else {
     }
@@ -4809,6 +5150,84 @@ function giveGift(npc, item, value) {
 function interactObject(obj) {
     if(obj.type === 'sign') {
         showToast(obj.text);
+    }
+    // UPDATE: Logika Interaksi Kalender (Quest & Goal Tracker)
+    else if(obj.type === 'calendar') {
+        const p = STATE.player;
+        const role = p.role;
+        let title = "KALENDER & TARGET";
+        let content = "";
+        
+        // Helper function untuk checklist visual
+        const check = (condition) => condition ? "✅" : "⬜";
+
+        if(role === 'none') {
+            content = "⚠️ Kamu belum memilih Jalur Karir (Role)!\n\nTarget Harian:\n⬜ Temui Mentor Budi di Desa\n⬜ Tentukan Masa Depanmu";
+        } 
+        else if(role === 'worker') {
+            content = `PATH: FIGHTER (PEKERJA)\n` +
+                      `"Kerja Keras Pangkal Kaya"\n\n` +
+                      `📋 TARGET HARIAN:\n` +
+                      `${check(p.shiftStarted)} Masuk Shift (08:00 - 16:00)\n` +
+                      `${check(p.energy < 50)} Habiskan Energi untuk Kerja/Latihan\n\n` +
+                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
+                      `${check(p.str >= 50)} Strength 50+ (${p.str}/50)\n` +
+                      `${check(p.money >= 100000)} Tabungan 100k (${(p.money/1000).toFixed(1)}k)\n` +
+                      `${check(p.bossReputation >= 50)} Reputasi Bos 50+\n\n` +
+                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
+                      `${check(p.str >= 100)} Strength Maksimal (${p.str}/100)\n` +
+                      `${check(p.money >= 500000)} Tabungan 500k (${(p.money/1000).toFixed(1)}k)\n` +
+                      `${check(p.bossReputation >= 100)} Menjadi Manajer Toko`;
+        } 
+        else if(role === 'student') {
+            content = `PATH: MAGE (MAHASISWA)\n` +
+                      `"Tuntutlah Ilmu Sampai ke Pulau Arsa"\n\n` +
+                      `📋 TARGET HARIAN:\n` +
+                      `${check(STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'village')} Hadir di Kampus\n` +
+                      `${check(p.int > (p.level * 5))} Baca Buku / Belajar\n\n` +
+                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
+                      `${check(p.int >= 50)} Intelligence 50+ (${p.int}/50)\n` +
+                      `${check(p.level >= 25)} Level Karakter 25 (${p.level})\n` +
+                      `${check(Object.keys(p.inventory).some(k=>k.includes('buku')))} Punya Koleksi Buku\n\n` +
+                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
+                      `${check(p.int >= 100)} Intelligence Maksimal (${p.int}/100)\n` +
+                      `${check(p.level >= 50)} Level Karakter 50 (${p.level})\n` +
+                      `${check(p.inventory['buku_tesis'] >= 1)} Menyelesaikan Tesis Akhir`;
+        } 
+        else if(role === 'entrepreneur') {
+            content = `PATH: SUPPORT (WIRAUSAHA)\n` +
+                      `"Beli Murah, Jual Mahal"\n\n` +
+                      `📋 TARGET HARIAN:\n` +
+                      `${check(STATE.location === 'merchant_interior')} Cek Harga Pasar\n` +
+                      `${check(Object.values(p.inventory).some(v => v > 5))} Stok Barang Dagangan\n\n` +
+                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
+                      `${check(p.biz >= 50)} Business Skill 50+ (${p.biz}/50)\n` +
+                      `${check(p.money >= 250000)} Aset 250k (${(p.money/1000).toFixed(1)}k)\n` +
+                      `${check(p.houseLevel >= 2)} Upgrade Rumah Lv 2\n\n` +
+                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
+                      `${check(p.biz >= 100)} Business Skill Max (${p.biz}/100)\n` +
+                      `${check(p.money >= 1000000)} Aset 1 Juta Gold (${(p.money/1000).toFixed(1)}k)\n` +
+                      `${check(p.houseLevel >= 5)} Punya Rumah Mewah (Lv ${p.houseLevel})`;
+        } 
+        else if(role === 'family') {
+            content = `PATH: TANKER (KELUARGA)\n` +
+                      `"Keluarga adalah Harta Berharga"\n\n` +
+                      `📋 TARGET HARIAN:\n` +
+                      `${check(p.energy < 80)} Bantu Tetangga / NPC\n` +
+                      `${check(Object.keys(p.relationships).length >= 3)} Sosialisasi (Ngobrol)\n\n` +
+                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
+                      `${check(p.reputation >= 50)} Reputasi 50+ (${p.reputation}/50)\n` +
+                      `${check(Object.keys(p.relationships).length >= 5)} Punya 5 Teman\n` +
+                      `${check(p.houseLevel >= 2)} Rumah Nyaman (Lv ${p.houseLevel})\n\n` +
+                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
+                      `${check(p.reputation >= 100)} Reputasi Warga (${p.reputation}/100)\n` +
+                      `${check(p.married)} Menikah (${check(p.married)})\n` +
+                      `${check(p.houseLevel >= 3)} Rumah Layak Huni (Lv ${p.houseLevel})`;
+        }
+
+        showDialogue(title, content, [
+            {text: "Semangat! 💪", action: closeDialogue}
+        ], 'images/kalender.png');
     }
     // UPDATE: Logika Interaksi Kotak Surat (Inbox)
     else if(obj.type === 'mailbox') {
@@ -5210,10 +5629,50 @@ function spawnEnemies() {
     STATE.enemies = [];
     if(STATE.location !== 'dungeon') return;
 
-    const year = Math.floor(STATE.day / 120) + 1;
-    let count = 3; 
-    if(year > 1) count = 5;
-    if(year > 2) count = 10;
+    // Reset Flags
+    STATE.bossSpawned = false;
+
+    // Reset Map Buildings (Hapus Portal Lama)
+    // Kita filter agar hanya menyisakan batu (rock_) dan pintu keluar (dungeon_exit)
+    const map = maps['dungeon'];
+    map.buildings = map.buildings.filter(b => b.id.includes('rock') || b.id === 'dungeon_exit');
+
+    const level = STATE.dungeonLevel || 1;
+    let count = 3 + (level * 2); // Level 1: 5, Level 5: 13
+    let hpMulti = level;
+    let sizeMulti = 1;
+    
+    // --- LOGIKA LEVEL 5 (WAVE 1: ELITE GUARDS) ---
+    if (level === 5) {
+        showToast(`💀 LEVEL 5: ELITE GUARDS!`);
+        
+        // Spawn 5 Monster Level 5 (Elite)
+        for(let i=0; i<5; i++) {
+            let safeX, safeY;
+            do {
+                safeX = Math.floor((Math.random() * (DUNGEON_W - 4)) + 2); 
+                safeY = Math.floor((Math.random() * (DUNGEON_H - 4)) + 2);
+            } while(safeX < 8 && safeY < 8); // Jauh dari pintu masuk
+
+            STATE.enemies.push({
+                x: safeX * TILE_SIZE,
+                y: safeY * TILE_SIZE,
+                w: 40, h: 40, // Lebih besar dari biasa
+                hp: 300, 
+                maxHp: 300,
+                speed: 1.5, // Agak cepat
+                knockback: {x:0, y:0},
+                color: '#1e3a8a', // Biru Tua (Fallback)
+                animOffset: Math.random() * 100, 
+                angle: 0,
+                imgKey: 'enemy5' // Gambar Monster Level 5
+            });
+        }
+        return; // Selesai spawn wave 1, boss nanti di updateEnemies
+    }
+
+    // --- LOGIKA LEVEL 1-4 ---
+    showToast(`💀 DUNGEON LEVEL ${level} START!`);
 
     for(let i=0; i<count; i++) {
         let safeX, safeY;
@@ -5222,17 +5681,33 @@ function spawnEnemies() {
             safeY = Math.floor((Math.random() * (DUNGEON_H - 4)) + 2);
         } while(safeX < 8 && safeY < 8); 
         
+        // --- LOGIKA VARIASI MONSTER BERDASARKAN LEVEL ---
+        // Level 1: Hanya Tier 1
+        // Level 2: Tier 1 & 2
+        // Level 3: Tier 1, 2, 3
+        // Level 4+: Tier 1, 2, 3, 4
+        let maxTier = 1;
+        if (level >= 2) maxTier = 2;
+        if (level >= 3) maxTier = 3;
+        if (level >= 4) maxTier = 4;
+
+        const tier = Math.floor(Math.random() * maxTier) + 1;
+        
+        // Stats scaling berdasarkan Tier monster juga
+        const tierHpBonus = 1 + (tier * 0.2); // Tier tinggi lebih tebal sedikit
+
         STATE.enemies.push({
             x: safeX * TILE_SIZE,
             y: safeY * TILE_SIZE,
-            w: 24, h: 24,
-            hp: 50 * year, 
-            maxHp: 50 * year,
-            speed: 1.0 + (year * 0.2), 
+            w: 24 + (tier * 2), h: 24 + (tier * 2), // Tier tinggi sedikit lebih besar
+            hp: 50 * hpMulti * tierHpBonus, 
+            maxHp: 50 * hpMulti * tierHpBonus,
+            speed: 1.0 + (level * 0.1) + (tier * 0.05), 
             knockback: {x:0, y:0},
-            color: '#ef4444',
-            animOffset: Math.random() * 100, // Variasi animasi bernafas
-            angle: 0 // Inisialisasi sudut pandang
+            color: tier === 1 ? '#ef4444' : (tier === 2 ? '#f97316' : (tier === 3 ? '#eab308' : '#84cc16')), // Warna fallback beda-beda
+            animOffset: Math.random() * 100, 
+            angle: 0,
+            imgKey: 'enemy' + tier // Set gambar sesuai tier (enemy1, enemy2, dst)
         });
     }
 }
@@ -5823,6 +6298,9 @@ function drawBuilding(ctx, b) {
         // Orange untuk Masuk, Merah/Putih untuk Keluar
         let indColor = b.id === 'player_house' ? `rgba(251, 191, 36, ${pulse})` : `rgba(6, 182, 212, ${pulse})`;
         if(isExit) indColor = `rgba(239, 68, 68, ${pulse})`;
+        
+        // NEW: Warna Ungu untuk Portal Next Level
+        if(b.id === 'dungeon_next') indColor = `rgba(147, 51, 234, ${pulse})`; // Purple
 
         ctx.fillStyle = indColor;
         ctx.beginPath();
@@ -5840,7 +6318,9 @@ function drawBuilding(ctx, b) {
         ctx.textAlign = 'center';
         
         // UPDATE: Teks otomatis berubah jadi KELUAR jika ID/Nama mengandung kata kunci exit/keluar
-        const label = isExit ? "KELUAR" : "MASUK";
+        let label = isExit ? "KELUAR" : "MASUK";
+        if(b.id === 'dungeon_next') label = "NEXT LVL"; // Label khusus
+        
         ctx.fillText(label, ex + 15, ey - 5);
     }
 
@@ -6141,46 +6621,66 @@ function drawEnemy(ctx, e) {
 
     ctx.scale(scaleX, scaleY);
 
-    if(dungeonAssets.enemy.complete && dungeonAssets.enemy.naturalWidth !== 0) {
-        // Draw centered
-        const drawSize = 30; 
-        // Translate back to top-left relative coordinate for drawing
-        ctx.drawImage(dungeonAssets.enemy, -drawSize/2, -drawSize, drawSize, drawSize);
+    // DRAW BOSS OR NORMAL ENEMY
+    if (e.isBoss) {
+        // Gambar Boss (Lebih Besar & Menakutkan)
+        if(dungeonAssets.boss.complete && dungeonAssets.boss.naturalWidth !== 0) {
+            const drawSize = 100; // Boss size visual
+            ctx.drawImage(dungeonAssets.boss, -drawSize/2, -drawSize + 20, drawSize, drawSize);
+        } else {
+            // Fallback Boss Shape
+            ctx.fillStyle = '#7f1d1d'; // Dark Red
+            ctx.beginPath();
+            ctx.arc(0, -e.h/2, e.w/2, 0, Math.PI*2);
+            ctx.fill();
+            // Boss Crown/Horn
+            ctx.fillStyle = '#fbbf24'; // Gold
+            ctx.beginPath();
+            ctx.moveTo(-10, -e.h); ctx.lineTo(0, -e.h-20); ctx.lineTo(10, -e.h);
+            ctx.fill();
+        }
+        
+        // Boss HP Bar Floating
+        ctx.fillStyle = '#000'; ctx.fillRect(-40, -e.h - 30, 80, 8);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(-40, -e.h - 30, 80 * (e.hp/e.maxHp), 8);
+        ctx.strokeStyle = '#fff'; ctx.strokeRect(-40, -e.h - 30, 80, 8);
+        
     } else {
-        // --- DRAW SLIME SHAPE (FALLBACK) ---
-        ctx.fillStyle = e.color || '#ef4444';
-        ctx.beginPath();
-        // Slime shape: Flat bottom, rounded top
-        ctx.moveTo(-e.w/2, 0); // Bottom left
-        ctx.lineTo(e.w/2, 0);  // Bottom right
-        // Bezier curve for the top (jelly-like)
-        ctx.bezierCurveTo(e.w/2, -e.h * 1.5, -e.w/2, -e.h * 1.5, -e.w/2, 0);
-        ctx.fill();
+        // Normal Enemy Rendering (Berdasarkan Tier)
+        const imgAsset = dungeonAssets[e.imgKey] || dungeonAssets.enemy1; // Fallback ke enemy1
         
-        // Shine/Reflection
-        ctx.fillStyle = 'rgba(255,255,255,0.4)';
-        ctx.beginPath();
-        ctx.ellipse(-e.w/4, -e.h/2, 4, 2, Math.PI/-4, 0, Math.PI*2);
-        ctx.fill();
+        if(imgAsset.complete && imgAsset.naturalWidth !== 0) {
+            const drawSize = e.w + 10; // Sedikit lebih besar dari hitbox
+            ctx.drawImage(imgAsset, -drawSize/2, -drawSize + 5, drawSize, drawSize);
+        } else {
+            // --- DRAW SLIME SHAPE (FALLBACK) ---
+            ctx.fillStyle = e.color || '#ef4444';
+            ctx.beginPath();
+            ctx.moveTo(-e.w/2, 0); 
+            ctx.lineTo(e.w/2, 0);  
+            ctx.bezierCurveTo(e.w/2, -e.h * 1.5, -e.w/2, -e.h * 1.5, -e.w/2, 0);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(-e.w/4, -e.h/2, 4, 2, Math.PI/-4, 0, Math.PI*2);
+            ctx.fill();
 
-        // Eyes (to show facing direction crudely)
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(-5, -10, 4, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(5, -10, 4, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(-5, -10, 4, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(5, -10, 4, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.arc(-5, -10, 1.5, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(5, -10, 1.5, 0, Math.PI*2); ctx.fill();
+        }
         
-        ctx.fillStyle = '#000';
-        ctx.beginPath(); ctx.arc(-5, -10, 1.5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(5, -10, 1.5, 0, Math.PI*2); ctx.fill();
+        // Normal HP Bar
+        ctx.fillStyle = '#000'; ctx.fillRect(e.x - cx, e.y-8 - cy, e.w, 4); // Adjust coords relative to translate
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x - cx, e.y-8 - cy, e.w * (e.hp/e.maxHp), 4);
     }
-    
-    // Draw Face/Details over image/shape (Visual Front Indicator)
-    // Depan = Mata melirik ke arah pemain (simple implementation)
 
     ctx.restore();
-
-    // Health Bar
-    ctx.fillStyle = '#000'; ctx.fillRect(e.x, e.y-8, e.w, 4);
-    ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x, e.y-8, e.w * (e.hp/e.maxHp), 4);
 }
 
 function draw3DBox(ctx, x, y, w, h, color) {
