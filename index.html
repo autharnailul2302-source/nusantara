@@ -1300,11 +1300,62 @@
             overflow: hidden; pointer-events: auto;
         }
         
-        .dash-container { display: flex; height: 100%; }
-        .dash-sidebar { width: 240px; background: var(--dash-sidebar); color: #ecf0f1; display: flex; flex-direction: column; padding-top: 20px; }
-        .dash-title { text-align: center; font-weight: 900; margin-bottom: 40px; font-size: 18px; letter-spacing: 2px; color: var(--secondary); font-family: 'Cinzel'; line-height: 1.5; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
-        .dash-nav { list-style: none; padding: 0; }
-        .dash-nav li { padding: 18px 25px; cursor: pointer; border-left: 4px solid transparent; transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 10px; color: #94a3b8; }
+        .dash-container { display: flex; height: 100%; width: 100%; }
+        
+        .dash-sidebar { 
+            width: 240px; 
+            background: var(--dash-sidebar); 
+            color: #ecf0f1; 
+            display: flex; 
+            flex-direction: column; 
+            padding-top: 20px; 
+            
+            /* FIX: Agar menu bisa discroll di layar pendek (HP Landscape) */
+            overflow-y: auto; 
+            height: 100%;
+            flex-shrink: 0;
+            
+            /* Scrollbar styling agar terlihat */
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) var(--dash-sidebar);
+        }
+
+        /* FIX: Optimasi Tampilan Mobile Landscape (Layar Pendek) */
+        @media (max-height: 600px) {
+            .dash-sidebar {
+                width: 180px; /* Perkecil lebar sidebar */
+                padding-top: 10px;
+            }
+            .dash-title {
+                font-size: 14px !important;
+                margin-bottom: 10px !important;
+                padding-bottom: 10px !important;
+            }
+            .dash-nav li {
+                padding: 10px 15px !important; /* Perkecil jarak antar menu */
+                font-size: 12px !important;
+            }
+            .dash-content {
+                padding: 15px !important; /* Perkecil padding konten utama */
+            }
+        }
+
+        .dash-title { 
+            text-align: center; font-weight: 900; margin-bottom: 40px; 
+            font-size: 18px; letter-spacing: 2px; color: var(--secondary); 
+            font-family: 'Cinzel'; line-height: 1.5; 
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            padding-bottom: 20px; flex-shrink: 0; 
+        }
+        
+        .dash-nav { list-style: none; padding: 0; margin: 0; flex: 1; display: flex; flex-direction: column; }
+        
+        .dash-nav li { 
+            padding: 18px 25px; cursor: pointer; border-left: 4px solid transparent; 
+            transition: 0.2s; font-size: 14px; display: flex; align-items: center; gap: 10px; 
+            color: #94a3b8; flex-shrink: 0; 
+        }
+        
         .dash-nav li:hover, .dash-nav li.active { background: rgba(255,255,255,0.05); border-left-color: var(--accent); color: #fff; }
         .dash-content { flex: 1; padding: 30px; overflow-y: auto; background: #f8fafc; }
         
@@ -1324,6 +1375,21 @@
             justify-content: center; align-items: center; pointer-events: auto;
             backdrop-filter: blur(5px);
         }
+        
+        /* FIX: Tambahkan Class Overlay yang Hilang agar Popup Terlihat */
+        .minigame-overlay {
+            position: absolute; 
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); 
+            z-index: 2000; 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            backdrop-filter: blur(5px);
+            pointer-events: auto;
+        }
+
         .journal-box { 
             background: #1e293b; color: #fff; padding: 30px; 
             border-radius: 12px; width: 80%; max-width: 500px; 
@@ -3258,7 +3324,8 @@ const DataService = {
         } 
         else {
             try {
-                await db.collection('users').doc(this.user.email).update({ saveData: null });
+                // UPDATE: Gunakan set dengan merge untuk reset agar lebih aman
+                await db.collection('users').doc(this.user.email).set({ saveData: null }, { merge: true });
             } catch (e) {
                 console.error("Gagal reset data cloud:", e);
             }
@@ -3278,10 +3345,31 @@ const DataService = {
         } 
         else {
             try {
-                await db.collection('users').doc(studentEmail).update({ saveData: null });
+                await db.collection('users').doc(studentEmail).set({ saveData: null }, { merge: true });
             } catch (e) {
                 console.error("Gagal reset data cloud:", e);
                 alert("Gagal reset data cloud (Koneksi Error)");
+            }
+        }
+    },
+
+    // UPDATE: GET ALL STUDENTS (SUPPORT CLOUD/FIREBASE)
+    getAllStudents: async function() {
+        if(this.mode === 'local') {
+            const dbLocal = this.getDB();
+            return Object.values(dbLocal).filter(u => u.role === 'siswa');
+        } else {
+            // FIX: Fetch data siswa dari Firebase Cloud
+            try {
+                const snapshot = await db.collection('users').where('role', '==', 'siswa').get();
+                return snapshot.docs.map(doc => {
+                    return { email: doc.id, ...doc.data() };
+                });
+            } catch (e) {
+                console.error("Gagal mengambil data siswa:", e);
+                // Fallback ke local jika fetch cloud gagal
+                const dbLocal = this.getDB();
+                return Object.values(dbLocal).filter(u => u.role === 'siswa');
             }
         }
     },
@@ -3447,8 +3535,23 @@ const DataService = {
         // 2. UPDATE: Auto-Sync ke Cloud jika ada Internet
         if (navigator.onLine) {
             try {
-                // Coba upload ke server
-                await db.collection('users').doc(this.user.email).update({ saveData: gameState });
+                // FIX CRITICAL: DATA SINKRONISASI
+                // Menggunakan 'set' dengan merge: true alih-alih 'update'.
+                // Ini memastikan jika dokumen user belum ada di cloud (karena daftar offline),
+                // dokumen akan dibuat otomatis beserta data profilnya.
+                
+                const syncData = {
+                    saveData: gameState,
+                    // Pastikan field identitas ikut di-push agar terbaca query dashboard
+                    role: this.user.role,
+                    name: this.user.name,
+                    details: this.user.details,
+                    email: this.user.email,
+                    // Timestamp last active untuk status online
+                    lastActive: Date.now()
+                };
+
+                await db.collection('users').doc(this.user.email).set(syncData, { merge: true });
                 
                 // Jika berhasil upload, pastikan mode kembali ke 'firebase' (Online)
                 if(this.mode === 'local') {
@@ -5887,6 +5990,23 @@ function processTeleport(b) {
         showToast("Keluar Guild");
     }
     else if(b.id === 'school') {
+        // --- NEW: SISTEM DISIPLIN KULIAH (TELAT = DITOLAK) ---
+        // Kelas Mulai: 08:00. Toleransi sampai: 08:30.
+        // Jika jam > 830 dan < 1400 (Sesi Kuliah), Pintu Dikunci.
+        if (STATE.time > 830 && STATE.time < 1400) {
+            if(typeof AudioService !== 'undefined') AudioService.playSFX('door'); // Suara pintu terkunci
+            
+            showDialogue("SATPAM KAMPUS", "⛔ STOP! Kamu terlambat! \nKuliah sudah dimulai jam 08:00 tadi. Pintu kelas dikunci agar tidak mengganggu Dosen.", [
+                {text: "Saya memaksa masuk!", action: () => {
+                    showDialogue("SUARA DARI DALAM", "📢 KELUAR!! Siapa itu yang berisik di luar?! Jangan ganggu kelas saya!", [
+                        {text: "Ampun Pak... (Kabur)", action: closeDialogue}
+                    ]);
+                }},
+                {text: "Pulang dengan Malu", action: closeDialogue}
+            ]);
+            return; // Batalkan teleport
+        }
+
         STATE.location = 'school_interior';
         STATE.player.x = 8 * TILE_SIZE; 
         STATE.player.y = 12 * TILE_SIZE;
@@ -6967,9 +7087,33 @@ function interactNPC(npc) {
         ], npc.imgSrc);
     }
 
-    // --- NEW: INTERAKSI DOSEN / SCHOLAR (KHUSUS MAHASISWA) ---
+    // --- NEW: INTERAKSI DOSEN / SCHOLAR (KHUSUS MAHASISWA & ATURAN TELAT) ---
     else if(npc.id === 'lecture') {
         const isStudent = STATE.player.role === 'student';
+        
+        // --- NEW: LOGIKA PENGUSIRAN JIKA SUDAH DI DALAM TAPI TELAT ---
+        // Jika pemain ada di dalam kelas (school_interior) dan waktu sudah lewat 08:30
+        if (STATE.location === 'school_interior' && STATE.time > 830 && STATE.time < 1400) {
+             // Mainkan efek marah/gebrak meja (jika ada SFX hit)
+             if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+
+             showDialogue("DOSEN KILLER", "KAMU!! Jam berapa ini?! 😡 \nSaya tidak mentolerir keterlambatan. Mahasiswa tidak disiplin tidak punya tempat di kelas saya. \n\nKELUAR SEKARANG!", [
+                 {text: "Maaf Pak... (Diusir Paksa)", action: () => {
+                     // Teleport Paksa ke Luar Kampus
+                     STATE.location = 'village';
+                     STATE.player.x = 41 * TILE_SIZE; 
+                     STATE.player.y = 16 * TILE_SIZE; // Depan pintu kampus
+                     
+                     // Kurangi Reputasi/Nilai sedikit sebagai hukuman
+                     STATE.player.int = Math.max(0, STATE.player.int - 1);
+                     
+                     closeDialogue();
+                     showToast("⛔ Diusir dari Kelas! (INT -1)");
+                 }}
+             ], npc.imgSrc);
+             return; // Stop interaksi normal
+        }
+
         let text = "Saya sedang meneliti sejarah pulau ini.";
         let actions = [];
 
