@@ -5081,12 +5081,27 @@ function startWakeUpSequence() {
                 action: () => {
                     closeDialogue();
                     setTimeout(() => {
-                        showDialogue("TUTORIAL", "Selamat datang! Gunakan Tombol Arah / Analog untuk bergerak.", [
+                        // STEP 1: TUTORIAL GERAKAN
+                        showDialogue("TUTORIAL (1/3)", "Selamat datang! Gunakan **Tombol Arah / Analog** di kiri layar untuk bergerak.", [
                             {
-                                text: "Lanjut", 
+                                text: "Lanjut >>", 
                                 action: () => {
-                                    showDialogue("TUTORIAL", "Dekati PINTU di bagian bawah ruangan, lalu tekan Tombol Aksi (💬/🚪) untuk keluar menemui Mentor.", [
-                                        {text: "Mengerti, ayo keluar!", action: closeDialogue}
+                                    // STEP 2: TUTORIAL INTERAKSI & PINTU
+                                    showDialogue("TUTORIAL (2/3)", "Dekati NPC atau Pintu, lalu tekan **Tombol Aksi (Lingkaran Besar)** untuk Bicara atau Masuk/Keluar ruangan.", [
+                                        {
+                                            text: "Lanjut >>", 
+                                            action: () => {
+                                                // STEP 3: TUTORIAL FASILITAS (DIPINDAH KESINI)
+                                                showDialogue("TUTORIAL (3/3)", 
+                                                    "Sebelum keluar, kenali fungsi benda di kamarmu:\n\n" +
+                                                    "📔 **BUKU**: Tempat Save, Tidur, & **Tulis Jurnal Refleksi** (Penting!).\n" +
+                                                    "📅 **KALENDER**: Cek Target & Misi.\n" +
+                                                    "☎️ **TELEPON**: Belanja Furnitur.\n" +
+                                                    "🎒 **TAS (Tombol Kanan)**: Cek Item.", 
+                                                    [{text: "Mengerti, Ayo Keluar!", action: closeDialogue}]
+                                                );
+                                            }
+                                        }
                                     ]);
                                 }
                             }
@@ -5101,6 +5116,7 @@ function startWakeUpSequence() {
 function runTutorial() {
     const name = DataService.user ? DataService.user.name : "Siswa";
     
+    // FIX: Menambahkan parameter 'images/mentor.png' di setiap showDialogue berantai agar gambar tidak hilang
     showDialogue("MENTOR BUDI", 
         "Ah, akhirnya bangun juga kamu, " + name + ". Nyenyak tidurnya?",
         [{text: "Siap, Pak!", action: () => {
@@ -5120,10 +5136,10 @@ function runTutorial() {
                                      [{text: "Paham, Pilih Jalan Hidup", action: () => openRoleSelection()}], 'images/mentor.png');
                                 }},
                                 {text: "Langsung Pilih", action: () => openRoleSelection()}
-                            ]);
-                        }}]);
-                    }}]);
-                }}]
+                            ], 'images/mentor.png'); // FIX GAMBAR DISINI
+                        }}], 'images/mentor.png'); // FIX GAMBAR DISINI
+                    }}], 'images/mentor.png'); // FIX GAMBAR DISINI
+                }}], 'images/mentor.png' // FIX GAMBAR DISINI
             );
         }}],
         'images/mentor.png'
@@ -5131,12 +5147,13 @@ function runTutorial() {
 }
 
 function openRoleSelection() {
+    // FIX: Menambahkan gambar mentor di menu pemilihan role juga
     showDialogue("TAKDIR HIDUP", "Tentukan spesialisasi awalmu sekarang:", [
         {text: "Bekerja (Fighter) - STR++", action: () => setRole('worker')},
         {text: "Kuliah (Mage) - INT++", action: () => setRole('student')},
         {text: "Wirausaha (Support) - BIZ++", action: () => setRole('entrepreneur')},
         {text: "Menikah (Family) - REP++", action: () => setRole('family')}
-    ]);
+    ], 'images/mentor.png');
 }
 
 function setRole(role) {
@@ -5199,9 +5216,18 @@ function selectMajor(major) {
 }
 
 function finalizeRoleSetup() {
-    showToast("Cek Buku Petunjuk di Rumah!");
     updateHUDInfo();
-    closeDialogue();
+    
+    // UPDATE: Karena penjelasan fitur sudah di awal (startWakeUpSequence), 
+    // Mentor Budi sekarang hanya memberikan motivasi penutup agar tidak repetitif.
+    showDialogue("MENTOR BUDI", 
+        "Persiapan selesai! Status dasarmu telah ditetapkan.\n\nIngat pesan saya: Rajinlah menulis **Jurnal Refleksi** setiap hari di rumah agar Gurumu bisa menilai perkembanganmu.", 
+        [{
+            text: "Siap, Terima Kasih Mentor!", 
+            action: closeDialogue
+        }], 
+        'images/mentor.png'
+    );
 }
 
 function updateHUDInfo() {
