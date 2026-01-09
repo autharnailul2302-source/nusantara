@@ -1422,7 +1422,13 @@ button, .round-btn, .d-btn, .auth-btn {
             flex-direction: column; backdrop-filter: blur(5px);
         }
         .lb-card {
-            background: #1e293b; border: 2px solid #fbbf24; padding: 25px;
+            /* UPDATE: MENAMBAHKAN BACKGROUND IMAGE PADA LEADERBOARD */
+            background: linear-gradient(to bottom, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)), url('images/leaderboard.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            border: 2px solid #fbbf24; padding: 25px;
             border-radius: 12px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto;
             text-align: center; color: white; box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
             position: relative;
