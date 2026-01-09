@@ -6022,8 +6022,8 @@ function checkAutoTeleport() {
             // Jarak deteksi otomatis
             const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
             
-            // UPDATE: Jarak deteksi diperbesar sedikit (dari 25 ke 30) agar lebih responsif
-            if(dist < 30) {
+            // UPDATE: Jarak deteksi disesuaikan menjadi 20px (sedikit lebih besar dari 15px)
+            if(dist < 20) {
                 // Daftar bangunan/trigger yang bisa auto-teleport
                 const autoTeleporters = ['player_house', 'dungeon_gate', 'merchant', 'shop_exit', 'house_exit', 'dungeon_exit', 'dungeon_next', 'library', 'library_exit', 'guild', 'guild_exit', 'school', 'school_exit'];
                 if (autoTeleporters.includes(b.id)) {
