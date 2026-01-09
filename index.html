@@ -4565,6 +4565,7 @@ const STATE = {
         houseLevel: 1,
         furniture: [],
         role: 'none', 
+        major: null, // NEW: Jurusan Kuliah
         
         jobStatus: 'unemployed', 
         bossReputation: 50,
@@ -4954,6 +4955,8 @@ function initGame() {
             STATE.player.biz = saved.biz || 0; 
             
             STATE.player.role = saved.role || 'none';
+            STATE.player.major = saved.major || null; // NEW: Load Jurusan
+            
             STATE.player.reflections = saved.reflections || [];
             STATE.player.messages = saved.messages || [];
             STATE.player.ethics = saved.ethics || 100;
@@ -5043,7 +5046,14 @@ function initGame() {
                     day: STATE.day,
                     money: STATE.player.money,
                     level: STATE.player.level,
-                    // ... existing params ...
+                    // FIX: Pastikan Role & Major tersimpan
+                    role: STATE.player.role,
+                    major: STATE.player.major,
+                    str: STATE.player.str,
+                    int: STATE.player.int,
+                    biz: STATE.player.biz,
+                    reputation: STATE.player.reputation,
+                    
                     bossReputation: STATE.player.bossReputation,
                     gameFinished: STATE.gameFinished,
                     freeRoamMode: STATE.freeRoamMode,
@@ -5131,13 +5141,33 @@ function openRoleSelection() {
 
 function setRole(role) {
     STATE.player.role = role;
+    
+    // NEW: Jika memilih Student, ada narasi "Diterima Kuliah" dulu sebelum pilih jurusan
+    if(role === 'student') {
+        STATE.player.int += 5; 
+        STATE.player.energy += 20; 
+        
+        // UPDATE: Dialog Penerimaan Kampus
+        showDialogue("SURAT PENERIMAAN", 
+            "SELAMAT! \nBerdasarkan hasil tes potensi akademik, kamu dinyatakan DITERIMA sebagai Mahasiswa Baru Universitas Nusantara Arsa.\n\nSilakan pilih program studi untuk memulai semester pertamamu.", 
+            [{
+                text: "Pilih Jurusan Sekarang >>", 
+                action: () => {
+                    // Masuk ke menu pemilihan jurusan
+                    showDialogue("PILIH JURUSAN", "Fakultas mana yang ingin kamu ambil?", [
+                        {text: "1. Teknologi (INT +3, Logika)", action: () => selectMajor('teknologi')},
+                        {text: "2. Sejarah (REP +5, Sosial)", action: () => selectMajor('sejarah')}
+                    ], 'images/mentor.png');
+                }
+            }], 
+            'images/lecture.png' // Menggunakan ikon dosen/akademik
+        );
+        return; // Berhenti di sini, jangan lanjut ke finalizeRoleSetup dulu
+    }
+
     if(role === 'worker') { 
         STATE.player.str += 5; STATE.player.hp += 20; 
         showToast("Jalur BEKERJA dipilih. STR Meningkat!"); 
-    }
-    else if(role === 'student') { 
-        STATE.player.int += 5; STATE.player.energy += 20; 
-        showToast("Jalur PENDIDIKAN dipilih. INT Meningkat!"); 
     }
     else if(role === 'entrepreneur') { 
         STATE.player.biz += 5; // New BIZ stat
@@ -5150,6 +5180,25 @@ function setRole(role) {
         showToast("Jalur MENIKAH dipilih. REP Meningkat Drastis!"); 
     }
     
+    finalizeRoleSetup();
+}
+
+// NEW: Fungsi memilih jurusan
+function selectMajor(major) {
+    STATE.player.major = major;
+    
+    if(major === 'teknologi') {
+        STATE.player.int += 3;
+        showToast("Jurusan TEKNOLOGI: Logika & Analisis Meningkat!");
+    } else if(major === 'sejarah') {
+        STATE.player.reputation += 5; // Sejarah menambah wawasan sosial/reputasi
+        showToast("Jurusan SEJARAH: Wawasan Masa Lalu Meningkat!");
+    }
+    
+    finalizeRoleSetup();
+}
+
+function finalizeRoleSetup() {
     showToast("Cek Buku Petunjuk di Rumah!");
     updateHUDInfo();
     closeDialogue();
@@ -5160,6 +5209,16 @@ function updateHUDInfo() {
     const name = DataService.user ? DataService.user.name : "Player";
     
     // Update Name & Level
+    let roleDisplay = "?";
+    if(p.role !== 'none') {
+        roleDisplay = p.role.toUpperCase();
+        // Tampilkan jurusan jika ada
+        if(p.role === 'student' && p.major) {
+            roleDisplay += ` (${p.major.substring(0,3).toUpperCase()})`;
+        }
+    }
+    
+    // Tampilkan di area nama atau tooltip (opsional, saat ini pakai nama saja di UI)
     document.getElementById('hud-name').innerText = name.length > 8 ? name.substring(0,6)+".." : name;
     document.getElementById('level-display').innerText = p.level;
 
@@ -7010,6 +7069,13 @@ function interactNPC(npc) {
 
     else if(npc.id === 'mentor') {
         const role = STATE.player.role;
+        
+        // FIX: Jika Role belum dipilih (New Game / Reset), paksa jalankan Tutorial
+        if (role === 'none') {
+            runTutorial();
+            return;
+        }
+
         const name = DataService.user ? DataService.user.name : "Siswa";
 
         showDialogue("MENTOR BUDI", `Halo, ${name}. Saya di sini untuk membimbingmu agar tidak tersesat di Pulau Arsa. Apa yang ingin kamu ketahui?`, [
@@ -7030,7 +7096,9 @@ function interactNPC(npc) {
                     advice = "Kamu memilih jalur Tanker (Keluarga). Kekuatanmu adalah SOSIAL. \n1. Sapa semua tetangga setiap hari.\n2. Naikkan Reputasi dengan membantu orang.\n3. Fokus menabung untuk biaya pernikahan yang sangat mahal.";
                     specificBuilding = "Balai Pernikahan";
                 } else {
-                    advice = "Kamu belum memilih jalan hidup? Tidurlah lagi untuk memulainya.";
+                    // Fallback jika lolos pengecekan awal (seharusnya tidak terpanggil karena fix di atas)
+                    runTutorial();
+                    return;
                 }
                 
                 showDialogue("MENTOR BUDI", advice, [
@@ -7883,7 +7951,14 @@ function manualSave() {
     DataService.saveGame({
         day: STATE.day,
         season: STATE.season,
-        // ... existing params ...
+        // FIX: Pastikan Role & Major tersimpan manual juga
+        role: STATE.player.role,
+        major: STATE.player.major,
+        str: STATE.player.str,
+        int: STATE.player.int,
+        biz: STATE.player.biz,
+        reputation: STATE.player.reputation,
+        
         jobStatus: STATE.player.jobStatus,
         bossReputation: STATE.player.bossReputation,
         gameFinished: STATE.gameFinished,
