@@ -5082,23 +5082,34 @@ function startWakeUpSequence() {
                     closeDialogue();
                     setTimeout(() => {
                         // STEP 1: TUTORIAL GERAKAN
-                        showDialogue("TUTORIAL (1/3)", "Selamat datang! Gunakan **Tombol Arah / Analog** di kiri layar untuk bergerak.", [
+                        showDialogue("TUTORIAL (1/4)", "Selamat datang! Gunakan **Tombol Arah / Analog** di kiri layar untuk bergerak.", [
                             {
                                 text: "Lanjut >>", 
                                 action: () => {
                                     // STEP 2: TUTORIAL INTERAKSI & PINTU
-                                    showDialogue("TUTORIAL (2/3)", "Dekati NPC atau Pintu, lalu tekan **Tombol Aksi (Lingkaran Besar)** untuk Bicara atau Masuk/Keluar ruangan.", [
+                                    showDialogue("TUTORIAL (2/4)", "Dekati NPC atau Pintu, lalu tekan **Tombol Aksi (Lingkaran Besar)** untuk Bicara atau Masuk/Keluar ruangan.", [
                                         {
                                             text: "Lanjut >>", 
                                             action: () => {
-                                                // STEP 3: TUTORIAL FASILITAS (DIPINDAH KESINI)
-                                                showDialogue("TUTORIAL (3/3)", 
-                                                    "Sebelum keluar, kenali fungsi benda di kamarmu:\n\n" +
-                                                    "📔 **BUKU**: Tempat Save, Tidur, & **Tulis Jurnal Refleksi** (Penting!).\n" +
-                                                    "📅 **KALENDER**: Cek Target & Misi.\n" +
-                                                    "☎️ **TELEPON**: Belanja Furnitur.\n" +
-                                                    "🎒 **TAS (Tombol Kanan)**: Cek Item.", 
-                                                    [{text: "Mengerti, Ayo Keluar!", action: closeDialogue}]
+                                                // STEP 3: TUTORIAL COMBAT (BARU DITAMBAHKAN)
+                                                showDialogue("TUTORIAL (3/4)", 
+                                                    "⚔️ **INFO PERTARUNGAN**:\n\n" +
+                                                    "Saat masuk ke **Dungeon**, Tombol Aksi ini otomatis berubah menjadi **Tombol Serang (⚔️)**.\n\n" +
+                                                    "Tekan berulang dengan cepat untuk melancarkan **Combo Attack**!", 
+                                                    [{
+                                                        text: "Siap Bertarung!",
+                                                        action: () => {
+                                                            // STEP 4: TUTORIAL FASILITAS (DIPINDAH KESINI)
+                                                            showDialogue("TUTORIAL (4/4)", 
+                                                                "Terakhir, kenali fungsi benda di kamarmu:\n\n" +
+                                                                "📔 **BUKU**: Tempat Save, Tidur, & **Tulis Jurnal Refleksi** (Penting!).\n" +
+                                                                "📅 **KALENDER**: Cek Target & Misi.\n" +
+                                                                "☎️ **TELEPON**: Belanja Furnitur.\n" +
+                                                                "🎒 **TAS (Tombol Kanan)**: Cek Item.", 
+                                                                [{text: "Mengerti, Ayo Keluar!", action: closeDialogue}]
+                                                            );
+                                                        }
+                                                    }]
                                                 );
                                             }
                                         }
@@ -5224,7 +5235,20 @@ function finalizeRoleSetup() {
         "Persiapan selesai! Status dasarmu telah ditetapkan.\n\nIngat pesan saya: Rajinlah menulis **Jurnal Refleksi** setiap hari di rumah agar Gurumu bisa menilai perkembanganmu.", 
         [{
             text: "Siap, Terima Kasih Mentor!", 
-            action: closeDialogue
+            action: () => {
+                // FIX: KEMBALIKAN MENTOR KE POSISI ASAL (HILANG DARI DEPAN RUMAH)
+                // Agar tidak menghalangi jalan atau terlihat aneh setelah tutorial selesai
+                const villMap = maps['village'];
+                const mentor = villMap.npcs.find(n => n.id === 'mentor');
+                if (mentor) {
+                    mentor.x = 34; // Koordinat asli (dekat rumah mentor)
+                    mentor.y = 20;
+                    // Reset kecepatan gerak jika perlu
+                    mentor.vx = 0; 
+                    mentor.vy = 0;
+                }
+                closeDialogue();
+            }
         }], 
         'images/mentor.png'
     );
@@ -6140,6 +6164,31 @@ function processTeleport(b) {
         STATE.player.x = 21 * TILE_SIZE; 
         STATE.player.y = 12 * TILE_SIZE; 
         showToast("Keluar Rumah");
+
+        // --- NEW: SPECIAL EVENT TUTORIAL (MENTOR DI DEPAN RUMAH) ---
+        // Jika Hari 1 & Belum pilih Role, Mentor menunggu di depan pintu
+        if (STATE.day === 1 && STATE.player.role === 'none') {
+            const villMap = maps['village'];
+            const mentor = villMap.npcs.find(n => n.id === 'mentor');
+            if (mentor) {
+                // Pindahkan Mentor ke koordinat (21, 14)
+                // Pintu Rumah di (21, 11), Player spawn di (21, 12).
+                // Posisi (21, 14) aman tidak kena teleport dan terlihat jelas.
+                mentor.x = 21;
+                mentor.y = 14;
+                
+                // Hentikan pergerakan random mentor agar dia diam menunggu
+                mentor.vx = 0; 
+                mentor.vy = 0;
+                
+                // Trigger Dialog Tutorial Otomatis setelah jeda singkat
+                setTimeout(() => {
+                    // Pastikan pemain menghadap ke bawah (ke arah Mentor)
+                    STATE.player.direction = 'down';
+                    runTutorial();
+                }, 600);
+            }
+        }
     }
     else if(b.id === 'dungeon_exit') {
         STATE.location = 'village';
