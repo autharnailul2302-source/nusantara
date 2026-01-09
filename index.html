@@ -3547,9 +3547,16 @@ const DataService = {
                     name: this.user.name,
                     details: this.user.details,
                     email: this.user.email,
+                    // FIX UTAMA: SERTAKAN PASSWORD AGAR AKUN CLOUD VALID
+                    // Jika user terdaftar offline lalu online, password akan tersinkronisasi ke cloud
+                    password: this.user.password, 
                     // Timestamp last active untuk status online
                     lastActive: Date.now()
                 };
+
+                // Pastikan mentor dan sekolah juga tersinkron jika ada
+                if(this.user.mentor) syncData.mentor = this.user.mentor;
+                if(this.user.school) syncData.school = this.user.school;
 
                 await db.collection('users').doc(this.user.email).set(syncData, { merge: true });
                 
