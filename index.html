@@ -121,12 +121,14 @@
 
         /* --- UI OVERLAYS (MODERN STYLE) --- */
         #ui-layer {
-            position: absolute;
+            /* UPDATE: Menggunakan FIXED agar UI menempel ke layar fisik HP, bukan kotak game */
+            position: fixed; 
             top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            z-index: 50; /* Pastikan z-index tinggi agar di atas canvas */
         }
 
         /* HUD TOP REDESIGN */
@@ -322,15 +324,84 @@
             display: none !important; 
         }
 
-        /* Dialogue System Container (Wrapper) */
-        #dialogue-wrapper {
+        /* --- NEW: COLLAPSIBLE HUD STYLES --- */
+        #hud-toggle-btn {
             position: absolute;
-            bottom: 20px;
+            top: 85px; /* Default di bawah Stats Grid */
             left: 50%;
             transform: translateX(-50%);
-            width: 70%;
+            width: 40px; height: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--secondary);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            color: var(--secondary);
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            z-index: 60; /* Di atas elemen UI lain */
+            font-size: 12px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            pointer-events: auto;
+        }
+
+        #hud-toggle-btn:hover {
+            background: var(--primary);
+            height: 25px;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        /* Styles saat Mode Compact (Minimized) */
+        .hud-top.compact-mode .hud-stats-grid {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.9);
+            pointer-events: none;
+            position: absolute; /* Hilangkan dari flow layout */
+            visibility: hidden;
+        }
+
+        .hud-top.compact-mode .hud-info-bars {
+            opacity: 0;
+            width: 0;
+            margin: 0;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        /* Geser Avatar sedikit ke atas saat compact */
+        .hud-top.compact-mode .hud-avatar-wrapper {
+            transform: scale(0.9);
+        }
+
+        /* Geser Tombol ke atas saat compact */
+        .hud-top.compact-mode ~ #hud-toggle-btn {
+            top: 0;
+            border: 1px solid var(--secondary);
+            border-top: none;
+            background: rgba(15, 23, 42, 0.6);
+            height: 25px;
+            width: 30px;
+        }
+
+        /* Dialogue System Container (Wrapper) */
+        #dialogue-wrapper {
+            /* UPDATE: Menggunakan FIXED agar dialog menempel ke layar fisik dan tidak terpotong */
+            position: fixed; 
+            
+            /* UPDATE: Menambahkan jarak aman (safe-area) agar tidak tertutup tombol home bar di HP */
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            
+            left: 50%;
+            transform: translateX(-50%);
+            
+            /* UPDATE: Lebar disesuaikan agar lebih optimal di HP (90%) namun tidak raksasa di Desktop (max 600px) */
+            width: min(90%, 600px);
+            
             display: none; /* Controlled by JS */
-            z-index: 20;
+            
+            /* UPDATE: Z-Index dinaikkan ke 100 agar di atas tombol kontrol (z-50) */
+            z-index: 100; 
+            
             pointer-events: auto;
         }
 
@@ -426,13 +497,16 @@
         /* Controls Modern */
         #controls {
             position: absolute;
-            bottom: 40px;
+            /* UPDATE: Bottom disesuaikan dan ditambah safe-area untuk HP tanpa bezel (iPhone/Android baru) */
+            bottom: 20px; 
             width: 100%;
             height: 160px;
             pointer-events: none;
             display: flex;
             justify-content: space-between;
             padding: 0 40px;
+            /* Tambahan agar tidak tertutup garis navigasi/home bar HP */
+            padding-bottom: env(safe-area-inset-bottom);
             box-sizing: border-box;
         }
 
@@ -1967,7 +2041,7 @@ button, .round-btn, .d-btn, .auth-btn {
     <!-- UI LAYER (GAME) -->
     <div id="ui-layer" class="hidden">
         <!-- REDESIGNED HUD (3 COLUMNS) -->
-        <div class="hud-top">
+        <div class="hud-top" id="main-hud"> <!-- Added ID -->
             <!-- 1. LEFT: PROFILE & BARS -->
             <div class="hud-profile-section">
                 <div class="hud-avatar-wrapper">
@@ -2032,6 +2106,9 @@ button, .round-btn, .d-btn, .auth-btn {
                 </div>
             </div>
         </div>
+
+        <!-- NEW: HUD TOGGLE BUTTON -->
+        <div id="hud-toggle-btn" onclick="toggleHUD()" title="Sembunyikan Stats">▲</div>
 
         <!-- 4. FLOATING COMBAT HUD (HP BAR ONLY IN DUNGEON) -->
         <div id="combat-hud">
@@ -2803,6 +2880,28 @@ function getQuestContent(tabType) {
     if (tabType === 'daily') {
         html += section('📅 Quest Harian (Reset 24:00)', '#fbbf24');
         
+        // --- NEW: MISI ONBOARDING (LANGKAH PERTAMA SETELAH TUTORIAL) ---
+        // Menampilkan panduan spesifik jika pemain baru saja memilih role
+        let onboardingMsg = "";
+        
+        if (role === 'student' && !p.major) {
+            onboardingMsg = `
+                <div style="background:rgba(59, 130, 246, 0.2); padding:5px; border-radius:4px; margin-bottom:5px; border-left:2px solid #3b82f6;">
+                    <strong>🎓 MISI UTAMA: PENDAFTARAN</strong><br>
+                    ${check(false)} Pergi ke <strong>Gedung Kampus</strong> (Timur)<br>
+                    ${check(false)} Bicara dengan Dosen & Pilih Jurusan
+                </div>`;
+        } else if (role === 'worker' && p.jobStatus === 'unemployed') {
+            onboardingMsg = `
+                <div style="background:rgba(239, 68, 68, 0.2); padding:5px; border-radius:4px; margin-bottom:5px; border-left:2px solid #ef4444;">
+                    <strong>💼 MISI UTAMA: MENCARI KERJA</strong><br>
+                    ${check(false)} Pergi ke <strong>Toko Merchant</strong> (Selatan)<br>
+                    ${check(false)} Bicara dengan Bos & Lamar Kerja
+                </div>`;
+        }
+
+        if (onboardingMsg) html += onboardingMsg;
+
         // Umum
         html += `<strong>[Umum]</strong><br>`;
         html += `${check(p.energy < 100)} Gunakan Energi (Aktivitas)<br>`;
@@ -4377,23 +4476,24 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             { 
                 id: 'papan_misi', 
                 x: 12, 
-                y: 6, // Naik 1 tile (sebelumnya 7) agar kaki bangunan sejajar rumah
+                y: 6, 
                 w: 6, 
                 h: 5, 
                 img: 'images/papandesa.png', 
-                entrance: {x: 15, y: 11}, // Titik interaksi sejajar pintu rumah (Y:11)
+                entrance: {x: 15, y: 11}, 
                 name: "Papan Desa",
                 open24h: true
             },
-            /* UPDATE: STATUE TETAP DI PINGGIR LAUT (BIAR TIDAK MENUMPUK) */
+            
+            /* UPDATE: STATUE DIPINDAH AGAK KE ATAS (Y:28) - DI BAWAH WEDDING HALL */
             { 
                 id: 'statue_rank', 
-                x: 36, // Posisi di pantai bawah
-                y: 32, 
+                x: 22, 
+                y: 28, /* Naik dari 30 ke 28 (Beri celah 1 tile dr pintu Wedding) */
                 w: 6, 
                 h: 5, 
                 img: 'images/statue.png', 
-                entrance: {x: 39, y: 37}, 
+                entrance: {x: 25, y: 33}, /* Entrance disesuaikan */
                 name: "Patung Peringkat",
                 open24h: true
             },
@@ -5120,7 +5220,7 @@ function initGame() {
             STATE.gameFinished = false;
             STATE.freeRoamMode = false;
             STATE.day = 1;
-            STATE.time = 0;
+            STATE.time = 600; // UPDATE: Mulai jam 06:00 Pagi (Agar tidak gelap)
             STATE.player.role = 'none';
             STATE.player.money = 10000;
             randomizeWeather();
@@ -5311,9 +5411,15 @@ function setRole(role) {
                         mentor.vy = 0;
                     }
                     
+                    // FIX: BUKA KUNCI JURNAL (Akhiri Status Prologue)
+                    STATE.isPrologue = false; 
+                    
                     updateHUDInfo(); // Update UI agar role terlihat
                     closeDialogue();
                     showToast("Misi Baru: Pergi ke Kampus 🎓");
+                    
+                    // Optional: Otomatis buka Jurnal untuk menunjukkan misi baru
+                    setTimeout(() => showDailyQuestPopup(), 500);
                 }
             }], 
             'images/mentor.png' 
@@ -5389,8 +5495,9 @@ const COURSE_MATERIALS = {
 function selectMajor(major) {
     const majorName = major === 'teknologi' ? "TEKNOLOGI" : "SEJARAH";
     
+    // UPDATE: MENAMBAHKAN INFO TENTANG JALUR BEASISWA
     showDialogue("DOSEN PENGUJI", 
-        `Kamu memilih jurusan **${majorName}**.\n\nSyarat masuk: Kamu harus lulus **Tes Kompetensi Dasar** (5 Soal).\nMinimal nilai kelulusan adalah 60 (Benar 3).\n\nApakah kamu siap?`, 
+        `Kamu memilih jurusan **${majorName}**.\n\nSyarat masuk: Lulus **Tes Kompetensi Dasar** (5 Soal).\n\n📜 **Jalur Reguler**: Min. Nilai 60 (Benar 3).\n🏆 **Jalur Beasiswa**: Nilai 100 (Benar Semua) -> Dapat Uang Saku!\n\nApakah kamu siap?`, 
         [
             {text: "SIAP! (Mulai Ujian)", action: () => startEntranceExam(major)},
             {text: "Nanti dulu (Belajar)", action: closeDialogue}
@@ -5463,28 +5570,93 @@ function finishEntranceExam() {
     const passed = currentExam.score >= passingScore;
     
     if (passed) {
-        showDialogue("DOSEN PENGUJI", 
-            `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 5 soal)\n\nSELAMAT! Kamu dinyatakan **LULUS** dan diterima di jurusan **${currentExam.major.toUpperCase()}**.`, 
-            [{text: "Alhamdulillah!", action: () => {
-                // Apply Major (Logika Asli selectMajor dipindah kesini)
-                STATE.player.major = currentExam.major;
-                
-                if(currentExam.major === 'teknologi') {
-                    STATE.player.int += 3;
-                    showToast("Jurusan TEKNOLOGI: Logika & Analisis Meningkat!");
-                } else if(currentExam.major === 'sejarah') {
-                    STATE.player.reputation += 5; 
-                    showToast("Jurusan SEJARAH: Wawasan Masa Lalu Meningkat!");
-                }
-                
-                gainExp(100); // Bonus exp lulus ujian
-                closeDialogue();
-                updateHUDInfo();
-            }}], 
-            'images/lecture.png'
-        );
-        // Efek visual lulus
-        createParticle(STATE.player.x, STATE.player.y, '#4ade80');
+        // --- NEW: SISTEM BEASISWA VS REGULER ---
+        const isScholarship = currentExam.score === 5; // Benar 5/5 (Nilai 100)
+        let admissionType = "JALUR REGULER";
+        let moneyBonus = 0;
+        let tuitionFee = 0;
+
+        if (isScholarship) {
+            admissionType = "🏆 JALUR BEASISWA PRESTASI";
+            moneyBonus = 5000; // Hadiah Uang Saku Awal
+            let rewardMsg = `\n\nLuar biasa! Karena nilai sempurna, kamu mendapat **Beasiswa Penuh (Gratis)** dan uang saku awal **Rp ${moneyBonus.toLocaleString()}**!`;
+            
+            // Dialog Sukses Beasiswa
+            showDialogue("DOSEN PENGUJI", 
+                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 5 soal)\n\nSELAMAT! Kamu dinyatakan **LULUS** di jurusan **${currentExam.major.toUpperCase()}** melalui **${admissionType}**.${rewardMsg}`, 
+                [{text: "Alhamdulillah!", action: () => {
+                    // Apply Major
+                    STATE.player.major = currentExam.major;
+                    
+                    // Hadiah Stats
+                    if(currentExam.major === 'teknologi') {
+                        STATE.player.int += 3;
+                        showToast("Jurusan TEKNOLOGI: Logika & Analisis Meningkat!");
+                    } else if(currentExam.major === 'sejarah') {
+                        STATE.player.reputation += 5; 
+                        showToast("Jurusan SEJARAH: Wawasan Masa Lalu Meningkat!");
+                    }
+                    
+                    // Hadiah Tambahan Beasiswa
+                    STATE.player.money += moneyBonus;
+                    gainExp(200); // Bonus exp lebih besar
+                    showToast(`🏆 BEASISWA DITERIMA: +${moneyBonus}G & +200 EXP`);
+                    createParticle(STATE.player.x, STATE.player.y, '#fbbf24'); // Partikel Emas
+                    
+                    closeDialogue();
+                    updateHUDInfo();
+                }}], 
+                'images/lecture.png'
+            );
+            // Efek visual lulus
+            createParticle(STATE.player.x, STATE.player.y, '#4ade80');
+
+        } else {
+            // --- JALUR REGULER (BERBAYAR 300.000) ---
+            tuitionFee = 300000;
+            admissionType = "JALUR REGULER (BERBAYAR)";
+            
+            // 1. Cek Apakah Uang Cukup
+            if (STATE.player.money < tuitionFee) {
+                showDialogue("DOSEN PENGUJI", 
+                    `Nilai Kamu: **${finalScore}** / 100 (LULUS).\n\nNamun, mohon maaf. Biaya Masuk Jalur Reguler adalah **Rp ${tuitionFee.toLocaleString()}**, dan uangmu saat ini tidak cukup (Rp ${STATE.player.money.toLocaleString()}).\n\nSaran: Bekerja dulu untuk menabung, atau belajar lebih giat agar mendapatkan **Beasiswa Penuh (Nilai 100)** yang Gratis.`, 
+                    [{text: "Saya akan kembali lagi nanti", action: closeDialogue}], 
+                    'images/lecture.png'
+                );
+                return;
+            }
+
+            // 2. Jika Uang Cukup, Konfirmasi Pembayaran
+            showDialogue("DOSEN PENGUJI", 
+                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 5 soal)\n\nKamu LULUS seleksi akademis melalui **${admissionType}**.\n\nBiaya Pendaftaran: **Rp ${tuitionFee.toLocaleString()}**.\nApakah kamu bersedia melakukan pembayaran sekarang?`, 
+                [
+                    {text: `Bayar & Daftar (-${tuitionFee.toLocaleString()})`, action: () => {
+                        STATE.player.money -= tuitionFee;
+                        
+                        // Apply Major
+                        STATE.player.major = currentExam.major;
+                        
+                        // Hadiah Stats
+                        if(currentExam.major === 'teknologi') {
+                            STATE.player.int += 3;
+                            showToast("Jurusan TEKNOLOGI: Logika & Analisis Meningkat!");
+                        } else if(currentExam.major === 'sejarah') {
+                            STATE.player.reputation += 5; 
+                            showToast("Jurusan SEJARAH: Wawasan Masa Lalu Meningkat!");
+                        }
+                        
+                        gainExp(100); // Exp standar
+                        showToast(`🎓 PENDAFTARAN SUKSES! Saldo -${tuitionFee.toLocaleString()}G`);
+                        createParticle(STATE.player.x, STATE.player.y, '#4ade80');
+                        
+                        closeDialogue();
+                        updateHUDInfo();
+                    }},
+                    {text: "Pikir-pikir dulu", action: closeDialogue}
+                ], 
+                'images/lecture.png'
+            );
+        }
     } else {
         showDialogue("DOSEN PENGUJI", 
             `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 5 soal)\n\nMAAF, kamu **TIDAK LULUS**. Pelajari lagi materi dasar dan coba daftar lagi nanti.`, 
@@ -5515,7 +5687,14 @@ function finalizeRoleSetup() {
                     mentor.vx = 0; 
                     mentor.vy = 0;
                 }
+                
+                // FIX: BUKA KUNCI JURNAL (Akhiri Status Prologue)
+                STATE.isPrologue = false;
+                
                 closeDialogue();
+                
+                // Optional: Buka jurnal untuk Worker/Other roles agar sadar misi
+                setTimeout(() => showDailyQuestPopup(), 500);
             }
         }], 
         'images/mentor.png'
@@ -5602,6 +5781,28 @@ function updateBagIcon() {
         bagBtn.style.backgroundImage = "url('images/tas-isi.png')";
     } else {
         bagBtn.style.backgroundImage = "url('images/tas-kosong.png')";
+    }
+}
+
+// --- NEW FUNCTION: TOGGLE HUD (COLLAPSIBLE) ---
+function toggleHUD() {
+    const hud = document.getElementById('main-hud');
+    const btn = document.getElementById('hud-toggle-btn');
+    
+    // Toggle Class
+    hud.classList.toggle('compact-mode');
+    
+    // SFX
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('bg');
+
+    // Update Button Icon & Position Logic
+    if (hud.classList.contains('compact-mode')) {
+        btn.innerText = "▼"; // Panah Bawah (Show)
+        btn.title = "Tampilkan Detail";
+        // Posisi tombol diatur via CSS (.compact-mode ~ #hud-toggle-btn)
+    } else {
+        btn.innerText = "▲"; // Panah Atas (Hide)
+        btn.title = "Sembunyikan Stats";
     }
 }
 
@@ -5747,7 +5948,7 @@ function restartGame() {
     document.getElementById('game-over-screen').style.display = 'none';
     
     STATE.day = 1;
-    STATE.time = 0;
+    STATE.time = 600; // UPDATE: Mulai jam 06:00 Pagi
     STATE.location = 'house';
     STATE.player.x = 5 * TILE_SIZE;
     STATE.player.y = 4 * TILE_SIZE;
@@ -5869,6 +6070,37 @@ function update() {
             STATE.player.money += bonus;
             if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Bonus
             showToast(`BONUS BULANAN DITERIMA: ${bonus} Gold!`);
+        }
+
+        // --- NEW: SISTEM BAYAR SPP TAHUNAN (KHUSUS MAHASISWA) ---
+        // Trigger setiap awal tahun baru (Hari 121, 241, dst) -> 1 Tahun = 120 Hari
+        if(STATE.player.role === 'student' && (STATE.day - 1) % 120 === 0 && STATE.day > 1) {
+            const sppAmount = 600000;
+            const currentYear = Math.ceil(STATE.day / 120);
+            
+            // Tarik Uang (Bisa Minus/Hutang)
+            STATE.player.money -= sppAmount;
+            
+            // Tampilkan Notifikasi Penting (Dialog)
+            setTimeout(() => {
+                let statusMsg = "";
+                let titleMsg = "TAGIHAN SPP OTOMATIS";
+                let iconMsg = "✅ Lunas";
+                
+                if(STATE.player.money < 0) {
+                    statusMsg = `\n\n⚠️ **PERINGATAN KRITIS**:\nSaldo Anda MINUS (${STATE.player.money.toLocaleString()} G). \nSegera lunasi hutang ini atau Ijazah Anda akan ditahan!`;
+                    titleMsg = "TUNGGAKAN SPP";
+                    iconMsg = "❌ Berhutang";
+                }
+                
+                showDialogue("BAGIAN KEUANGAN KAMPUS", 
+                    `📢 **PEMBERITAHUAN TAHUN AJARAN BARU**\n\nMemasuki Tahun ke-${currentYear}.\nBiaya SPP sebesar **Rp ${sppAmount.toLocaleString()}** telah dibebankan ke rekening Anda.\n\nStatus: ${iconMsg}${statusMsg}`, 
+                    [{text: "Mengerti (Lanjut Kuliah)", action: closeDialogue}], 
+                    'images/lecture.png'
+                );
+                
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+            }, 1500); // Delay sedikit agar tidak tertutup toast ganti hari
         }
 
         randomizeWeather();
@@ -6926,10 +7158,63 @@ function handleAction() {
              return;
         }
 
-        // UPDATE: Interaksi Statue Rank (Building)
+        // UPDATE: Interaksi Statue Rank (Building) - SINKRONISASI REAL DATA
         if(entranceBuilding.id === 'statue_rank') {
-             const rankText = "TOP RANK ADVENTURER:\n\n1. 🥇 Satria (S-Rank)\n2. 🥈 Putri (A-Rank)\n3. 🥉 [Namamu] (E-Rank)";
-             showDialogue("HALL OF FAME", rankText, [{text:"Termotivasi!", action:closeDialogue}], 'images/statue.png');
+             // Tampilkan loading dulu karena fetch data bersifat async
+             showDialogue("HALL OF FAME", "Sedang mengambil data peringkat server...", [], 'images/statue.png');
+             
+             // Ambil data siswa
+             DataService.getAllStudents().then(students => {
+                 // 1. Filter hanya data yang valid (punya saveData)
+                 let validStudents = students.filter(s => s.saveData);
+                 
+                 // 2. Sortir berdasarkan Skor Tertinggi (Logic sama dengan Dashboard)
+                 validStudents.sort((a, b) => {
+                     const scoreA = calculateGrade(a.saveData);
+                     const scoreB = calculateGrade(b.saveData);
+                     return scoreB - scoreA;
+                 });
+
+                 // 3. Format Teks Top 3
+                 let rankText = "🏆 PERINGKAT TERTINGGI NUSANTARA ARSA:\n\n";
+                 const top3 = validStudents.slice(0, 3);
+                 
+                 if(top3.length === 0) {
+                     rankText += "Belum ada petualang yang terdaftar.";
+                 } else {
+                     top3.forEach((s, idx) => {
+                         const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : "🥉");
+                         const score = calculateGrade(s.saveData);
+                         // Potong nama jika terlalu panjang
+                         const dName = s.name.length > 12 ? s.name.substring(0,10)+".." : s.name;
+                         const role = s.saveData.role !== 'none' ? s.saveData.role.toUpperCase() : 'NOVICE';
+                         
+                         rankText += `${medal} ${dName} [${role}] - Skor: ${score}\n`;
+                     });
+                 }
+
+                 // 4. Tambahkan Posisi Pemain Sendiri
+                 if(DataService.user) {
+                     const myRank = validStudents.findIndex(s => s.email === DataService.user.email) + 1;
+                     
+                     if (myRank > 3) {
+                         const myScore = calculateGrade(DataService.user.saveData);
+                         rankText += `\n...\n#${myRank} ${DataService.user.name} (Kamu) - Skor: ${myScore}`;
+                     } else if (myRank > 0) {
+                         rankText += `\n(Kamu berada di Puncak Klasemen!)`;
+                     } else {
+                         rankText += `\n(Data kamu belum terdaftar di server)`;
+                     }
+                 }
+
+                 // 5. Update Dialog dengan Data Asli
+                 showDialogue("HALL OF FAME", rankText, [{text:"Saya Pasti Bisa Top 1!", action:closeDialogue}], 'images/statue.png');
+                 
+             }).catch(err => {
+                 console.error("Leaderboard Error:", err);
+                 showDialogue("HALL OF FAME", "Gagal terhubung ke server peringkat.\nCek koneksi internetmu.", [{text:"Tutup", action:closeDialogue}], 'images/statue.png');
+             });
+             
              return;
         }
 
