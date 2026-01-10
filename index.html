@@ -2813,8 +2813,18 @@ function getQuestContent(tabType) {
             html += `${check(p.shiftStarted)} Masuk Shift (08:00-16:00)<br>`;
             html += `${check(p.energy < 50)} Latihan Fisik/Kerja ${prog(p.energy > 50 ? 'Belum' : 'Selesai', 'Lelah')}<br>`;
         } else if(role === 'student') {
-            // UPDATE: Menambahkan teks jam kuliah (08:00 - 14:00) dan perbaikan cek lokasi
-            html += `${check(STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior')} Hadir Kuliah (08:00 - 14:00)<br>`;
+            // UPDATE: CEK HARI LIBUR (SABTU & MINGGU)
+            const dayIndex = (STATE.day - 1) % 7; // 0=Senin ... 5=Sabtu, 6=Minggu
+            const isWeekend = (dayIndex === 5 || dayIndex === 6);
+
+            if (isWeekend) {
+                // Tampilan saat Libur
+                html += `🚫 <span style="color:#64748b; text-decoration:line-through;">Hadir Kuliah</span> <span style="color:#fbbf24; font-size:10px;">(Libur Akhir Pekan)</span><br>`;
+            } else {
+                // Tampilan Hari Biasa
+                html += `${check(STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior')} Hadir Kuliah (08:00 - 14:00)<br>`;
+            }
+            
             html += `${check(p.energy < 70)} Belajar Mandiri (Buku)<br>`;
             // ADDED: QUEST KHUSUS MAHASISWA (Riset di Perpustakaan)
             html += `${check(STATE.location === 'library_interior')} Riset di Perpustakaan<br>`;
@@ -4416,12 +4426,16 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             /* NEW: SARJANA SEJARAH (DI RERUNTUHAN KIRI) */
             {id: 'sarjana_sejarah', x: 9, y: 12, name: 'Ahli Sejarah', imgSrc: 'images/sarjanasejarah.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
 
+            /* NEW: SATPAM KAMPUS (Penjaga Gerbang) */
+            {id: 'satpam', x: 40, y: 16, name: 'Satpam', imgSrc: 'images/satpam.png', type: 'static', schedule: 'day'},
+
             /* REMOVED: job/mercenary npc */
             /* MOVED: Trader menggantikan posisi job (x:25, y:27) */
             {id: 'merchant', x: 25, y: 27, name: 'Trader', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day'},
             
             /* UPDATE: KEPALA BENGKEL PINDAH KE DALAM, DIGANTI ANAKNYA DI LUAR */
-            {id: 'child_blacksmith', x: 35, y: 32, name: 'Lina (Anak Besi)', imgSrc: 'images/anakblacksmith.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
+            /* PERBAIKAN: Ubah type jadi 'static' agar diam di depan bangunan sesuai permintaan */
+            {id: 'child_blacksmith', x: 35, y: 32, name: 'Lina (Anak Besi)', imgSrc: 'images/anakblacksmith.png', type: 'static', vx:0, vy:0, schedule: 'day'},
             
             {id: 'lover1girl', x: 14, y: 29, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'day'},
             {id: 'lover2boy', x: 41, y: 30, name: 'Satria (Ksatria)', imgSrc: 'images/lover2boy.png', type: 'lover', schedule: 'always'}, 
@@ -4487,7 +4501,7 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             {x: 13, y: 13, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursi.png'}, // Kiri Pohon
             {x: 17, y: 13, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursi.png'}, // Kanan Pohon
             
-            {x: 8, y: 13, type: 'door_out', icon: '🚪'}
+      
         ]
     },
     /* NEW: MERCHANT INTERIOR MAP ADDED */
@@ -6392,6 +6406,17 @@ function processTeleport(b) {
         showToast("Keluar Guild");
     }
     else if(b.id === 'school') {
+        // --- NEW: SISTEM HARI LIBUR (SABTU & MINGGU) ---
+        const dayIndex = (STATE.day - 1) % 7; // 0=Senin ... 5=Sabtu, 6=Minggu
+        if (dayIndex === 5 || dayIndex === 6) {
+            if(typeof AudioService !== 'undefined') AudioService.playSFX('door'); // Suara pintu
+            
+            showDialogue("SATPAM KAMPUS", "📢 KAMPUS LIBUR! \nHari Sabtu dan Minggu tidak ada perkuliahan. Silakan belajar mandiri di rumah atau kunjungi Perpustakaan.", [
+                {text: "Baik Pak (Kembali)", action: closeDialogue}
+            ]);
+            return; // Batalkan masuk
+        }
+
         // --- NEW: SISTEM DISIPLIN KULIAH (TELAT = DITOLAK) ---
         // Kelas Mulai: 08:00. Toleransi sampai: 08:30.
         // Jika jam > 830 dan < 1400 (Sesi Kuliah), Pintu Dikunci.
@@ -7592,6 +7617,20 @@ function interactNPC(npc) {
         ], npc.imgSrc);
     }
 
+    // --- NEW: INTERAKSI SATPAM KAMPUS ---
+    else if(npc.id === 'satpam') {
+        showDialogue(npc.name, "STOP! Tunjukkan kartu mahasiswa. \nTugas saya menjaga keamanan kampus dari mahasiswa abadi dan monster liar.", [
+            {text: "Siap Pak (Hormat)", action: () => {
+                showToast("Satpam mengangguk tegas.");
+                closeDialogue();
+            }},
+            {text: "Tanya Aturan Masuk", action: () => {
+                showDialogue(npc.name, "Dengar baik-baik! \n1. Kuliah mulai jam 08:00. \n2. Telat lewat 08:30, gerbang saya kunci! \n3. Dilarang bawa senjata tajam ke dalam kelas, kecuali jurusan Fighter.", [{text:"Siap Pak", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Saya cuma lewat", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
     // --- NEW: INTERAKSI DOSEN / SCHOLAR (KHUSUS MAHASISWA & ATURAN TELAT) ---
     else if(npc.id === 'lecture') {
         const isStudent = STATE.player.role === 'student';
@@ -8132,8 +8171,16 @@ function getMissionBoardText() {
             txt += `${chk(p.shiftStarted)} Masuk Shift (08:00-16:00)\n`;
             txt += `${chk(p.energy < 50)} Latihan Fisik/Kerja ${chk(p.energy < 50) === "✅" ? "(Selesai)" : "(Belum)"}\n`;
         } else if(role === 'student') {
-            const isKuliah = STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'village';
-            txt += `${chk(isKuliah)} Hadir Kuliah (Kampus)\n`;
+            // UPDATE: TEKS MISI SAAT LIBUR
+            const dayIndex = (day - 1) % 7;
+            const isWeekend = (dayIndex === 5 || dayIndex === 6);
+
+            if (isWeekend) {
+                txt += `🚫 Kuliah Libur (Akhir Pekan)\n`;
+            } else {
+                const isKuliah = STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior'; // Note: simplified logic
+                txt += `${chk(isKuliah)} Hadir Kuliah (Kampus)\n`;
+            }
             txt += `${chk(p.energy < 70)} Belajar Mandiri\n`;
             txt += `${chk(STATE.location === 'library_interior')} Riset di Perpustakaan\n`;
         } else if(role === 'entrepreneur') {
