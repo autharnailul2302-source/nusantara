@@ -5468,41 +5468,224 @@ let currentExam = {
     questions: []
 };
 
-// Database Soal
+// Database Soal (UPDATE: DITAMBAH JADI 10 SOAL)
 const EXAM_DB = {
     'teknologi': [
+        // ... existing questions ...
         {q: "Otak utama komputer yang memproses semua instruksi adalah?", a: "CPU", opts: ["CPU", "GPU", "Harddisk"]},
         {q: "Apa kepanjangan dari RAM?", a: "Random Access Memory", opts: ["Read Access Memory", "Random Access Memory", "Run All Memory"]},
         {q: "Sistem bilangan yang hanya menggunakan angka 0 dan 1 disebut?", a: "Biner", opts: ["Desimal", "Biner", "Heksadesimal"]},
         {q: "Mana yang termasuk perangkat OUTPUT?", a: "Monitor", opts: ["Keyboard", "Mouse", "Monitor"]},
-        {q: "Tombol pintas (shortcut) untuk menyalin data adalah?", a: "Ctrl + C", opts: ["Ctrl + V", "Ctrl + C", "Ctrl + X"]}
+        {q: "Tombol pintas (shortcut) untuk menyalin data adalah?", a: "Ctrl + C", opts: ["Ctrl + V", "Ctrl + C", "Ctrl + X"]},
+        {q: "Sistem operasi (OS) open-source yang populer berlambang pinguin adalah?", a: "Linux", opts: ["Windows", "MacOS", "Linux"]},
+        {q: "Jaringan komputer global yang menghubungkan seluruh dunia disebut?", a: "Internet", opts: ["Intranet", "Internet", "Ethernet"]},
+        {q: "Komponen yang berfungsi menyuplai daya listrik ke seluruh bagian PC adalah?", a: "Power Supply", opts: ["VGA Card", "Motherboard", "Power Supply"]},
+        {q: "Perangkat lunak berbahaya yang bertujuan merusak sistem disebut?", a: "Malware", opts: ["Software", "Hardware", "Malware"]},
+        {q: "Proses mematikan dan menghidupkan ulang komputer disebut?", a: "Restart", opts: ["Shutdown", "Sleep", "Restart"]}
     ],
     'sejarah': [
+        // ... existing questions ...
         {q: "Siapakah pendiri Kerajaan Majapahit?", a: "Raden Wijaya", opts: ["Hayam Wuruk", "Raden Wijaya", "Gajah Mada"]},
         {q: "Sumpah terkenal yang diucapkan Mahapatih Gajah Mada adalah?", a: "Sumpah Palapa", opts: ["Sumpah Pemuda", "Sumpah Palapa", "Sumpah Setia"]},
         {q: "Candi Borobudur adalah peninggalan wangsa?", a: "Syailendra", opts: ["Sanjaya", "Syailendra", "Isyana"]},
         {q: "Raja terakhir Kerajaan Singasari yang terkenal adalah?", a: "Kertanegara", opts: ["Ken Arok", "Kertanegara", "Jayabaya"]},
-        {q: "Kerajaan Islam pertama di pulau Jawa adalah?", a: "Demak", opts: ["Mataram Islam", "Banten", "Demak"]}
+        {q: "Kerajaan Islam pertama di pulau Jawa adalah?", a: "Demak", opts: ["Mataram Islam", "Banten", "Demak"]},
+        {q: "Kerajaan maritim terbesar di Nusantara yang berpusat di Sumatera adalah?", a: "Sriwijaya", opts: ["Sriwijaya", "Majapahit", "Samudera Pasai"]},
+        {q: "Siapakah Presiden pertama Republik Indonesia?", a: "Soekarno", opts: ["Soeharto", "Habibie", "Soekarno"]},
+        {q: "Tanggal berapakah Indonesia memproklamasikan kemerdekaan?", a: "17 Agustus 1945", opts: ["28 Oktober 1928", "17 Agustus 1945", "10 November 1945"]},
+        {q: "Pahlawan wanita dari Jepara yang memperjuangkan emansipasi adalah?", a: "R.A. Kartini", opts: ["Cut Nyak Dien", "R.A. Kartini", "Dewi Sartika"]},
+        {q: "Peristiwa penculikan Soekarno-Hatta oleh golongan muda ke luar kota disebut?", a: "Rengasdengklok", opts: ["Bandung Lautan Api", "Rengasdengklok", "G30S"]}
     ]
 };
 
-// --- NEW: DATABASE MATERI KULIAH (SETIAP 5 HARI) ---
+// --- NEW: DATABASE MATERI KULIAH (EXPANDED TO 48 TOPICS - 2 YEARS FULL) ---
+// Logika: 1 Tahun = 120 Hari. Kuliah Spesial tiap 5 hari. Total = 24 Materi/Tahun.
 const COURSE_MATERIALS = {
     'teknologi': [
+        // --- TAHUN PERTAMA (BASIC & DEV) ---
+        // SEMESTER 1 (Basic)
         {t: "Algoritma Dasar", c: "Algoritma adalah urutan langkah logis penyelesaian masalah. Coding tanpa logika bagai membangun rumah tanpa desain."},
         {t: "Struktur Data", c: "Array dimulai dari indeks 0. Efisiensi memori adalah kunci aplikasi yang cepat."},
         {t: "Basis Data (SQL)", c: "Data adalah aset paling berharga. 'SELECT * FROM world' adalah cara kita melihat dunia."},
         {t: "Jaringan Komputer", c: "Protokol TCP/IP memastikan data dikirim utuh. Internet adalah jaring laba-laba raksasa."},
         {t: "Keamanan Siber", c: "Password '123456' adalah dosa besar. Enkripsi melindungi privasi dari mata-mata."},
-        {t: "Kecerdasan Buatan", c: "AI belajar dari pola data. Ia bukan sihir, tapi matematika statistik yang canggih."}
+        {t: "Kecerdasan Buatan (AI)", c: "AI belajar dari pola data. Ia bukan sihir, tapi matematika statistik yang canggih."},
+        // SEMESTER 2 (Development)
+        {t: "Pemrograman Web", c: "HTML adalah tulang, CSS adalah kulit, dan JS adalah otot yang menggerakkan web."},
+        {t: "Pemrograman Mobile", c: "Aplikasi di saku anda membutuhkan efisiensi baterai dan responsivitas layar sentuh."},
+        {t: "Cloud Computing", c: "Server tidak lagi di ruang bawah tanah, tapi di 'awan' virtual yang bisa diakses kapan saja."},
+        {t: "Internet of Things (IoT)", c: "Kulkas pintar dan lampu otomatis. Saat benda mati mulai saling berbicara lewat internet."},
+        {t: "Blockchain", c: "Buku besar digital yang terdesentralisasi. Transparan dan sulit dipalsukan."},
+        {t: "Big Data", c: "Volume, Velocity, Variety. Mengolah data raksasa untuk prediksi masa depan."},
+        // SEMESTER 3 (Engineering - Year 1 End/Year 2 Start overlap fix handled by curriculum)
+        {t: "UI/UX Design", c: "Aplikasi canggih percuma jika membingungkan. Desain harus berpusat pada kenyamanan pengguna."},
+        {t: "Software Engineering", c: "SDLC (System Development Life Cycle): Planning, Design, Coding, Testing, Maintenance."},
+        {t: "Operating Systems", c: "Kernel adalah jembatan antara hardware keras dan software lunak."},
+        {t: "Arsitektur Komputer", c: "Bagaimana 0 dan 1 berubah menjadi gambar 4K? Memahami prosesor dan memori."},
+        {t: "Etika Teknologi", c: "Hanya karena kita BISA membuatnya, belum tentu kita BOLEH membuatnya (Contoh: Deepfake)."},
+        {t: "Digital Marketing", c: "SEO dan SEM. Bagaimana membuat karyamu ditemukan di lautan informasi."},
+        // SEMESTER 4 (Advanced)
+        {t: "Game Development", c: "Looping, Physics, Rendering. Game adalah ilusi interaktif yang memuaskan."},
+        {t: "Virtual Reality (VR)", c: "Membawa pengguna masuk ke dunia digital. Masa depan interaksi manusia-komputer."},
+        {t: "E-Commerce", c: "Sistem pembayaran digital, keranjang belanja, dan keamanan transaksi online."},
+        {t: "Manajemen Startup", c: "Ide -> MVP -> Funding -> Scale Up. Jalan terjal membangun perusahaan rintisan."},
+        {t: "Project Management", c: "Agile & Scrum. Cara tim developer bekerja cepat dan adaptif terhadap perubahan."},
+        {t: "Teknologi Masa Depan", c: "Quantum Computing & Bio-Informatics. Batas antara biologi dan mesin semakin tipis."},
+
+        // --- TAHUN KEDUA (ADVANCED & SPECIALIZATION) ---
+        // SEMESTER 5 (Cloud & DevOps Architecture)
+        {t: "Microservices", c: "Memecah aplikasi monolith raksasa menjadi layanan kecil independen. Seperti pasukan elit yang bergerak terpisah namun satu tujuan."},
+        {t: "Docker & Container", c: "Mengemas aplikasi dalam wadah isolasi. 'It works on my machine' bukan lagi alasan valid."},
+        {t: "Kubernetes (K8s)", c: "Orkestrasi kontainer otomatis. Nakhoda kapal digital yang mengelola ribuan server tanpa lelah."},
+        {t: "CI/CD Pipeline", c: "Continuous Integration/Delivery. Otomatisasi pengiriman kode dari laptop developer ke server produksi."},
+        {t: "DevOps Culture", c: "Menghapus tembok pemisah antara Developer (Pembuat) dan Operations (Pengelola). Kolaborasi adalah kunci."},
+        {t: "Cloud Security", c: "Awan juga bisa disambar petir. Mengamankan data di infrastruktur publik butuh enkripsi berlapis."},
+        // SEMESTER 6 (AI & Data Science Deep Dive)
+        {t: "Deep Learning", c: "Jaringan saraf tiruan (Neural Network) yang meniru otak manusia. Dasar mobil otonom."},
+        {t: "NLP (Bahasa Alami)", c: "Mengajarkan komputer memahami sarkasme dan emosi manusia, bukan sekadar kata kunci."},
+        {t: "Computer Vision", c: "Memberi mata pada mesin. Bagaimana CCTV mengenali wajah penjahat di keramaian."},
+        {t: "Predictive Analytics", c: "Meramal masa depan dengan data masa lalu. Statistik yang menyelamatkan keputusan bisnis."},
+        {t: "Ethical Hacking", c: "Menjadi pencuri untuk menangkap pencuri. Menemukan celah keamanan sebelum dieksploitasi lawan."},
+        {t: "Digital Forensics", c: "CSI Dunia Maya. Melacak jejak digital kejahatan yang sudah dihapus oleh pelaku."},
+        // SEMESTER 7 (Modern Web & Management)
+        {t: "Serverless Computing", c: "Fokus pada kode, lupakan server. Biar penyedia cloud yang pusing mengurus hardware."},
+        {t: "PWA (Progressive Web)", c: "Website yang bisa diinstall dan jalan offline. Menjembatani web dan aplikasi native."},
+        {t: "GraphQL API", c: "Cara modern meminta data. Ambil hanya yang kau butuhkan, tidak lebih, tidak kurang."},
+        {t: "Tech Leadership (CTO)", c: "Koding itu mudah, mengelola manusia itu sulit. Seni memimpin tim teknis."},
+        {t: "Startup Valuation", c: "Bagaimana ide di garasi bisa bernilai Triliunan? Memahami valuasi dan saham."},
+        {t: "Hukum IT (IPR)", c: "Hak Kekayaan Intelektual. Melindungi kode dan algoritmamu dari pencurian."},
+        // SEMESTER 8 (Global Impact & Ethics)
+        {t: "Green Computing", c: "Data center menghabiskan listrik negara. Algoritma efisien = menyelamatkan bumi."},
+        {t: "Bioinformatics", c: "Mengkoding DNA manusia. Saat biologi dan teknologi bersatu menyembuhkan penyakit."},
+        {t: "Smart Cities", c: "Lampu jalan yang hemat energi dan macet yang terurai otomatis. Kota cerdas masa depan."},
+        {t: "Space Technology", c: "Software roket SpaceX. Di luar angkasa, 'blue screen' berarti ledakan fatal."},
+        {t: "Quantum Computing", c: "Komputer yang bisa berada di dua keadaan sekaligus. Pemecah enkripsi masa depan."},
+        {t: "Transhumanism", c: "Chip di otak manusia? Batas etika saat manusia mulai menyatu dengan mesin."},
+
+        // --- TAHUN KETIGA (EXPERT & SPECIALIZATION) ---
+        // SEMESTER 9 (Future Tech)
+        {t: "Quantum Cryptography", c: "Enkripsi yang tak terpecahkan oleh komputer klasik. Keamanan data level kuantum."},
+        {t: "Edge Computing", c: "Memproses data di sumbernya, bukan di cloud pusat. Kunci kecepatan IoT dan mobil otonom."},
+        {t: "5G/6G Networks", c: "Infrastruktur hiper-konektivitas. Latensi mendekati nol untuk operasi jarak jauh."},
+        {t: "Digital Twin", c: "Membuat kembaran digital dari objek fisik. Simulasi mesin jet sebelum diterbangkan."},
+        {t: "Augmented Reality (AR)", c: "Menambahkan lapisan digital ke dunia nyata. Bukan hanya game, tapi untuk bedah medis."},
+        {t: "Autonomous Systems", c: "Logika di balik mobil tanpa sopir dan drone mandiri. Etika 'Trolley Problem' dalam kode."},
+        // SEMESTER 10 (Deep Research)
+        {t: "Tech Governance", c: "Bagaimana negara mengatur AI? Regulasi agar teknologi tidak menjadi senjata liar."},
+        {t: "Bio-Hacking", c: "Memodifikasi biologi dengan teknologi. Dari jam tangan pintar hingga implan saraf."},
+        {t: "Green Tech", c: "Teknologi penyerap karbon dan energi terbarukan. Coding untuk kelangsungan bumi."},
+        {t: "Space Engineering", c: "Tantangan software di ruang hampa. Satelit, roket, dan komunikasi antar planet."},
+        {t: "Neuromorphic Chip", c: "Hardware yang meniru cara kerja neuron otak manusia. Efisiensi energi otak dalam silikon."},
+        {t: "Singularity Theory", c: "Titik di mana kecerdasan buatan melampaui manusia. Apakah kita siap menjadi 'orang tua' bagi AI?"},
+
+        // --- TAHUN KEEMPAT (FINAL YEAR & GRADUATION) ---
+        // SEMESTER 11 (Pra-Skripsi & Pengabdian)
+        {t: "Metodologi Penelitian", c: "Fondasi karya ilmiah. Hipotesis, variabel, dan validasi data agar skripsimu tidak ditolak."},
+        {t: "Proposal Skripsi", c: "Bab 1 sampai Bab 3. Merancang solusi teknologi untuk masalah nyata di masyarakat."},
+        {t: "Kuliah Kerja Nyata (KKN)", c: "Digitalisasi Desa. Membantu UMKM lokal masuk ke e-commerce dan literasi digital."},
+        {t: "Kerja Praktik (Magang)", c: "Terjun ke industri unicorn. Merasakan tekanan deadline dan code review yang sesungguhnya."},
+        {t: "Start-up Creation", c: "Technopreneurship. Mengubah ide skripsi menjadi produk yang layak jual dan pitching ke investor."},
+        {t: "Sertifikasi Profesi", c: "Bukti kompetensi internasional (CISCO, Google, AWS). Tiket emas melamar kerja."},
+        // SEMESTER 12 (Tugas Akhir & Wisuda)
+        {t: "Seminar Hasil", c: "Mempresentasikan progress aplikasi di depan dosen. Revisi adalah makanan sehari-hari."},
+        {t: "Publikasi Jurnal", c: "Menyumbang ilmu pengetahuan global. Namamu abadi dalam sitasi akademik."},
+        {t: "Etika Profesi IT", c: "Sumpah jabatan engineer. Tidak menyalahgunakan data user demi keuntungan pribadi."},
+        {t: "Sidang Meja Hijau", c: "Pertempuran terakhir. Mempertahankan argumen di depan dewan penguji yang kritis."},
+        {t: "Yudisium", c: "Pengumuman nilai akhir. Saat IPK dikunci dan gelar S.Kom di depan mata."},
+        {t: "WISUDA SARJANA", c: "Toga dikenakan, tali dipindahkan. Selamat datang di dunia nyata, Sang Inovator!"}
     ],
     'sejarah': [
+        // --- TAHUN PERTAMA (NUSANTARA BASIC) ---
+        // ZAMAN KUNO
         {t: "Zaman Prasejarah", c: "Fosil di Sangiran membuktikan Nusantara adalah salah satu pusat peradaban manusia purba."},
         {t: "Kerajaan Kutai", c: "Prasasti Yupa (Abad ke-4 M) adalah bukti tertulis pertama sejarah Indonesia. Awal mula zaman sejarah."},
         {t: "Kemaritiman Sriwijaya", c: "Sriwijaya menguasai Selat Malaka. Nenek moyang kita benar-benar seorang pelaut yang ulung."},
         {t: "Sumpah Palapa", c: "Gajah Mada menolak istirahat sebelum Nusantara bersatu. Tekad baja menyatukan ribuan pulau."},
+        {t: "Masuknya Islam", c: "Pedagang Gujarat dan Wali Songo menyebarkan Islam dengan damai melalui akulturasi budaya."},
+        {t: "Kerajaan Demak", c: "Pusat penyebaran Islam pertama di Jawa dan runtuhnya dominasi Majapahit."},
+        // ZAMAN KOLONIAL
+        {t: "Kedatangan Portugis", c: "Mencari rempah-rempah (Gold, Glory, Gospel). Awal mula kolonialisme di Maluku."},
+        {t: "VOC (Kompeni)", c: "Perusahaan multinasional pertama di dunia yang menjajah dengan kekuatan modal dan monopoli."},
         {t: "Perang Diponegoro", c: "Perang Jawa (1825-1830) membuat Belanda bangkrut, memicu sistem Tanam Paksa yang kejam."},
-        {t: "Sumpah Pemuda", c: "1928 adalah momen sakral. Kita sadar bahwa kita Satu Nusa, Satu Bangsa, dan Satu Bahasa."}
+        {t: "Politik Etis", c: "Balas budi Belanda: Irigasi, Emigrasi, Edukasi. Melahirkan kaum terpelajar Indonesia."},
+        {t: "Kebangkitan Nasional", c: "Budi Utomo 1908. Perjuangan tak lagi fisik kedaerahan, tapi intelektual nasional."},
+        {t: "Sumpah Pemuda", c: "1928 adalah momen sakral. Kita sadar bahwa kita Satu Nusa, Satu Bangsa, dan Satu Bahasa."},
+        // ZAMAN KEMERDEKAAN
+        {t: "Pendudukan Jepang", c: "Saudara Tua yang kejam (Romusha), tapi melatih militer pemuda kita (PETA)."},
+        {t: "BPUPKI & PPKI", c: "Sidang-sidang yang merumuskan dasar negara Pancasila dan UUD 1945."},
+        {t: "Proklamasi 1945", c: "17 Agustus pukul 10:00. Bangsa ini menyatakan kemerdekaannya atas nasib sendiri."},
+        {t: "Pertempuran 10 Nov", c: "Surabaya membara. Bukti bahwa 'Merdeka atau Mati' bukan sekadar slogan."},
+        {t: "Diplomasi Kemerdekaan", c: "Linggarjati, Renville, Roem-Roijen. Perjuangan lewat meja perundingan yang alot."},
+        {t: "KMB & RIS", c: "Belanda akhirnya mengakui kedaulatan, meski sempat memecah kita menjadi negara serikat."},
+        // ZAMAN MODERN
+        {t: "Demokrasi Liberal", c: "Era jatuh bangun kabinet. Kebebasan berpendapat tinggi, tapi stabilitas rendah."},
+        {t: "Dekrit Presiden 1959", c: "Kembali ke UUD 45. Awal Demokrasi Terpimpin Soekarno."},
+        {t: "Peristiwa G30S", c: "Malam kelam 1965 yang mengubah arah politik bangsa secara drastis."},
+        {t: "Orde Baru", c: "Stabilitas ekonomi dan pembangunan fisik (Repelita), namun dengan kontrol ketat."},
+        {t: "Reformasi 1998", c: "Runtuhnya rezim 32 tahun. Awal kebebasan pers dan demokrasi langsung."},
+        {t: "Sejarah Kontemporer", c: "Tantangan masa kini: Menjaga persatuan di tengah arus globalisasi digital."},
+
+        // --- TAHUN KEDUA (SEJARAH DUNIA & TEMATIK) ---
+        // SEMESTER 5 (Dunia & Pengaruhnya)
+        {t: "Jalur Rempah Global", c: "Nusantara adalah magnet dunia. Cengkeh Ternate pernah lebih mahal dari emas di pasar Eropa."},
+        {t: "Revolusi Industri", c: "Mesin uap mengubah wajah dunia. Awal mula polusi dan produksi massal yang mematikan pengrajin lokal."},
+        {t: "Perang Dunia I", c: "Runtuhnya kekaisaran tua (Ottoman, Austria). Teknologi pembunuh massal pertama diperkenalkan."},
+        {t: "The Great Depression", c: "1930, saat ekonomi dunia runtuh. Bukti bahwa pasar saham global bisa memiskinan negara jajahan."},
+        {t: "Fasisme & Nazisme", c: "Bahaya nasionalisme ekstrem. Pelajaran mahal tentang kemanusiaan dan genosida."},
+        {t: "Perang Dingin", c: "Dunia terbelah dua. Perebutan pengaruh antara AS dan Uni Soviet di negara berkembang (Proxy War)."},
+        // SEMESTER 6 (Diplomasi Internasional)
+        {t: "Konferensi Asia Afrika", c: "Bandung 1955. Saat Indonesia memimpin bangsa-bangsa terjajah Asia-Afrika untuk bangkit melawan kolonialisme."},
+        {t: "Gerakan Non-Blok", c: "Tidak ke Kiri, tidak ke Kanan. Sikap tegas politik Bebas Aktif Indonesia di tengah badai Perang Dingin."},
+        {t: "Sejarah PBB", c: "Organisasi penjaga perdamaian. Peran diplomat Indonesia (Adam Malik) di panggung dunia."},
+        {t: "Sejarah ASEAN", c: "Persahabatan tetangga. Menjaga stabilitas kawasan Asia Tenggara dari campur tangan asing."},
+        {t: "Timor Timur", c: "Sejarah integrasi dan perpisahan (1975-1999). Pelajaran pahit tentang hak penentuan nasib sendiri."},
+        {t: "Konflik Laut China", c: "Sejarah klaim wilayah di Natuna. Kedaulatan maritim di era modern."},
+        // SEMESTER 7 (Sejarah Kebudayaan)
+        {t: "Budaya Maritim", c: "Nenek moyangku orang pelaut. Teknologi perahu Pinisi dan navigasi bintang yang mendunia."},
+        {t: "Sistem Subak Bali", c: "Warisan dunia UNESCO. Demokrasi pengelolaan air yang adil dan lestari sejak abad ke-11."},
+        {t: "Sejarah Batik", c: "Filosofi dalam goresan canting. Dari pakaian raja menjadi identitas bangsa yang diakui dunia."},
+        {t: "Sastra Klasik", c: "I La Galigo (Sulawesi) adalah salah satu karya sastra epik terpanjang di dunia, melebihi Mahabharata."},
+        {t: "Bahasa Indonesia", c: "Keajaiban Sumpah Pemuda. Menyatukan ratusan suku dengan satu bahasa persatuan tanpa menghapus bahasa ibu."},
+        {t: "Sejarah Pers", c: "Tirto Adhi Soerjo. Pers sebagai senjata tajam 'Bumi Putera' melawan ketidakadilan kolonial."},
+        // SEMESTER 8 (Isu Sosial & Kritis)
+        {t: "Gerakan Wanita", c: "Bukan hanya Kartini. Ada Laksamana Malahayati (Aceh) dan Rasuna Said (Padang). Wanita pejuang setara pria."},
+        {t: "Sejarah Pendidikan", c: "Dari Taman Siswa hingga Kampus Merdeka. Evolusi cara kita mencerdaskan kehidupan bangsa."},
+        {t: "Sejarah Korupsi", c: "VOC bangkrut karena korupsi ('Vergaan Onder Corruptie'). Penyakit kronis yang harus kita putus."},
+        {t: "Konflik Sosial", c: "Ambon, Poso, Sampit. Luka sejarah yang harus diingat agar kita lebih menghargai toleransi."},
+        {t: "Historiografi", c: "Sejarah ditulis oleh pemenang? Belajar membaca sumber sejarah secara kritis dan objektif."},
+        {t: "Cagar Budaya", c: "Menjaga Borobudur dari bom waktu pelapukan. Merawat ingatan bangsa adalah tugas generasi muda."},
+
+        // --- TAHUN KETIGA (FILOSOFI & ANALISIS MENDALAM) ---
+        // SEMESTER 9 (Philosophy)
+        {t: "Filsafat Sejarah", c: "Apakah sejarah berulang (Siklus) atau bergerak lurus (Linear)? Memahami pola waktu."},
+        {t: "Sejarah Pemikiran Ekonomi", c: "Dari barter ke Bitcoin. Evolusi cara manusia menilai harga dan nilai tukar."},
+        {t: "Sejarah Pandemi", c: "Black Death hingga Covid-19. Bagaimana wabah membentuk ulang peta politik dan sosial."},
+        {t: "Sejarah Militer", c: "Dari Sun Tzu hingga Perang Cyber. Evolusi strategi mempertahankan kedaulatan."},
+        {t: "Arkeologi Maritim", c: "Harta karun di dasar laut. Membaca sejarah jalur perdagangan dari bangkai kapal."},
+        {t: "Antropologi Sejarah", c: "Evolusi budaya manusia. Mengapa kita hidup berkelompok dan menciptakan mitos?"},
+        // SEMESTER 10 (Global Perspective)
+        {t: "Sejarah Timur Tengah", c: "Sumeria hingga Konflik Modern. Pusat peradaban awal dan dinamika minyak dunia."},
+        {t: "Sejarah Asia Timur", c: "Kebangkitan Naga dan Samurai. Restorasi Meiji dan Revolusi Kebudayaan."},
+        {t: "Sejarah Amerika Latin", c: "Aztec, Inca, Maya. Peradaban yang hilang dan kolonialisme Spanyol."},
+        {t: "Sejarah Afrika", c: "Mansa Musa dan Great Zimbabwe. Benua terkaya yang terlupakan sejarah barat."},
+        {t: "Futurisme Sejarah", c: "Menggunakan pola masa lalu untuk memprediksi masa depan. Sejarah sebagai alat ramal."},
+        {t: "Preservasi Digital", c: "Bagaimana menyimpan sejarah hari ini agar bisa dibaca 1000 tahun lagi? Tantangan 'Dark Age' digital."},
+
+        // --- TAHUN KEEMPAT (FINAL YEAR & GRADUATION) ---
+        // SEMESTER 11 (Pra-Skripsi & Pengabdian)
+        {t: "Metodologi Sejarah Kritis", c: "Heuristik, Kritik, Interpretasi, Historiografi. 4 Pilar validitas kebenaran masa lalu."},
+        {t: "Penulisan Proposal", c: "Menentukan topik yang belum pernah dijamah. Menggali arsip yang tertimbun debu."},
+        {t: "KKN Tematik Budaya", c: "Tinggal bersama masyarakat adat. Mencatat kearifan lokal yang terancam punah."},
+        {t: "Magang Museum/Arsip", c: "Menjadi kurator muda. Merawat keris kuno dan naskah rapuh agar tetap abadi."},
+        {t: "Kajian Manuskrip", c: "Filologi. Membaca aksara kuno di daun lontar untuk mengungkap rahasia leluhur."},
+        {t: "Sejarah Lisan", c: "Mewawancarai veteran perang dan saksi sejarah. Merekam suara yang tak tertulis di buku."},
+        // SEMESTER 12 (Tugas Akhir & Wisuda)
+        {t: "Seminar Sejarah", c: "Memaparkan temuan arsip baru. Berdebat dengan sejarawan senior tentang interpretasi fakta."},
+        {t: "Jurnalistik Sejarah", c: "Menulis sejarah populer untuk majalah/web. Agar sejarah tidak membosankan bagi awam."},
+        {t: "Konservasi Cagar Budaya", c: "Teknik kimia dan fisika untuk memperlambat pelapukan candi dan gedung tua."},
+        {t: "Sidang Skripsi", c: "Pembuktian tesis sejarahmu. Apakah kamu menemukan kebenaran baru atau sekadar mengulang cerita lama?"},
+        {t: "Yudisium", c: "Pengukuhan gelar. Nilai dari ribuan halaman buku yang telah kamu baca selama 4 tahun."},
+        {t: "WISUDA SARJANA", c: "Gelar S.Hum disematkan. Kamu kini adalah Penjaga Ingatan Bangsa. Jangan biarkan kami lupa!"}
     ]
 };
 
@@ -5512,7 +5695,7 @@ function selectMajor(major) {
     
     // UPDATE: MENAMBAHKAN INFO TENTANG JALUR BEASISWA
     showDialogue("DOSEN PENGUJI", 
-        `Kamu memilih jurusan **${majorName}**.\n\nSyarat masuk: Lulus **Tes Kompetensi Dasar** (5 Soal).\n\n📜 **Jalur Reguler**: Min. Nilai 60 (Benar 3).\n🏆 **Jalur Beasiswa**: Nilai 100 (Benar Semua) -> Dapat Uang Saku!\n\nApakah kamu siap?`, 
+        `Kamu memilih jurusan **${majorName}**.\n\nSyarat masuk: Lulus **Tes Kompetensi Dasar** (10 Soal).\n\n📜 **Jalur Reguler**: Min. Nilai 60 (Benar 6).\n🏆 **Jalur Beasiswa**: Nilai 100 (Benar 10/10) -> Dapat Uang Saku & Gratis UKT!\n\nApakah kamu siap?`, 
         [
             {text: "SIAP! (Mulai Ujian)", action: () => startEntranceExam(major)},
             {text: "Nanti dulu (Belajar)", action: closeDialogue}
@@ -5554,8 +5737,9 @@ function nextExamQuestion() {
     // Acak urutan jawaban biar tidak selalu sama posisinya
     opts.sort(() => Math.random() - 0.5);
 
+    // UPDATE: Tampilkan total soal dinamis (10)
     showDialogue(
-        `UJIAN MASUK (${currentExam.qIndex + 1}/5)`, 
+        `UJIAN MASUK (${currentExam.qIndex + 1}/${currentExam.questions.length})`, 
         qData.q, 
         opts, 
         'images/lecture.png'
@@ -5580,13 +5764,14 @@ function answerExam(isCorrect) {
 
 // Selesai Ujian & Cek Kelulusan
 function finishEntranceExam() {
-    const passingScore = 3; // Minimal benar 3
-    const finalScore = currentExam.score * 20; // Skala 100
+    // UPDATE: LOGIKA NILAI UNTUK 10 SOAL
+    const passingScore = 6; // Minimal benar 6 (Nilai 60)
+    const finalScore = currentExam.score * 10; // Skala 100 (Benar x 10)
     const passed = currentExam.score >= passingScore;
     
     if (passed) {
         // --- NEW: SISTEM BEASISWA VS REGULER ---
-        const isScholarship = currentExam.score === 5; // Benar 5/5 (Nilai 100)
+        const isScholarship = currentExam.score === 10; // Benar 10/10 (Nilai 100 Sempurna)
         let admissionType = "JALUR REGULER";
         let moneyBonus = 0;
         let tuitionFee = 0;
@@ -5594,11 +5779,11 @@ function finishEntranceExam() {
         if (isScholarship) {
             admissionType = "🏆 JALUR BEASISWA PRESTASI";
             moneyBonus = 5000; // Hadiah Uang Saku Awal
-            let rewardMsg = `\n\nLuar biasa! Karena nilai sempurna, kamu mendapat **Beasiswa Penuh (Gratis)** dan uang saku awal **Rp ${moneyBonus.toLocaleString()}**!`;
+            let rewardMsg = `\n\nLuar biasa! Karena nilai sempurna (100), kamu mendapat **Beasiswa Penuh (Gratis UKT)** dan uang saku awal **Rp ${moneyBonus.toLocaleString()}**!`;
             
             // Dialog Sukses Beasiswa
             showDialogue("DOSEN PENGUJI", 
-                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 5 soal)\n\nSELAMAT! Kamu dinyatakan **LULUS** di jurusan **${currentExam.major.toUpperCase()}** melalui **${admissionType}**.${rewardMsg}`, 
+                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 10 soal)\n\nSELAMAT! Kamu dinyatakan **LULUS** di jurusan **${currentExam.major.toUpperCase()}** melalui **${admissionType}**.${rewardMsg}`, 
                 [{text: "Alhamdulillah!", action: () => {
                     // Apply Major
                     STATE.player.major = currentExam.major;
@@ -5643,7 +5828,7 @@ function finishEntranceExam() {
 
             // 2. Jika Uang Cukup, Konfirmasi Pembayaran
             showDialogue("DOSEN PENGUJI", 
-                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 5 soal)\n\nKamu LULUS seleksi akademis melalui **${admissionType}**.\n\nBiaya Pendaftaran: **Rp ${tuitionFee.toLocaleString()}**.\nApakah kamu bersedia melakukan pembayaran sekarang?`, 
+                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 10 soal)\n\nKamu LULUS seleksi akademis melalui **${admissionType}**.\n\nBiaya Pendaftaran: **Rp ${tuitionFee.toLocaleString()}**.\nApakah kamu bersedia melakukan pembayaran sekarang?`, 
                 [
                     {text: `Bayar & Daftar (-${tuitionFee.toLocaleString()})`, action: () => {
                         STATE.player.money -= tuitionFee;
@@ -5674,7 +5859,7 @@ function finishEntranceExam() {
         }
     } else {
         showDialogue("DOSEN PENGUJI", 
-            `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 5 soal)\n\nMAAF, kamu **TIDAK LULUS**. Pelajari lagi materi dasar dan coba daftar lagi nanti.`, 
+            `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 10 soal)\n\nMAAF, kamu **TIDAK LULUS** (Min. Nilai 60). Pelajari lagi materi dasar dan coba daftar lagi nanti.`, 
             [{text: "Saya akan belajar lagi", action: closeDialogue}], 
             'images/lecture.png'
         );
@@ -6087,35 +6272,68 @@ function update() {
             showToast(`BONUS BULANAN DITERIMA: ${bonus} Gold!`);
         }
 
-        // --- NEW: SISTEM BAYAR SPP TAHUNAN (KHUSUS MAHASISWA) ---
-        // Trigger setiap awal tahun baru (Hari 121, 241, dst) -> 1 Tahun = 120 Hari
-        if(STATE.player.role === 'student' && (STATE.day - 1) % 120 === 0 && STATE.day > 1) {
-            const sppAmount = 600000;
-            const currentYear = Math.ceil(STATE.day / 120);
+        // --- NEW: BEASISWA BULANAN (KHUSUS MAHASISWA BERPRESTASI) ---
+        // Trigger setiap awal bulan (Hari 31, 61, 91, dst) -> 1 Bulan = 30 Hari
+        if (STATE.player.role === 'student' && STATE.player.scholarship && (STATE.day - 1) % 30 === 0 && STATE.day > 1) {
+            const scholarshipAmount = 15000;
+            STATE.player.money += scholarshipAmount;
             
-            // Tarik Uang (Bisa Minus/Hutang)
-            STATE.player.money -= sppAmount;
-            
-            // Tampilkan Notifikasi Penting (Dialog)
+            // Tampilkan Notifikasi Uang Saku
             setTimeout(() => {
-                let statusMsg = "";
-                let titleMsg = "TAGIHAN SPP OTOMATIS";
-                let iconMsg = "✅ Lunas";
-                
-                if(STATE.player.money < 0) {
-                    statusMsg = `\n\n⚠️ **PERINGATAN KRITIS**:\nSaldo Anda MINUS (${STATE.player.money.toLocaleString()} G). \nSegera lunasi hutang ini atau Ijazah Anda akan ditahan!`;
-                    titleMsg = "TUNGGAKAN SPP";
-                    iconMsg = "❌ Berhutang";
-                }
-                
-                showDialogue("BAGIAN KEUANGAN KAMPUS", 
-                    `📢 **PEMBERITAHUAN TAHUN AJARAN BARU**\n\nMemasuki Tahun ke-${currentYear}.\nBiaya SPP sebesar **Rp ${sppAmount.toLocaleString()}** telah dibebankan ke rekening Anda.\n\nStatus: ${iconMsg}${statusMsg}`, 
-                    [{text: "Mengerti (Lanjut Kuliah)", action: closeDialogue}], 
+                showDialogue("KAMPUS - BAGIAN KEUANGAN", 
+                    `📧 **TRANSFER BEASISWA MASUK**\n\nHalo Mahasiswa Berprestasi,\nUang saku beasiswa bulanan sebesar **Rp ${scholarshipAmount.toLocaleString()}** telah ditransfer ke rekening Anda.\n\nGunakan untuk biaya hidup dan beli buku pelajaran ya!`, 
+                    [{text: "Terima Kasih! (Cair)", action: closeDialogue}], 
                     'images/lecture.png'
                 );
-                
                 if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-            }, 1500); // Delay sedikit agar tidak tertutup toast ganti hari
+            }, 2500); // Delay sedikit agar muncul setelah notifikasi ganti hari
+        }
+
+        // --- NEW: SISTEM BAYAR UKT TAHUNAN (UPDATE LOGIKA BEASISWA VS REGULER) ---
+        // Trigger setiap awal tahun baru (Hari 121, 241, dst) -> 1 Tahun = 120 Hari
+        if(STATE.player.role === 'student' && (STATE.day - 1) % 120 === 0 && STATE.day > 1) {
+            const currentYear = Math.ceil(STATE.day / 120);
+            
+            // CEK 1: APAKAH MAHASISWA BEASISWA?
+            if (STATE.player.scholarship) {
+                // JIKA BEASISWA: GRATIS
+                setTimeout(() => {
+                    showDialogue("BAGIAN KEUANGAN KAMPUS", 
+                        `📢 **PEMBERITAHUAN TAHUN AJARAN BARU**\n\nMemasuki Tahun ke-${currentYear}.\n\nStatus Anda: **PENERIMA BEASISWA**\nBiaya UKT: **GRATIS (Rp 0)**.\n\nPertahankan prestasimu!`, 
+                        [{text: "Alhamdulillah (Lanjut Kuliah)", action: closeDialogue}], 
+                        'images/lecture.png'
+                    );
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                }, 1500);
+            } 
+            // CEK 2: JIKA BUKAN BEASISWA (REGULER)
+            else {
+                const uktAmount = 600000;
+                
+                // Tarik Uang (Bisa Minus/Hutang)
+                STATE.player.money -= uktAmount;
+                
+                // Tampilkan Notifikasi Tagihan
+                setTimeout(() => {
+                    let statusMsg = "";
+                    let titleMsg = "TAGIHAN UKT OTOMATIS";
+                    let iconMsg = "✅ Lunas";
+                    
+                    if(STATE.player.money < 0) {
+                        statusMsg = `\n\n⚠️ **PERINGATAN KRITIS**:\nSaldo Anda MINUS (${STATE.player.money.toLocaleString()} G). \nSegera lunasi hutang ini atau Ijazah Anda akan ditahan!`;
+                        titleMsg = "TUNGGAKAN UKT";
+                        iconMsg = "❌ Berhutang";
+                    }
+                    
+                    showDialogue("BAGIAN KEUANGAN KAMPUS", 
+                        `📢 **PEMBERITAHUAN TAHUN AJARAN BARU**\n\nMemasuki Tahun ke-${currentYear}.\nBiaya UKT (Jalur Reguler) sebesar **Rp ${uktAmount.toLocaleString()}** telah dibebankan ke rekening Anda.\n\nStatus: ${iconMsg}${statusMsg}`, 
+                        [{text: "Mengerti (Lanjut Kuliah)", action: closeDialogue}], 
+                        'images/lecture.png'
+                    );
+                    
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                }, 1500); 
+            }
         }
 
         randomizeWeather();
@@ -7895,6 +8113,15 @@ function interactNPC(npc) {
                     {text: `Dimana ${specificBuilding}?`, action: () => showToast(`Cek Peta! ${specificBuilding} ada ikon khususnya.`)},
                     {text: "Siap Laksanakan", action: () => interactNPC(npc)}
                 ], npc.imgSrc);
+            }},
+
+            // --- NEW: OPSI DIALOG INFO BEASISWA ---
+            {text: "Info Beasiswa & Biaya", action: () => {
+                showDialogue("MENTOR BUDI", 
+                    "Pendidikan itu investasi, tapi biayanya berbeda tergantung otakmu!\n\n📜 **JALUR REGULER**:\n- Syarat: Lulus Ujian (Nilai Minimal).\n- Biaya: Bayar Uang Pangkal & **UKT 600.000 / Tahun**.\n\n🏆 **JALUR BEASISWA**:\n- Syarat: **Nilai Ujian Sempurna (100)**.\n- Benefit: **GRATIS UKT** & dapat **Uang Saku 15.000 / Bulan**!\n\nJadi, belajar yang rajin sebelum ujian masuk!", 
+                    [{text: "Wah, menggiurkan!", action: () => interactNPC(npc)}], 
+                    npc.imgSrc
+                );
             }},
 
             {text: "Jelaskan Fungsi Bangunan", action: () => {
