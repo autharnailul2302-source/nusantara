@@ -2344,6 +2344,7 @@ const AudioService = {
         sea: new Audio('audio/laut.mp3'), 
         rain: new Audio('audio/hujan.mp3'),
         bird: new Audio('audio/burung.mp3'), // BARU: Tambahkan audio burung
+        night: new Audio('audio/malam.mp3'), // NEW: Audio Malam (Jangkrik/Ambience)
         // BARU: Audio Hewan Ternak
         kambing: new Audio('audio/kambing.mp3'),
         sapi: new Audio('audio/sapi.mp3'),
@@ -2364,6 +2365,7 @@ const AudioService = {
         try {
             if(this.tracks.opening) this.tracks.opening.loop = true;
             if(this.tracks.village) this.tracks.village.loop = true;
+            if(this.tracks.night) this.tracks.night.loop = true; // NEW: Loop suara malam
             if(this.tracks.sea) this.tracks.sea.loop = true;
             if(this.tracks.rain) this.tracks.rain.loop = true;
             if(this.tracks.inside) this.tracks.inside.loop = true; 
@@ -2372,6 +2374,7 @@ const AudioService = {
             
             if(this.tracks.opening) this.tracks.opening.volume = 0.5;
             if(this.tracks.village) this.tracks.village.volume = 0.5;
+            if(this.tracks.night) this.tracks.night.volume = 0.7; // NEW: Volume suara malam
             if(this.tracks.sea) this.tracks.sea.volume = 0.0; 
             if(this.tracks.rain) this.tracks.rain.volume = 0.4;
             if(this.tracks.bird) this.tracks.bird.volume = 0.3;
@@ -2444,7 +2447,13 @@ const AudioService = {
         } else if (STATE.screen === 'play') {
             // Logika Musik Berdasarkan Lokasi
             if (STATE.location === 'village') {
-                this.playBGM('village');
+                // UPDATE: Cek Waktu untuk Mengganti Musik Siang/Malam
+                // Jika Jam 18:00 s/d 05:00 pagi, mainkan suara malam (jangkrik)
+                if (STATE.time >= 1800 || STATE.time < 500) {
+                    this.playBGM('night');
+                } else {
+                    this.playBGM('village');
+                }
             } else if (STATE.location === 'dungeon') {
                 // UPDATE: Cek apakah Boss sudah Spawn
                 if (STATE.bossSpawned) {
@@ -3292,15 +3301,16 @@ function closeLeaderboard() {
 
 // PROLOGUE LOGIC
 const prologueTexts = [
-    "Di usia delapan belas tahun, takdir baru dimulai.",
-    "Nusantara Arsa... dunia dimana pilihanmu adalah kekuatanmu.",
-    "Kamu bukan lagi anak-anak. Kamu adalah arsitek masa depan.",
-    "Di pulau ini, kamu akan menghadapi realita.",
-    "Bekerja untuk bertahan. Belajar untuk berkembang. Bertarung untuk kejayaan.",
-    "Tidak ada jalan yang salah, hanya konsekuensi.",
-    "Dunia ini kejam bagi yang malas, tapi emas bagi yang berusaha.",
+    "Di usia delapan belas tahun, setiap manusia berdiri di gerbang kehidupannya sendiri.",
+    "Tidak ada peta yang benar. Tidak ada jalan yang pasti.",
+    "Di Nusantara Arsa, kamu dikirim ke pulau ini bukan untuk dihukum, melainkan untuk ditempa.",
+    "Di sini, kamu akan menghadapi realita. Kamu bukan lagi anak-anak, kamu adalah arsitek masa depan.",
+    "Pilihanmu adalah kekuatanmu. Bekerja, Belajar, Membangun Usaha, atau Mencintai...",
+    "Bahkan gagal dan bangkit kembali. Tidak ada jalan yang salah, hanya konsekuensi.",
+    "Tidak semua akan berhasil. Dunia ini kejam bagi yang malas, tapi emas bagi yang berusaha.",
+    "Namun mereka yang mampu bertahan, akan membawa pulang hal paling berharga: Pemahaman Hidup.",
     "Selamat datang di Nusantara Arsa.",
-    "Bangkitlah, wahai siswa!"
+    "Hidupmu. Pilihanmu. Bangkitlah!"
 ];
 
 let prologueTimeout; // Variable to hold the timer
@@ -4527,7 +4537,8 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             {id: 'sarjana_sejarah', x: 9, y: 12, name: 'Ahli Sejarah', imgSrc: 'images/sarjanasejarah.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
 
             /* NEW: SATPAM KAMPUS (Penjaga Gerbang) */
-            {id: 'satpam', x: 40, y: 16, name: 'Satpam', imgSrc: 'images/satpam.png', type: 'static', schedule: 'day'},
+            /* UPDATE: POSISI DIGESER KE KIRI (38, 16) AGAR TIDAK MENGHALANGI JALAN */
+            {id: 'satpam', x: 38, y: 16, name: 'Satpam', imgSrc: 'images/satpam.png', type: 'static', schedule: 'day'},
 
             /* REMOVED: job/mercenary npc */
             /* MOVED: Trader menggantikan posisi job (x:25, y:27) */
@@ -4569,6 +4580,10 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             
             /* UPDATE: PENYANYI (Dipindah ke sebelah Seniman di bawah Papan) */
             {id: 'penyanyi', x: 13, y: 14, name: 'Penyanyi', imgSrc: 'images/penyanyi.png', type: 'static', schedule: 'day'},
+
+            /* NEW: PERENANG DI LAUT (Swimmers) */
+            {id: 'swimmer_boy', x: 3, y: 20, name: 'Perenang Santai', imgSrc: 'images/pantai-boy.png', type: 'swimmer', vx: 0.5, vy: 0.5, schedule: 'day'},
+            {id: 'swimmer_girl', x: 50, y: 36, name: 'Perenang Ceria', imgSrc: 'images/pantai-girl.png', type: 'swimmer', vx: -0.5, vy: 0, schedule: 'day'},
 
             /* --- RIVAL CINTA (GENDER SPECIFIC & MOVING) --- */
             
@@ -6430,8 +6445,8 @@ function update() {
             }
         }
 
-        if(npc.type === 'wander' || npc.type === 'animal') {
-            if (distToPlayer < 60) {
+        if(npc.type === 'wander' || npc.type === 'animal' || npc.type === 'swimmer') {
+            if (distToPlayer < 60 && npc.type !== 'swimmer') { // Swimmer cuek, gak berhenti kalau didekati (kecuali diajak ngobrol)
                 if(npc.type === 'animal') {
                     if(npc.cooldown <= 0 && distToPlayer < 40) {
                         npc.cooldown = 120;
@@ -6451,12 +6466,59 @@ function update() {
                     npc.vx = (Math.random() - 0.5) * 2;
                     npc.vy = (Math.random() - 0.5) * 2;
                 }
+                
+                // Khusus Swimmer gerakannya lebih konsisten (berenang)
+                if (npc.type === 'swimmer') {
+                    // Random turn sesekali
+                    if(Math.random() < 0.01) {
+                        npc.vx = (Math.random() - 0.5) * 1.5;
+                        npc.vy = (Math.random() - 0.5) * 1.5;
+                    }
+
+                    // NEW: EFEK CIPRATAN AIR SAAT BERGERAK
+                    if (Math.abs(npc.vx) > 0.1 || Math.abs(npc.vy) > 0.1) {
+                        // 30% Chance spawn partikel per frame
+                        if(Math.random() < 0.3) {
+                            STATE.particles.push({
+                                x: (npc.x * TILE_SIZE) + 15 + (Math.random() * 14 - 7), // Sekitar badan
+                                y: (npc.y * TILE_SIZE) + 40, // Di permukaan air (kaki)
+                                vx: (Math.random() - 0.5) * 2, // Menyebar ke samping
+                                vy: -1.5 - Math.random(), // Melompat ke atas
+                                life: 25, // Durasi
+                                color: '#e0f2fe', // Putih kebiruan (buih air)
+                                type: 'splash',
+                                size: 2 + Math.random() * 3
+                            });
+                        }
+                    }
+                }
+
                 let nx = (npc.x * TILE_SIZE) + (npc.vx || 0);
                 let ny = (npc.y * TILE_SIZE) + (npc.vy || 0);
                 
                 if(nx > 0 && nx < curMap.w*TILE_SIZE && ny > 0 && ny < curMap.h*TILE_SIZE) {
-                    npc.x = nx / TILE_SIZE;
-                    npc.y = ny / TILE_SIZE;
+                    
+                    if (npc.type === 'swimmer') {
+                        // LOGIKA PERENANG: Hanya boleh di Tile 0 (Air)
+                        const tX = Math.floor((nx + 15) / TILE_SIZE);
+                        const tY = Math.floor((ny + 30) / TILE_SIZE); // Cek kaki
+                        const tIdx = tY * curMap.w + tX;
+                        const tile = curMap.tiles[tIdx];
+                        
+                        // Jika air (0) atau di bawah dermaga (area dermaga juga air sebenernya tapi kita bolehin)
+                        if (tile === 0) {
+                            npc.x = nx / TILE_SIZE;
+                            npc.y = ny / TILE_SIZE;
+                        } else {
+                            // Nabrak darat, putar balik
+                            npc.vx *= -1;
+                            npc.vy *= -1;
+                        }
+                    } else {
+                        // NPC Biasa
+                        npc.x = nx / TILE_SIZE;
+                        npc.y = ny / TILE_SIZE;
+                    }
                 }
             }
             
@@ -7305,13 +7367,27 @@ function handleAction() {
     if(STATE.player.direction === 'up') targetY -= reach;
     if(STATE.player.direction === 'down') targetY += reach;
 
+    // FIX: CARI NPC TERDEKAT, BUKAN YANG PERTAMA KETEMU
+    // Agar saat NPC berdekatan (seperti Aisyah & Maria), yang diajak bicara adalah yang paling dekat
+    let closestNPC = null;
+    let minDist = 9999;
+
     for (let npc of map.npcs) {
         if (!isNPCActive(npc)) continue;
         const dist = Math.hypot(targetX - (npc.x * TILE_SIZE + 15), targetY - (npc.y * TILE_SIZE + 15));
+        
+        // Jarak interaksi 40px
         if (dist < 40) {
-            interactNPC(npc);
-            return;
+            if (dist < minDist) {
+                minDist = dist;
+                closestNPC = npc;
+            }
         }
+    }
+
+    if (closestNPC) {
+        interactNPC(closestNPC);
+        return;
     }
 
     // PERBAIKAN: Cek objek manual dengan toleransi box lebih besar
@@ -8201,6 +8277,49 @@ function interactNPC(npc) {
                 showDialogue(npc.name, "Hehe, kami memang partner musik terbaik. Musik menyatukan jiwa kami.", [{text:"Mantap", action:closeDialogue}], npc.imgSrc);
             }},
             {text: "Dah", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // NEW: INTERAKSI PERENANG
+    else if(npc.type === 'swimmer') {
+        showDialogue(npc.name, "Byuurr... Air lautnya segar sekali hari ini! Kamu tidak mau ikutan?", [
+            {text: "Nanti basah kuyup...", action: () => {
+                showDialogue(npc.name, "Hahaha! Namanya juga main air. Hati-hati jangan terlalu jauh, konon ada monster laut.", [{text:"Oke", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Dah", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI PENJAGA DUNGEON (ADVICE & INFO LENGKAP) ---
+    else if(npc.id === 'penjagadungeon') {
+        showDialogue("PENJAGA GERBANG", "Berhenti! Area di depan sangat berbahaya. Hanya untuk yang bernyali besar.", [
+            {text: "Tentang Dungeon ⚔️", action: () => {
+                showDialogue("PENJAGA GERBANG", "Dungeon ini terdiri dari 5 Lantai. Semakin dalam kamu masuk, monster semakin ganas.\nDi Lantai 5, bersemayam Boss yang menjaga harta karun sesungguhnya.", [{text:"Paham", action:()=>interactNPC(npc)}], npc.imgSrc);
+            }},
+            {text: "Tutorial Combat 🛡️", action: () => {
+                showDialogue("PENJAGA GERBANG", "Dasar pemula... Dengar baik-baik!\n\n⚔️ **TOMBOL SERANG**: Di dalam, tombol aksi berubah jadi Pedang.\n🔥 **SISTEM COMBO**: Tekan cepat berirama! Serangan ke-3 adalah FINISHER (Damage Besar).\n⚡ **STAMINA**: Menyerang butuh tenaga. Jangan spam kalau lelah!", [{text:"Siap Paham!", action:()=>interactNPC(npc)}], npc.imgSrc);
+            }},
+            {text: "Info Item Legend 🏆", action: () => {
+                showDialogue("PENJAGA GERBANG", "Harta karun utama Boss Lantai 5:\n1. 🛡️ **Zirah Abadi**: Membuat kulitmu sekeras baja (Damage musuh berkurang drastis).\n2. 💍 **Cincin Raja**: Aura kekayaan (Bonus Gold +50%) dan **syarat wajib untuk MENIKAH**!\n\nTanpa cincin ini, jangan harap lamaranmu diterima!", [{text:"Penting banget!", action:()=>interactNPC(npc)}], npc.imgSrc);
+            }},
+            {text: "Drop Boss Lainnya? 🧪", action: () => {
+                showDialogue("PENJAGA GERBANG", "Selain pusaka, Boss juga menyimpan ramuan langka:\n1. 🛡️🧪 **Tonic Kebal**: Memberikan **SHIELD/KEBAL** serangan selama 10 detik.\n2. ⚡🧪 **Tonic Stamina**: Memulihkan tenaga seketika.\n\nSangat berguna saat terdesak!", [{text:"Siap hunting!", action:()=>interactNPC(npc)}], npc.imgSrc);
+            }},
+            {text: "Item Monster Biasa? 🎒", action: () => {
+                showDialogue("PENJAGA GERBANG", "Monster biasa menjatuhkan material berharga:\n- **Bijih Besi & Permata**: Jual di Merchant, harganya mahal.\n- **Gulungan Kuno**: Baca untuk menambah Ilmu (EXP).\n\nKumpulkan semuanya untuk jadi kaya!", [{text:"Siap!", action:()=>interactNPC(npc)}], npc.imgSrc);
+            }},
+            {text: "Ngobrol Santai ☕", action: () => {
+                const quotes = [
+                    "Anak muda, dengar nasehatku: **Jangan mikirin pacaran dulu!** Dompetmu masih tipis. Isi dulu dengan Gold, baru cari jodoh.",
+                    "Cinta itu butuh biaya. Kalau kamu sukses dan punya rumah mewah, pasangan terbaik akan datang sendiri. Fokus kerja keras!",
+                    "Hidup itu seperti Dungeon. Penuh rintangan dan monster. Tapi kalau kamu berani maju, ada harta karun menanti.",
+                    "Menabunglah selagi muda. Jangan habiskan uangmu untuk gaya hidup. Investasikan untuk Zirah atau Upgrade Rumah.",
+                    "Sakit hati karena cinta? Obatnya cuma satu: SUKSES. Ayo masuk Dungeon dan cari uang!"
+                ];
+                const randQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                showDialogue("PENJAGA GERBANG", randQuote, [{text:"Siap Pak!", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Tutup", action: closeDialogue}
         ], npc.imgSrc);
     }
 
@@ -9714,7 +9833,18 @@ function draw() {
             ctx.globalAlpha = p.life / 80; // Fade out effect
             ctx.fillText(p.icon, p.x, p.y);
             ctx.restore();
-        } else {
+        } 
+        // NEW: RENDER PARTIKEL CIPRATAN AIR
+        else if (p.type === 'splash') {
+            ctx.save();
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life / 25; // Fade out seiring umur
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); // Bentuk bulat air
+            ctx.fill();
+            ctx.restore();
+        }
+        else {
             // Render Partikel Kotak Biasa
             ctx.fillStyle = p.color;
             ctx.fillRect(p.x, p.y, 4, 4);
@@ -10242,17 +10372,43 @@ function drawNPC(ctx, n) {
     if(n.id.includes('ayam')) shadowSize = 6;
     if(n.id.includes('sapi') || n.id.includes('kuda')) shadowSize = 14;
 
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.beginPath(); 
-    ctx.ellipse(px + 15, py + 28, shadowSize, shadowSize/2.5, 0, 0, Math.PI*2); 
-    ctx.fill();
+    // UPDATE: Jangan gambar bayangan hitam biasa untuk swimmer, ganti riak air nanti
+    if(n.type !== 'swimmer') {
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.beginPath(); 
+        ctx.ellipse(px + 15, py + 28, shadowSize, shadowSize/2.5, 0, 0, Math.PI*2); 
+        ctx.fill();
+    }
 
     if(!n.img) { n.img = new Image(); n.img.src = n.imgSrc; }
 
     ctx.save();
+    
+    // Posisi Translate
     ctx.translate(px + 15, py + 15);
-    const breathe = 1 + Math.sin((Date.now() + n.x*100) / 300) * 0.03;
-    ctx.scale(1, breathe);
+    
+    // Animasi Bernafas/Terapung
+    let breathe = 1 + Math.sin((Date.now() + n.x*100) / 300) * 0.03;
+    
+    // Khusus Swimmer: Animasi Terapung (Bobbing) lebih kuat
+    if (n.type === 'swimmer') {
+        // Gambar Riak Air di bawah
+        const rippleScale = 1 + Math.sin(Date.now() / 500) * 0.2;
+        ctx.save();
+        ctx.translate(0, 15); // Turun ke permukaan air
+        ctx.scale(rippleScale, rippleScale * 0.5);
+        ctx.fillStyle = 'rgba(186, 230, 253, 0.6)'; // UPDATE: Riak Biru Muda (Lebih terlihat air)
+        ctx.beginPath();
+        ctx.arc(0, 0, 18, 0, Math.PI * 2); // Ukuran sedikit diperbesar
+        ctx.fill();
+        ctx.restore();
+
+        // Naik turun
+        const floatY = Math.sin(Date.now() / 400) * 3;
+        ctx.translate(0, floatY);
+    } else {
+        ctx.scale(1, breathe);
+    }
 
     if(n.img.complete && n.img.naturalWidth !== 0) {
         let drawW = 40;
@@ -10282,7 +10438,19 @@ function drawNPC(ctx, n) {
             }
         }
         
-        ctx.drawImage(n.img, offX, offY, drawW, drawH);
+        // Khusus Swimmer: Badan terpotong sedikit (tenggelam)
+        if (n.type === 'swimmer') {
+            // Gunakan clip path untuk memotong bagian bawah sprite seolah dalam air
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(-30, -60, 60, 50); // Kotak potong (hanya gambar bagian atas)
+            ctx.clip();
+            ctx.drawImage(n.img, offX, offY, drawW, drawH);
+            ctx.restore();
+        } else {
+            ctx.drawImage(n.img, offX, offY, drawW, drawH);
+        }
+
     } else {
         ctx.restore(); 
         draw3DBox(ctx, px, py, 30, 30, n.type==='animal' ? '#fff' : '#facc15');
