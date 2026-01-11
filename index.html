@@ -2706,7 +2706,12 @@ function checkLifeTrialCompletion() {
     if (role === 'none') return false;
 
     if (role === 'worker') return p.str >= 50 && p.money >= 100000;
-    if (role === 'student') return p.int >= 50 && p.level >= 25;
+    // UPDATE: Syarat Student disesuaikan (Evaluasi Studi Tahun ke-3)
+    // Tidak butuh tesis, tapi butuh buku referensi & INT cukup
+    if (role === 'student') {
+        const hasBook = Object.keys(p.inventory).some(k => k.includes('buku') && !k.includes('tesis'));
+        return p.int >= 50 && p.level >= 15 && hasBook;
+    }
     if (role === 'entrepreneur') return p.biz >= 50 && p.houseLevel >= 2;
     if (role === 'family') return p.reputation >= 50 && Object.keys(p.relationships).length >= 5;
     
@@ -3038,8 +3043,11 @@ function getQuestContent(tabType) {
             html += `${check(p.str >= 50)} STR 50+ ${prog(p.str, 50)}<br>`;
             html += `${check(p.money >= 100000)} Uang 100k<br>`;
         } else if(role === 'student') {
-            html += `${check(p.int >= 50)} INT 50+ ${prog(p.int, 50)}<br>`;
-            html += `${check(p.level >= 25)} Level 25<br>`;
+            // UPDATE: Deskripsi agar jelas ini adalah Evaluasi Tahun ke-3 (Bukan Lulus)
+            html += `<span style="font-size:10px; color:#94a3b8;">(Syarat Lanjut ke Tahun 4)</span><br>`;
+            html += `${check(p.int >= 50)} INT 50+ (IPK Aman) ${prog(p.int, 50)}<br>`;
+            html += `${check(p.level >= 15)} Level 15 (Soft Skill)<br>`;
+            html += `${check(Object.keys(p.inventory).some(k=>k.includes('buku') && !k.includes('tesis')))} Punya Buku Referensi<br>`;
         } else if(role === 'entrepreneur') {
             html += `${check(p.biz >= 50)} BIZ 50+ ${prog(p.biz, 50)}<br>`;
             html += `${check(p.houseLevel >= 2)} Upgrade Rumah Lv 2<br>`;
@@ -4584,6 +4592,11 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             /* NEW: PERENANG DI LAUT (Swimmers) */
             {id: 'swimmer_boy', x: 3, y: 20, name: 'Perenang Santai', imgSrc: 'images/pantai-boy.png', type: 'swimmer', vx: 0.5, vy: 0.5, schedule: 'day'},
             {id: 'swimmer_girl', x: 50, y: 36, name: 'Perenang Ceria', imgSrc: 'images/pantai-girl.png', type: 'swimmer', vx: -0.5, vy: 0, schedule: 'day'},
+
+            /* NEW: NPC ANAK-ANAK (BERMAIN DI DEKAT KAMPUS) */
+            /* Menggunakan aset boy/girl biasa tapi nanti dirender lebih kecil */
+            {id: 'child_boy_1', x: 36, y: 12, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
+            {id: 'child_girl_1', x: 37, y: 13, name: 'Gadis Kecil', imgSrc: 'images/anakkecil2.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
 
             /* --- RIVAL CINTA (GENDER SPECIFIC & MOVING) --- */
             
@@ -6733,9 +6746,42 @@ function update() {
                             npc.vy *= -1;
                         }
                     } else {
-                        // NPC Biasa
-                        npc.x = nx / TILE_SIZE;
-                        npc.y = ny / TILE_SIZE;
+                        // LOGIKA NPC DARAT (Wander & ANIMAL): JANGAN LEWAT LAUT
+                        // Berlaku untuk manusia biasa DAN hewan ternak
+                        const tX = Math.floor((nx + 15) / TILE_SIZE); // Titik tengah X
+                        const tY = Math.floor((ny + 30) / TILE_SIZE); // Titik kaki Y (Penting agar tidak nyemplung)
+                        const tIdx = tY * curMap.w + tX;
+                        
+                        let isWalkable = true;
+
+                        if (tIdx >= 0 && tIdx < curMap.tiles.length) {
+                            const tile = curMap.tiles[tIdx];
+                            
+                            // 1. Cek Laut (Tile 0) -> BLOKIR HEWAN & MANUSIA DARAT
+                            if (tile === 0) {
+                                isWalkable = false;
+                                // Pengecualian: Area Dermaga Kayu (Koordinat 43,34 s/d 50,39)
+                                if (STATE.location === 'village') {
+                                    if (tX >= 43 && tX < 50 && tY >= 34 && tY < 39) {
+                                        isWalkable = true;
+                                    }
+                                }
+                            }
+                            
+                            // 2. Cek Tembok/Pohon (Tile 2, 11, 12) agar NPC tidak tembus tembok juga
+                            if (tile === 2 || tile === 11 || tile === 12) {
+                                isWalkable = false;
+                            }
+                        }
+
+                        if (isWalkable) {
+                            npc.x = nx / TILE_SIZE;
+                            npc.y = ny / TILE_SIZE;
+                        } else {
+                            // Nabrak Laut/Tembok -> Putar Balik
+                            npc.vx *= -1;
+                            npc.vy *= -1;
+                        }
                     }
                 }
             }
@@ -8517,6 +8563,29 @@ function interactNPC(npc) {
         ], npc.imgSrc);
     }
 
+    // --- NEW: INTERAKSI ANAK-ANAK ---
+    else if(npc.id.includes('child')) {
+        let childTalk = "Kakak mau main kejar-kejaran nggak? Aku yang lari, kakak yang ngejar! Wlek! 😛";
+        if(npc.name === 'Gadis Kecil') childTalk = "Cita-citaku ingin jadi seperti Putri Duyung! Katanya dia cantik banget.";
+        
+        showDialogue(npc.name, childTalk, [
+            {text: "Belajar yang rajin ya", action: () => {
+                showDialogue(npc.name, "Iya kak... tapi main dulu sebentar hehehe.", [{text:"Dasar bocah", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Kasih Permen (Coklat)", action: () => {
+                if(STATE.player.inventory['coklat'] > 0) {
+                    STATE.player.inventory['coklat']--;
+                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                    showToast("Memberi Coklat ke Anak Kecil ❤️");
+                    showDialogue(npc.name, "Wahhh! Makasih Kakak! Kakak baik banget deh! (Hati Senang)", [{text:"Sama-sama", action:closeDialogue}], npc.imgSrc);
+                } else {
+                    showToast("Kamu tidak punya Coklat.");
+                }
+            }},
+            {text: "Dah", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
     // --- NEW: INTERAKSI PENJAGA DUNGEON (ADVICE & INFO LENGKAP) ---
     else if(npc.id === 'penjagadungeon') {
         showDialogue("PENJAGA GERBANG", "Berhenti! Area di depan sangat berbahaya. Hanya untuk yang bernyali besar.", [
@@ -8897,18 +8966,18 @@ function interactObject(obj) {
         } 
         else if(role === 'student') {
             content = `PATH: MAGE (MAHASISWA)\n` +
-                      `"Tuntutlah Ilmu Sampai ke Pulau Arsa"\n\n` +
+                      `"Perjalanan Menuju Sarjana"\n\n` +
                       `📋 TARGET HARIAN:\n` +
-                      `${check(STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'village')} Hadir di Kampus\n` +
+                      `${check(STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior')} Hadir di Kampus\n` +
                       `${check(p.int > (p.level * 5))} Baca Buku / Belajar\n\n` +
-                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
-                      `${check(p.int >= 50)} Intelligence 50+ (${p.int}/50)\n` +
-                      `${check(p.level >= 25)} Level Karakter 25 (${p.level})\n` +
-                      `${check(Object.keys(p.inventory).some(k=>k.includes('buku')))} Punya Koleksi Buku\n\n` +
-                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
-                      `${check(p.int >= 100)} Intelligence Maksimal (${p.int}/100)\n` +
-                      `${check(p.level >= 50)} Level Karakter 50 (${p.level})\n` +
-                      `${check(p.inventory['buku_tesis'] >= 1)} Menyelesaikan Tesis Akhir`;
+                      `🎯 EVALUASI STUDI (TAHUN KE-3):\n` +
+                      `${check(p.int >= 50)} INT 50+ (Target IPK)\n` +
+                      `${check(p.level >= 15)} Level 15 (Pengalaman)\n` +
+                      `${check(Object.keys(p.inventory).some(k=>k.includes('buku')))} Punya Buku Referensi\n\n` +
+                      `🏆 SYARAT WISUDA (TAHUN KE-4/5):\n` +
+                      `${check(p.int >= 100)} INT Maksimal (Cumlaude)\n` +
+                      `${check(p.level >= 50)} Level Karakter 50\n` +
+                      `${check(p.inventory['buku_tesis'] >= 1)} Menyelesaikan Skripsi/Tesis`;
         } 
         else if(role === 'entrepreneur') {
             content = `PATH: SUPPORT (WIRAUSAHA)\n` +
@@ -10651,6 +10720,14 @@ function drawNPC(ctx, n) {
             offY = -50; 
         }
         
+        // --- NEW: LOGIKA VISUAL UNTUK ANAK KECIL (Render Lebih Kecil) ---
+        if(n.id.includes('child')) {
+            drawW = 30;  // Lebih kurus
+            drawH = 45;  // Lebih pendek (Normal 60)
+            offX = -15;  // Adjust offset X tengah
+            offY = -32;  // Adjust offset Y kaki
+        }
+
         if(n.type === 'animal') {
             drawW = 40; drawH = 40; offX = -20; offY = -25;
             
