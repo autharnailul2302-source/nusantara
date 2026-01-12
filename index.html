@@ -8535,7 +8535,24 @@ function interactNPC(npc) {
 
     // --- NEW: INTERAKSI DOSEN / SCHOLAR (KHUSUS MAHASISWA & ATURAN TELAT) ---
     else if(npc.id === 'lecture') {
-        const isStudent = STATE.player.role === 'student';
+        const currentYear = Math.ceil(STATE.day / 120);
+        // Cek Eligibility: Role Student ATAU Sudah Tahun ke-4 (Lulus Trial) ATAU Free Roam
+        const isEligible = STATE.player.role === 'student' || currentYear >= 4 || STATE.freeRoamMode;
+
+        // --- NEW: RESTRIKSI ROLE UNTUK NON-STUDENT (TRIAL < TAHUN 4) ---
+        if (!isEligible) {
+            showDialogue("DOSEN PEMBIMBING", 
+                "Maaf, pendaftaran akademik saat ini **KHUSUS** untuk Role **Mage/Mahasiswa**.\n\nKamu harus fokus pada kewajiban Role-mu sendiri selama masa Trial 3 Tahun ini. Jangan memecah fokusmu.", 
+                [
+                    {text: "Lihat Info Umum Kampus", action: () => {
+                        showDialogue("DOSEN PEMBIMBING", "Kampus ini tempat menempa ilmu (INT). Jika kamu tertarik, mungkin kamu bisa mengambil kelas ekstensi setelah masa Trial selesai (Tahun ke-4).", [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
+                    }},
+                    {text: "Permisi", action: closeDialogue}
+                ], 
+                npc.imgSrc
+            );
+            return;
+        }
         
         // --- NEW: LOGIKA PENGUSIRAN JIKA SUDAH DI DALAM TAPI TELAT ---
         // Jika pemain ada di dalam kelas (school_interior) dan waktu sudah lewat 08:30
@@ -8560,225 +8577,211 @@ function interactNPC(npc) {
              return; // Stop interaksi normal
         }
 
-        let text = "Saya sedang meneliti sejarah pulau ini.";
-        let actions = [];
-
-        if(isStudent) {
-            // --- NEW: LOGIKA PENDAFTARAN JURUSAN DI KAMPUS ---
-            // Jika mahasiswa belum punya jurusan (karena baru disuruh Mentor)
-            if (!STATE.player.major) {
-                showDialogue("DOSEN", "Ah, mahasiswa baru ya? Mentor Budi sudah mengabari saya.\nSilakan pilih fakultas yang ingin kamu ambil untuk masa studimu:", [
-                    {text: "1. Teknologi (INT +3, Logika)", action: () => selectMajor('teknologi')},
-                    {text: "2. Sejarah (REP +5, Sosial)", action: () => selectMajor('sejarah')}
-                ], npc.imgSrc);
-                return;
-            }
-
-            text = "Ah, mahasiswaku. Ada yang bisa saya bantu hari ini?";
-            actions = [
-                // --- NEW FEATURE: ISI DAFTAR HADIR + MATERI KULIAH ---
-                {text: "📝 Isi Daftar Hadir & Kuliah", action: () => {
-                    // Cek Waktu Kuliah (08:00 - 14:00)
-                    if (STATE.time >= 800 && STATE.time <= 1400) {
-                        // Cek apakah sudah absen hari ini
-                        if (STATE.player.lastAttendanceDay === STATE.day) {
-                            showToast("Kamu sudah absen hari ini!");
-                            showDialogue("DOSEN", "Kamu sudah tercatat hadir hari ini. Fokuslah belajar.", [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
-                        } else {
-                            // PROSES ABSEN BERHASIL
-                            STATE.player.lastAttendanceDay = STATE.day;
-                            // STATE.player.int += 1; // DIHAPUS: Pindah ke dalam materi agar tidak double
-                            // gainExp(50); // DIHAPUS: Pindah ke dalam materi
-                            
-                            // UPDATE: SKIP WAKTU KE 14:00 & KURANGI ENERGI
-                            const oldTime = Math.floor(STATE.time / 100);
-                            STATE.time = 1400; // Set langsung ke jam 14:00
-                            STATE.player.energy = Math.max(0, STATE.player.energy - 20); // Lelah belajar (-20 Energy)
-                            
-                            if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                            
-                            // --- UPDATE: LOGIKA MATERI KULIAH (MUNCUL SETIAP HARI) ---
-                            if (STATE.player.major) {
-                                const major = STATE.player.major;
-                                const materials = COURSE_MATERIALS[major] || [];
-                                
-                                // Tentukan materi berdasarkan urutan hari (Looping jika materi habis)
-                                // Menggunakan (STATE.day - 1) agar Hari 1 dapat Materi index 0
-                                const matIndex = (STATE.day - 1) % materials.length;
-                                const content = materials[matIndex] || {t: "Review Umum", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar."};
-
-                                // Delay sedikit agar suara item terdengar sebelum dialog muncul
-                                setTimeout(() => {
-                                    showDialogue(`MATERI KULIAH (HARI ${STATE.day})`, 
-                                        `**MATA KULIAH: ${content.t}**\n\n"${content.c}"\n\n(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`, 
-                                        [{text: "Catat & Pulang (INT +2, EXP +100)", action: () => {
-                                            STATE.player.int += 2; // Reward Harian yang seimbang
-                                            gainExp(100);
-                                            showToast("📚 Kuliah Selesai (14:00). Ilmu Bertambah!");
-                                            closeDialogue();
-                                        }}], 
-                                        npc.imgSrc
-                                    );
-                                }, 800);
-                            } else {
-                                // Fallback jika terjadi bug major belum terpilih
-                                showDialogue("DOSEN", `Bagus. Kamu telah mengikuti kelas hari ini.`, [{text:"Terima kasih Pak", action:closeDialogue}], npc.imgSrc);
-                            }
-                        }
-                    } else {
-                        // Di luar jam kuliah (Sore Hari / Terlalu Pagi)
-                        let msg = "Daftar hadir hanya bisa diisi saat jam kuliah berlangsung (08:00 - 14:00).";
-                        
-                        // Respon Khusus Sesi Sore
-                        if (STATE.time >= 1400 && STATE.time < 1800) {
-                            msg = "Kuliah reguler hari ini sudah selesai. Sekarang adalah jam kegiatan mandiri atau UKM. \nSilakan gunakan fasilitas kampus untuk belajar atau bimbingan, tapi absen tidak dihitung.";
-                        }
-                        
-                        showDialogue("DOSEN", msg, [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
-                    }
-                }},
-                
-                {text: "Bimbingan Skripsi (Energy -10, INT+1)", action: () => {
-                    if(STATE.player.energy >= 10) {
-                        STATE.player.energy -= 10;
-                        STATE.player.int += 1;
-                        showToast("INT +1 (Bimbingan)");
-                        // Update quest tracking jika perlu
-                        showDialogue("DOSEN", "Teorimu menarik. Lanjutkan risetnya, jangan lupa referensi dari Perpustakaan.", [{text:"Terima kasih Pak", action:closeDialogue}], npc.imgSrc);
-                    } else showToast("Terlalu lelah untuk mikir...");
-                }},
-                {text: "Tanya Jadwal Kuliah", action: () => {
-                    showDialogue("DOSEN", "Kuliah dimulai jam 08:00 pagi sampai 14:00 siang di Gedung Kampus. Jangan telambat!", [{text:"Siap", action:closeDialogue}], npc.imgSrc);
-                }},
-                
-                // --- UPDATE: FITUR SKRIPSI (DIBATASI TAHUN KE-4) ---
-                {text: "📜 Info & Sidang Skripsi", action: () => {
-                    // Hitung Tahun Saat Ini (1 Tahun = 120 Hari)
-                    const currentYear = Math.ceil(STATE.day / 120);
-
-                    // KONDISI 1: BELUM TAHUN KE-4 (Hanya Motivasi)
-                    if (currentYear < 4) {
-                        showDialogue("DOSEN PEMBIMBING", 
-                            `Wah, semangatmu bagus! Tapi kamu masih di **Tahun ke-${currentYear}**.\nPengajuan Proposal Skripsi baru dibuka untuk mahasiswa tingkat akhir (**Tahun ke-4**).\n\nIngat nasihat saya: "Gedung yang tinggi membutuhkan fondasi yang dalam."\n\nJangan terburu-buru lulus. Nikmati proses belajarmu, perbanyak baca buku, dan bangun koneksi. Kesuksesan menanti mereka yang matang secara ilmu, bukan yang sekadar cepat.`, 
-                            [{text: "Terima kasih motivasinya, Pak! (Semangat)", action: closeDialogue}], 
-                            npc.imgSrc
-                        );
-                        return;
-                    }
-
-                    // KONDISI 2: SUDAH TAHUN 4 (Cek Syarat Akademik)
-                    // Syarat: Level 15 (Soft Skill) & INT 50 (Hard Skill)
-                    if (STATE.player.level < 15 || STATE.player.int < 50) {
-                        showDialogue("DOSEN", "Kamu sudah masuk tingkat akhir, tapi bekal ilmumu masih kurang.\n\nSyarat Pengajuan:\n- Level Karakter Min. 15\n- Intelligence (INT) Min. 50\n\nKembalilah belajar di perpustakaan atau ikuti kuliah lebih rajin.", [{text:"Baik Pak, saya akan berusaha", action:closeDialogue}], npc.imgSrc);
-                        return;
-                    }
-
-                    // --- PERBAIKAN INTEGRASI QUEST: CEK ITEM DRAFT PROPOSAL ---
-                    // KONDISI 3: CEK FISIK DOKUMEN (Hard Gate)
-                    // Pemain WAJIB menyelesaikan Quest "Hilangnya Skripsi Senior" dulu
-                    const hasDraft = (STATE.player.inventory['draft_proposal'] || 0) > 0;
-                    
-                    if (!hasDraft) {
-                        showDialogue("DOSEN KILLER", 
-                            "Kamu mau mengajukan sidang dengan tangan kosong? 🤨\n\nSaya dengar **Senior Kutubuku** di Perpustakaan sedang mencari orang untuk membantu risetnya. \n\nTemui dia dulu. Kalau kamu bisa membantunya, mungkin dia akan memberikan salinan **Draft Proposal** yang layak sebagai referensi untukmu.\n\nJangan kembali ke sini sebelum membawa dokumen fisik!", 
-                            [{text: "Baik Pak, saya ke Perpus dulu! (Mulai Quest)", action: closeDialogue}], 
-                            npc.imgSrc
-                        );
-                        return;
-                    }
-
-                    // 4. PROSES PENGAJUAN & REVIEW (ACC / REVISI)
-                    const major = STATE.player.major || 'teknologi'; // Default Teknologi
-                    
-                    // UPDATE: Icon Draft Skripsi disesuaikan dengan permintaan
-                    let draftImg = 'images/draftskripsi-teknologi.png'; 
-                    let draftTitle = "RANCANG BANGUN AI PEMANTAU DUNGEON";
-                    
-                    if (major === 'sejarah') {
-                        draftImg = 'images/draftskripsi-sejarah.png';
-                        draftTitle = "ANALISIS RUNTUHNYA KERAJAAN AETHELGARD";
-                    }
-
-                    // Tampilkan Dialog Penyerahan dengan Animasi Review
-                    showDialogue("PENGAJUAN PROPOSAL", 
-                        `Kamu menyerahkan dokumen **${draftTitle}** ke meja Dosen.\n\nDosen sedang membaca dengan teliti... (Jantung berdebar...)`, 
-                        [{
-                            text: "Tunggu Hasil Review...", 
-                            action: () => {
-                                // --- LOGIKA ACC DOSEN ---
-                                // Peluang ACC dipengaruhi oleh INT pemain.
-                                // Base Chance: 40% + (INT - 50)%. 
-                                // Jika INT 50 -> 40% Chance. Jika INT 100 -> 90% Chance.
-                                let chance = 40 + (STATE.player.int - 50);
-                                if (chance > 90) chance = 90; // Cap max 90% biar ada deg-degan dikit
-                                
-                                const roll = Math.random() * 100;
-                                
-                                if (roll < chance) {
-                                    // --- SKENARIO ACC (DITERIMA) ---
-                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // Sound Happy
-                                    
-                                    showDialogue("STATUS: DI-ACC! ✅", 
-                                        `DOSEN: "Hmm... Menarik.\nLatar belakang kuat, metodologi rapi, dan referensi valid.\n\nOke, saya **ACC** proposal ini. Kamu boleh lanjut ke tahap Sidang Skripsi sekarang."\n\n(Selamat! Proposalmu disetujui)`, 
-                                        [{
-                                            text: "Alhamdulillah! SIAP SIDANG!", 
-                                            action: () => {
-                                                closeDialogue();
-                                                startThesisDefense(major);
-                                            }
-                                        }, {
-                                            text: "Nanti dulu pak, mau belajar lagi", 
-                                            action: closeDialogue
-                                        }], 
-                                        draftImg
-                                    );
-                                } else {
-                                    // --- SKENARIO REVISI (DITOLAK) ---
-                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Sound Sad/Hit
-                                    
-                                    // Kurangi Energy sebagai penalti stress
-                                    STATE.player.energy = Math.max(0, STATE.player.energy - 15);
-                                    
-                                    showDialogue("STATUS: REVISI (DITOLAK) ❌", 
-                                        `DOSEN: "Apa ini?! \nRumusan masalahmu kabur! Datanya tidak sinkron! Typo dimana-mana!\n\nSaya tidak mau tanda tangan kalau masih begini. **REVISI ULANG SEKARANG!**"\n\n(Dosen melempar naskahmu. Kamu merasa stress. Energi -15)`, 
-                                        [{
-                                            text: "Maaf Pak, saya perbaiki... (Coba Lagi)", 
-                                            action: () => {
-                                                if (STATE.player.energy < 15) {
-                                                    showToast("Terlalu lelah & stress untuk revisi...");
-                                                    closeDialogue();
-                                                } else {
-                                                    showToast("Sedang merevisi naskah... ✍️");
-                                                    // Loop balik ke interaksi awal seolah memperbaiki
-                                                    interactNPC(npc);
-                                                }
-                                            }
-                                        }, {
-                                            text: "Pulang dulu (Menangis di pojokan)", 
-                                            action: closeDialogue
-                                        }], 
-                                        npc.imgSrc
-                                    );
-                                }
-                            }
-                        }], 
-                        draftImg
-                    );
-                }},
-
-                {text: "Tutup", action: closeDialogue}
-            ];
-        } else {
-            // Jika bukan mahasiswa
-            actions = [
-                {text: "Tentang Kampus", action: () => {
-                    showDialogue("SCHOLAR", "Kampus ini tempat menempa ilmu (INT). Jika kamu tertarik, pilihlah jalur Pendidikan saat tidur.", [{text:"Menarik", action:closeDialogue}], npc.imgSrc);
-                }},
-                {text: "Permisi", action: closeDialogue}
-            ];
+        // --- NEW: LOGIKA PENDAFTARAN JURUSAN DI KAMPUS ---
+        // Jika belum punya jurusan (Entah Maba atau Old Player yang baru mau kuliah di Thn 4)
+        if (!STATE.player.major) {
+            showDialogue("DOSEN", "Ah, calon mahasiswa baru? Mentor Budi sudah mengabari saya.\nSilakan pilih fakultas yang ingin kamu ambil untuk masa studimu:", [
+                {text: "1. Teknologi (INT +3, Logika)", action: () => selectMajor('teknologi')},
+                {text: "2. Sejarah (REP +5, Sosial)", action: () => selectMajor('sejarah')}
+            ], npc.imgSrc);
+            return;
         }
+
+        // MENU UTAMA MAHASISWA
+        let text = "Ah, mahasiswaku. Ada yang bisa saya bantu hari ini?";
+        let actions = [
+            // --- NEW FEATURE: ISI DAFTAR HADIR + MATERI KULIAH ---
+            {text: "📝 Isi Daftar Hadir & Kuliah", action: () => {
+                // Cek Waktu Kuliah (08:00 - 14:00)
+                if (STATE.time >= 800 && STATE.time <= 1400) {
+                    // Cek apakah sudah absen hari ini
+                    if (STATE.player.lastAttendanceDay === STATE.day) {
+                        showToast("Kamu sudah absen hari ini!");
+                        showDialogue("DOSEN", "Kamu sudah tercatat hadir hari ini. Fokuslah belajar.", [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
+                    } else {
+                        // PROSES ABSEN BERHASIL
+                        STATE.player.lastAttendanceDay = STATE.day;
+                        
+                        // UPDATE: SKIP WAKTU KE 14:00 & KURANGI ENERGI
+                        const oldTime = Math.floor(STATE.time / 100);
+                        STATE.time = 1400; // Set langsung ke jam 14:00
+                        STATE.player.energy = Math.max(0, STATE.player.energy - 20); // Lelah belajar (-20 Energy)
+                        
+                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                        
+                        // --- UPDATE: LOGIKA MATERI KULIAH (MUNCUL SETIAP HARI) ---
+                        if (STATE.player.major) {
+                            const major = STATE.player.major;
+                            const materials = COURSE_MATERIALS[major] || [];
+                            
+                            // Tentukan materi berdasarkan urutan hari (Looping jika materi habis)
+                            // Menggunakan (STATE.day - 1) agar Hari 1 dapat Materi index 0
+                            const matIndex = (STATE.day - 1) % materials.length;
+                            const content = materials[matIndex] || {t: "Review Umum", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar."};
+
+                            // Delay sedikit agar suara item terdengar sebelum dialog muncul
+                            setTimeout(() => {
+                                showDialogue(`MATERI KULIAH (HARI ${STATE.day})`, 
+                                    `**MATA KULIAH: ${content.t}**\n\n"${content.c}"\n\n(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`, 
+                                    [{text: "Catat & Pulang (INT +2, EXP +100)", action: () => {
+                                        STATE.player.int += 2; // Reward Harian yang seimbang
+                                        gainExp(100);
+                                        showToast("📚 Kuliah Selesai (14:00). Ilmu Bertambah!");
+                                        closeDialogue();
+                                    }}], 
+                                    npc.imgSrc
+                                );
+                            }, 800);
+                        } else {
+                            // Fallback jika terjadi bug major belum terpilih
+                            showDialogue("DOSEN", `Bagus. Kamu telah mengikuti kelas hari ini.`, [{text:"Terima kasih Pak", action:closeDialogue}], npc.imgSrc);
+                        }
+                    }
+                } else {
+                    // Di luar jam kuliah (Sore Hari / Terlalu Pagi)
+                    let msg = "Daftar hadir hanya bisa diisi saat jam kuliah berlangsung (08:00 - 14:00).";
+                    
+                    // Respon Khusus Sesi Sore
+                    if (STATE.time >= 1400 && STATE.time < 1800) {
+                        msg = "Kuliah reguler hari ini sudah selesai. Sekarang adalah jam kegiatan mandiri atau UKM. \nSilakan gunakan fasilitas kampus untuk belajar atau bimbingan, tapi absen tidak dihitung.";
+                    }
+                    
+                    showDialogue("DOSEN", msg, [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
+                }
+            }},
+            
+            {text: "Bimbingan Skripsi (Energy -10, INT+1)", action: () => {
+                if(STATE.player.energy >= 10) {
+                    STATE.player.energy -= 10;
+                    STATE.player.int += 1;
+                    showToast("INT +1 (Bimbingan)");
+                    // Update quest tracking jika perlu
+                    showDialogue("DOSEN", "Teorimu menarik. Lanjutkan risetnya, jangan lupa referensi dari Perpustakaan.", [{text:"Terima kasih Pak", action:closeDialogue}], npc.imgSrc);
+                } else showToast("Terlalu lelah untuk mikir...");
+            }},
+            {text: "Tanya Jadwal Kuliah", action: () => {
+                showDialogue("DOSEN", "Kuliah dimulai jam 08:00 pagi sampai 14:00 siang di Gedung Kampus. Jangan telambat!", [{text:"Siap", action:closeDialogue}], npc.imgSrc);
+            }},
+            
+            // --- UPDATE: FITUR SKRIPSI (DIBATASI TAHUN KE-4) ---
+            {text: "📜 Info & Sidang Skripsi", action: () => {
+                // Hitung Tahun Saat Ini (1 Tahun = 120 Hari)
+                const currentYear = Math.ceil(STATE.day / 120);
+
+                // KONDISI 1: BELUM TAHUN KE-4 (Hanya Motivasi)
+                if (currentYear < 4) {
+                    showDialogue("DOSEN PEMBIMBING", 
+                        `Wah, semangatmu bagus! Tapi kamu masih di **Tahun ke-${currentYear}**.\nPengajuan Proposal Skripsi baru dibuka untuk mahasiswa tingkat akhir (**Tahun ke-4**).\n\nIngat nasihat saya: "Gedung yang tinggi membutuhkan fondasi yang dalam."\n\nJangan terburu-buru lulus. Nikmati proses belajarmu, perbanyak baca buku, dan bangun koneksi. Kesuksesan menanti mereka yang matang secara ilmu, bukan yang sekadar cepat.`, 
+                        [{text: "Terima kasih motivasinya, Pak! (Semangat)", action: closeDialogue}], 
+                        npc.imgSrc
+                    );
+                    return;
+                }
+
+                // KONDISI 2: SUDAH TAHUN 4 (Cek Syarat Akademik)
+                // Syarat: Level 15 (Soft Skill) & INT 50 (Hard Skill)
+                if (STATE.player.level < 15 || STATE.player.int < 50) {
+                    showDialogue("DOSEN", "Kamu sudah masuk tingkat akhir, tapi bekal ilmumu masih kurang.\n\nSyarat Pengajuan:\n- Level Karakter Min. 15\n- Intelligence (INT) Min. 50\n\nKembalilah belajar di perpustakaan atau ikuti kuliah lebih rajin.", [{text:"Baik Pak, saya akan berusaha", action:closeDialogue}], npc.imgSrc);
+                    return;
+                }
+
+                // --- PERBAIKAN INTEGRASI QUEST: CEK ITEM DRAFT PROPOSAL ---
+                // KONDISI 3: CEK FISIK DOKUMEN (Hard Gate)
+                // Pemain WAJIB menyelesaikan Quest "Hilangnya Skripsi Senior" dulu
+                const hasDraft = (STATE.player.inventory['draft_proposal'] || 0) > 0;
+                
+                if (!hasDraft) {
+                    showDialogue("DOSEN KILLER", 
+                        "Kamu mau mengajukan sidang dengan tangan kosong? 🤨\n\nSaya dengar **Senior Kutubuku** di Perpustakaan sedang mencari orang untuk membantu risetnya. \n\nTemui dia dulu. Kalau kamu bisa membantunya, mungkin dia akan memberikan salinan **Draft Proposal** yang layak sebagai referensi untukmu.\n\nJangan kembali ke sini sebelum membawa dokumen fisik!", 
+                        [{text: "Baik Pak, saya ke Perpus dulu! (Mulai Quest)", action: closeDialogue}], 
+                        npc.imgSrc
+                    );
+                    return;
+                }
+
+                // 4. PROSES PENGAJUAN & REVIEW (ACC / REVISI)
+                const major = STATE.player.major || 'teknologi'; // Default Teknologi
+                
+                // UPDATE: Icon Draft Skripsi disesuaikan dengan permintaan
+                let draftImg = 'images/draftskripsi-teknologi.png'; 
+                let draftTitle = "RANCANG BANGUN AI PEMANTAU DUNGEON";
+                
+                if (major === 'sejarah') {
+                    draftImg = 'images/draftskripsi-sejarah.png';
+                    draftTitle = "ANALISIS RUNTUHNYA KERAJAAN AETHELGARD";
+                }
+
+                // Tampilkan Dialog Penyerahan dengan Animasi Review
+                showDialogue("PENGAJUAN PROPOSAL", 
+                    `Kamu menyerahkan dokumen **${draftTitle}** ke meja Dosen.\n\nDosen sedang membaca dengan teliti... (Jantung berdebar...)`, 
+                    [{
+                        text: "Tunggu Hasil Review...", 
+                        action: () => {
+                            // --- LOGIKA ACC DOSEN ---
+                            // Peluang ACC dipengaruhi oleh INT pemain.
+                            // Base Chance: 40% + (INT - 50)%. 
+                            // Jika INT 50 -> 40% Chance. Jika INT 100 -> 90% Chance.
+                            let chance = 40 + (STATE.player.int - 50);
+                            if (chance > 90) chance = 90; // Cap max 90% biar ada deg-degan dikit
+                            
+                            const roll = Math.random() * 100;
+                            
+                            if (roll < chance) {
+                                // --- SKENARIO ACC (DITERIMA) ---
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // Sound Happy
+                                
+                                showDialogue("STATUS: DI-ACC! ✅", 
+                                    `DOSEN: "Hmm... Menarik.\nLatar belakang kuat, metodologi rapi, dan referensi valid.\n\nOke, saya **ACC** proposal ini. Kamu boleh lanjut ke tahap Sidang Skripsi sekarang."\n\n(Selamat! Proposalmu disetujui)`, 
+                                    [{
+                                        text: "Alhamdulillah! SIAP SIDANG!", 
+                                        action: () => {
+                                            closeDialogue();
+                                            startThesisDefense(major);
+                                        }
+                                    }, {
+                                        text: "Nanti dulu pak, mau belajar lagi", 
+                                        action: closeDialogue
+                                    }], 
+                                    draftImg
+                                );
+                            } else {
+                                // --- SKENARIO REVISI (DITOLAK) ---
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Sound Sad/Hit
+                                
+                                // Kurangi Energy sebagai penalti stress
+                                STATE.player.energy = Math.max(0, STATE.player.energy - 15);
+                                
+                                showDialogue("STATUS: REVISI (DITOLAK) ❌", 
+                                    `DOSEN: "Apa ini?! \nRumusan masalahmu kabur! Datanya tidak sinkron! Typo dimana-mana!\n\nSaya tidak mau tanda tangan kalau masih begini. **REVISI ULANG SEKARANG!**"\n\n(Dosen melempar naskahmu. Kamu merasa stress. Energi -15)`, 
+                                    [{
+                                        text: "Maaf Pak, saya perbaiki... (Coba Lagi)", 
+                                        action: () => {
+                                            if (STATE.player.energy < 15) {
+                                                showToast("Terlalu lelah & stress untuk revisi...");
+                                                closeDialogue();
+                                            } else {
+                                                showToast("Sedang merevisi naskah... ✍️");
+                                                // Loop balik ke interaksi awal seolah memperbaiki
+                                                interactNPC(npc);
+                                            }
+                                        }
+                                    }, {
+                                        text: "Pulang dulu (Menangis di pojokan)", 
+                                        action: closeDialogue
+                                    }], 
+                                    npc.imgSrc
+                                );
+                            }
+                        }
+                    }], 
+                    draftImg
+                );
+            }},
+
+            {text: "Tutup", action: closeDialogue}
+        ];
         
-        showDialogue(isStudent ? "DOSEN PEMBIMBING" : "SCHOLAR", text, actions, npc.imgSrc);
+        showDialogue("DOSEN PEMBIMBING", text, actions, npc.imgSrc);
     }
 
     // --- NEW: INTERAKSI KHUSUS HEWAN (ELUS-ELUS) ---
