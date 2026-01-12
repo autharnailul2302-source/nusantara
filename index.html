@@ -8928,6 +8928,17 @@ function interactNPC(npc) {
                     showDialogue(npc.name, "Embermu kosong, nak. Memancinglah dulu di ujung dermaga.", [{text:"Baiklah", action:closeDialogue}], npc.imgSrc);
                 }
             }},
+            // --- UPDATE: TAMBAHAN INFO JENIS IKAN ---
+            {text: "Info Jenis Ikan 🐟", action: () => {
+                showDialogue(npc.name, 
+                    "Di perairan Pulau Arsa ini hidup 4 tingkatan ikan:\n\n" +
+                    "🐟 **Ikan Kecil**: Sangat umum. Lumayan untuk ganjal perut (+10 Energi).\n" +
+                    "🐠 **Ikan Sedang**: Lebih bertenaga. Enak dibakar (+25 Energi).\n" +
+                    "🐡 **Ikan Besar**: Tangkapan mantap! Sangat mengenyangkan (+50 Energi).\n" +
+                    "👑 **Ikan Legendaris**: RAJA LAUTAN! Sangat langka, bersisik emas, dan harganya mahal sekali! (Full Energi)\n\n" +
+                    "Berdoalah pada dewa laut agar kailmu disambar yang Legendaris.", 
+                    [{text:"Wah, aku ingin yang Legendary!", action:()=>interactNPC(npc)}], npc.imgSrc);
+            }},
             {text: "Tips Memancing", action: () => {
                 showDialogue(npc.name, "Kunci memancing adalah sabar. Tekan tombol aksi tepat saat indikator berada di area hijau. Jangan terburu-buru.", [{text:"Terima kasih", action:closeDialogue}], npc.imgSrc);
             }},
