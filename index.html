@@ -1625,6 +1625,40 @@ button, .round-btn, .d-btn, .auth-btn {
         .podium-score { font-weight: 900; font-size: 18px; color: var(--primary); font-family: 'Cinzel'; }
         .podium-badge { position: absolute; font-family: 'Cinzel'; }
 
+        /* --- NEW: TUTORIAL POINTER & HIGHLIGHT --- */
+        #tutorial-pointer {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .hand-icon {
+            font-size: 50px;
+            animation: bounceFinger 1s infinite ease-in-out;
+        }
+
+        @keyframes bounceFinger {
+            0%, 100% { transform: translateY(0) rotate(-10deg); }
+            50% { transform: translateY(-15px) rotate(-10deg); }
+        }
+
+        /* Kelas Highlight untuk menyorot elemen UI saat tutorial */
+        .tutorial-highlight {
+            box-shadow: 0 0 0 4px #fbbf24, 0 0 30px #fbbf24 !important;
+            z-index: 2000 !important;
+            position: relative;
+            animation: pulseGlow 1s infinite alternate;
+            background-color: rgba(251, 191, 36, 0.2) !important; /* Gold tint */
+        }
+
+        @keyframes pulseGlow {
+            from { transform: scale(1); box-shadow: 0 0 0 4px #fbbf24, 0 0 20px #fbbf24; }
+            to { transform: scale(1.05); box-shadow: 0 0 0 6px #f59e0b, 0 0 40px #f59e0b; }
+        }
+
     </style>
 </head>
 <body>
@@ -2002,6 +2036,11 @@ button, .round-btn, .d-btn, .auth-btn {
         <button onclick="closeMinigame()" style="margin-top:10px; background:transparent; border:none; color:#ef4444;">BATAL</button>
     </div>
 
+    <!-- NEW: TUTORIAL POINTER ELEMENT -->
+    <div id="tutorial-pointer">
+        <div class="hand-icon">👆</div>
+    </div>
+
     <!-- NEW: INVENTORY SCREEN OVERLAY -->
     <div id="inventory-screen" style="display: none;">
         <h2 style="font-family:'Cinzel'; color:var(--secondary); margin-bottom:20px; text-shadow:0 0 10px var(--secondary);">🎒 TAS PENYIMPANAN</h2>
@@ -2131,7 +2170,7 @@ button, .round-btn, .d-btn, .auth-btn {
         </div>
 
         <div id="controls">
-            <div class="d-pad">
+            <div class="d-pad" id="joystick"> <!-- Added ID joystick -->
                 <div class="d-btn d-up" id="btn-up"></div>
                 <div class="d-btn d-down" id="btn-down"></div>
                 <div class="d-btn d-left" id="btn-left"></div>
@@ -2309,6 +2348,7 @@ const dungeonAssets = {
     enemy3: new Image(),
     enemy4: new Image(),
     enemy5: new Image(), // NEW: Monster Level 5
+    thief: new Image(),  // NEW: Monster Pencuri Skripsi
     boss: new Image()
 };
 dungeonAssets.wall.src = 'images/dungeon_wall.png';   // Ukuran 30x30
@@ -2320,7 +2360,8 @@ dungeonAssets.enemy1.src = 'images/monster.png';
 dungeonAssets.enemy2.src = 'images/monster-lvl2.png';
 dungeonAssets.enemy3.src = 'images/monster-lvl3.png';
 dungeonAssets.enemy4.src = 'images/monster-lvl4.png';
-dungeonAssets.enemy5.src = 'images/monster-lvl5.png'; // NEW
+dungeonAssets.enemy5.src = 'images/monster-lvl5.png'; 
+dungeonAssets.thief.src = 'images/monster-thief.png'; // Monster Skripsi
 dungeonAssets.boss.src = 'images/monster-boss.png';
 
 let bgLoadedCount = 0;
@@ -2357,7 +2398,8 @@ const AudioService = {
         chat: new Audio('audio/chat.mp3'), // NEW: Audio Chat NPC
         inside: new Audio('audio/inside.mp3'), // NEW: Audio Dalam Ruangan
         dungeon: new Audio('audio/dungeon.mp3'), // NEW: Audio Dungeon
-        boss: new Audio('audio/boss.mp3') // NEW: Audio Boss Battle
+        boss: new Audio('audio/boss.mp3'), // NEW: Audio Boss Battle
+        knock: new Audio('audio/knock.mp3') // NEW: Audio Ketukan Pintu
     },
     currentTrack: null,
 
@@ -2391,6 +2433,7 @@ const AudioService = {
             if(this.tracks.inside) this.tracks.inside.volume = 0.5; // Volume Musik Indoor
             if(this.tracks.dungeon) this.tracks.dungeon.volume = 0.6; // Volume Musik Dungeon
             if(this.tracks.boss) this.tracks.boss.volume = 0.8; // Volume Musik Boss (Lebih Keras)
+            if(this.tracks.knock) this.tracks.knock.volume = 1.0; // Volume Ketukan Pintu
         } catch(e) {
             console.warn("Audio Init Error (Non-Fatal):", e);
         }
@@ -3075,11 +3118,13 @@ function getQuestContent(tabType) {
     return html;
 }
 
-window.onload = function() {
+// UPDATE: Ganti window.onload dengan Event Listener yang lebih cepat & fleksibel
+function startGameSequence() {
     try {
         const splash = document.getElementById('splash-screen');
         const audioPrompt = document.getElementById('audio-prompt'); 
         
+        // Cek sesi login terakhir
         try {
             const lastUser = localStorage.getItem(SESSION_KEY);
             if(lastUser) {
@@ -3094,19 +3139,38 @@ window.onload = function() {
             AudioService.init();
         }
 
-        // UPDATE: Dipercepat! Timeout dikurangi dari 3000ms (3 detik) menjadi 1000ms (1 detik)
-        setTimeout(() => {
-            if(splash) splash.style.display = 'none';
-            if(audioPrompt) audioPrompt.style.display = 'flex';
-        }, 1000);
+        // UPDATE: LOADING DIPERCEPAT!
+        // Timeout dikurangi drastis dari 1000ms jadi 100ms agar terasa instan
+        // Menggunakan requestAnimationFrame agar transisi UI mulus
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                if(splash) {
+                    splash.style.opacity = 0; // Trigger CSS transition fadeOut
+                    setTimeout(() => splash.style.display = 'none', 500); // Hapus elemen setelah animasi CSS selesai
+                }
+                if(audioPrompt) {
+                    audioPrompt.style.display = 'flex';
+                    audioPrompt.style.opacity = 0;
+                    audioPrompt.style.animation = "fadeIn 0.5s forwards"; // Tambahkan animasi masuk halus
+                }
+            }, 200); // Jeda sangat singkat (0.2 detik) hanya untuk memastikan aset CSS termuat
+        });
         
         if(typeof resize === 'function') resize();
     } catch(err) {
         console.error("CRITICAL INIT ERROR:", err);
+        // Fallback jika error, paksa buka
         if(document.getElementById('splash-screen')) document.getElementById('splash-screen').style.display = 'none';
         if(document.getElementById('audio-prompt')) document.getElementById('audio-prompt').style.display = 'flex';
     }
 };
+
+// Jalankan saat HTML sudah siap (Lebih cepat dari window.onload)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startGameSequence);
+} else {
+    startGameSequence();
+}
 
 function handleAudioChoice(enable) {
     AudioService.enabled = enable;
@@ -4483,6 +4547,37 @@ for(let x=0; x<SMITH_W; x++) { smithTiles[0*SMITH_W+x] = 2; smithTiles[(SMITH_H-
 for(let y=0; y<SMITH_H; y++) { smithTiles[y*SMITH_W+0] = 2; smithTiles[y*SMITH_W+(SMITH_W-1)] = 2; }
 smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
 
+// --- UPDATE: MAP RERUNTUHAN YANG LEBIH DETAIL ---
+const RUINS_W = 22;
+const RUINS_H = 16;
+// Campuran Tanah (5) dan Lantai Batu Dungeon (4) untuk kesan reruntuhan
+const ruinsTiles = new Array(RUINS_W * RUINS_H).fill(5); 
+
+// Buat pola reruntuhan (Lantai batu pecah-pecah di tengah)
+for(let y=2; y<RUINS_H-2; y++) {
+    for(let x=2; x<RUINS_W-2; x++) {
+        // 70% kemungkinan jadi lantai batu kuno, sisanya tanah/rumput
+        if(Math.random() > 0.3) ruinsTiles[y*RUINS_W+x] = 4; // 4 = Stone
+    }
+}
+
+// Tambahkan Tembok Pembatas Hutan (ID 2)
+for(let x=0; x<RUINS_W; x++) { ruinsTiles[0*RUINS_W+x] = 2; ruinsTiles[(RUINS_H-1)*RUINS_W+x] = 2; }
+for(let y=0; y<RUINS_H; y++) { ruinsTiles[y*RUINS_W+0] = 2; ruinsTiles[y*RUINS_W+(RUINS_W-1)] = 2; }
+
+const ruinsObstacles = [];
+// Tambahkan Pilar/Batu Reruntuhan Acak sebagai Obstacle
+for(let i=0; i<10; i++) {
+    ruinsObstacles.push({
+        id: `ruin_rock_${i}`,
+        x: Math.floor(Math.random() * (RUINS_W-4)) + 2,
+        y: Math.floor(Math.random() * (RUINS_H-6)) + 2, // Hindari area bawah (pintu)
+        w: 1, h: 1,
+        type: 'dungeon_rock', // Menggunakan visual batu
+        name: 'Puing Kuno'
+    });
+}
+
         const maps = {
     'village': {
         w: ISLAND_W, h: ISLAND_H,
@@ -4516,7 +4611,8 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
                 open24h: true
             },
             
-            { id: 'school', x: 38, y: 10, w: 6, h: 5, img: 'images/kampus.png', entrance: {x: 41, y: 15, map: 'school_interior'}, name: "Kampus", roleSpecific: 'student', openTime: 700, closeTime: 1700 },
+            /* UPDATE JAM KAMPUS: Buka sampai 18:00 untuk sesi sore */
+            { id: 'school', x: 38, y: 10, w: 6, h: 5, img: 'images/kampus.png', entrance: {x: 41, y: 15, map: 'school_interior'}, name: "Kampus", roleSpecific: 'student', openTime: 700, closeTime: 1800 },
             { id: 'merchant', x: 26, y: 22, w: 6, h: 5, img: 'images/rumahmerchant.png', entrance: {x: 29, y: 27, map: 'merchant_interior'}, name: "Merchant", openTime: 600, closeTime: 2000 },
             { id: 'mentor', x: 28, y: 15, w: 6, h: 5, img: 'images/rumahmentor.png', entrance: {x: 31, y: 20, map: 'mentor_interior'}, name: "Rumah Mentor", openTime: 800, closeTime: 2200 },
             { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 32, map: 'blacksmith_interior'}, name: "Blacksmith", roleSpecific: 'worker', openTime: 800, closeTime: 1800 },
@@ -4612,6 +4708,10 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             /* Siang-Malam: Nongkrong depan Satria (x:41, y:30) -> Posisi Rival (40, 31) */
             {id: 'fake_girl', x: 40, y: 31, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'afternoon', genderReq: 'girl'},
 
+            /* NEW: MONSTER PENCURI SKRIPSI (Hanya muncul saat Quest Aktif) */
+            /* Lokasi: Reruntuhan Hutan Barat (Kiri Peta) */
+            {id: 'monster_skripsi', x: 8, y: 10, name: 'Pencuri Naskah', imgSrc: 'images/monster-thief.png', type: 'static', schedule: 'always', questReq: 'find_draft'},
+
             /* MOVED: Penjaga Dungeon dipindah agak ke depan (y:21) agar sejajar entrance */
             {id: 'penjagadungeon', x: 46, y: 21, name: 'Penjaga', imgSrc: 'images/penjagadungeon.png', type: 'service', schedule: 'always'}, 
             {id: 'ayam1', x: 15, y: 15, name: 'Ayam', imgSrc: 'images/ayam.png', type: 'animal', sound: 'ayam', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day'},
@@ -4662,9 +4762,10 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             
             /* ADDED: NPC CINTA MATRE (Hanya muncul di Perpus sesuai gender pemain) */
             /* Siska (cewek matre) muncul jika pemain Cowok - DI PERPUSTAKAAN */
-            {id: 'lover_matre_girl', x: 11, y: 8, name: 'Siska (Sosialita)', imgSrc: 'images/lover_matre_girl.png', type: 'wander', schedule: 'day', genderReq: 'boy'}
+            {id: 'lover_matre_girl', x: 11, y: 8, name: 'Siska (Sosialita)', imgSrc: 'images/lover_matre_girl.png', type: 'wander', schedule: 'day', genderReq: 'boy'},
             
-            /* REMOVED: Rendi dipindah ke Guild sesuai permintaan */
+            /* NEW: NPC KUTUBUKU (Pemberi Quest Skripsi Tahun ke-3) */
+            {id: 'kutubuku', x: 2, y: 8, name: 'Senior Kutubuku', imgSrc: 'images/kutubuku.png', type: 'static', schedule: 'day'}
         ],
         objects: [
             {x: 2, y: 4, type: 'bookshelf', icon: '📚', text: "Sejarah Pulau Arsa Vol.1"},
@@ -4768,6 +4869,17 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
             { id: 'dungeon_exit', x: 2, y: 2, w: 1, h: 1, type: 'trigger', entrance: {x: 2, y: 2}, name: "Keluar Dungeon" }
         ]
     },
+    /* UPDATE: BATTLE ARENA (RERUNTUHAN) DENGAN DETAIL BARU */
+    'ruins_battle': {
+        w: RUINS_W, h: RUINS_H,
+        tiles: ruinsTiles,
+        npcs: [],
+        buildings: [
+            ...ruinsObstacles, // Puing-puing penghalang
+            { id: 'ruins_exit', x: 10, y: 14, w: 2, h: 1, type: 'trigger', entrance: {x: 11, y: 14}, name: "Kabur (Keluar)" }
+        ],
+        objects: [] 
+    },
     'house': {
         // Init with default, will be regenerated dynamically
         w: 12, h: 10,
@@ -4849,6 +4961,10 @@ const STATE = {
     gameFinished: false, 
     freeRoamMode: false, 
     
+    // QUEST FLAGS
+    activeQuest: null, // 'find_draft' etc
+    questProgress: {},
+
     enemies: [],
     particles: [],
     weatherParticles: [],
@@ -5320,41 +5436,97 @@ function initGame() {
     }
 }
 
+// --- NEW: TUTORIAL HELPER FUNCTIONS ---
+function showTutorialFocus(elementId) {
+    // 1. Hapus highlight lama
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+    
+    const target = document.getElementById(elementId);
+    const pointer = document.getElementById('tutorial-pointer');
+    
+    if (target && pointer) {
+        // 2. Tambah efek highlight ke target
+        target.classList.add('tutorial-highlight');
+        
+        // 3. Pindahkan Tangan Penunjuk
+        const rect = target.getBoundingClientRect();
+        // Hitung posisi tengah elemen
+        const centerX = rect.left + (rect.width / 2);
+        const centerY = rect.top + (rect.height / 2);
+        
+        // Atur posisi tangan (sedikit di bawah elemen)
+        pointer.style.left = (centerX - 25) + 'px'; // -25 karena width icon ~50px
+        pointer.style.top = (centerY + 40) + 'px';  // Di bawah elemen
+        
+        pointer.style.display = 'block';
+    }
+}
+
+function clearTutorialFocus() {
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+    const pointer = document.getElementById('tutorial-pointer');
+    if(pointer) pointer.style.display = 'none';
+    
+    // Kembalikan tombol aksi ke state normal (hide jika tidak ada objek)
+    const btn = document.getElementById('btn-action');
+    if(btn) {
+        btn.style.animation = ''; // Hapus animasi tutorial
+        // Cek ulang apakah ada objek dekat untuk menentukan visibility
+        // (Akan dihandle otomatis oleh update loop game, tapi kita bisa hide dulu)
+        // Biarkan update() yang mengurus display 'none'/'flex' selanjutnya
+    }
+}
+
 function startWakeUpSequence() {
     showToast("🔊 *TOK TOK TOK*");
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('knock'); // Play SFX Ketukan
     setTimeout(() => {
         showDialogue("???", "Halo? Nak? Kamu sudah bangun? Hari ini hari pertamamu!", [
             {
                 text: "(Bangun dari tempat tidur)", 
                 action: () => {
                     closeDialogue();
+                    
+                    // --- START VISUAL TUTORIAL ---
                     setTimeout(() => {
-                        // STEP 1: TUTORIAL GERAKAN
-                        showDialogue("TUTORIAL (1/4)", "Selamat datang! Gunakan **Tombol Arah / Analog** di kiri layar untuk bergerak.", [
+                        // STEP 1: ANALOG (GERAKAN)
+                        showTutorialFocus('joystick'); // Sorot Analog
+                        
+                        showDialogue("TUTORIAL (1/4)", "Selamat datang! Gunakan **Analog** di kiri bawah untuk bergerak menjelajahi pulau.", [
                             {
-                                text: "Lanjut >>", 
+                                text: "Oke, Paham >>", 
                                 action: () => {
-                                    // STEP 2: TUTORIAL INTERAKSI & PINTU
-                                    showDialogue("TUTORIAL (2/4)", "Dekati NPC atau Pintu, lalu tekan **Tombol Aksi (Lingkaran Besar)** untuk Bicara atau Masuk/Keluar ruangan.", [
+                                    // STEP 2: TOMBOL AKSI (Munculkan paksa untuk demo)
+                                    const btnAction = document.getElementById('btn-action');
+                                    btnAction.style.display = 'flex';
+                                    btnAction.innerText = '🔴';
+                                    
+                                    showTutorialFocus('btn-action'); // Sorot Tombol Aksi
+                                    
+                                    showDialogue("TUTORIAL (2/4)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
                                         {
                                             text: "Lanjut >>", 
                                             action: () => {
-                                                // STEP 3: TUTORIAL COMBAT (BARU DITAMBAHKAN)
+                                                // STEP 3: COMBAT MODE (Ubah Icon)
+                                                btnAction.innerText = '⚔️';
+                                                
                                                 showDialogue("TUTORIAL (3/4)", 
-                                                    "⚔️ **INFO PERTARUNGAN**:\n\n" +
-                                                    "Saat masuk ke **Dungeon**, Tombol Aksi ini otomatis berubah menjadi **Tombol Serang (⚔️)**.\n\n" +
-                                                    "Tekan berulang dengan cepat untuk melancarkan **Combo Attack**!", 
+                                                    "⚔️ **MODE TEMPUR**:\nSaat masuk ke Dungeon berbahaya, tombol ini otomatis berubah menjadi **PEDANG**.\n\nTekan cepat untuk menyerang musuh!", 
                                                     [{
                                                         text: "Siap Bertarung!",
                                                         action: () => {
-                                                            // STEP 4: TUTORIAL FASILITAS (DIPINDAH KESINI)
+                                                            // STEP 4: MENU
+                                                            btnAction.style.display = 'none'; // Sembunyikan lagi
+                                                            
+                                                            // Sorot area menu kanan atas (Kita sorot Tas sebagai perwakilan)
+                                                            showTutorialFocus('bag-btn');
+                                                            
                                                             showDialogue("TUTORIAL (4/4)", 
-                                                                "Terakhir, kenali fungsi benda di kamarmu:\n\n" +
-                                                                "📔 **BUKU**: Tempat Save, Tidur, & **Tulis Jurnal Refleksi** (Penting!).\n" +
-                                                                "📅 **KALENDER**: Cek Target & Misi.\n" +
-                                                                "☎️ **TELEPON**: Belanja Furnitur.\n" +
-                                                                "🎒 **TAS (Tombol Kanan)**: Cek Item.", 
-                                                                [{text: "Mengerti, Ayo Keluar!", action: closeDialogue}]
+                                                                "Terakhir, menu di kanan atas:\n🎒 **TAS**: Cek Barang.\n📜 **QUEST**: Cek Misi Harian.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
+                                                                [{text: "Ayo Keluar!", action: () => {
+                                                                    clearTutorialFocus();
+                                                                    closeDialogue();
+                                                                }}]
                                                             );
                                                         }
                                                     }]
@@ -5498,16 +5670,116 @@ const EXAM_DB = {
     ],
     'sejarah': [
         // ... existing questions ...
-        {q: "Siapakah pendiri Kerajaan Majapahit?", a: "Raden Wijaya", opts: ["Hayam Wuruk", "Raden Wijaya", "Gajah Mada"]},
-        {q: "Sumpah terkenal yang diucapkan Mahapatih Gajah Mada adalah?", a: "Sumpah Palapa", opts: ["Sumpah Pemuda", "Sumpah Palapa", "Sumpah Setia"]},
-        {q: "Candi Borobudur adalah peninggalan wangsa?", a: "Syailendra", opts: ["Sanjaya", "Syailendra", "Isyana"]},
-        {q: "Raja terakhir Kerajaan Singasari yang terkenal adalah?", a: "Kertanegara", opts: ["Ken Arok", "Kertanegara", "Jayabaya"]},
-        {q: "Kerajaan Islam pertama di pulau Jawa adalah?", a: "Demak", opts: ["Mataram Islam", "Banten", "Demak"]},
-        {q: "Kerajaan maritim terbesar di Nusantara yang berpusat di Sumatera adalah?", a: "Sriwijaya", opts: ["Sriwijaya", "Majapahit", "Samudera Pasai"]},
-        {q: "Siapakah Presiden pertama Republik Indonesia?", a: "Soekarno", opts: ["Soeharto", "Habibie", "Soekarno"]},
-        {q: "Tanggal berapakah Indonesia memproklamasikan kemerdekaan?", a: "17 Agustus 1945", opts: ["28 Oktober 1928", "17 Agustus 1945", "10 November 1945"]},
-        {q: "Pahlawan wanita dari Jepara yang memperjuangkan emansipasi adalah?", a: "R.A. Kartini", opts: ["Cut Nyak Dien", "R.A. Kartini", "Dewi Sartika"]},
         {q: "Peristiwa penculikan Soekarno-Hatta oleh golongan muda ke luar kota disebut?", a: "Rengasdengklok", opts: ["Bandung Lautan Api", "Rengasdengklok", "G30S"]}
+    ]
+};
+
+// --- FUNGSI BARU: SISTEM SELEKSI JURUSAN & BEASISWA (MISSING FIX) ---
+function selectMajor(major) {
+    // Tawarkan Jalur Masuk: Reguler vs Beasiswa
+    showDialogue("PILIH JALUR MASUK", 
+        `Kamu memilih jurusan **${major.toUpperCase()}**.\n\nApakah kamu ingin mencoba Tes Beasiswa?\n(Syarat: Nilai 100/Benar Semua untuk Gratis UKT)`, 
+        [
+            {text: "Coba Tes Beasiswa (Gratis)", action: () => startEntranceExam(major)},
+            {text: "Jalur Reguler (Bayar nanti)", action: () => confirmMajor(major, false)}
+        ], 
+        'images/lecture.png'
+    );
+}
+
+function confirmMajor(major, isScholarship) {
+    STATE.player.major = major;
+    STATE.player.scholarship = isScholarship;
+    
+    // Beri Bonus Stat Awal Sesuai Jurusan
+    if(major === 'teknologi') {
+        STATE.player.int += 3;
+    } else if(major === 'sejarah') {
+        STATE.player.reputation += 5;
+    }
+    
+    let msg = `Selamat! Kamu resmi menjadi mahasiswa **${major.toUpperCase()}**.\nStatus: ${isScholarship ? 'BEASISWA PENUH 🏆' : 'REGULER 💰'}`;
+    if(isScholarship) msg += "\n(Kamu mendapat uang saku bulanan!)";
+    else msg += "\n(Jangan lupa siapkan uang untuk UKT tahunan!)";
+
+    showDialogue("PENDAFTARAN BERHASIL", msg, [{text:"Siap Kuliah!", action:closeDialogue}], 'images/lecture.png');
+    
+    updateHUDInfo();
+    
+    // Efek Visual
+    createParticle(STATE.player.x, STATE.player.y, '#3b82f6');
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+}
+
+function startEntranceExam(major) {
+    currentExam.major = major;
+    currentExam.score = 0;
+    currentExam.qIndex = 0;
+    // Ambil 3 soal acak dari DB untuk ujian singkat
+    currentExam.questions = [...EXAM_DB[major]].sort(() => Math.random() - 0.5).slice(0, 3);
+    
+    nextExamQuestion();
+}
+
+function nextExamQuestion() {
+    if(currentExam.qIndex >= currentExam.questions.length) {
+        finishEntranceExam();
+        return;
+    }
+    
+    const q = currentExam.questions[currentExam.qIndex];
+    const opts = q.opts.map(o => ({
+        text: o,
+        action: () => answerExam(o === q.a)
+    }));
+    // Acak urutan jawaban
+    opts.sort(() => Math.random() - 0.5);
+    
+    showDialogue(`UJIAN MASUK (${currentExam.qIndex+1}/${currentExam.questions.length})`, q.q, opts, 'images/lecture.png');
+}
+
+function answerExam(isCorrect) {
+    if(isCorrect) currentExam.score++;
+    
+    // Feedback suara
+    if(typeof AudioService !== 'undefined') AudioService.playSFX(isCorrect ? 'item' : 'hit');
+
+    currentExam.qIndex++;
+    // Jeda sedikit agar tidak kaget
+    setTimeout(nextExamQuestion, 500);
+}
+
+function finishEntranceExam() {
+    // Syarat Beasiswa: Harus Benar Semua (Score == Jumlah Soal)
+    const isPerfect = currentExam.score === currentExam.questions.length;
+    
+    if(isPerfect) {
+        showDialogue("HASIL UJIAN: LULUS!", "Luar biasa! Jawabanmu sempurna.\nKamu berhak mendapatkan **BEASISWA PENUH**.", [
+            {text: "Ambil Beasiswa", action: () => confirmMajor(currentExam.major, true)}
+        ], 'images/lecture.png');
+    } else {
+        showDialogue("HASIL UJIAN: GAGAL", `Skor: ${currentExam.score}/${currentExam.questions.length}.\nMaaf, nilai tidak memenuhi syarat beasiswa.\nSilakan masuk melalui Jalur Reguler.`, [
+            {text: "Masuk Reguler", action: () => confirmMajor(currentExam.major, false)},
+            {text: "Batal (Belajar lagi)", action: closeDialogue}
+        ], 'images/lecture.png');
+    }
+}
+
+// --- NEW: DATABASE SOAL SIDANG SKRIPSI (LEVEL SULIT/ADVANCED) ---
+const THESIS_DB = {
+    'teknologi': [
+        {q: "Apa kompleksitas waktu (Big O) terbaik untuk algoritma Binary Search?", a: "O(log n)", opts: ["O(n)", "O(log n)", "O(n^2)"]},
+        {q: "Manakah yang BUKAN merupakan prinsip dasar OOP (Object Oriented Programming)?", a: "Compilation", opts: ["Encapsulation", "Polymorphism", "Compilation"]},
+        {q: "Serangan siber yang membanjiri server dengan trafik palsu disebut?", a: "DDoS", opts: ["Phishing", "DDoS", "SQL Injection"]},
+        {q: "Dalam jaringan, protokol standar untuk transfer halaman web aman adalah?", a: "HTTPS", opts: ["FTP", "HTTP", "HTTPS"]},
+        {q: "Teknologi database yang menyimpan data dalam format Key-Value atau Document (NoSQL) adalah?", a: "MongoDB", opts: ["MySQL", "PostgreSQL", "MongoDB"]}
+    ],
+    'sejarah': [
+        {q: "Naskah asli Proklamasi Kemerdekaan Indonesia diketik oleh?", a: "Sayuti Melik", opts: ["Sukarni", "Sayuti Melik", "Laksamana Maeda"]},
+        {q: "Kerajaan Hindu tertua di Indonesia yang terletak di Kalimantan Timur adalah?", a: "Kutai", opts: ["Tarumanegara", "Kutai", "Majapahit"]},
+        {q: "Perjanjian yang menandai berakhirnya Perang Diponegoro (1830) adalah penangkapan Pangeran Diponegoro di?", a: "Magelang", opts: ["Yogyakarta", "Magelang", "Semarang"]},
+        {q: "Organisasi militer bentukan Jepang untuk membantu pertahanan adalah?", a: "PETA", opts: ["Putera", "PETA", "Seinendan"]},
+        {q: "Konferensi Meja Bundar (KMB) yang mengakui kedaulatan Indonesia diadakan di kota?", a: "Den Haag", opts: ["Jakarta", "Den Haag", "Amsterdam"]}
     ]
 };
 
@@ -5702,178 +5974,116 @@ const COURSE_MATERIALS = {
     ]
 };
 
-// Fungsi Memilih Jurusan (Trigger Awal)
-function selectMajor(major) {
-    const majorName = major === 'teknologi' ? "TEKNOLOGI" : "SEJARAH";
+// ... existing selectMajor, startEntranceExam functions ...
+
+// --- NEW: LOGIKA SIDANG SKRIPSI (THESIS DEFENSE) ---
+let currentDefense = {
+    major: null,
+    score: 0,
+    qIndex: 0,
+    questions: []
+};
+
+function startThesisDefense(major) {
+    currentDefense.major = major;
+    currentDefense.score = 0;
+    currentDefense.qIndex = 0;
+    currentDefense.questions = [...THESIS_DB[major]];
     
-    // UPDATE: MENAMBAHKAN INFO TENTANG JALUR BEASISWA
-    showDialogue("DOSEN PENGUJI", 
-        `Kamu memilih jurusan **${majorName}**.\n\nSyarat masuk: Lulus **Tes Kompetensi Dasar** (10 Soal).\n\n📜 **Jalur Reguler**: Min. Nilai 60 (Benar 6).\n🏆 **Jalur Beasiswa**: Nilai 100 (Benar 10/10) -> Dapat Uang Saku & Gratis UKT!\n\nApakah kamu siap?`, 
+    // Acak urutan soal sidang agar tidak hapalan mati
+    currentDefense.questions.sort(() => Math.random() - 0.5);
+
+    showDialogue("DOSEN PENGUJI UTAMA", 
+        "Selamat datang di Sidang Akhir Skripsi. \n\nSaya akan mengajukan **5 Pertanyaan Kunci** terkait bidang studimu. \n\nSyarat Kelulusan: **Benar Minimal 4 Soal**. \nJika gagal, kamu harus merevisi draft-mu (mengulang sidang nanti).\n\nApakah kamu siap mempertanggungjawabkan karyamu?", 
         [
-            {text: "SIAP! (Mulai Ujian)", action: () => startEntranceExam(major)},
-            {text: "Nanti dulu (Belajar)", action: closeDialogue}
+            {text: "SAYA SIAP! (Mulai Sidang)", action: nextDefenseQuestion},
+            {text: "Saya baca buku dulu...", action: closeDialogue}
         ], 
         'images/lecture.png'
     );
 }
 
-// Mulai Ujian
-function startEntranceExam(major) {
-    currentExam.major = major;
-    currentExam.score = 0;
-    currentExam.qIndex = 0;
-    // Clone soal agar urutan aslinya aman
-    currentExam.questions = [...EXAM_DB[major]];
-    
-    // Mulai soal pertama
-    nextExamQuestion();
-}
-
-// Tampilkan Soal Berikutnya
-function nextExamQuestion() {
-    // Cek jika soal habis
-    if (currentExam.qIndex >= currentExam.questions.length) {
-        finishEntranceExam();
+function nextDefenseQuestion() {
+    if (currentDefense.qIndex >= currentDefense.questions.length) {
+        finishDefense();
         return;
     }
 
-    const qData = currentExam.questions[currentExam.qIndex];
+    const qData = currentDefense.questions[currentDefense.qIndex];
     
-    // Buat opsi jawaban
     const opts = qData.opts.map(opt => {
         return {
             text: opt,
-            action: () => answerExam(opt === qData.a)
+            action: () => answerDefense(opt === qData.a)
         };
     });
-
-    // Acak urutan jawaban biar tidak selalu sama posisinya
+    
+    // Acak posisi jawaban
     opts.sort(() => Math.random() - 0.5);
 
-    // UPDATE: Tampilkan total soal dinamis (10)
+    // Tampilkan Soal
     showDialogue(
-        `UJIAN MASUK (${currentExam.qIndex + 1}/${currentExam.questions.length})`, 
-        qData.q, 
+        `SIDANG SKRIPSI (${currentDefense.qIndex + 1}/5)`, 
+        `PERTANYAAN PENGUJI:\n\n**"${qData.q}"**`, 
         opts, 
         'images/lecture.png'
     );
 }
 
-// Proses Jawaban
-function answerExam(isCorrect) {
+function answerDefense(isCorrect) {
     if(isCorrect) {
-        currentExam.score++;
-        showToast("Jawaban Benar! ✅");
+        currentDefense.score++;
+        showToast("Penguji Mengangguk... (Benar) ✅");
     } else {
-        showToast("Jawaban Salah! ❌");
+        showToast("Penguji Mengerutkan Dahi... (Salah) ❌");
+        // Hukuman mental (Energy turun dikit)
+        STATE.player.energy = Math.max(0, STATE.player.energy - 5);
     }
     
     if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
     
-    currentExam.qIndex++;
-    // Lanjut ke soal berikutnya dengan sedikit delay agar player lihat toast
-    setTimeout(() => nextExamQuestion(), 500);
+    currentDefense.qIndex++;
+    setTimeout(() => nextDefenseQuestion(), 800);
 }
 
-// Selesai Ujian & Cek Kelulusan
-function finishEntranceExam() {
-    // UPDATE: LOGIKA NILAI UNTUK 10 SOAL
-    const passingScore = 6; // Minimal benar 6 (Nilai 60)
-    const finalScore = currentExam.score * 10; // Skala 100 (Benar x 10)
-    const passed = currentExam.score >= passingScore;
+function finishDefense() {
+    const passed = currentDefense.score >= 4; // Syarat: Benar 4 dari 5
     
     if (passed) {
-        // --- NEW: SISTEM BEASISWA VS REGULER ---
-        const isScholarship = currentExam.score === 10; // Benar 10/10 (Nilai 100 Sempurna)
-        let admissionType = "JALUR REGULER";
-        let moneyBonus = 0;
-        let tuitionFee = 0;
+        let reaction = `Nilai Sidang: **${currentDefense.score * 20}** (A).\n\nSelamat! Kamu berhasil mempertahankan skripsimu dengan sangat baik. \n\nSaya dengan bangga menyatakan kamu **LULUS SIDANG SKRIPSI**!`;
+        if (currentDefense.score === 5) reaction += "\n(Nilai Sempurna! Dosen terkesan!)";
 
-        if (isScholarship) {
-            admissionType = "🏆 JALUR BEASISWA PRESTASI";
-            moneyBonus = 5000; // Hadiah Uang Saku Awal
-            let rewardMsg = `\n\nLuar biasa! Karena nilai sempurna (100), kamu mendapat **Beasiswa Penuh (Gratis UKT)** dan uang saku awal **Rp ${moneyBonus.toLocaleString()}**!`;
-            
-            // Dialog Sukses Beasiswa
-            showDialogue("DOSEN PENGUJI", 
-                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 10 soal)\n\nSELAMAT! Kamu dinyatakan **LULUS** di jurusan **${currentExam.major.toUpperCase()}** melalui **${admissionType}**.${rewardMsg}`, 
-                [{text: "Alhamdulillah!", action: () => {
-                    // Apply Major
-                    STATE.player.major = currentExam.major;
-                    
-                    // Hadiah Stats
-                    if(currentExam.major === 'teknologi') {
-                        STATE.player.int += 3;
-                        showToast("Jurusan TEKNOLOGI: Logika & Analisis Meningkat!");
-                    } else if(currentExam.major === 'sejarah') {
-                        STATE.player.reputation += 5; 
-                        showToast("Jurusan SEJARAH: Wawasan Masa Lalu Meningkat!");
-                    }
-                    
-                    // Hadiah Tambahan Beasiswa
-                    STATE.player.money += moneyBonus;
-                    gainExp(200); // Bonus exp lebih besar
-                    showToast(`🏆 BEASISWA DITERIMA: +${moneyBonus}G & +200 EXP`);
-                    createParticle(STATE.player.x, STATE.player.y, '#fbbf24'); // Partikel Emas
-                    
-                    closeDialogue();
-                    updateHUDInfo();
-                }}], 
-                'images/lecture.png'
-            );
-            // Efek visual lulus
-            createParticle(STATE.player.x, STATE.player.y, '#4ade80');
+        showDialogue("DOSEN PEMBIMBING", reaction, [{
+            text: "Alhamdulillah! (Terima Jilid Tesis)", 
+            action: () => {
+                // CONSUME DRAFT
+                if(STATE.player.inventory['draft_proposal'] > 0) {
+                    STATE.player.inventory['draft_proposal']--;
+                    if(STATE.player.inventory['draft_proposal'] <= 0) delete STATE.player.inventory['draft_proposal'];
+                }
 
-        } else {
-            // --- JALUR REGULER (BERBAYAR 300.000) ---
-            tuitionFee = 300000;
-            admissionType = "JALUR REGULER (BERBAYAR)";
-            
-            // 1. Cek Apakah Uang Cukup
-            if (STATE.player.money < tuitionFee) {
-                showDialogue("DOSEN PENGUJI", 
-                    `Nilai Kamu: **${finalScore}** / 100 (LULUS).\n\nNamun, mohon maaf. Biaya Masuk Jalur Reguler adalah **Rp ${tuitionFee.toLocaleString()}**, dan uangmu saat ini tidak cukup (Rp ${STATE.player.money.toLocaleString()}).\n\nSaran: Bekerja dulu untuk menabung, atau belajar lebih giat agar mendapatkan **Beasiswa Penuh (Nilai 100)** yang Gratis.`, 
-                    [{text: "Saya akan kembali lagi nanti", action: closeDialogue}], 
-                    'images/lecture.png'
-                );
-                return;
+                // BERI HADIAH KELULUSAN
+                addItem('buku_tesis', 1); 
+                STATE.player.reputation += 50; // Reputasi naik drastis
+                STATE.player.money += 5000; // Hadiah kelulusan dari kampus/ortu
+                gainExp(5000); // Big Exp
+                
+                showToast("🎓 LULUS SIDANG! Mendapatkan Buku Tesis.");
+                createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+                
+                // Achievement Sound
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                
+                closeDialogue();
             }
-
-            // 2. Jika Uang Cukup, Konfirmasi Pembayaran
-            showDialogue("DOSEN PENGUJI", 
-                `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 10 soal)\n\nKamu LULUS seleksi akademis melalui **${admissionType}**.\n\nBiaya Pendaftaran: **Rp ${tuitionFee.toLocaleString()}**.\nApakah kamu bersedia melakukan pembayaran sekarang?`, 
-                [
-                    {text: `Bayar & Daftar (-${tuitionFee.toLocaleString()})`, action: () => {
-                        STATE.player.money -= tuitionFee;
-                        
-                        // Apply Major
-                        STATE.player.major = currentExam.major;
-                        
-                        // Hadiah Stats
-                        if(currentExam.major === 'teknologi') {
-                            STATE.player.int += 3;
-                            showToast("Jurusan TEKNOLOGI: Logika & Analisis Meningkat!");
-                        } else if(currentExam.major === 'sejarah') {
-                            STATE.player.reputation += 5; 
-                            showToast("Jurusan SEJARAH: Wawasan Masa Lalu Meningkat!");
-                        }
-                        
-                        gainExp(100); // Exp standar
-                        showToast(`🎓 PENDAFTARAN SUKSES! Saldo -${tuitionFee.toLocaleString()}G`);
-                        createParticle(STATE.player.x, STATE.player.y, '#4ade80');
-                        
-                        closeDialogue();
-                        updateHUDInfo();
-                    }},
-                    {text: "Pikir-pikir dulu", action: closeDialogue}
-                ], 
-                'images/lecture.png'
-            );
-        }
+        }], 'images/lecture.png');
     } else {
         showDialogue("DOSEN PENGUJI", 
-            `Nilai Kamu: **${finalScore}** / 100.\n(Benar ${currentExam.score} dari 10 soal)\n\nMAAF, kamu **TIDAK LULUS** (Min. Nilai 60). Pelajari lagi materi dasar dan coba daftar lagi nanti.`, 
-            [{text: "Saya akan belajar lagi", action: closeDialogue}], 
+            `Skor: ${currentDefense.score}/5. (Tidak Lulus)\n\nMaaf, penguasaan materimu masih kurang. Jawabanmu banyak yang meleset dari teori.\n\n**STATUS: REVISI MAJOR**\nSilakan pelajari lagi materinya dan ajukan sidang ulang nanti.`, 
+            [{text: "Siap Pak, saya akan belajar lagi. (Energy -30)", action: () => {
+                STATE.player.energy = Math.max(0, STATE.player.energy - 30);
+                closeDialogue();
+            }}], 
             'images/lecture.png'
         );
     }
@@ -6995,7 +7205,13 @@ function processTeleport(b) {
         STATE.location = 'school_interior';
         STATE.player.x = 8 * TILE_SIZE; 
         STATE.player.y = 12 * TILE_SIZE;
-        showToast("Masuk Kampus 🎓");
+        
+        // UPDATE: Notifikasi berbeda untuk sesi sore
+        if(STATE.time >= 1400) {
+             showToast("Kampus Sore (Bebas / Tidak Ada Kuliah)");
+        } else {
+             showToast("Masuk Kampus 🎓");
+        }
     }
     else if(b.id === 'school_exit') {
         STATE.location = 'village';
@@ -7236,7 +7452,7 @@ function spawnFinalBoss() {
     STATE.enemies.push({
         x: 20 * TILE_SIZE,
         y: 15 * TILE_SIZE,
-        w: 100, h: 100, // Sangat Besar
+        w: 140, h: 140, // UPDATE: Ukuran Hitbox Lebih Besar (100 -> 140)
         hp: 5000, 
         maxHp: 5000,
         speed: 2.0, // Sangat Cepat
@@ -7417,6 +7633,11 @@ function isNPCActive(npc) {
     // NEW: Cek Syarat Gender (Untuk Fake Interest/Rival)
     if (npc.genderReq && npc.genderReq !== STATE.player.gender) return false;
 
+    // NEW: Cek Syarat Quest (Untuk Monster Skripsi)
+    if (npc.questReq) {
+        if (STATE.player.activeQuest !== npc.questReq) return false;
+    }
+
     if (!npc.schedule || npc.schedule === 'always') return true;
 
     const isDayTime = STATE.time >= 600 && STATE.time < 2000;
@@ -7468,7 +7689,16 @@ function handleAction() {
         
         // --- LOGIC REFACTORED TO USE processTeleport ---
         // Cek apakah bangunan ini termasuk tipe auto-teleport
-        const teleporters = ['player_house', 'dungeon_gate', 'merchant', 'shop_exit', 'house_exit', 'dungeon_exit', 'library', 'library_exit'];
+        // UPDATE: MENAMBAHKAN SCHOOL, GUILD, BLACKSMITH KE DAFTAR AGAR LOGIKA LATE/TUTUP JALAN
+        const teleporters = [
+            'player_house', 'house_exit', 
+            'dungeon_gate', 'dungeon_exit', 'dungeon_next',
+            'merchant', 'shop_exit', 
+            'library', 'library_exit',
+            'school', 'school_exit',
+            'guild', 'guild_exit',
+            'blacksmith', 'smith_exit'
+        ];
         
         if(teleporters.includes(entranceBuilding.id)) {
             processTeleport(entranceBuilding);
@@ -7580,6 +7810,17 @@ function handleAction() {
             return;
         } 
         
+        // NEW: EXIT DARI RUINS BATTLE (KABUR)
+        else if(entranceBuilding.id === 'ruins_exit') {
+            STATE.location = 'village';
+            STATE.player.x = 10 * TILE_SIZE; // Kembali ke area hutan
+            STATE.player.y = 10 * TILE_SIZE;
+            // Clear enemies
+            STATE.enemies = [];
+            showToast("Kabur dari pertarungan!");
+            return;
+        }
+
         else if(entranceBuilding.id === 'clinic') {
             const drName = "Dr. Budi";
             const drImg = "images/lover1boy.png"; 
@@ -8359,8 +8600,15 @@ function interactNPC(npc) {
                             }
                         }
                     } else {
-                        // Di luar jam kuliah
-                        showDialogue("DOSEN", "Daftar hadir hanya bisa diisi saat jam kuliah berlangsung (08:00 - 14:00).", [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
+                        // Di luar jam kuliah (Sore Hari / Terlalu Pagi)
+                        let msg = "Daftar hadir hanya bisa diisi saat jam kuliah berlangsung (08:00 - 14:00).";
+                        
+                        // Respon Khusus Sesi Sore
+                        if (STATE.time >= 1400 && STATE.time < 1800) {
+                            msg = "Kuliah reguler hari ini sudah selesai. Sekarang adalah jam kegiatan mandiri atau UKM. \nSilakan gunakan fasilitas kampus untuk belajar atau bimbingan, tapi absen tidak dihitung.";
+                        }
+                        
+                        showDialogue("DOSEN", msg, [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
                     }
                 }},
                 
@@ -8376,6 +8624,122 @@ function interactNPC(npc) {
                 {text: "Tanya Jadwal Kuliah", action: () => {
                     showDialogue("DOSEN", "Kuliah dimulai jam 08:00 pagi sampai 14:00 siang di Gedung Kampus. Jangan telambat!", [{text:"Siap", action:closeDialogue}], npc.imgSrc);
                 }},
+                
+                // --- UPDATE: FITUR SKRIPSI (DIBATASI TAHUN KE-4) ---
+                {text: "📜 Info & Sidang Skripsi", action: () => {
+                    // Hitung Tahun Saat Ini (1 Tahun = 120 Hari)
+                    const currentYear = Math.ceil(STATE.day / 120);
+
+                    // KONDISI 1: BELUM TAHUN KE-4 (Hanya Motivasi)
+                    if (currentYear < 4) {
+                        showDialogue("DOSEN PEMBIMBING", 
+                            `Wah, semangatmu bagus! Tapi kamu masih di **Tahun ke-${currentYear}**.\nPengajuan Proposal Skripsi baru dibuka untuk mahasiswa tingkat akhir (**Tahun ke-4**).\n\nIngat nasihat saya: "Gedung yang tinggi membutuhkan fondasi yang dalam."\n\nJangan terburu-buru lulus. Nikmati proses belajarmu, perbanyak baca buku, dan bangun koneksi. Kesuksesan menanti mereka yang matang secara ilmu, bukan yang sekadar cepat.`, 
+                            [{text: "Terima kasih motivasinya, Pak! (Semangat)", action: closeDialogue}], 
+                            npc.imgSrc
+                        );
+                        return;
+                    }
+
+                    // KONDISI 2: SUDAH TAHUN 4 (Cek Syarat Akademik)
+                    // Syarat: Level 15 (Soft Skill) & INT 50 (Hard Skill)
+                    if (STATE.player.level < 15 || STATE.player.int < 50) {
+                        showDialogue("DOSEN", "Kamu sudah masuk tingkat akhir, tapi bekal ilmumu masih kurang.\n\nSyarat Pengajuan:\n- Level Karakter Min. 15\n- Intelligence (INT) Min. 50\n\nKembalilah belajar di perpustakaan atau ikuti kuliah lebih rajin.", [{text:"Baik Pak, saya akan berusaha", action:closeDialogue}], npc.imgSrc);
+                        return;
+                    }
+
+                    // --- PERBAIKAN INTEGRASI QUEST: CEK ITEM DRAFT PROPOSAL ---
+                    // KONDISI 3: CEK FISIK DOKUMEN (Hard Gate)
+                    // Pemain WAJIB menyelesaikan Quest "Hilangnya Skripsi Senior" dulu
+                    const hasDraft = (STATE.player.inventory['draft_proposal'] || 0) > 0;
+                    
+                    if (!hasDraft) {
+                        showDialogue("DOSEN KILLER", 
+                            "Kamu mau mengajukan sidang dengan tangan kosong? 🤨\n\nSaya dengar **Senior Kutubuku** di Perpustakaan sedang mencari orang untuk membantu risetnya. \n\nTemui dia dulu. Kalau kamu bisa membantunya, mungkin dia akan memberikan salinan **Draft Proposal** yang layak sebagai referensi untukmu.\n\nJangan kembali ke sini sebelum membawa dokumen fisik!", 
+                            [{text: "Baik Pak, saya ke Perpus dulu! (Mulai Quest)", action: closeDialogue}], 
+                            npc.imgSrc
+                        );
+                        return;
+                    }
+
+                    // 4. PROSES PENGAJUAN & REVIEW (ACC / REVISI)
+                    const major = STATE.player.major || 'teknologi'; // Default Teknologi
+                    
+                    // UPDATE: Icon Draft Skripsi disesuaikan dengan permintaan
+                    let draftImg = 'images/draftskripsi-teknologi.png'; 
+                    let draftTitle = "RANCANG BANGUN AI PEMANTAU DUNGEON";
+                    
+                    if (major === 'sejarah') {
+                        draftImg = 'images/draftskripsi-sejarah.png';
+                        draftTitle = "ANALISIS RUNTUHNYA KERAJAAN AETHELGARD";
+                    }
+
+                    // Tampilkan Dialog Penyerahan dengan Animasi Review
+                    showDialogue("PENGAJUAN PROPOSAL", 
+                        `Kamu menyerahkan dokumen **${draftTitle}** ke meja Dosen.\n\nDosen sedang membaca dengan teliti... (Jantung berdebar...)`, 
+                        [{
+                            text: "Tunggu Hasil Review...", 
+                            action: () => {
+                                // --- LOGIKA ACC DOSEN ---
+                                // Peluang ACC dipengaruhi oleh INT pemain.
+                                // Base Chance: 40% + (INT - 50)%. 
+                                // Jika INT 50 -> 40% Chance. Jika INT 100 -> 90% Chance.
+                                let chance = 40 + (STATE.player.int - 50);
+                                if (chance > 90) chance = 90; // Cap max 90% biar ada deg-degan dikit
+                                
+                                const roll = Math.random() * 100;
+                                
+                                if (roll < chance) {
+                                    // --- SKENARIO ACC (DITERIMA) ---
+                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // Sound Happy
+                                    
+                                    showDialogue("STATUS: DI-ACC! ✅", 
+                                        `DOSEN: "Hmm... Menarik.\nLatar belakang kuat, metodologi rapi, dan referensi valid.\n\nOke, saya **ACC** proposal ini. Kamu boleh lanjut ke tahap Sidang Skripsi sekarang."\n\n(Selamat! Proposalmu disetujui)`, 
+                                        [{
+                                            text: "Alhamdulillah! SIAP SIDANG!", 
+                                            action: () => {
+                                                closeDialogue();
+                                                startThesisDefense(major);
+                                            }
+                                        }, {
+                                            text: "Nanti dulu pak, mau belajar lagi", 
+                                            action: closeDialogue
+                                        }], 
+                                        draftImg
+                                    );
+                                } else {
+                                    // --- SKENARIO REVISI (DITOLAK) ---
+                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Sound Sad/Hit
+                                    
+                                    // Kurangi Energy sebagai penalti stress
+                                    STATE.player.energy = Math.max(0, STATE.player.energy - 15);
+                                    
+                                    showDialogue("STATUS: REVISI (DITOLAK) ❌", 
+                                        `DOSEN: "Apa ini?! \nRumusan masalahmu kabur! Datanya tidak sinkron! Typo dimana-mana!\n\nSaya tidak mau tanda tangan kalau masih begini. **REVISI ULANG SEKARANG!**"\n\n(Dosen melempar naskahmu. Kamu merasa stress. Energi -15)`, 
+                                        [{
+                                            text: "Maaf Pak, saya perbaiki... (Coba Lagi)", 
+                                            action: () => {
+                                                if (STATE.player.energy < 15) {
+                                                    showToast("Terlalu lelah & stress untuk revisi...");
+                                                    closeDialogue();
+                                                } else {
+                                                    showToast("Sedang merevisi naskah... ✍️");
+                                                    // Loop balik ke interaksi awal seolah memperbaiki
+                                                    interactNPC(npc);
+                                                }
+                                            }
+                                        }, {
+                                            text: "Pulang dulu (Menangis di pojokan)", 
+                                            action: closeDialogue
+                                        }], 
+                                        npc.imgSrc
+                                    );
+                                }
+                            }
+                        }], 
+                        draftImg
+                    );
+                }},
+
                 {text: "Tutup", action: closeDialogue}
             ];
         } else {
@@ -8445,6 +8809,52 @@ function interactNPC(npc) {
                 showDialogue(npc.name, "Hah? Bersaing? Mimpi lu ketinggian! Tapi oke, kita liat siapa yang menang.", [{text:"Liat saja nanti", action:closeDialogue}], npc.imgSrc);
             }},
             {text: "Abaikan", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI SENIOR KUTUBUKU (QUEST DRAFT SKRIPSI) ---
+    else if(npc.id === 'kutubuku') {
+        const year = Math.ceil(STATE.day / 120);
+        const hasDraft = (STATE.player.inventory['draft_proposal'] || 0) > 0;
+        
+        // Kondisi 1: Tahun 1 & 2 (Belum Waktunya)
+        if (year < 3) {
+            showDialogue(npc.name, "Sstt... Jangan berisik. Aku sedang menyusun Bab 2 skripsiku. \nKembalilah saat kamu sudah **Tahun ke-3** nanti.", [{text:"Maaf kak", action:closeDialogue}], npc.imgSrc);
+        }
+        // Kondisi 2: Tahun 3+, Belum Punya Draft, Belum Ambil Quest
+        else if (year >= 3 && !hasDraft && STATE.player.activeQuest !== 'find_draft') {
+            showDialogue(npc.name, "HUWAAAA! Gawat! Gawat sekali! 😭 \nDraft Skripsi-ku yang sudah 90% jadi HILANG!", [
+                {text: "Kenapa bisa hilang kak?", action: () => {
+                    showDialogue(npc.name, "Tadi aku sedang riset di **Reruntuhan Hutan Barat** (Kiri Desa). Tiba-tiba ada monster mencuri tasku! \n\nKalau kamu berani ke sana dan mengambilkannya kembali, aku akan berikan salinan Draft-nya untukmu. Itu bisa jadi bahan proposalmu nanti!", 
+                    [
+                        {text: "Aku akan ambilkan! (Terima Quest)", action: () => {
+                            STATE.player.activeQuest = 'find_draft';
+                            showToast("QUEST DITERIMA: Cari Monster di Hutan Barat!");
+                            closeDialogue();
+                        }},
+                        {text: "Takut monster...", action: closeDialogue}
+                    ], npc.imgSrc);
+                }}
+            ], npc.imgSrc);
+        }
+        // Kondisi 3: Quest Aktif, Belum Dapat
+        else if (STATE.player.activeQuest === 'find_draft' && !hasDraft) {
+            showDialogue(npc.name, "Tolong cepat! Monster itu lari ke **Hutan Barat (Kiri Desa)**. \nCari monster yang membawa tas buku!", [{text:"Segera ke sana!", action:closeDialogue}], npc.imgSrc);
+        }
+        // Kondisi 4: Sudah Punya Draft (Selesai)
+        else if (hasDraft) {
+            showDialogue(npc.name, "Terima kasih banyak pahlawan! Kamu menyelamatkan masa depanku. \nSesuai janji, salinan Draft itu buat kamu. Gunakan untuk mengajukan proposal ke Dosen di Tahun ke-4 nanti ya!", [{text:"Sama-sama kak!", action:closeDialogue}], npc.imgSrc);
+        }
+    }
+
+    // --- NEW: INTERAKSI MONSTER SKRIPSI (DI DESA/HUTAN) ---
+    else if(npc.id === 'monster_skripsi') {
+        showDialogue("MONSTER PENCURI", "GRRRR!! (Monster ini memeluk tas berisi buku dengan erat)", [
+            {text: "⚔️ LAWAN & REBUT KEMBALI!", action: () => {
+                closeDialogue();
+                startRuinsBattle(); // Mulai Battle Scene
+            }},
+            {text: "Mundur dulu...", action: closeDialogue}
         ], npc.imgSrc);
     }
 
@@ -9550,6 +9960,43 @@ function upgradeHouse() {
     } else {
         showDialogue("ARSITEK", `Butuh ${cost.toLocaleString()} Gold untuk Level ${nextLevel}.`, [{text:"Nanti saja", action:closeDialogue}]);
     }
+}
+
+// --- NEW FUNCTION: START RUINS BATTLE (QUEST SKRIPSI) ---
+function startRuinsBattle() {
+    // 1. Pindah Lokasi ke Arena Reruntuhan
+    STATE.location = 'ruins_battle';
+    
+    // Spawn Player di bagian bawah tengah
+    STATE.player.x = 11 * TILE_SIZE;
+    STATE.player.y = 12 * TILE_SIZE;
+    STATE.teleportCooldown = 60;
+
+    // 2. Spawn Monster Spesial (Thief)
+    STATE.enemies = [];
+    STATE.enemies.push({
+        x: 11 * TILE_SIZE, // Tengah
+        y: 5 * TILE_SIZE,  // Atas
+        w: 50, h: 50,      // Sedikit lebih besar dari player
+        hp: 400,           // HP Tebal (Mini Boss)
+        maxHp: 400,
+        speed: 1.4,        // Cukup lincah (Pencuri)
+        knockback: {x:0, y:0},
+        color: '#d97706',
+        animOffset: 0,
+        angle: 0,
+        imgKey: 'thief',   // Gambar Monster Thief
+        isQuestTarget: true // Flag khusus drop item skripsi
+    });
+
+    // 3. Efek Visual & Audio
+    showToast("⚔️ FIGHT START! Rebut Draft Skripsi!");
+    if(typeof AudioService !== 'undefined') AudioService.playBGM('boss'); // Musik Tegang
+    
+    // Intro Dialog Singkat dari Monster
+    setTimeout(() => {
+        showDialogue("PENCURI NASKAH", "Hehehe! Mau ambil buku ini? Langkahi dulu mayatku!", [{text:"Maju sini!", action:closeDialogue}], 'images/monster-thief.png');
+    }, 500);
 }
 
 function spawnEnemies() {
@@ -10937,8 +11384,10 @@ function drawEnemy(ctx, e) {
     if (e.isBoss) {
         // Gambar Boss (Lebih Besar & Menakutkan)
         if(dungeonAssets.boss.complete && dungeonAssets.boss.naturalWidth !== 0) {
-            const drawSize = 100; // Boss size visual
-            ctx.drawImage(dungeonAssets.boss, -drawSize/2, -drawSize + 20, drawSize, drawSize);
+            const drawSize = 200; // UPDATE: Ukuran Visual Lebih Besar (100 -> 200)
+            // Centering logic: -drawSize/2
+            // Y offset adjusted to keep feet at pivot
+            ctx.drawImage(dungeonAssets.boss, -drawSize/2, -drawSize + 30, drawSize, drawSize);
         } else {
             // Fallback Boss Shape
             ctx.fillStyle = '#7f1d1d'; // Dark Red
@@ -10952,10 +11401,13 @@ function drawEnemy(ctx, e) {
             ctx.fill();
         }
         
-        // Boss HP Bar Floating
-        ctx.fillStyle = '#000'; ctx.fillRect(-40, -e.h - 30, 80, 8);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(-40, -e.h - 30, 80 * (e.hp/e.maxHp), 8);
-        ctx.strokeStyle = '#fff'; ctx.strokeRect(-40, -e.h - 30, 80, 8);
+        // Boss HP Bar Floating (Lebih Lebar)
+        const barW = 120; // Lebar HP Bar ditambah
+        const barY = -e.h - 50; // Posisi HP Bar dinaikkan
+        
+        ctx.fillStyle = '#000'; ctx.fillRect(-barW/2, barY, barW, 10);
+        ctx.fillStyle = '#ef4444'; ctx.fillRect(-barW/2, barY, barW * (e.hp/e.maxHp), 10);
+        ctx.strokeStyle = '#fff'; ctx.strokeRect(-barW/2, barY, barW, 10);
         
     } else {
         // Normal Enemy Rendering (Berdasarkan Tier)
@@ -11081,8 +11533,7 @@ function drawPlayer(ctx, p) {
         ctx.restore();
     }
 }
-
-// --- NEW: FUNGSI RENDER INVENTORY (DENGAN ACTION KLIK) ---
+// --- NEW FUNCTION: RENDER INVENTORY (DENGAN ACTION KLIK) ---
 function renderInventory() {
     const grid = document.getElementById('inventory-grid');
     grid.innerHTML = '';
@@ -11113,16 +11564,40 @@ function renderInventory() {
         'tonic_stamina': { name: 'Tonic Stamina', icon: '⚡🧪', type: 'consumable', action: 'useStamina', desc: 'Pulihkan 100% Energi.' },
         'tonic_kebal': { name: 'Tonic Kebal', icon: '🛡️🧪', type: 'consumable', action: 'useImmune', desc: 'Kebal serangan 10 detik.' },
         
-        // Quest
-        'buku_tesis': { name: 'Tesis', icon: '📖', desc: 'Syarat kelulusan.' }
+        // Quest Items (Gambar Dinamis via Logic di bawah)
+        'draft_proposal': { name: 'Draft Skripsi', icon: '📑', desc: 'Bahan proposal (Quest Tahun 3).' },
+        'buku_tesis': { name: 'Buku Tesis', icon: '📖', desc: 'Syarat kelulusan.' }
     };
 
     for (let key in inv) {
         if (inv[key] > 0) {
             hasItem = true;
-            // Fallback nama jika key tidak ada di DB
-            const itemData = ITEM_DB[key] || { name: key.toUpperCase(), icon: '📦', desc: 'Item.' };
+            // Clone objek agar tidak merubah DB asli saat modifikasi dinamis
+            let itemData = { ...(ITEM_DB[key] || { name: key.toUpperCase(), icon: '📦', desc: 'Item.' }) };
             
+            // --- LOGIKA GAMBAR DINAMIS BERDASARKAN JURUSAN ---
+            const major = STATE.player.major || 'teknologi';
+
+            // 1. UPDATE IMAGE BUKU TESIS
+            if (key === 'buku_tesis') {
+                if (major === 'sejarah') {
+                    itemData.img = 'images/buku-tesis-sejarah.png';
+                    itemData.name = 'Tesis Sejarah';
+                } else {
+                    itemData.img = 'images/buku-tesis-teknologi.png';
+                    itemData.name = 'Tesis Teknologi';
+                }
+            }
+            
+            // 2. UPDATE IMAGE DRAFT PROPOSAL (Konsistensi dengan Dialog)
+            if (key === 'draft_proposal') {
+                if (major === 'sejarah') {
+                    itemData.img = 'images/draftskripsi-sejarah.png';
+                } else {
+                    itemData.img = 'images/draftskripsi-teknologi.png';
+                }
+            }
+
             const div = document.createElement('div');
             div.className = 'inv-item';
             
@@ -11136,9 +11611,18 @@ function renderInventory() {
                 div.title = itemData.desc || "Item Koleksi";
             }
 
+            // Render Image jika ada (Prioritas), fallback ke Icon Emoji
+            let visualContent = `<div style="font-size:30px; margin-bottom:5px;">${itemData.icon}</div>`;
+            
+            if (itemData.img) {
+                visualContent = `<img src="${itemData.img}" style="width:32px; height:32px; margin-bottom:5px; object-fit:contain;" 
+                                onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+                                <div style="font-size:30px; margin-bottom:5px; display:none;">${itemData.icon || '📦'}</div>`;
+            }
+
             div.innerHTML = `
                 <div class="inv-qty">${inv[key]}</div>
-                <div style="font-size:30px; margin-bottom:5px;">${itemData.icon}</div>
+                ${visualContent}
                 <span>${itemData.name}</span>
                 <span style="font-size:8px; color:#94a3b8; margin-top:2px;">${itemData.type === 'consumable' ? '(Makan/Pakai)' : ''}</span>
             `;
@@ -11219,20 +11703,26 @@ function handleEnemyDrop(en) {
     let gold = 2500;
     let exp = 20;
     
-    if(en.isBoss) {
-        gold = 50000;
-        exp = 1000;
+    // --- KHUSUS QUEST MONSTER ---
+    if(en.isQuestTarget) {
+        // Drop Item Quest Pasti
+        addItem('draft_proposal', 1);
+        STATE.player.activeQuest = null; // Quest selesai (tahap cari)
+        
+        showDialogue("BERHASIL!", "Kamu menemukan **Draft Skripsi** yang dicuri! \nKembalikan ke Senior Kutubuku di Perpustakaan.", [
+            {text: "Ok, Kembali ke Desa", action: () => {
+                STATE.location = 'village';
+                STATE.player.x = 9 * TILE_SIZE; // Balik ke area hutan
+                STATE.player.y = 12 * TILE_SIZE;
+                closeDialogue();
+                if(typeof AudioService !== 'undefined') AudioService.playBGM('village');
+            }}
+        ], 'images/monster-thief.png');
+        
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        return; // Stop logic drop biasa
     }
 
-    // Bonus Gold dari Cincin Legend (Passive)
-    if(STATE.player.inventory['cincin_legend']) {
-        gold = Math.floor(gold * 1.5); // +50% Gold
-    }
-
-    STATE.player.money += gold;
-    STATE.player.reputation += (en.isBoss ? 50 : 1);
-    
-    // --- NEW: BOSS PERMANENT STAT REWARD ---
     if(en.isBoss) {
         STATE.player.str += 5;
         STATE.player.int += 5;
@@ -11563,7 +12053,7 @@ function drawMinimap() {
         });
     }
 
-    // 5. DRAW PLAYER
+    // 5. DRAW PLAYERa
     const px = STATE.player.x * scaleX;
     const py = STATE.player.y * scaleY;
     
