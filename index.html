@@ -8173,7 +8173,27 @@ function interactNPC(npc) {
     const love = p.relationships[npc.id];
     
     if(npc.id === 'boss_merchant') {
-        // ... (Logic Bos Merchant tetap sama) ...
+        // --- NEW: RESTRIKSI JOB UNTUK NON-WORKER (TRIAL < TAHUN 4) ---
+        // Hitung tahun saat ini (1 Tahun = 120 Hari)
+        const currentYear = Math.ceil(STATE.day / 120);
+        
+        // Cek apakah pemain BUKAN Worker, Masih dalam Masa Trial (< Thn 4), dan Belum Bekerja
+        if (p.role !== 'worker' && currentYear < 4 && !STATE.freeRoamMode && p.jobStatus !== 'employed') {
+            showDialogue("BOS TOKO", 
+                "Selamat datang! Kami menyediakan komoditas terbaik untuk kebutuhan warga.\n\n(Maaf, lowongan kerja saat ini **KHUSUS** untuk Role **Fighter/Pekerja**. Kamu harus fokus pada kewajiban Role-mu sendiri selama masa Trial 3 Tahun ini.)", 
+                [
+                    {text: "Lihat Pasar Komoditas (Jual/Beli)", action: () => openTradingMenu(npc)},
+                    {text: "Ngobrol Bisnis", action: () => {
+                        showDialogue("BOS TOKO", "Harga barang di sini berfluktuasi setiap hari tergantung supply dan demand. Kalau kamu pintar, kamu bisa untung besar dari selisih harga.", [{text:"Ilmu yang bermanfaat", action:closeDialogue}], npc.imgSrc);
+                    }},
+                    {text: "Tutup", action: closeDialogue}
+                ], 
+                npc.imgSrc
+            );
+            return; // STOP di sini, jangan lanjut ke logika lamaran kerja
+        }
+
+        // ... (Logic Bos Merchant tetap sama untuk Worker) ...
         const jobStatus = p.jobStatus || 'unemployed';
         let mood = p.bossReputation > 70 ? "Senang" : (p.bossReputation > 30 ? "Netral" : "Marah");
         
