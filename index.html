@@ -7093,10 +7093,20 @@ function checkAutoTeleport() {
             // Jarak deteksi otomatis
             const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
             
-            // UPDATE: Jarak deteksi disesuaikan menjadi 20px (sedikit lebih besar dari 15px)
-            if(dist < 20) {
+            // UPDATE: Jarak deteksi diperbesar dari 20px ke 30px (Setara 1 Tile)
+            // Ini memperbaiki bug susah keluar pintu (terutama Guild) jika pemain tidak persis di tengah
+            if(dist < 30) {
                 // Daftar bangunan/trigger yang bisa auto-teleport
-                const autoTeleporters = ['player_house', 'dungeon_gate', 'merchant', 'shop_exit', 'house_exit', 'dungeon_exit', 'dungeon_next', 'library', 'library_exit', 'guild', 'guild_exit', 'school', 'school_exit'];
+                const autoTeleporters = [
+                    'player_house', 'house_exit', 
+                    'dungeon_gate', 'dungeon_exit', 'dungeon_next',
+                    'merchant', 'shop_exit', 
+                    'library', 'library_exit', 
+                    'guild', 'guild_exit', 
+                    'school', 'school_exit',
+                    'blacksmith', 'smith_exit' // Ditambahkan agar Bengkel juga auto-exit
+                ];
+                
                 if (autoTeleporters.includes(b.id)) {
                     processTeleport(b);
                     return; // Stop checking agar tidak double trigger
@@ -11258,7 +11268,8 @@ function drawNPC(ctx, n) {
         let offX = -20;
         let offY = -45;
 
-        const bigTypes = ['blacksmith', 'job', 'boss_merchant']; 
+        // UPDATE: Menambahkan 'pemancing_misterius' ke daftar Big Types agar digambar lebih besar
+        const bigTypes = ['blacksmith', 'job', 'boss_merchant', 'pemancing_misterius']; 
         if(bigTypes.includes(n.type) || bigTypes.includes(n.id)) {
             drawW = 60; 
             drawH = 65; 
