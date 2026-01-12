@@ -9644,19 +9644,63 @@ function checkFishing() {
     STATE.fishing.active = false;
     
     if(STATE.fishing.barX >= STATE.fishing.targetStart && STATE.fishing.barX <= (STATE.fishing.targetStart + STATE.fishing.targetWidth)) {
-        const fishTypes = ['Ikan Mas', 'Lele', 'Gurame', 'Ikan Langka'];
-        const caught = fishTypes[Math.floor(Math.random() * fishTypes.length)];
-        const value = 500 + Math.floor(Math.random() * 1000);
+        // --- UPDATE: SISTEM MANCING DENGAN TIER IKAN ---
+        const rand = Math.random() * 100;
+        let fishId = 'ikan_kecil';
+        let fishName = 'Ikan Kecil';
+        let fishImg = 'images/ikankecil.png'; // Default Image
+        let expGain = 15;
+        let value = 200;
+
+        // Probabilitas:
+        // 0-5 (5%)   : Legendary
+        // 5-20 (15%) : Besar
+        // 20-50 (30%): Sedang
+        // 50-100 (50%): Kecil
         
-        if(!STATE.player.inventory['ikan_segar']) STATE.player.inventory['ikan_segar'] = 0;
-        STATE.player.inventory['ikan_segar']++;
+        if (rand < 5) { 
+            fishId = 'ikan_legendary'; 
+            fishName = '✨ IKAN LEGENDARIS ✨';
+            fishImg = 'images/ikanlegendary.png';
+            expGain = 200;
+            value = 5000;
+        } else if (rand < 20) {
+            fishId = 'ikan_besar';
+            fishName = 'Ikan Besar';
+            fishImg = 'images/ikanbesar.png';
+            expGain = 50;
+            value = 1500;
+        } else if (rand < 50) {
+            fishId = 'ikan_sedang';
+            fishName = 'Ikan Sedang';
+            fishImg = 'images/ikansedang.png';
+            expGain = 25;
+            value = 600;
+        } else {
+            fishId = 'ikan_kecil';
+            fishName = 'Ikan Kecil';
+            fishImg = 'images/ikankecil.png';
+            expGain = 10;
+            value = 200;
+        }
+        
+        if(!STATE.player.inventory[fishId]) STATE.player.inventory[fishId] = 0;
+        STATE.player.inventory[fishId]++;
         
         // Reward EXP for success
-        gainExp(15);
+        gainExp(expGain);
 
-        showToast(`BERHASIL! Dapat ${caught} (Harga: ${value})`);
+        // Feedback Visual & Audio
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Mancing Dapat Ikan
         createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+
+        // Tampilkan Dialog dengan Gambar Ikan
+        showDialogue("MEMANCING BERHASIL!", 
+            `Kamu mendapatkan **${fishName}**!\n(Nilai: ${value} G)`, 
+            [{text: "Simpan di Tas", action: closeDialogue}], 
+            fishImg // Parameter gambar ikan
+        );
+
     } else {
         showToast("GAGAL... Ikan lepas.");
     }
@@ -11555,8 +11599,14 @@ function renderInventory() {
 
     // DATABASE ITEM UPDATE: Tambahkan Item Dungeon & Legendary & Consumables
     const ITEM_DB = {
+        // --- UPDATE: IKAN-IKAN BARU ---
+        'ikan_kecil': { name: 'Ikan Kecil', img: 'images/ikankecil.png', type: 'consumable', action: 'eat_fish_small', desc: 'Makan: +10 Energi. Ikan mungil biasa.' },
+        'ikan_sedang': { name: 'Ikan Sedang', img: 'images/ikansedang.png', type: 'consumable', action: 'eat_fish_medium', desc: 'Makan: +25 Energi. Lumayan mengenyangkan.' },
+        'ikan_besar': { name: 'Ikan Besar', img: 'images/ikanbesar.png', type: 'consumable', action: 'eat_fish_large', desc: 'Makan: +50 Energi. Ikan tangkapan mantap!' },
+        'ikan_legendary': { name: 'Ikan Legendaris', img: 'images/ikanlegendary.png', type: 'consumable', action: 'eat_fish_legend', desc: 'Makan: FULL Energi. Sangat langka & mahal!' },
+
         // Komoditas & Makanan (Sekarang Bisa Dimakan!)
-        'ikan_segar': { name: 'Ikan Bakar', icon: '🐟', type: 'consumable', action: 'eat_fish', desc: 'Makan: Energi +15' },
+        'ikan_segar': { name: 'Ikan Bakar', icon: '🐟', type: 'consumable', action: 'eat_fish', desc: 'Makan: Energi +15' }, // Legacy item
         'gandum': { name: 'Roti Gandum', icon: '🍞', type: 'consumable', action: 'eat_bread', desc: 'Makan: Energi +20' },
         'coklat': { name: 'Coklat Bar', icon: '🍫', type: 'consumable', action: 'eat_choco', desc: 'Ngemil: Energi +10' },
         
@@ -11627,16 +11677,18 @@ function renderInventory() {
             let visualContent = `<div style="font-size:30px; margin-bottom:5px;">${itemData.icon}</div>`;
             
             if (itemData.img) {
+                // Fallback icon jika gambar gagal load
+                const fallbackIcon = itemData.icon || '🐟';
                 visualContent = `<img src="${itemData.img}" style="width:32px; height:32px; margin-bottom:5px; object-fit:contain;" 
                                 onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-                                <div style="font-size:30px; margin-bottom:5px; display:none;">${itemData.icon || '📦'}</div>`;
+                                <div style="font-size:30px; margin-bottom:5px; display:none;">${fallbackIcon}</div>`;
             }
 
             div.innerHTML = `
                 <div class="inv-qty">${inv[key]}</div>
                 ${visualContent}
                 <span>${itemData.name}</span>
-                <span style="font-size:8px; color:#94a3b8; margin-top:2px;">${itemData.type === 'consumable' ? '(Makan/Pakai)' : ''}</span>
+                <span style="font-size:8px; color:#94a3b8; margin-top:2px;">${itemData.type === 'consumable' ? '(Pakai/Makan)' : ''}</span>
             `;
             grid.appendChild(div);
         }
@@ -11675,7 +11727,7 @@ function useInventoryItem(id, action) {
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
         consumed = true;
     }
-    // 3. MAKANAN (FISH, BREAD, CHOCO)
+    // 3. MAKANAN & IKAN (FISH, BREAD, CHOCO)
     else if (action.startsWith('eat_')) {
         // Cek perut penuh
         if (STATE.player.energy >= 100) {
@@ -11686,7 +11738,14 @@ function useInventoryItem(id, action) {
         let amount = 0;
         let msg = "";
 
-        if (action === 'eat_fish') { amount = 15; msg = "Makan Ikan Bakar"; }
+        // --- UPDATE: Logika Makan Ikan Baru ---
+        if (action === 'eat_fish_small') { amount = 10; msg = "Makan Ikan Kecil"; }
+        else if (action === 'eat_fish_medium') { amount = 25; msg = "Makan Ikan Sedang"; }
+        else if (action === 'eat_fish_large') { amount = 50; msg = "Makan Ikan Besar"; }
+        else if (action === 'eat_fish_legend') { amount = 100; msg = "Makan Ikan Legendaris"; }
+        
+        // Legacy Items
+        else if (action === 'eat_fish') { amount = 15; msg = "Makan Ikan Bakar"; }
         else if (action === 'eat_bread') { amount = 20; msg = "Makan Roti"; }
         else if (action === 'eat_choco') { amount = 10; msg = "Ngemil Coklat"; }
 
