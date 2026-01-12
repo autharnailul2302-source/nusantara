@@ -7021,7 +7021,14 @@ function update() {
     
     if(STATE.fishing.active) {
         STATE.fishing.barX += 2 * STATE.fishing.barDir; 
-        if(STATE.fishing.barX >= 100 || STATE.fishing.barX <= 0) STATE.fishing.barDir *= -1;
+        // FIX: Clamping nilai agar tidak stuck (bergetar) di ujung bar
+        if(STATE.fishing.barX >= 100) {
+            STATE.fishing.barX = 100;
+            STATE.fishing.barDir = -1;
+        } else if(STATE.fishing.barX <= 0) {
+            STATE.fishing.barX = 0;
+            STATE.fishing.barDir = 1;
+        }
     }
 
     if (STATE.player.attackCooldown > 0) STATE.player.attackCooldown--;
@@ -8560,8 +8567,8 @@ function interactNPC(npc) {
                         } else {
                             // PROSES ABSEN BERHASIL
                             STATE.player.lastAttendanceDay = STATE.day;
-                            STATE.player.int += 1; // Bonus INT karena rajin
-                            gainExp(50); // Bonus EXP kehadiran
+                            // STATE.player.int += 1; // DIHAPUS: Pindah ke dalam materi agar tidak double
+                            // gainExp(50); // DIHAPUS: Pindah ke dalam materi
                             
                             // UPDATE: SKIP WAKTU KE 14:00 & KURANGI ENERGI
                             const oldTime = Math.floor(STATE.time / 100);
@@ -8570,23 +8577,23 @@ function interactNPC(npc) {
                             
                             if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
                             
-                            // --- NEW: LOGIKA MATERI KULIAH SPESIAL (SETIAP 5 HARI) ---
-                            // Cek kelipatan hari ke-5 (Day 5, 10, 15...)
-                            if (STATE.day % 5 === 0 && STATE.player.major) {
+                            // --- UPDATE: LOGIKA MATERI KULIAH (MUNCUL SETIAP HARI) ---
+                            if (STATE.player.major) {
                                 const major = STATE.player.major;
                                 const materials = COURSE_MATERIALS[major] || [];
-                                // Tentukan indeks materi (Day 5 = index 0, Day 10 = index 1, dst)
-                                // Gunakan modulo agar berulang jika materi habis
-                                const matIndex = (Math.floor(STATE.day / 5) - 1) % materials.length;
-                                const content = materials[matIndex];
+                                
+                                // Tentukan materi berdasarkan urutan hari (Looping jika materi habis)
+                                // Menggunakan (STATE.day - 1) agar Hari 1 dapat Materi index 0
+                                const matIndex = (STATE.day - 1) % materials.length;
+                                const content = materials[matIndex] || {t: "Review Umum", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar."};
 
-                                // Delay sedikit agar toast absen terbaca dulu
+                                // Delay sedikit agar suara item terdengar sebelum dialog muncul
                                 setTimeout(() => {
-                                    showDialogue("MATERI KULIAH SPESIAL", 
-                                        `**TOPIK: ${content.t}**\n\n"${content.c}"\n\n(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`, 
-                                        [{text: "Catat & Pulang (INT +3, EXP +150)", action: () => {
-                                            STATE.player.int += 3;
-                                            gainExp(150);
+                                    showDialogue(`MATERI KULIAH (HARI ${STATE.day})`, 
+                                        `**MATA KULIAH: ${content.t}**\n\n"${content.c}"\n\n(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`, 
+                                        [{text: "Catat & Pulang (INT +2, EXP +100)", action: () => {
+                                            STATE.player.int += 2; // Reward Harian yang seimbang
+                                            gainExp(100);
                                             showToast("📚 Kuliah Selesai (14:00). Ilmu Bertambah!");
                                             closeDialogue();
                                         }}], 
@@ -8594,9 +8601,8 @@ function interactNPC(npc) {
                                     );
                                 }, 800);
                             } else {
-                                // Absen Biasa
-                                showDialogue("DOSEN", `Bagus. Kamu telah mengikuti materi kuliah hari ini dari jam ${oldTime}:00 sampai 14:00.`, [{text:"Terima kasih Pak (Selesai)", action:closeDialogue}], npc.imgSrc);
-                                showToast("Kuliah Selesai (14:00) - Energi -20");
+                                // Fallback jika terjadi bug major belum terpilih
+                                showDialogue("DOSEN", `Bagus. Kamu telah mengikuti kelas hari ini.`, [{text:"Terima kasih Pak", action:closeDialogue}], npc.imgSrc);
                             }
                         }
                     } else {
@@ -9564,6 +9570,9 @@ function closeJournal() {
     modal.style.display = 'none';
     STATE.screen = 'play';
     isSleepPending = false; // Reset flag jika batal
+    
+    // FIX: Kembalikan ke Fullscreen setelah menutup jurnal (karena keyboard menutup fullscreen)
+    toggleFullScreen();
 }
 
 function saveJournal() {
@@ -9600,6 +9609,9 @@ function saveJournal() {
     const modal = document.getElementById('journal-modal');
     modal.style.display = 'none';
     STATE.screen = 'play';
+
+    // FIX: Kembalikan ke Fullscreen setelah mengetik (keyboard sering memaksa exit fullscreen)
+    toggleFullScreen();
 
     // 5. Cek apakah ini triggered dari Tidur?
     if (isSleepPending) {
