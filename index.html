@@ -8599,6 +8599,10 @@ function interactNPC(npc) {
                         showToast("Kamu sudah absen hari ini!");
                         showDialogue("DOSEN", "Kamu sudah tercatat hadir hari ini. Fokuslah belajar.", [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
                     } else {
+                        // FIX: Tutup dialog lama dulu agar tidak tumpang tindih
+                        closeDialogue();
+                        showToast("⏳ Mengikuti Kuliah...");
+
                         // PROSES ABSEN BERHASIL
                         STATE.player.lastAttendanceDay = STATE.day;
                         
@@ -8610,17 +8614,21 @@ function interactNPC(npc) {
                         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
                         
                         // --- UPDATE: LOGIKA MATERI KULIAH (MUNCUL SETIAP HARI) ---
-                        if (STATE.player.major) {
-                            const major = STATE.player.major;
-                            const materials = COURSE_MATERIALS[major] || [];
-                            
-                            // Tentukan materi berdasarkan urutan hari (Looping jika materi habis)
-                            // Menggunakan (STATE.day - 1) agar Hari 1 dapat Materi index 0
-                            const matIndex = (STATE.day - 1) % materials.length;
-                            const content = materials[matIndex] || {t: "Review Umum", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar."};
+                        setTimeout(() => {
+                            try {
+                                // Default Major fallback jika terjadi bug
+                                const major = STATE.player.major || 'teknologi';
+                                
+                                // Safely access materials (Pastikan COURSE_MATERIALS ada)
+                                let materials = [];
+                                if (typeof COURSE_MATERIALS !== 'undefined' && COURSE_MATERIALS[major]) {
+                                    materials = COURSE_MATERIALS[major];
+                                }
+                                
+                                // Fallback content jika array kosong atau error index
+                                const matIndex = (STATE.day - 1) % (materials.length || 1);
+                                const content = materials[matIndex] || {t: "Review Materi Dasar", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar karena materi spesifik belum tersedia."};
 
-                            // Delay sedikit agar suara item terdengar sebelum dialog muncul
-                            setTimeout(() => {
                                 showDialogue(`MATERI KULIAH (HARI ${STATE.day})`, 
                                     `**MATA KULIAH: ${content.t}**\n\n"${content.c}"\n\n(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`, 
                                     [{text: "Catat & Pulang (INT +2, EXP +100)", action: () => {
@@ -8631,11 +8639,12 @@ function interactNPC(npc) {
                                     }}], 
                                     npc.imgSrc
                                 );
-                            }, 800);
-                        } else {
-                            // Fallback jika terjadi bug major belum terpilih
-                            showDialogue("DOSEN", `Bagus. Kamu telah mengikuti kelas hari ini.`, [{text:"Terima kasih Pak", action:closeDialogue}], npc.imgSrc);
-                        }
+                            } catch(e) {
+                                console.error("Error displaying lecture:", e);
+                                // Fallback dialog jika terjadi error fatal
+                                showDialogue("DOSEN", "Kelas hari ini telah selesai. (Catatan: Progress tetap tersimpan).", [{text:"Pulang", action:closeDialogue}], npc.imgSrc);
+                            }
+                        }, 1000); // Jeda 1 detik agar terasa transisinya
                     }
                 } else {
                     // Di luar jam kuliah (Sore Hari / Terlalu Pagi)
