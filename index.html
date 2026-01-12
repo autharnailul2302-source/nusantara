@@ -3788,6 +3788,34 @@ const DataService = {
     loadGame: function() {
         if(!this.user || !this.user.saveData) return null;
         return this.user.saveData;
+    },
+
+    // --- NEW: REAL-TIME MONITORING LISTENER ---
+    subscribeToStudents: function(onUpdate) {
+        if (this.mode === 'local') {
+            // Fallback untuk mode offline/lokal: Gunakan Polling Interval
+            const interval = setInterval(() => {
+                const dbLocal = this.getDB();
+                const students = Object.values(dbLocal).filter(u => u.role === 'siswa');
+                onUpdate(students);
+            }, 2000); // Update tiap 2 detik
+            return () => clearInterval(interval); // Return fungsi unsubscribe
+        } else {
+            // Firebase Real-time Listener (onSnapshot)
+            // Ini akan mentrigger callback secara instan setiap ada perubahan data di DB
+            try {
+                return db.collection('users').where('role', '==', 'siswa')
+                    .onSnapshot((snapshot) => {
+                        const students = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data() }));
+                        onUpdate(students);
+                    }, (error) => {
+                        console.error("Monitoring Error:", error);
+                    });
+            } catch(e) {
+                console.warn("Snapshot failed, fallback to local polling", e);
+                return () => {};
+            }
+        }
     }
 };
 
@@ -3795,6 +3823,7 @@ const DataService = {
 // --- FIX: MENAMBAHKAN VARIABEL DAN FUNGSI SWITCH ROLE YANG HILANG ---
 let authMode = 'login';
 let currentRole = 'siswa';
+let teacherMonitorUnsub = null; // Variabel global untuk menyimpan unsubscribe listener monitoring
 
 function switchRole(role) {
     currentRole = role;
@@ -3832,10 +3861,16 @@ function logout() {
         window.saveIntervalId = null; 
     }
     
-    // Stop Message Listener
+    // Stop Message Listener (Siswa)
     if(DataService.unsubscribeMsg) {
         DataService.unsubscribeMsg();
         DataService.unsubscribeMsg = null;
+    }
+
+    // Stop Monitoring Listener (Guru)
+    if(teacherMonitorUnsub) {
+        teacherMonitorUnsub();
+        teacherMonitorUnsub = null;
     }
 
     localStorage.removeItem(SESSION_KEY);
@@ -3996,8 +4031,18 @@ async function handleAuth(role, btnElement) {
 
 function initTeacherDashboard() {
     document.getElementById('teacher-dashboard').style.display = 'block';
-    renderMonitoring();
-    setInterval(renderMonitoring, 5000); 
+    
+    // Hentikan listener lama jika ada (mencegah duplikasi)
+    if(teacherMonitorUnsub) {
+        teacherMonitorUnsub();
+        teacherMonitorUnsub = null;
+    }
+
+    // Mulai Real-time Listener
+    // Fungsi ini akan dipanggil otomatis oleh Firebase setiap ada perubahan data
+    teacherMonitorUnsub = DataService.subscribeToStudents((students) => {
+        renderMonitoringTable(students);
+    });
 }
 
 function showDashPage(page) {
@@ -4009,6 +4054,7 @@ function showDashPage(page) {
     const activeLi = Array.from(document.querySelectorAll('.dash-nav li')).find(li => li.innerText.toLowerCase().includes(page)) || event?.currentTarget;
     if(activeLi) activeLi.classList.add('active');
     
+    // Tidak perlu memanggil renderMonitoring di sini karena sudah otomatis via listener
     if(page === 'grading') renderGrading();
     if(page === 'reflections') renderReflections();
     if(page === 'validation') renderValidation(); 
@@ -4070,52 +4116,76 @@ async function renderRanking() {
     });
     podiumEl.innerHTML = podiumHTML;
 
-    // 3. Render Table (Rank 4 onwards, or Full List if needed)
-    // Kita render semua di tabel untuk kelengkapan, tapi highlight top 3
-    ranked.forEach((s, idx) => {
-        const rank = idx + 1;
-        let rankStyle = "font-weight:bold; color:#64748b;";
-        if(rank === 1) rankStyle = "font-weight:900; color:#fbbf24;";
-        if(rank === 2) rankStyle = "font-weight:900; color:#94a3b8;";
-        if(rank === 3) rankStyle = "font-weight:900; color:#b45309;";
-
-        const roleText = s.role !== 'none' ? s.role.toUpperCase() : '-';
+    // 3. Render Table List (Remaining)
+    // FIX: Render semua data ke tabel list (bukan hanya sisanya, agar lengkap)
+    ranked.forEach((s, index) => {
+        const rank = index + 1;
+        const role = s.role !== 'none' ? s.role.toUpperCase() : 'NOVICE';
         
-        tableEl.innerHTML += `
-            <tr style="${rank <= 3 ? 'background:#f8fafc;' : ''}">
-                <td style="${rankStyle} text-align:center;">#${rank}</td>
-                <td>
-                    <strong>${s.name}</strong><br>
-                    <span style="font-size:10px; color:#94a3b8;">${s.details}</span>
-                </td>
-                <td><span class="status-badge" style="background:#fff; border:1px solid #e2e8f0;">${roleText}</span></td>
-                <td style="text-align:center;">${s.level}</td>
-                <td style="text-align:right; font-weight:bold; color:var(--primary); font-family:'Cinzel';">${s.score}</td>
-            </tr>
-        `;
-    });
-}
+        // Highlight jika Top 3
+        let rowStyle = "";
+        if(rank <= 3) rowStyle = "background:rgba(251, 191, 36, 0.1); font-weight:bold;";
 
-// UPDATE: ASYNC MONITORING
-async function renderMonitoring() {
-    const students = await DataService.getAllStudents();
+        const tr = document.createElement('tr');
+        tr.style = rowStyle;
+        tr.innerHTML = `
+            <td>#${rank}</td>
+            <td>${s.name}</td>
+            <td>${role}</td>
+            <td>${s.level}</td>
+            <td style="text-align:right;"><strong>${s.score}</strong></td>
+        `;
+        tableEl.appendChild(tr);
+    });
+} // FIX: TUTUP KURUNG KURAWAL YANG HILANG
+
+// UPDATE: ASYNC MONITORING (Updated to Sync Render for Listener)
+function renderMonitoringTable(students) {
     const tbody = document.getElementById('monitoring-body');
+    if(!tbody) return;
+    
     tbody.innerHTML = '';
     
     students.forEach(s => {
         const sd = s.saveData || {};
+        // Cek online status (batas toleransi 60 detik)
         const isOnline = (Date.now() - (sd.lastActive || 0)) < 60000;
+        
         const tr = document.createElement('tr');
+        
+        // Style khusus jika HP/Energy rendah (Bahaya)
+        let hpStyle = "";
+        if ((sd.hp || 0) < 30) hpStyle = "color:#ef4444; font-weight:bold;";
+        
+        let locText = sd.location ? sd.location.toUpperCase() : '-';
+        if (locText.includes('INTERIOR')) locText = locText.replace('_INTERIOR', ' (DLM)');
+        
         tr.innerHTML = `
-            <td><strong>${s.name}</strong></td>
+            <td>
+                <strong>${s.name}</strong>
+                ${sd.role && sd.role !== 'none' ? `<br><span style="font-size:9px; color:#64748b;">${sd.role.toUpperCase()}</span>` : ''}
+            </td>
             <td>${s.details}</td>
-            <td><span class="status-badge ${isOnline ? 'online' : 'offline'}">${isOnline ? 'ONLINE' : 'OFFLINE'}</span></td>
-            <td>${sd.location ? sd.location.toUpperCase() : '-'}</td>
-            <td>❤️${Math.floor(sd.hp||0)} / ⚡${Math.floor(sd.energy||0)}</td>
-            <td><button class="auth-btn" style="width:auto; padding:5px 10px; font-size:10px; margin:0;" onclick="promptTeacherMessage('${s.email}')">Send Msg</button></td>
+            <td>
+                <span class="status-badge ${isOnline ? 'online' : 'offline'}">
+                    ${isOnline ? 'ONLINE 🟢' : 'OFFLINE ⚫'}
+                </span>
+            </td>
+            <td style="font-size:11px;">📍 ${locText}<br>Day ${sd.day || 1}</td>
+            <td style="${hpStyle}">
+                ❤️ ${Math.floor(sd.hp||0)} <br> 
+                ⚡ ${Math.floor(sd.energy||0)}
+            </td>
+            <td><button class="auth-btn" style="width:auto; padding:5px 10px; font-size:10px; margin:0;" onclick="promptTeacherMessage('${s.email}')">✉️ Chat</button></td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+// FIX: Hapus fungsi renderMonitoring lama karena sudah diganti renderMonitoringTable
+async function renderMonitoring() {
+    // Legacy function, redirect to listener init if needed or do nothing
+    // Biarkan kosong atau hapus agar tidak dipanggil setInterval lama
 }
 
 // FIX: UPDATE PROMPT MESSAGE MENJADI ASYNC
@@ -5315,6 +5385,16 @@ function initGame() {
         if(saved) {
             // ... existing load logic ...
             STATE.day = parseInt(saved.day) || 1;
+            // FIX: Load Waktu, Musim & Cuaca
+            STATE.time = saved.time !== undefined ? saved.time : 600; 
+            STATE.season = saved.season || 'spring';
+            STATE.weather = saved.weather || 'clear';
+
+            // FIX: Load Status Fisik (HP/Energy)
+            STATE.player.hp = saved.hp !== undefined ? saved.hp : 100;
+            STATE.player.maxHp = saved.maxHp || 100;
+            STATE.player.energy = saved.energy !== undefined ? saved.energy : 100;
+
             STATE.player.money = saved.money || 1000;
             STATE.player.level = saved.level || 1;
             STATE.player.exp = saved.exp || 0;
@@ -5326,9 +5406,10 @@ function initGame() {
             
             STATE.player.role = saved.role || 'none';
             STATE.player.major = saved.major || null;
+            STATE.player.scholarship = saved.scholarship || false; // Load Beasiswa
             
             STATE.player.reflections = saved.reflections || [];
-            STATE.player.messages = saved.messages || []; // Load pesan lama
+            STATE.player.messages = saved.messages || []; 
             STATE.player.ethics = saved.ethics || 100;
             STATE.player.spouseId = saved.spouseId || null;
             STATE.player.married = saved.married || false;
@@ -5339,6 +5420,11 @@ function initGame() {
             STATE.player.jobStatus = saved.jobStatus || 'unemployed';
             STATE.player.bossReputation = saved.bossReputation || 50;
             STATE.player.lastAttendanceDay = saved.lastAttendanceDay || 0;
+
+            // Load Quest Data
+            STATE.player.activeQuest = saved.activeQuest || null;
+            STATE.questProgress = saved.questProgress || {};
+            STATE.dungeonLevel = saved.dungeonLevel || 1;
 
             STATE.player.lastDailyClaim = saved.lastDailyClaim || 0;
             STATE.player.lastWeeklyClaim = saved.lastWeeklyClaim || 0;
@@ -5351,11 +5437,10 @@ function initGame() {
             const genderToLoad = saved.gender || 'boy';
             selectGender(genderToLoad, true);
             
-            STATE.season = saved.season || 'spring'; 
-            if(saved.weather) STATE.weather = saved.weather;
-            else randomizeWeather();
+            // STATE.season sudah di-load di atas
+            if(!saved.weather) randomizeWeather(); // Hanya randomize jika tidak ada data save
 
-            showToast("System: Data Loaded");
+            showToast("System: Data Loaded Completiy");
         } else {
             // New Game Setup
             if(!STATE.player.spriteIdle) selectGender('boy', true);
@@ -5364,7 +5449,7 @@ function initGame() {
             STATE.gameFinished = false;
             STATE.freeRoamMode = false;
             STATE.day = 1;
-            STATE.time = 600; // UPDATE: Mulai jam 06:00 Pagi (Agar tidak gelap)
+            STATE.time = 600; 
             STATE.player.role = 'none';
             STATE.player.money = 10000;
             randomizeWeather();
@@ -5405,28 +5490,9 @@ function initGame() {
         
         window.saveIntervalId = setInterval(() => {
             if(STATE.screen === 'play') {
-                DataService.saveGame({
-                    // ... existing save data structure ...
-                    day: STATE.day,
-                    money: STATE.player.money,
-                    level: STATE.player.level,
-                    role: STATE.player.role,
-                    major: STATE.player.major,
-                    str: STATE.player.str,
-                    int: STATE.player.int,
-                    biz: STATE.player.biz,
-                    reputation: STATE.player.reputation,
-                    bossReputation: STATE.player.bossReputation,
-                    lastAttendanceDay: STATE.player.lastAttendanceDay,
-                    gameFinished: STATE.gameFinished,
-                    freeRoamMode: STATE.freeRoamMode,
-                    lastDailyClaim: STATE.player.lastDailyClaim,
-                    lastWeeklyClaim: STATE.player.lastWeeklyClaim,
-                    lastMonthlyClaim: STATE.player.lastMonthlyClaim,
-                    claimedLifeTrial: STATE.player.claimedLifeTrial,
-                    // Pastikan pesan yang sudah diterima juga tersimpan
-                    messages: STATE.player.messages
-                });
+                // FIX: Gunakan manualSave() agar data konsisten dan lengkap (DRY Principle)
+                // Jangan menulis ulang objek save di sini
+                manualSave();
             }
         }, 2000); 
 
@@ -5627,11 +5693,37 @@ function setRole(role) {
         return; // Berhenti di sini, tidak lanjut ke finalizeRoleSetup otomatis
     }
 
+    // --- FIX: TAMBAHKAN PENGARAHAN KHUSUS UNTUK WORKER ---
     if(role === 'worker') { 
-        STATE.player.str += 5; STATE.player.hp += 20; 
-        showToast("Jalur BEKERJA dipilih. STR Meningkat!"); 
+        STATE.player.str += 5; 
+        STATE.player.hp += 20; 
+        
+        showDialogue("MENTOR BUDI", 
+            "Pilihan tangguh! Jalur Fighter (Pekerja) membutuhkan fisik yang kuat.\n\nLangkah pertamamu: **Pergilah ke Toko Merchant** di selatan desa.\n\nBos Toko sedang mencari pegawai gudang yang rajin. Masuklah ke gedung toko, bicara padanya, dan **Lamar Kerja**!", 
+            [{
+                text: "Siap Kerja Keras!", 
+                action: () => {
+                    // Logika Mentor Menghilang
+                    const villMap = maps['village'];
+                    const mentor = villMap.npcs.find(n => n.id === 'mentor');
+                    if (mentor) {
+                        mentor.x = 34; mentor.y = 20; mentor.vx = 0; mentor.vy = 0;
+                    }
+                    
+                    STATE.isPrologue = false; 
+                    updateHUDInfo();
+                    closeDialogue();
+                    showToast("Misi Baru: Lamar Kerja di Merchant 💼");
+                    
+                    setTimeout(() => showDailyQuestPopup(), 500);
+                }
+            }], 
+            'images/mentor.png' 
+        );
+        return; // Berhenti agar tidak memanggil finalizeRoleSetup default
     }
-    else if(role === 'entrepreneur') { 
+
+    if(role === 'entrepreneur') { 
         STATE.player.biz += 5; // New BIZ stat
         STATE.player.money += 20000; 
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Uang Awal
@@ -9337,8 +9429,14 @@ function getMissionBoardText() {
     if(role !== 'none') {
         txt += `\n[ROLE: ${role.toUpperCase()}]\n`;
         if(role === 'worker') {
-            txt += `${chk(p.shiftStarted)} Masuk Shift (08:00-16:00)\n`;
-            txt += `${chk(p.energy < 50)} Latihan Fisik/Kerja ${chk(p.energy < 50) === "✅" ? "(Selesai)" : "(Belum)"}\n`;
+            // FIX: Tambahkan Misi Lamar Kerja jika menganggur
+            if(p.jobStatus === 'unemployed') {
+                txt += `${chk(false)} Pergi ke Merchant (Selatan)\n`;
+                txt += `${chk(false)} Lamar Kerja pada Bos\n`;
+            } else {
+                txt += `${chk(p.shiftStarted)} Masuk Shift (08:00-16:00)\n`;
+                txt += `${chk(p.energy < 50)} Latihan Fisik/Kerja ${chk(p.energy < 50) === "✅" ? "(Selesai)" : "(Belum)"}\n`;
+            }
         } else if(role === 'student') {
             // UPDATE: TEKS MISI SAAT LIBUR
             const dayIndex = (day - 1) % 7;
@@ -9697,41 +9795,51 @@ function checkFishing() {
     STATE.fishing.active = false;
     
     if(STATE.fishing.barX >= STATE.fishing.targetStart && STATE.fishing.barX <= (STATE.fishing.targetStart + STATE.fishing.targetWidth)) {
-        // --- UPDATE: SISTEM MANCING DENGAN TIER IKAN ---
+        // --- UPDATE: SISTEM MANCING DENGAN TIER IKAN & RARITY ---
         const rand = Math.random() * 100;
         let fishId = 'ikan_kecil';
         let fishName = 'Ikan Kecil';
         let fishImg = 'images/ikankecil.png'; // Default Image
+        let rarityLabel = '[COMMON]';
+        let rarityColor = '#94a3b8'; // Abu-abu
         let expGain = 15;
         let value = 200;
 
-        // Probabilitas:
-        // 0-5 (5%)   : Legendary
-        // 5-20 (15%) : Besar
-        // 20-50 (30%): Sedang
-        // 50-100 (50%): Kecil
+        // Probabilitas Rarity (Total 100%):
+        // 0 - 3    (3%)  : LEGENDARY (Ikan Legendaris)
+        // 3 - 18   (15%) : RARE (Ikan Besar)
+        // 18 - 50  (32%) : UNCOMMON (Ikan Sedang)
+        // 50 - 100 (50%) : COMMON (Ikan Kecil)
         
-        if (rand < 5) { 
+        if (rand < 3) { 
             fishId = 'ikan_legendary'; 
             fishName = '✨ IKAN LEGENDARIS ✨';
+            rarityLabel = '[LEGENDARY]';
+            rarityColor = '#fbbf24'; // Emas
             fishImg = 'images/ikanlegendary.png';
             expGain = 200;
             value = 5000;
-        } else if (rand < 20) {
+        } else if (rand < 18) {
             fishId = 'ikan_besar';
             fishName = 'Ikan Besar';
+            rarityLabel = '[RARE]';
+            rarityColor = '#f472b6'; // Pink/Ungu
             fishImg = 'images/ikanbesar.png';
             expGain = 50;
             value = 1500;
         } else if (rand < 50) {
             fishId = 'ikan_sedang';
             fishName = 'Ikan Sedang';
+            rarityLabel = '[UNCOMMON]';
+            rarityColor = '#38bdf8'; // Biru Muda
             fishImg = 'images/ikansedang.png';
             expGain = 25;
             value = 600;
         } else {
             fishId = 'ikan_kecil';
             fishName = 'Ikan Kecil';
+            rarityLabel = '[COMMON]';
+            rarityColor = '#cbd5e1'; // Putih Abu
             fishImg = 'images/ikankecil.png';
             expGain = 10;
             value = 200;
@@ -9745,11 +9853,11 @@ function checkFishing() {
 
         // Feedback Visual & Audio
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Mancing Dapat Ikan
-        createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+        createParticle(STATE.player.x, STATE.player.y, rarityColor); // Partikel sesuai warna rarity
 
-        // Tampilkan Dialog dengan Gambar Ikan
+        // Tampilkan Dialog dengan Gambar Ikan & Rarity
         showDialogue("MEMANCING BERHASIL!", 
-            `Kamu mendapatkan **${fishName}**!\n(Nilai: ${value} G)`, 
+            `Kamu mendapatkan **${fishName}**!\nTingkat: <strong style="color:${rarityColor}">${rarityLabel}</strong>\n(Nilai Jual: ${value} G)`, 
             [{text: "Simpan di Tas", action: closeDialogue}], 
             fishImg // Parameter gambar ikan
         );
@@ -9769,7 +9877,7 @@ function gainExp(amount) {
         STATE.player.maxExp = Math.floor(STATE.player.maxExp * 1.5);
         STATE.player.level++;
         
-        // 1. Recover HP/Energy
+        // 1. Recover HP/Energy (Full Heal saat Level Up)
         STATE.player.energy = 100; 
         STATE.player.hp = STATE.player.maxHp;
         
@@ -9795,34 +9903,77 @@ function gainExp(amount) {
         
         // Update HUD langsung
         updateHUDInfo();
+        
+        // Auto Save saat level up untuk mengamankan progress
+        manualSave();
     }
 }
 
 // --- NEW FUNCTION: MANUAL SAVE ---
 function manualSave() {
     DataService.saveGame({
+        // 1. Waktu & Lingkungan
         day: STATE.day,
+        time: STATE.time, // Penting agar tidak reset ke pagi
         season: STATE.season,
-        // FIX: Pastikan Role & Major tersimpan manual juga
+        weather: STATE.weather,
+
+        // 2. Status Fisik & Level
+        hp: STATE.player.hp,
+        maxHp: STATE.player.maxHp,
+        energy: STATE.player.energy,
+        money: STATE.player.money,
+        level: STATE.player.level,
+        exp: STATE.player.exp,
+        maxExp: STATE.player.maxExp,
+        gender: STATE.player.gender,
+
+        // 3. Role & Career
         role: STATE.player.role,
         major: STATE.player.major,
+        scholarship: STATE.player.scholarship,
+        jobStatus: STATE.player.jobStatus,
+        bossReputation: STATE.player.bossReputation,
+        shiftStarted: STATE.player.shiftStarted, // Simpan status sedang kerja
+        salaryDays: STATE.player.salaryDays,
+        lastAttendanceDay: STATE.player.lastAttendanceDay,
+
+        // 4. Stats Attribute
         str: STATE.player.str,
         int: STATE.player.int,
         biz: STATE.player.biz,
         reputation: STATE.player.reputation,
+        ethics: STATE.player.ethics,
         
-        jobStatus: STATE.player.jobStatus,
-        bossReputation: STATE.player.bossReputation,
-        // SAVE ABSENSI MANUAL
-        lastAttendanceDay: STATE.player.lastAttendanceDay,
+        // 5. Inventory & Aset
+        inventory: STATE.player.inventory, // PENTING: Tas
+        houseLevel: STATE.player.houseLevel,
+        furniture: STATE.player.furniture,
 
+        // 6. Hubungan Sosial
+        relationships: STATE.player.relationships, // PENTING: Hati NPC
+        married: STATE.player.married,
+        spouseId: STATE.player.spouseId,
+
+        // 7. Quest & Progress Dungeon
+        activeQuest: STATE.player.activeQuest,
+        questProgress: STATE.questProgress,
+        dungeonLevel: STATE.dungeonLevel,
+
+        // 8. Game State Flags
         gameFinished: STATE.gameFinished,
         freeRoamMode: STATE.freeRoamMode,
-        // --- SAVE DATA REWARD ---
+        isPrologue: STATE.isPrologue,
+
+        // 9. Claims & Trackers Reward
         lastDailyClaim: STATE.player.lastDailyClaim,
         lastWeeklyClaim: STATE.player.lastWeeklyClaim,
         lastMonthlyClaim: STATE.player.lastMonthlyClaim,
-        claimedLifeTrial: STATE.player.claimedLifeTrial
+        claimedLifeTrial: STATE.player.claimedLifeTrial,
+        
+        // 10. Pesan & Jurnal
+        reflections: STATE.player.reflections,
+        messages: STATE.player.messages
     });
 }
 
