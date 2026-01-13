@@ -3656,53 +3656,88 @@ const DataService = {
         }
 
         // 2. Fallback ke Local Storage (Jika offline/mode local)
+        // UPDATE: Tulis ke field 'inbox' di root user, BUKAN di dalam saveData
+        // Ini mencegah tertimpa oleh auto-save siswa yang sedang berjalan
         const dbLocal = this.getDB();
         if(dbLocal[studentEmail]) {
-            if(!dbLocal[studentEmail].saveData) dbLocal[studentEmail].saveData = {};
-            if(!dbLocal[studentEmail].saveData.messages) dbLocal[studentEmail].saveData.messages = [];
-            dbLocal[studentEmail].saveData.messages.push(msgObj);
+            if(!dbLocal[studentEmail].inbox) dbLocal[studentEmail].inbox = [];
+            dbLocal[studentEmail].inbox.push(msgObj);
             this.saveDB(dbLocal);
-            console.log("Pesan disimpan di Local DB");
+            console.log("Pesan disimpan di Local DB (Inbox Terpisah)");
             return true;
         }
         return false;
     },
 
-    // --- NEW: LISTENER PESAN UNTUK SISWA ---
+    // --- NEW: LISTENER PESAN UNTUK SISWA (UPDATED: SUPPORT LOCAL POLLING) ---
     startMessageListener: function() {
-        if(this.mode !== 'firebase' || !this.user || this.user.role !== 'siswa') return;
+        if(!this.user || this.user.role !== 'siswa') return;
         
-        // Hentikan listener lama jika ada
-        if(this.unsubscribeMsg) this.unsubscribeMsg();
+        // Hentikan listener lama jika ada (Function untuk Firestore, Interval ID untuk Local)
+        if(this.unsubscribeMsg) {
+            if (typeof this.unsubscribeMsg === 'function') this.unsubscribeMsg();
+            else clearInterval(this.unsubscribeMsg);
+            this.unsubscribeMsg = null;
+        }
 
-        console.log("Memulai listener pesan untuk:", this.user.email);
+        console.log(`Memulai Listener Pesan (${this.mode})...`);
         
-        this.unsubscribeMsg = db.collection('users').doc(this.user.email).onSnapshot((doc) => {
-            const data = doc.data();
-            
-            // Cek apakah ada pesan baru di 'inbox' (field khusus transit pesan)
-            if(data && data.inbox && data.inbox.length > 0) {
-                const newMsgs = data.inbox;
-                console.log("Pesan diterima:", newMsgs);
+        if (this.mode === 'firebase' && db) {
+            // --- MODE CLOUD: REALTIME SNAPSHOT ---
+            this.unsubscribeMsg = db.collection('users').doc(this.user.email).onSnapshot((doc) => {
+                const data = doc.data();
+                this.processInbox(data); // Refactored processing logic
+            });
+        } else {
+            // --- MODE LOCAL: POLLING INTERVAL ---
+            // Cek localStorage setiap 3 detik untuk pesan baru dari Guru (tab sebelah)
+            this.unsubscribeMsg = setInterval(() => {
+                const dbLocal = this.getDB();
+                const myData = dbLocal[this.user.email];
+                this.processInbox(myData);
+            }, 3000);
+        }
+    },
 
-                // Masukkan ke State Game Lokal
-                if(typeof STATE !== 'undefined' && STATE.player) {
-                    if(!STATE.player.messages) STATE.player.messages = [];
-                    
-                    // Gabungkan pesan
-                    STATE.player.messages.push(...newMsgs);
-                    
-                    // Notifikasi UI
-                    showToast(`📩 ${newMsgs.length} PESAN BARU DARI GURU!`);
-                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                    
-                    // Hapus inbox di server agar tidak didownload ulang (Pindahkan ke saveData permanen via auto-save)
+    // Helper untuk memproses pesan masuk (Digunakan oleh Cloud & Local)
+    processInbox: function(data) {
+        // Cek apakah ada pesan baru di 'inbox'
+        if(data && data.inbox && data.inbox.length > 0) {
+            const newMsgs = data.inbox;
+            console.log("Pesan diterima:", newMsgs);
+
+            // Masukkan ke State Game
+            if(typeof STATE !== 'undefined' && STATE.player) {
+                if(!STATE.player.messages) STATE.player.messages = [];
+                
+                // Gabungkan pesan
+                STATE.player.messages.push(...newMsgs);
+                
+                // Notifikasi UI
+                showToast(`📩 ${newMsgs.length} PESAN BARU DARI GURU!`);
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                
+                // Update Badge Kotak Surat jika terlihat
+                // (Logic drawObject akan menangani visualnya di frame berikutnya)
+
+                // BERSIHKAN INBOX DI SUMBER DATA (Agar tidak didownload ulang)
+                if (this.mode === 'firebase' && db) {
                     db.collection('users').doc(this.user.email).update({
                         inbox: firebase.firestore.FieldValue.delete()
-                    }).catch(err => console.log("Gagal clear inbox", err));
+                    }).catch(err => console.log("Gagal clear cloud inbox", err));
+                } else {
+                    // Bersihkan Local Storage Inbox
+                    const dbLocal = this.getDB();
+                    if(dbLocal[this.user.email]) {
+                        dbLocal[this.user.email].inbox = []; 
+                        this.saveDB(dbLocal);
+                    }
                 }
+                
+                // Trigger Auto Save Game untuk menyimpan pesan permanen di saveData pemain
+                if (typeof manualSave === 'function') manualSave();
             }
-        });
+        }
     },
 
     getTeachers: async function() {
@@ -5509,7 +5544,10 @@ const STATE = {
     teleportCooldown: 0,
     // NEW: Dungeon Level Tracker
     dungeonLevel: 1,
-    bossSpawned: false // NEW: Status apakah Boss sudah muncul
+    bossSpawned: false, // NEW: Status apakah Boss sudah muncul
+    
+    // NEW: Flag Peringatan Energi
+    lowEnergyWarned: false 
 };
 
 const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -5827,9 +5865,14 @@ function regenerateHouseMap() {
     }
 }
 
-function initGame() {
+// UPDATE: INIT GAME MENJADI ASYNC UNTUK MEMASTIKAN KONEKSI
+async function initGame() {
     try {
         resize();
+
+        // 1. Coba inisialisasi koneksi Cloud di awal
+        // Agar listener pesan bisa langsung aktif dalam mode Firebase jika online
+        await DataService.init(true);
 
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('ui-layer').classList.remove('hidden'); 
@@ -7033,6 +7076,18 @@ function update() {
 	
     // Removed btnSkill display logic block here
 
+    // --- NEW: GLOBAL LOW ENERGY WARNING CHECK ---
+    // Cek jika energi kritis (<= 20) dan belum diperingatkan
+    if (STATE.player.energy <= 20 && !STATE.lowEnergyWarned) {
+        showToast("⚠️ PERINGATAN: Stamina Kritis! Segera Makan/Istirahat.");
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Bunyi alert
+        STATE.lowEnergyWarned = true; // Set flag agar tidak spam
+    } 
+    // Reset flag jika energi sudah diisi kembali (> 20)
+    else if (STATE.player.energy > 20) {
+        STATE.lowEnergyWarned = false;
+    }
+
     STATE.time += 0.2; 
     
     if(STATE.player.shiftStarted) {
@@ -7951,6 +8006,9 @@ function processTeleport(b) {
         STATE.player.y = TILE_SIZE * 5; 
         STATE.teleportCooldown = 60;
         
+        // FIX: AUTO-SAVE SAAT PINDAH LEVEL AGAR PROGRESS AMAN
+        manualSave();
+
         showToast(`🌀 WARPING TO LEVEL ${STATE.dungeonLevel}...`);
         createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
         spawnEnemies(); 
@@ -8000,97 +8058,7 @@ function clearSpawnZone(mapId, spawnTileX, spawnTileY) {
     });
 }
 
-function updateEnemies() {
-    STATE.enemies.forEach((en, i) => {
-        en.x += en.knockback.x; en.y += en.knockback.y;
-        en.knockback.x *= 0.8; en.knockback.y *= 0.8;
-        
-        // Calculate Movement Angle
-        if(Math.abs(en.knockback.x) < 0.5) {
-            const ang = Math.atan2(STATE.player.y - en.y, STATE.player.x - en.x);
-            
-            // Simpan angle untuk collision logic
-            en.angle = ang;
-
-            en.x += Math.cos(ang) * en.speed;
-            en.y += Math.sin(ang) * en.speed;
-        }
-
-        const d = Math.hypot(STATE.player.x - en.x, STATE.player.y - en.y);
-        if(d < 20) {
-            STATE.player.hp -= 0.5;
-            if(Math.random()<0.1) createParticle(STATE.player.x, STATE.player.y, '#ef4444');
-            if(STATE.player.hp <= 0) gameOver();
-        }
-
-        if(en.hp <= 0) {
-            STATE.enemies.splice(i, 1);
-            STATE.player.money += 2500;
-            STATE.player.reputation += 1;
-            
-            // --- NEW: LOGIKA DROP ITEM RANDOM (LEVEL 1 / BIASA) ---
-            // Monster biasa menjatuhkan item komoditas dasar
-            const dropChance = 0.5; // 50% Kemungkinan drop item
-            let dropText = "";
-            
-            if (Math.random() < dropChance) {
-                // Daftar Item Biasa (Common Items)
-                const commonDrops = ['gandum', 'kain', 'coklat', 'bunga'];
-                const randomItem = commonDrops[Math.floor(Math.random() * commonDrops.length)];
-                
-                // Tambah ke inventory
-                if (!STATE.player.inventory[randomItem]) STATE.player.inventory[randomItem] = 0;
-                STATE.player.inventory[randomItem]++;
-                
-                // Format teks untuk notifikasi
-                dropText = ` & Dapat ${randomItem.toUpperCase()} 📦`;
-            }
-
-            if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Drop Monster
-            showToast(`+2.500 Gold${dropText}`);
-            createParticle(en.x, en.y, '#fbbf24');
-        }
-    });
-
-    // --- NEW: CEK KONDISI DUNGEON CLEARED ---
-    if (STATE.location === 'dungeon' && STATE.enemies.length === 0) {
-        // LOGIC BARU: WAVE BOSS LEVEL 5
-        if (STATE.dungeonLevel === 5 && !STATE.bossSpawned) {
-            spawnFinalBoss(); // Panggil Boss jika wave awal habis
-            return; // Jangan spawn portal dulu
-        }
-
-        const map = maps['dungeon'];
-        // Cek apakah portal sudah ada, jika belum spawn portal
-        const hasPortal = map.buildings.find(b => b.id === 'dungeon_next');
-        
-        if (!hasPortal) {
-            if (STATE.dungeonLevel < 5) {
-                // Spawn Portal ke Level Selanjutnya di tengah ruangan
-                map.buildings.push({ 
-                    id: 'dungeon_next', 
-                    x: 20, y: 15, w: 2, h: 2, 
-                    type: 'trigger', 
-                    entrance: {x: 21, y: 16, map: 'dungeon'}, 
-                    name: `Portal Level ${STATE.dungeonLevel + 1}`,
-                    open24h: true
-                });
-                showToast("🌀 PORTAL TERBUKA! Lanjut ke Level Berikutnya.");
-            } else {
-                // Level 5 (Boss) Selesai (Boss sudah mati)
-                showToast("🏆 DUNGEON CLEARED! Kamu mengalahkan BOSS!");
-                // Beri hadiah besar
-                STATE.player.money += 50000;
-                STATE.player.reputation += 50;
-                gainExp(500);
-                if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Hadiah Boss
-                
-                // Paksa keluar atau beri portal keluar yang nyaman
-                // Kita gunakan portal exit biasa yang sudah ada di (2,2) tapi beri notif
-            }
-        }
-    }
-}
+// REMOVED DUPLICATE updateEnemies FUNCTION HERE (Deleted lines to clean up)
 
 // --- NEW FUNCTION: SPAWN FINAL BOSS (PHASE 2) ---
 function spawnFinalBoss() {
@@ -12408,6 +12376,23 @@ function drawPlayer(ctx, p) {
         ctx.restore();
     }
 
+    // --- NEW: VISUAL INDIKATOR STAMINA RENDAH (KERINGAT) ---
+    if(p.energy <= 25) {
+        ctx.save();
+        // Animasi naik turun (bobbing)
+        const sweatBob = Math.sin(Date.now() / 150) * 3;
+        
+        // Setting Font Emoji
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'left';
+        
+        // Gambar di samping kanan kepala
+        // p.x + p.w (kanan sprite) + offset
+        ctx.fillText('💦', p.x + p.w - 5, p.y + 10 + sweatBob);
+        
+        ctx.restore();
+    }
+
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.beginPath(); 
     ctx.ellipse(p.x + 10, p.y + 28, 10, 4, 0, 0, Math.PI*2); 
@@ -12454,13 +12439,34 @@ function drawPlayer(ctx, p) {
         draw3DBox(ctx, p.x, p.y, 20, 20, p.color);
     }
 
+    // --- NEW: HP BAR DI ATAS KEPALA (Diposisikan Lebih Tinggi) ---
+    // Sprite Player tingginya sekitar 60px. Titik y player ada di kaki/bawah.
+    // Kita gambar HP bar di y - 50 agar aman dari kepala/wajah.
+    const barW = 30;
+    const barH = 4;
+    const barX = p.x + 10 - barW/2;
+    const barY = p.y - 50; 
+
+    // Background Bar (Hitam)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(barX, barY, barW, barH);
+    
+    // HP Fill (Hijau/Merah)
+    const hpPct = Math.max(0, p.hp / p.maxHp);
+    ctx.fillStyle = hpPct > 0.5 ? '#4ade80' : '#ef4444'; 
+    ctx.fillRect(barX, barY, barW * hpPct, barH);
+
+    // --- UPDATE: MARKER SEGITIGA (Lebih Tinggi Lagi) ---
+    // Marker digeser ke y-65 agar berada DI ATAS HP Bar
     const floatY = Math.sin(Date.now() / 150) * 5;
     ctx.fillStyle = '#fbbf24'; 
     ctx.beginPath();
-    ctx.moveTo(p.x + 10, p.y - 45 + floatY);
-    ctx.lineTo(p.x + 5, p.y - 55 + floatY);
-    ctx.lineTo(p.x + 15, p.y - 55 + floatY);
+    ctx.moveTo(p.x + 10, p.y - 65 + floatY); // Ujung Bawah
+    ctx.lineTo(p.x + 5, p.y - 75 + floatY);  // Kiri Atas
+    ctx.lineTo(p.x + 15, p.y - 75 + floatY); // Kanan Atas
     ctx.fill();
+    
+    // Shadow/Glow Marker
     ctx.shadowColor = '#fbbf24';
     ctx.shadowBlur = 10;
     ctx.fill();
@@ -12660,6 +12666,10 @@ function handleEnemyDrop(en) {
     let gold = 2500;
     let exp = 20;
     
+    // FIX: TAMBAHKAN REWARD KE STATUS PLAYER
+    STATE.player.money += gold;
+    STATE.player.reputation += 1; 
+
     // --- KHUSUS QUEST MONSTER ---
     if(en.isQuestTarget) {
         // Drop Item Quest Pasti
@@ -12696,15 +12706,11 @@ function handleEnemyDrop(en) {
 
     // 2. Drop Item Logic
     let dropText = "";
+    let floatedItem = ""; // Text untuk floating text
     const lvl = STATE.dungeonLevel || 1;
 
     if (en.isBoss) {
         // --- BOSS SMART DROP SYSTEM (10% Chance) ---
-        // Jika belum punya Zirah -> Drop Zirah
-        // Jika punya Zirah tapi belum punya Cincin -> Drop Cincin
-        // Jika punya keduanya -> Drop Tonic Legend/Kebal
-        
-        // UPDATE: Chance drop boss ditingkatkan sedikit agar lebih rewarding (20%)
         if(Math.random() <= 0.20) { 
             const hasArmor = (STATE.player.inventory['zirah_legend'] || 0) > 0;
             const hasRing = (STATE.player.inventory['cincin_legend'] || 0) > 0;
@@ -12713,13 +12719,15 @@ function handleEnemyDrop(en) {
             if (!hasArmor) {
                 rareDrop = 'zirah_legend';
                 dropText = "🔥 LEGENDARY DROP: ZIRAH ABADI!";
+                floatedItem = "ZIRAH ABADI";
             } else if (!hasRing) {
                 rareDrop = 'cincin_legend';
                 dropText = "💍 LEGENDARY DROP: CINCIN RAJA!";
+                floatedItem = "CINCIN RAJA";
             } else {
-                // Jika sudah punya equipment, drop Tonic
                 rareDrop = Math.random() < 0.5 ? 'tonic_stamina' : 'tonic_kebal';
                 dropText = `🧪 DROP LANGKA: ${rareDrop.replace('_', ' ').toUpperCase()}!`;
+                floatedItem = rareDrop.replace('_', ' ').toUpperCase();
             }
 
             addItem(rareDrop, 1);
@@ -12729,7 +12737,6 @@ function handleEnemyDrop(en) {
         }
     } else {
         // --- NORMAL DROP SYSTEM (Tiered by Level) ---
-        // Semakin tinggi level dungeon, item semakin bagus (Rarity)
         const chance = 0.4 + (lvl * 0.05); // Base 40% + bonus level
         
         if (Math.random() < chance) {
@@ -12748,19 +12755,27 @@ function handleEnemyDrop(en) {
 
             const item = pool[Math.floor(Math.random() * pool.length)];
             
-            // Khusus Scroll EXP langsung auto-use atau jadi item
             if(item === 'scroll_exp') {
                 gainExp(100);
                 dropText = " & 📜 Ancient Scroll (+100 EXP)";
+                floatedItem = "SCROLL EXP";
             } else {
                 addItem(item, 1);
                 dropText = ` & Dapat ${item.toUpperCase()} 📦`;
+                floatedItem = item.toUpperCase();
             }
         }
     }
 
-    // Feedback
+    // 3. Feedback Visual & Audio (Disatukan disini)
     showToast(`+${gold.toLocaleString()} G${dropText}`);
+    
+    // NEW: Floating Text Indikator di posisi monster
+    spawnFloatingText(en.x, en.y, `+${gold} G`, '#fbbf24', 12);
+    if(floatedItem) {
+        spawnFloatingText(en.x, en.y - 15, `+ ${floatedItem}`, '#4ade80', 12);
+    }
+
     createParticle(en.x, en.y, '#fbbf24');
     if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
 }
@@ -12841,6 +12856,10 @@ function updateEnemies() {
                     name: `Portal Level ${STATE.dungeonLevel + 1}`,
                     open24h: true
                 });
+                
+                // FIX: TAMBAHKAN EFEK SUARA SAAT PORTAL MUNCUL
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                
                 showToast("🌀 PORTAL TERBUKA! Lanjut ke Level Berikutnya (Cek Dinding Atas).");
             } else {
                 // Level 5 (Boss) Selesai
