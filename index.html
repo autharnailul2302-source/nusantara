@@ -2092,6 +2092,17 @@ button, .round-btn, .d-btn, .auth-btn {
         </div>
     </div>
 
+    <!-- NEW: MESSAGE ARCHIVE MODAL (ARSIP PESAN) -->
+    <div id="message-archive-modal" class="minigame-overlay">
+        <div class="journal-box" style="width: 90%; max-width: 500px; max-height: 80vh;">
+            <h2 style="color:var(--secondary); font-family:'Cinzel'; text-align:center; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">📂 ARSIP PESAN GURU</h2>
+            <div id="message-list" style="flex:1; overflow-y:auto; background:rgba(15, 23, 42, 0.6); padding:10px; border-radius:4px; margin-bottom:10px; border:1px solid #334155;">
+                <!-- List pesan akan dimuat di sini -->
+            </div>
+            <button class="main-menu-btn" onclick="closeMessageArchive()" style="width:100%; padding:10px; font-size:14px;">TUTUP ARSIP</button>
+        </div>
+    </div>
+
     <!-- NEW: DAILY QUEST POPUP (WITH TABS) -->
     <div id="daily-quest-popup" class="minigame-overlay">
         <div class="journal-box" style="text-align:center; border-color:var(--secondary); width: 380px; padding: 15px; max-height: 85vh;">
@@ -5251,8 +5262,8 @@ for(let i=0; i<10; i++) {
             /* UPDATE: Papan Misi & Statue dipindah ke buildings */
             
             // --- NEW: KOTAK SURAT (MAILBOX) UNTUK PESAN GURU ---
-            // UPDATE FIX: Posisi digeser ke x:20 (Tepat sebelah kiri pintu rumah di x:21) agar "di pinggir pintu"
-            {x: 20, y: 11, w: 1, h: 1, type: 'mailbox', icon: '📬', img: 'images/pos.png'}, 
+            // UPDATE: Posisi digeser ke sebelah kanan pintu rumah (x:23)
+            {x: 23, y: 11, w: 1, h: 1, type: 'mailbox', icon: '📬', img: 'images/pos.png'}, 
 
             // Meja & Kursi Santai (DIPINDAH KE KANAN & KIRI POHON SAKURA di 16,13)
             // UPDATE: Ukuran diperbesar (w:2, h:2) setara setengah bangunan
@@ -5938,6 +5949,9 @@ async function initGame() {
             STATE.player.lastMonthlyClaim = saved.lastMonthlyClaim || 0;
             STATE.player.claimedLifeTrial = saved.claimedLifeTrial || false;
             
+            // NEW: LOAD STATUS TUTORIAL DUNGEON
+            STATE.player.hasSeenDungeonTutorial = saved.hasSeenDungeonTutorial || false;
+            
             STATE.player.attackCooldown = 0;
             STATE.player.isAttacking = false;
             
@@ -6065,7 +6079,7 @@ function startWakeUpSequence() {
                         // STEP 1: ANALOG (GERAKAN)
                         showTutorialFocus('joystick'); // Sorot Analog
                         
-                        showDialogue("TUTORIAL (1/4)", "Selamat datang! Gunakan **Analog** di kiri bawah untuk bergerak menjelajahi pulau.", [
+                        showDialogue("TUTORIAL (1/6)", "Selamat datang! Gunakan **Analog** di kiri bawah untuk bergerak menjelajahi pulau.", [
                             {
                                 text: "Oke, Paham >>", 
                                 action: () => {
@@ -6076,29 +6090,45 @@ function startWakeUpSequence() {
                                     
                                     showTutorialFocus('btn-action'); // Sorot Tombol Aksi
                                     
-                                    showDialogue("TUTORIAL (2/4)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
+                                    showDialogue("TUTORIAL (2/6)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
                                         {
                                             text: "Lanjut >>", 
                                             action: () => {
                                                 // STEP 3: COMBAT MODE (Ubah Icon)
                                                 btnAction.innerText = '⚔️';
                                                 
-                                                showDialogue("TUTORIAL (3/4)", 
+                                                showDialogue("TUTORIAL (3/6)", 
                                                     "⚔️ **MODE TEMPUR**:\nSaat masuk ke Dungeon berbahaya, tombol ini otomatis berubah menjadi **PEDANG**.\n\nTekan cepat untuk menyerang musuh!", 
                                                     [{
                                                         text: "Siap Bertarung!",
                                                         action: () => {
-                                                            // STEP 4: MENU
+                                                            // STEP 4: MENU TAS
                                                             btnAction.style.display = 'none'; // Sembunyikan lagi
                                                             
-                                                            // Sorot area menu kanan atas (Kita sorot Tas sebagai perwakilan)
                                                             showTutorialFocus('bag-btn');
                                                             
-                                                            showDialogue("TUTORIAL (4/4)", 
-                                                                "Terakhir, menu di kanan atas:\n🎒 **TAS**: Cek Barang.\n📜 **QUEST**: Cek Misi Harian.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
-                                                                [{text: "Ayo Keluar!", action: () => {
-                                                                    clearTutorialFocus();
-                                                                    closeDialogue();
+                                                            showDialogue("TUTORIAL (4/6)", 
+                                                                "🎒 **TAS PENYIMPANAN**:\nKlik tombol Tas ini untuk melihat dan menggunakan item yang kamu miliki.", 
+                                                                [{text: "Lanjut >>", action: () => {
+                                                                    
+                                                                    // STEP 5: MENU JURNAL QUEST (NEW)
+                                                                    showTutorialFocus('quest-btn');
+
+                                                                    showDialogue("TUTORIAL (5/6)",
+                                                                        "📜 **TOMBOL JURNAL**:\nIni adalah navigasi utamamu!\nCek **Misi Harian** & **Target Hidup** di sini.\n\nSelesaikan misi untuk dapat Hadiah Gold & EXP!",
+                                                                        [{text: "Mengerti!", action: () => {
+                                                                            
+                                                                            // STEP 6: DIARY BUKU (CLOSING)
+                                                                            clearTutorialFocus();
+                                                                            
+                                                                            showDialogue("TUTORIAL (6/6)", 
+                                                                                "Terakhir, lihat **Buku Harian** di atas meja itu? 📔\n\nGunakan untuk **SAVE GAME** dan menulis **Refleksi Diri**.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
+                                                                                [{text: "Ayo Keluar!", action: () => {
+                                                                                    closeDialogue();
+                                                                                }}]
+                                                                            );
+                                                                        }}]
+                                                                    );
                                                                 }}]
                                                             );
                                                         }
@@ -7927,6 +7957,49 @@ function processTeleport(b) {
         createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
         
         spawnEnemies(); // Spawn musuh baru sesuai level
+
+        // --- NEW: TUTORIAL COMBAT PERTAMA KALI MASUK DUNGEON ---
+        if (!STATE.player.hasSeenDungeonTutorial) {
+            STATE.player.hasSeenDungeonTutorial = true;
+            
+            // Delay sedikit agar map dungeon dan UI sempat ter-render
+            setTimeout(() => {
+                // Highlight Tombol Aksi (Pedang)
+                const btnAction = document.getElementById('btn-action');
+                if(btnAction) {
+                    btnAction.innerText = '⚔️'; // Pastikan icon sudah pedang
+                    btnAction.classList.add('tutorial-highlight');
+                }
+
+                // Mainkan SFX Alert
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+
+                showDialogue("TUTORIAL COMBAT (1/2)", 
+                    "⚠️ **ZONA BERBAHAYA!**\nKamu telah memasuki Dungeon. Di sini banyak monster berkeliaran.\n\nPerhatikan tombol aksi di kanan bawah. Sekarang ikonnya berubah menjadi **PEDANG** ⚔️.", 
+                    [{
+                        text: "Lanjut >>", 
+                        action: () => {
+                            showDialogue("TUTORIAL COMBAT (2/2)", 
+                                "🔥 **TEKNIK BERTARUNG**:\n1. Tekan tombol Pedang untuk menyerang.\n2. Tekan cepat 3x untuk **COMBO** (Pukulan ke-3 damagenya besar!).\n3. **PERHATIKAN STAMINA!** Setiap serangan menguras energi. Jangan asal pukul jika lelah!", 
+                                [{
+                                    text: "Siap Bertarung! ⚔️", 
+                                    action: () => {
+                                        closeDialogue();
+                                        // Hapus highlight
+                                        if(btnAction) btnAction.classList.remove('tutorial-highlight');
+                                        
+                                        // Save otomatis agar tutorial tidak muncul lagi
+                                        manualSave();
+                                    }
+                                }],
+                                'images/penjagadungeon.png'
+                            );
+                        }
+                    }],
+                    'images/penjagadungeon.png'
+                );
+            }, 1000);
+        }
     }
     else if(b.id === 'merchant') {
         STATE.location = 'merchant_interior';
@@ -10110,7 +10183,7 @@ function interactObject(obj) {
             {text: "Semangat! 💪", action: closeDialogue}
         ], 'images/kalender.png');
     }
-    // UPDATE: Logika Interaksi Kotak Surat (Inbox)
+    // UPDATE: Logika Interaksi Kotak Surat (Inbox) dengan Arsip
     else if(obj.type === 'mailbox') {
         const msgs = STATE.player.messages || [];
         const unread = msgs.filter(m => !m.read);
@@ -10122,20 +10195,26 @@ function interactObject(obj) {
             dialogueText = "Kotak surat kosong. Belum ada pesan dari Guru.";
             actions = [{text: "Tutup", action: closeDialogue}];
         } else {
+            // Tampilkan cuplikan pesan terbaru
             if(unread.length > 0) {
                 dialogueText = `Anda memiliki ${unread.length} pesan baru!\n\nPesan Terbaru:\n"${msgs[msgs.length-1].text}"`;
-                actions = [
-                    {text: "Tandai Semua Dibaca", action: () => {
-                        STATE.player.messages.forEach(m => m.read = true);
-                        showToast("Semua pesan ditandai dibaca ✅");
-                        closeDialogue();
-                    }},
-                    {text: "Tutup", action: closeDialogue}
-                ];
+                actions.push({text: "Tandai Semua Dibaca", action: () => {
+                    STATE.player.messages.forEach(m => m.read = true);
+                    showToast("Semua pesan ditandai dibaca ✅");
+                    // Tetap di dialog agar bisa buka arsip setelah baca
+                    interactObject(obj); 
+                }});
             } else {
                 dialogueText = "Tidak ada pesan baru. \nPesan Terakhir:\n" + `"${msgs[msgs.length-1].text}"`;
-                actions = [{text: "Tutup", action: closeDialogue}];
             }
+
+            // TOMBOL BUKA ARSIP
+            actions.push({text: "📂 Lihat Arsip Pesan", action: () => {
+                closeDialogue();
+                openMessageArchive();
+            }});
+
+            actions.push({text: "Tutup", action: closeDialogue});
         }
 
         showDialogue("KOTAK SURAT", dialogueText, actions, 'images/pos.png');
@@ -10253,6 +10332,50 @@ function closeJournal() {
     
     // FIX: Kembalikan ke Fullscreen setelah menutup jurnal (karena keyboard menutup fullscreen)
     toggleFullScreen();
+}
+
+// --- NEW FUNCTION: MESSAGE ARCHIVE LOGIC ---
+function openMessageArchive() {
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+    
+    const modal = document.getElementById('message-archive-modal');
+    const list = document.getElementById('message-list');
+    const msgs = STATE.player.messages || [];
+    
+    list.innerHTML = '';
+    
+    if(msgs.length === 0) {
+        list.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">Belum ada pesan yang tersimpan.</div>';
+    } else {
+        // Tampilkan dari yang terbaru ke terlama
+        [...msgs].reverse().forEach(m => {
+            // Format Waktu
+            let dateStr = "Waktu Tidak Diketahui";
+            if(m.time) {
+                const date = new Date(m.time);
+                dateStr = `${date.getDate()}/${date.getMonth()+1} ${date.getHours()}:${date.getMinutes().toString().padStart(2,'0')}`;
+            }
+            
+            const div = document.createElement('div');
+            div.style.cssText = "background:rgba(255,255,255,0.05); padding:12px; margin-bottom:10px; border-left:4px solid var(--secondary); border-radius:4px;";
+            div.innerHTML = `
+                <div style="font-size:10px; color:#94a3b8; display:flex; justify-content:space-between; margin-bottom:6px; border-bottom:1px dashed rgba(255,255,255,0.1); padding-bottom:4px;">
+                    <span style="font-weight:bold; color:var(--primary);">DARI: GURU</span>
+                    <span>🕒 ${dateStr}</span>
+                </div>
+                <div style="font-size:13px; color:#e2e8f0; line-height:1.5; font-family:'Exo 2'; white-space: pre-wrap;">${m.text}</div>
+            `;
+            list.appendChild(div);
+        });
+    }
+    
+    modal.style.display = 'flex';
+    STATE.screen = 'modal';
+}
+
+function closeMessageArchive() {
+    document.getElementById('message-archive-modal').style.display = 'none';
+    STATE.screen = 'play';
 }
 
 function saveJournal() {
@@ -10524,6 +10647,7 @@ function manualSave() {
         lastWeeklyClaim: STATE.player.lastWeeklyClaim,
         lastMonthlyClaim: STATE.player.lastMonthlyClaim,
         claimedLifeTrial: STATE.player.claimedLifeTrial,
+        hasSeenDungeonTutorial: STATE.player.hasSeenDungeonTutorial, // NEW: SAVE TUTORIAL STATUS
         
         // 10. Pesan & Jurnal
         reflections: STATE.player.reflections,
@@ -11667,28 +11791,60 @@ function drawObject(ctx, o) {
         ctx.fillText(o.icon, o.x*TILE_SIZE+5, o.y*TILE_SIZE+25);
     }
 
+    // --- NEW: IDENTITAS MAILBOX MELAYANG (Agar Player Tahu Ini Pos) ---
+    if(o.type === 'mailbox') {
+        const centerX = (o.x * TILE_SIZE) + (TILE_SIZE / 2);
+        const topY = (o.y * TILE_SIZE) - 15; // Di atas objek
+        
+        // Animasi Melayang (Slow Bobbing)
+        const floatOffset = Math.sin(Date.now() / 500) * 3;
+
+        ctx.save();
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 4;
+        
+        // Gambar Amplop Putih
+        ctx.fillText('✉️', centerX, topY + floatOffset);
+        
+        // Label Kecil "POS" (Opsional, agar lebih jelas)
+        ctx.font = 'bold 8px "Exo 2"';
+        ctx.fillStyle = '#fbbf24'; // Emas
+        ctx.fillText("POS", centerX, topY + floatOffset + 8);
+        
+        ctx.restore();
+    }
+
     // --- NEW: INDIKATOR PESAN BELUM DIBACA (KHUSUS MAILBOX) ---
     if(o.type === 'mailbox') {
         const msgs = STATE.player.messages || [];
         const unreadCount = msgs.filter(m => !m.read).length;
         
         if(unreadCount > 0) {
-            // Gambar Notifikasi Merah Melayang
-            const bx = (o.x * TILE_SIZE) + (TILE_SIZE/2);
-            const by = (o.y * TILE_SIZE) - 5; 
+            // Gambar Notifikasi Merah Melayang (Lebih tinggi sedikit agar tidak menumpuk ikon amplop)
+            const bx = (o.x * TILE_SIZE) + (TILE_SIZE/2) + 10; // Geser ke kanan sedikit
+            const by = (o.y * TILE_SIZE) - 25; // Lebih ke atas
             
-            const floatY = Math.sin(Date.now() / 200) * 3;
+            const floatY = Math.sin(Date.now() / 200) * 3; // Animasi lebih cepat (urgensi)
             
             ctx.fillStyle = '#ef4444'; // Merah
             ctx.beginPath();
-            ctx.arc(bx, by + floatY, 6, 0, Math.PI*2);
+            ctx.arc(bx, by + floatY, 7, 0, Math.PI*2);
             ctx.fill();
+            
+            // Border Putih
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
             
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 10px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('!', bx, by + floatY + 1);
+            // Tampilkan jumlah pesan jika > 1, jika tidak tanda seru
+            const badgeText = unreadCount > 9 ? '9+' : (unreadCount > 1 ? unreadCount : '!');
+            ctx.fillText(badgeText, bx, by + floatY + 1);
         }
     }
 }
@@ -11778,583 +11934,130 @@ function drawBuilding(ctx, b) {
         ctx.fillText(label, ex + 15, ey - 5);
     }
 
-    // --- NEW: LABEL NAMA BANGUNAN (SELALU TAMPIL DI ATAS ATAP) ---
+    // --- NEW: LABEL BANGUNAN PREMIUM (PILL STYLE) ---
     if (b.name && b.type !== 'trigger' && b.type !== 'dungeon_rock') {
         ctx.save();
-        ctx.font = 'bold 9px "Exo 2", sans-serif'; 
-        ctx.textAlign = 'center';
         
         const bx = b.x * TILE_SIZE;
         const by = b.y * TILE_SIZE;
         const bw = b.w * TILE_SIZE;
         
-        // Posisi Text: Tengah lebar bangunan
-        const tx = bx + (bw / 2);
-        // Posisi Y: Di atas atap (lebih tinggi dari status pill jika ada)
-        const ty = by - 24; 
+        // Cek Status Buka/Tutup
+        let isClosed = false;
+        let isRenovating = false;
 
-        // Outline Hitam Tebal (Agar terbaca jelas di background apapun)
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = 'rgba(2, 6, 23, 0.9)'; // Dark Slate
-        ctx.strokeText(b.name.toUpperCase(), tx, ty);
-
-        // Text Fill (Warna)
-        ctx.fillStyle = '#e2e8f0'; // Default Putih Abu
-        if(b.roleSpecific || b.id === 'player_house') ctx.fillStyle = '#fbbf24'; // Emas untuk Bangunan Penting
-        
-        ctx.fillText(b.name.toUpperCase(), tx, ty);
-        
-        ctx.restore();
-    }
-
-    // --- FITUR BARU: INDIKATOR STATUS BANGUNAN (BUKA/TUTUP/RENOVASI) ---
-    // Hanya render jika ini bangunan dengan pintu masuk (bukan trigger/batu)
-    if (b.entrance && b.type !== 'trigger' && b.type !== 'dungeon_rock') {
-        let statusText = "";
-        let statusColor = "#fff";
-        let bgColor = "rgba(15, 23, 42, 0.9)"; // Dark background default
-
-        // 1. Cek apakah interior map sudah dibuat/ada di objek 'maps'
-        // Jika peta tujuan (b.entrance.map) tidak ditemukan di variabel 'maps', berarti belum ada.
-        if (b.entrance.map && !maps[b.entrance.map]) {
-            statusText = "🚧 PROSES PERBAIKAN";
-            statusColor = "#fcd34d"; // Kuning Emas
-            bgColor = "rgba(120, 53, 15, 0.9)"; // Brown bg
-        } 
-        // 2. Cek Jam Operasional (Hanya jika punya interior dan TIDAK 24 jam)
-        else if (b.openTime && b.closeTime && !b.open24h) {
-            const openStr = (b.openTime/100).toString().padStart(2,'0') + ":00";
-            const closeStr = (b.closeTime/100).toString().padStart(2,'0') + ":00";
-            
-            if (STATE.time >= b.openTime && STATE.time < b.closeTime) {
-                statusText = `BUKA (${openStr}-${closeStr})`;
-                statusColor = "#4ade80"; // Hijau Terang
-                bgColor = "rgba(6, 78, 59, 0.8)"; // Dark Green bg
-            } else {
-                statusText = `TUTUP (Buka ${openStr})`;
-                statusColor = "#f87171"; // Merah Terang
-                bgColor = "rgba(127, 29, 29, 0.8)"; // Dark Red bg
+        if (b.entrance && b.entrance.map && !maps[b.entrance.map]) {
+            isRenovating = true;
+        } else if (b.openTime && b.closeTime && !b.open24h) {
+            if (STATE.time < b.openTime || STATE.time >= b.closeTime) {
+                isClosed = true;
             }
         }
-        
-        // Render Label jika ada statusText
-        if (statusText) {
-            ctx.save();
-            ctx.font = 'bold 6px "Exo 2"'; // Font kecil agar muat
-            
-            const bx = b.x * TILE_SIZE;
-            const by = b.y * TILE_SIZE;
-            const bw = b.w * TILE_SIZE;
-            
-            // Posisi Text: Tengah atas bangunan
-            const tx = bx + (bw / 2);
-            const ty = by - 12; // Sedikit melayang di atas atap
 
-            const textMetrics = ctx.measureText(statusText);
-            const padding = 4;
-            const bgW = textMetrics.width + (padding * 2);
-            const bgH = 10;
+        // --- KONFIGURASI STYLE ---
+        let labelText = b.name.toUpperCase();
+        let bgColor = 'rgba(15, 23, 42, 0.9)'; // Default: Dark Slate (Modis)
+        let borderColor = 'rgba(148, 163, 184, 0.8)'; // Border Abu-abu
+        let textColor = '#f8fafc'; // Putih
+        let icon = '';
 
-            // Gambar Background Pill
-            ctx.fillStyle = bgColor;
-            ctx.beginPath();
-            // Fallback untuk browser lama yang tidak support roundRect, pakai rect biasa atau arc
-            if (ctx.roundRect) {
-                ctx.roundRect(tx - bgW/2, ty - bgH + 2, bgW, bgH, 3);
-            } else {
-                ctx.fillRect(tx - bgW/2, ty - bgH + 2, bgW, bgH);
-            }
-            ctx.fill();
-            
-            // Border tipis
-            ctx.strokeStyle = statusColor;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-
-            // Gambar Text
-            ctx.fillStyle = statusColor;
-            ctx.textAlign = 'center';
-            ctx.fillText(statusText, tx, ty);
-            
-            ctx.restore();
+        // Style Khusus Bangunan Utama (Emas)
+        if (b.roleSpecific || b.id === 'player_house') {
+            bgColor = 'rgba(66, 32, 6, 0.95)'; // Coklat Tua
+            borderColor = '#fbbf24'; // Emas
+            textColor = '#fffbeb'; 
         }
-    }
-}
 
-function drawPlayer(ctx, p) {
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.beginPath(); 
-    ctx.ellipse(p.x + 10, p.y + 28, 10, 4, 0, 0, Math.PI*2); 
-    ctx.fill();
-
-    let sprite = p.spriteIdle;
-    let isMoving = keys['ArrowUp'] || keys['ArrowDown'] || keys['ArrowLeft'] || keys['ArrowRight'] || 
-                   keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ||
-                   touchState.up || touchState.down || touchState.left || touchState.right;
-                   
-    // UPDATE: Prioritas Sprite (Attack > Walk > Idle)
-    if (p.isAttacking && p.spriteAttack) {
-        sprite = p.spriteAttack;
-    } else if(isMoving) {
-        // PERBAIKAN: Gunakan sprite hadap belakang (atas) jika bergerak ke atas
-        if (p.direction === 'up' && p.spriteWalkUp) {
-            sprite = p.spriteWalkUp;
-        } 
-        // NEW: Gunakan sprite hadap depan (bawah) jika bergerak ke bawah
-        else if (p.direction === 'down' && p.spriteWalkDown) {
-            sprite = p.spriteWalkDown;
+        // Style Khusus Status
+        if (isRenovating) {
+            bgColor = 'rgba(113, 63, 18, 0.95)'; // Kuning Tua
+            borderColor = '#fcd34d'; 
+            icon = '🚧 ';
+        } else if (isClosed) {
+            bgColor = 'rgba(127, 29, 29, 0.95)'; // Merah Tua
+            borderColor = '#ef4444'; 
+            icon = '🔒 ';
         } else {
-            sprite = p.spriteWalk;
-        }
-    }
-
-    if(sprite && sprite.complete && sprite.naturalWidth !== 0) {
-        ctx.save();
-        ctx.translate(p.x + p.w/2, p.y + p.h/2);
-        
-        // Animasi bernafas hanya saat diam dan tidak menyerang
-        if(!isMoving && !p.isAttacking) {
-            const breathe = 1 + Math.sin(Date.now() / 300) * 0.03; 
-            ctx.scale(1, breathe);
+            // Ikon Bangunan Saat Buka
+            if(b.id.includes('merchant')) icon = '🛒 ';
+            else if(b.id.includes('clinic')) icon = '🏥 ';
+            else if(b.id.includes('school')) icon = '🎓 ';
+            else if(b.id.includes('guild')) icon = '⚔️ ';
+            else if(b.id.includes('blacksmith')) icon = '⚒️ ';
+            else if(b.id.includes('library')) icon = '📚 ';
+            else if(b.id.includes('wedding')) icon = '💍 ';
+            else if(b.id.includes('port')) icon = '⚓ ';
         }
 
-        if(p.direction === 'left') ctx.scale(-1, 1); 
+        const fullText = icon + labelText;
+
+        // Hitung Ukuran Label
+        ctx.font = 'bold 9px "Exo 2", sans-serif'; // Ukuran font pas
+        const textMetrics = ctx.measureText(fullText);
+        const textWidth = textMetrics.width;
         
-        // PERBAIKAN: Menyesuaikan ukuran render saat attack agar tidak mengecil/gepeng
-        if (p.isAttacking) {
-            // Karena ada senjata (kapak/pedang), sprite lebih lebar.
-            // Kita perbesar area gambar menjadi 64x64 (atau sesuaikan dengan proporsi gambar)
-            // Offset Y diatur -49 agar kaki tetap di posisi +15 (relatif terhadap tengah) sama seperti idle (-45 + 60 = 15)
-            // -49 (Top) + 64 (Height) = 15 (Bottom/Ground Level)
-            ctx.drawImage(sprite, -32, -49, 64, 64); 
-            
-            // --- NEW: DRAW COMBO SLASH EFFECT ---
-            // Efek visual sabetan berdasarkan urutan combo
-            ctx.save();
-            // Kembalikan scale ke normal relatif terhadap pemain (abaikan flip horizontal dulu, kita handle manual)
-            // Karena canvas sudah di-flip jika 'left', kita gambar efek relatif terhadap sprite
-            
-            let combo = p.comboCount || 1;
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            
-            // Warna efek berbeda tiap combo
-            if (combo === 1) {
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Putih
-                ctx.shadowColor = 'white';
-                ctx.shadowBlur = 10;
-                
-                // Slash Miring (Kanan Atas ke Kiri Bawah relatif sprite)
-                ctx.beginPath();
-                ctx.moveTo(10, -30);
-                ctx.quadraticCurveTo(30, -10, 10, 10);
-                ctx.stroke();
-            } 
-            else if (combo === 2) {
-                ctx.strokeStyle = 'rgba(250, 204, 21, 0.9)'; // Kuning
-                ctx.shadowColor = '#facc15';
-                ctx.shadowBlur = 10;
-                
-                // Slash Miring Berlawanan (Kiri Atas ke Kanan Bawah)
-                ctx.beginPath();
-                ctx.moveTo(-10, -30);
-                ctx.quadraticCurveTo(10, -10, 20, 20);
-                ctx.stroke();
-            } 
-            else if (combo === 3) {
-                ctx.strokeStyle = 'rgba(239, 68, 68, 0.9)'; // Merah (Finisher)
-                ctx.shadowColor = '#ef4444';
-                ctx.shadowBlur = 20;
-                ctx.lineWidth = 5;
-                
-                // Circular Slash / Explosion
-                ctx.beginPath();
-                ctx.arc(0, -10, 30, 0, Math.PI * 2); // Putaran penuh
-                ctx.stroke();
-                
-                // Tambah efek garis ledakan keluar
-                ctx.beginPath();
-                ctx.moveTo(0, -10); ctx.lineTo(40, -10);
-                ctx.moveTo(0, -10); ctx.lineTo(30, -40);
-                ctx.moveTo(0, -10); ctx.lineTo(30, 20);
-                ctx.stroke();
-            }
-            
-            ctx.restore();
-
-        } else {
-            // Ukuran normal untuk Idle/Walk (40x60)
-            ctx.drawImage(sprite, -20, -45, 40, 60); 
-        }
+        const paddingX = 8;
+        const paddingY = 4;
+        const pillW = textWidth + (paddingX * 2);
+        const pillH = 18; // Tinggi label
         
-        ctx.restore();
-    } else {
-        draw3DBox(ctx, p.x, p.y, 20, 20, p.color);
-    }
+        // Posisi Label (Tengah bangunan, melayang di atas atap)
+        const pillX = bx + (bw / 2) - (pillW / 2);
+        const pillY = by - 28; // Jarak float dari atap
 
-    const floatY = Math.sin(Date.now() / 150) * 5;
-    ctx.fillStyle = '#fbbf24'; 
-    ctx.beginPath();
-    ctx.moveTo(p.x + 10, p.y - 45 + floatY);
-    ctx.lineTo(p.x + 5, p.y - 55 + floatY);
-    ctx.lineTo(p.x + 15, p.y - 55 + floatY);
-    ctx.fill();
-    ctx.shadowColor = '#fbbf24';
-    ctx.shadowBlur = 10;
-    ctx.fill();
-    ctx.shadowBlur = 0; 
-    
-    if(p.isAttacking) {
-        ctx.save();
-        ctx.translate(p.x+10, p.y+10);
-        ctx.rotate(p.direction==='left'?-1.5:1.5);
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(0, 0, 25, -0.5, 0.5); ctx.stroke();
-        ctx.restore();
-    }
-}
+        // --- DRAW SHADOW (Efek Melayang) ---
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 3;
 
-function drawNPC(ctx, n) {
-    const px = n.x * TILE_SIZE;
-    const py = n.y * TILE_SIZE;
-
-    let shadowSize = 10;
-    if(n.id.includes('ayam')) shadowSize = 6;
-    if(n.id.includes('sapi') || n.id.includes('kuda')) shadowSize = 14;
-
-    // UPDATE: Jangan gambar bayangan hitam biasa untuk swimmer, ganti riak air nanti
-    if(n.type !== 'swimmer') {
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.beginPath(); 
-        ctx.ellipse(px + 15, py + 28, shadowSize, shadowSize/2.5, 0, 0, Math.PI*2); 
-        ctx.fill();
-    }
-
-    if(!n.img) { n.img = new Image(); n.img.src = n.imgSrc; }
-
-    ctx.save();
-    
-    // Posisi Translate
-    ctx.translate(px + 15, py + 15);
-    
-    // Animasi Bernafas/Terapung
-    let breathe = 1 + Math.sin((Date.now() + n.x*100) / 300) * 0.03;
-    
-    // Khusus Swimmer: Animasi Terapung (Bobbing) lebih kuat
-    if (n.type === 'swimmer') {
-        // Gambar Riak Air di bawah
-        const rippleScale = 1 + Math.sin(Date.now() / 500) * 0.2;
-        ctx.save();
-        ctx.translate(0, 15); // Turun ke permukaan air
-        ctx.scale(rippleScale, rippleScale * 0.5);
-        ctx.fillStyle = 'rgba(186, 230, 253, 0.6)'; // UPDATE: Riak Biru Muda (Lebih terlihat air)
+        // --- DRAW PILL BACKGROUND (Rounded Rect) ---
+        ctx.fillStyle = bgColor;
         ctx.beginPath();
-        ctx.arc(0, 0, 18, 0, Math.PI * 2); // Ukuran sedikit diperbesar
-        ctx.fill();
-        ctx.restore();
-
-        // Naik turun
-        const floatY = Math.sin(Date.now() / 400) * 3;
-        ctx.translate(0, floatY);
-    } else {
-        ctx.scale(1, breathe);
-    }
-
-    if(n.img.complete && n.img.naturalWidth !== 0) {
-        let drawW = 40;
-        let drawH = 60;
-        let offX = -20;
-        let offY = -45;
-
-        // UPDATE: Menambahkan 'pemancing_misterius' ke daftar Big Types agar digambar lebih besar
-        const bigTypes = ['blacksmith', 'job', 'boss_merchant', 'pemancing_misterius']; 
-        if(bigTypes.includes(n.type) || bigTypes.includes(n.id)) {
-            drawW = 60; 
-            drawH = 65; 
-            offX = -30; 
-            offY = -50; 
-        }
-        
-        // --- NEW: LOGIKA VISUAL UNTUK ANAK KECIL (Render Lebih Kecil) ---
-        // UPDATE: Kecualikan child_blacksmith agar ukurannya normal (seperti player)
-        if(n.id.includes('child') && n.id !== 'child_blacksmith') {
-            drawW = 30;  // Lebih kurus
-            drawH = 45;  // Lebih pendek (Normal 60)
-            offX = -15;  // Adjust offset X tengah
-            offY = -32;  // Adjust offset Y kaki
-        }
-
-        if(n.type === 'animal') {
-            drawW = 40; drawH = 40; offX = -20; offY = -25;
-            
-            if(n.id.includes('ayam')) {
-                drawW = 25; drawH = 25; offX = -12; offY = -15; 
-            } else if(n.id.includes('sapi')) {
-                drawW = 60; drawH = 50; offX = -30; offY = -35; 
-            } else if(n.id.includes('kuda')) {
-                drawW = 55; drawH = 55; offX = -27; offY = -40; 
-            } else if(n.id.includes('kambing')) {
-                drawW = 45; drawH = 45; offX = -22; offY = -30; 
-            }
-        }
-        
-        // Khusus Swimmer: Badan terpotong sedikit (tenggelam)
-        if (n.type === 'swimmer') {
-            // Gunakan clip path untuk memotong bagian bawah sprite seolah dalam air
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(-30, -60, 60, 50); // Kotak potong (hanya gambar bagian atas)
-            ctx.clip();
-            ctx.drawImage(n.img, offX, offY, drawW, drawH);
-            ctx.restore();
-        } else {
-            ctx.drawImage(n.img, offX, offY, drawW, drawH);
-        }
-
-    } else {
-        ctx.restore(); 
-        draw3DBox(ctx, px, py, 30, 30, n.type==='animal' ? '#fff' : '#facc15');
-        ctx.save(); 
-    }
-    ctx.restore();
-
-    if(n.type === 'animal' && n.loveTimer > 0) {
-        const pulse = 1 + Math.sin(Date.now() / 100) * 0.2;
-        ctx.save();
-        ctx.translate(px + 15, py - 30); 
-        ctx.scale(pulse, pulse);
-        
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 12, 10, 0, 0, Math.PI*2);
-        ctx.fill();
-        
-        ctx.beginPath();
-        ctx.moveTo(0, 10); ctx.lineTo(-5, 15); ctx.lineTo(5, 12);
+        const r = 5; // Radius sudut
+        ctx.moveTo(pillX + r, pillY);
+        ctx.lineTo(pillX + pillW - r, pillY);
+        ctx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + r);
+        ctx.lineTo(pillX + pillW, pillY + pillH - r);
+        ctx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH);
+        ctx.lineTo(pillX + r, pillY + pillH);
+        ctx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - r);
+        ctx.lineTo(pillX, pillY + r);
+        ctx.quadraticCurveTo(pillX, pillY, pillX + r, pillY);
         ctx.fill();
 
-        ctx.font = '12px Arial'; 
-        ctx.fillStyle = '#ef4444';
+        // --- DRAW BORDER ---
+        ctx.shadowBlur = 0; // Hilangkan shadow untuk border agar tajam
+        ctx.shadowOffsetY = 0;
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // --- DRAW TEXT ---
+        ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('❤️', 0, 1); 
+        // Gambar teks di tengah pill
+        ctx.fillText(fullText, pillX + (pillW / 2), pillY + (pillH / 2));
+
+        // --- DRAW ARROW/POINTER KE BAWAH (Segitiga kecil) ---
+        ctx.fillStyle = bgColor;
+        ctx.beginPath();
+        ctx.moveTo(pillX + (pillW/2) - 4, pillY + pillH);
+        ctx.lineTo(pillX + (pillW/2) + 4, pillY + pillH);
+        ctx.lineTo(pillX + (pillW/2), pillY + pillH + 4);
+        ctx.fill();
         
-        ctx.font = 'bold 10px "Exo 2"';
-        ctx.fillStyle = '#fff';
-        let soundText = "❤️";
-        if(n.id.includes('kambing')) soundText = "Mbek!";
-        if(n.id.includes('sapi')) soundText = "Moo!";
-        if(n.id.includes('ayam')) soundText = "Kukuyuk!";
-        if(n.id.includes('kuda')) soundText = "Hiiha!";
-        
-        ctx.strokeText(soundText, 0, -20);
-        ctx.fillText(soundText, 0, -20);
-        
+        // Border segitiga (opsional, agar nyatu)
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pillX + (pillW/2) - 4, pillY + pillH);
+        ctx.lineTo(pillX + (pillW/2), pillY + pillH + 4);
+        ctx.lineTo(pillX + (pillW/2) + 4, pillY + pillH);
+        ctx.stroke();
+
         ctx.restore();
     }
-
-    // --- UPDATE: INDIKATOR HATI PROGRESIF (WARNA-WARNI SESUAI HUBUNGAN) ---
-    const p = STATE.player;
-    if(n.id.includes('lover')) {
-        let showHeart = false;
-        let heartIcon = '🖤'; // Default: Hitam (Asing)
-        let isCandidate = false;
-        
-        // Cek kecocokan gender
-        if(p.gender === 'boy' && n.id.includes('girl')) isCandidate = true;
-        if(p.gender === 'girl' && n.id.includes('boy')) isCandidate = true;
-
-        if (p.married) {
-            // Jika sudah menikah dengan NPC ini
-            if (p.spouseId === n.id) { 
-                showHeart = true; 
-                heartIcon = '💖'; // Pink Sparkle (Pasangan Hidup)
-            }
-        } 
-        else if (isCandidate) {
-            // Jika belum menikah & target valid
-            showHeart = true;
-            const love = p.relationships[n.id] || 0;
-            
-            // Logika Perubahan Warna Hati
-            if (love < 20) heartIcon = '🖤';       // Hitam: Kenalan (< 20)
-            else if (love < 50) heartIcon = '🤍';  // Putih: Teman (20 - 49)
-            else if (love < 80) heartIcon = '💛';  // Kuning: PDKT (50 - 79)
-            else heartIcon = '❤️';                 // Merah: Siap Nikah (80+)
-        }
-
-        if(showHeart) {
-            // Detak jantung makin cepat jika level makin tinggi
-            let pulseSpeed = 300; // Lambat (Hitam/Putih)
-            if (heartIcon === '💛') pulseSpeed = 200; // Sedang
-            if (heartIcon === '❤️' || heartIcon === '💖') pulseSpeed = 100; // Cepat & Berdebar
-
-            const pulse = 1 + Math.sin(Date.now() / pulseSpeed) * 0.15;
-            
-            ctx.save();
-            ctx.translate(px + 15, py - 35); 
-            ctx.scale(pulse, pulse);
-            
-            // Efek Glowing jika sudah Merah/Pink (Siap Nikah/Pasangan)
-            if (heartIcon === '❤️' || heartIcon === '💖') {
-                ctx.shadowColor = '#ef4444'; // Red Glow
-                ctx.shadowBlur = 15;
-            } else {
-                ctx.shadowBlur = 0;
-            }
-
-            ctx.font = '16px Arial'; 
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(heartIcon, 0, 0);
-            ctx.restore();
-        }
-    }
-
-    // --- NEW: VISUAL EFEK NGOBROL (SAHABAT BEDA AGAMA) ---
-    if(n.id === 'cewek_islam' || n.id === 'cewek_kristen') {
-        const time = Date.now();
-        // Muncul bergantian setiap 2 detik (Aisyah bicara, lalu Maria bicara)
-        const cycle = Math.floor(time / 2000) % 2; 
-        
-        // Aisyah bicara di fase 0, Maria di fase 1
-        const isTalking = (n.id === 'cewek_islam' && cycle === 0) || (n.id === 'cewek_kristen' && cycle === 1);
-        
-        if(isTalking) {
-            ctx.save();
-            // Animasi melayang naik turun halus
-            const floatY = Math.sin(time / 200) * 2;
-            
-            // Posisi Bubble (Diatas Kepala)
-            ctx.translate(px + 15, py - 40 + floatY); 
-            
-            // Gambar Bubble Putih
-            ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowBlur = 5;
-            
-            // Bentuk Bubble Oval
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 14, 10, 0, 0, Math.PI*2);
-            ctx.fill();
-            
-            // Ekor Bubble (Menunjuk ke NPC)
-            ctx.beginPath();
-            ctx.moveTo(-2, 8); 
-            ctx.lineTo(0, 14); 
-            ctx.lineTo(5, 8);
-            ctx.fill();
-
-            // Isi Bubble (Titik-titik ...)
-            ctx.fillStyle = "#334155";
-            ctx.font = "bold 12px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.shadowBlur = 0;
-            
-            // Animasi titik ... bergerak
-            const dotCycle = Math.floor(time / 300) % 4;
-            const dots = dotCycle === 0 ? "." : (dotCycle === 1 ? ".." : "...");
-            
-            ctx.fillText(dots, 0, -2);
-            
-            ctx.restore();
-        }
-    }
-}
-
-// --- UPDATED: DRAW SLIME ENEMY WITH BREATHING ANIMATION ---
-function drawEnemy(ctx, e) {
-    ctx.save();
-    
-    // Slime Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.beginPath(); 
-    ctx.ellipse(e.x + e.w/2, e.y + e.h + 2, e.w/2, 4, 0, 0, Math.PI*2); 
-    ctx.fill();
-
-    // Center point for scaling
-    const cx = e.x + e.w/2;
-    const cy = e.y + e.h;
-
-    ctx.translate(cx, cy);
-
-    // Breathing Animation (Squash and Stretch)
-    const breathSpeed = 200;
-    const breathAmt = 0.1;
-    // Gunakan offset acak agar semua monster tidak bernafas serentak
-    const time = Date.now() + (e.animOffset || 0); 
-    const scaleY = 1 + Math.sin(time / breathSpeed) * breathAmt;
-    const scaleX = 1 - Math.sin(time / breathSpeed) * breathAmt; // Maintain area
-
-    ctx.scale(scaleX, scaleY);
-
-    // DRAW BOSS OR NORMAL ENEMY
-    if (e.isBoss) {
-        // Gambar Boss (Lebih Besar & Menakutkan)
-        if(dungeonAssets.boss.complete && dungeonAssets.boss.naturalWidth !== 0) {
-            const drawSize = 200; // UPDATE: Ukuran Visual Lebih Besar (100 -> 200)
-            // Centering logic: -drawSize/2
-            // Y offset adjusted to keep feet at pivot
-            ctx.drawImage(dungeonAssets.boss, -drawSize/2, -drawSize + 30, drawSize, drawSize);
-        } else {
-            // Fallback Boss Shape
-            ctx.fillStyle = '#7f1d1d'; // Dark Red
-            ctx.beginPath();
-            ctx.arc(0, -e.h/2, e.w/2, 0, Math.PI*2);
-            ctx.fill();
-            // Boss Crown/Horn
-            ctx.fillStyle = '#fbbf24'; // Gold
-            ctx.beginPath();
-            ctx.moveTo(-10, -e.h); ctx.lineTo(0, -e.h-20); ctx.lineTo(10, -e.h);
-            ctx.fill();
-        }
-        
-        // Boss HP Bar Floating (Lebih Lebar)
-        const barW = 120; // Lebar HP Bar ditambah
-        const barY = -e.h - 50; // Posisi HP Bar dinaikkan
-        
-        ctx.fillStyle = '#000'; ctx.fillRect(-barW/2, barY, barW, 10);
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(-barW/2, barY, barW * (e.hp/e.maxHp), 10);
-        ctx.strokeStyle = '#fff'; ctx.strokeRect(-barW/2, barY, barW, 10);
-        
-    } else {
-        // Normal Enemy Rendering (Berdasarkan Tier)
-        const imgAsset = dungeonAssets[e.imgKey] || dungeonAssets.enemy1; // Fallback ke enemy1
-        
-        if(imgAsset.complete && imgAsset.naturalWidth !== 0) {
-            const drawSize = e.w + 10; // Sedikit lebih besar dari hitbox
-            ctx.drawImage(imgAsset, -drawSize/2, -drawSize + 5, drawSize, drawSize);
-        } else {
-            // --- DRAW SLIME SHAPE (FALLBACK) ---
-            ctx.fillStyle = e.color || '#ef4444';
-            ctx.beginPath();
-            ctx.moveTo(-e.w/2, 0); 
-            ctx.lineTo(e.w/2, 0);  
-            ctx.bezierCurveTo(e.w/2, -e.h * 1.5, -e.w/2, -e.h * 1.5, -e.w/2, 0);
-            ctx.fill();
-            
-            ctx.fillStyle = 'rgba(255,255,255,0.4)';
-            ctx.beginPath();
-            ctx.ellipse(-e.w/4, -e.h/2, 4, 2, Math.PI/-4, 0, Math.PI*2);
-            ctx.fill();
-
-            ctx.fillStyle = '#fff';
-            ctx.beginPath(); ctx.arc(-5, -10, 4, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(5, -10, 4, 0, Math.PI*2); ctx.fill();
-            
-            ctx.fillStyle = '#000';
-            ctx.beginPath(); ctx.arc(-5, -10, 1.5, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(5, -10, 1.5, 0, Math.PI*2); ctx.fill();
-        }
-        
-        // Normal HP Bar
-        ctx.fillStyle = '#000'; ctx.fillRect(e.x - cx, e.y-8 - cy, e.w, 4); // Adjust coords relative to translate
-        ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x - cx, e.y-8 - cy, e.w * (e.hp/e.maxHp), 4);
-    }
-
-    ctx.restore();
 }
 
 function drawPlayer(ctx, p) {
