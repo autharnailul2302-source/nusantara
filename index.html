@@ -518,6 +518,21 @@
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
             border-radius: 50%;
             border: 2px solid rgba(255,255,255,0.1);
+            /* FIX: Mencegah browser melakukan aksi default seperti scroll/zoom pada pad */
+            touch-action: none; 
+        }
+
+        .d-btn {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(2px);
+            /* FIX: Memastikan tombol menerima sentuhan dengan cepat */
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .d-btn {
@@ -4597,10 +4612,21 @@ const DEBUG_MAP_BOUNDARIES = false;
 
 function resize() {
     const container = document.getElementById('game-container');
-    canvas.width = 1920; 
-    canvas.height = 1080;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    
+    // --- OPTIMASI MOBILE: TURUNKAN RESOLUSI RENDER ---
+    // Jika lebar layar kurang dari 1000px (HP/Tablet), gunakan resolusi setengah (960x540)
+    // Ini akan sangat meningkatkan FPS di HP tanpa merusak tampilan pixel art
+    const isMobile = window.innerWidth < 1000;
+    
+    if (isMobile) {
+        canvas.width = 960;  // 480 x 2
+        canvas.height = 540; // 270 x 2
+    } else {
+        canvas.width = 1920; // 480 x 4
+        canvas.height = 1080;// 270 x 4
+    }
+    
+    ctx.imageSmoothingEnabled = false; // Pixel art lebih tajam
 }
 window.addEventListener('resize', resize);
 
@@ -5107,7 +5133,8 @@ const STATE = {
         gender: 'boy',
         spriteIdle: null,
         spriteWalk: null,
-        speed: 4,
+        // UPDATE: Speed dinaikkan sedikit (4 -> 5) agar lebih lincah di mobile
+        speed: 5,
         direction: 'down',
         hp: 100, maxHp: 100,
         energy: 100,
@@ -5390,10 +5417,23 @@ window.addEventListener('keyup', e => keys[e.code] = false);
 const touchState = { up: false, down: false, left: false, right: false };
 const bindTouch = (id, key) => {
     const el = document.getElementById(id);
-    el.addEventListener('touchstart', (e) => { e.preventDefault(); touchState[key] = true; });
-    el.addEventListener('touchend', (e) => { e.preventDefault(); touchState[key] = false; });
+    
+    // FIX: Tambahkan preventDefault pada touchstart dan touchend agar tidak delay
+    // Tambahkan juga touchmove untuk menangani jika jari bergeser sedikit
+    el.addEventListener('touchstart', (e) => { 
+        if(e.cancelable) e.preventDefault(); 
+        touchState[key] = true; 
+    }, {passive: false});
+    
+    el.addEventListener('touchend', (e) => { 
+        if(e.cancelable) e.preventDefault(); 
+        touchState[key] = false; 
+    }, {passive: false});
+    
+    // Fallback mouse untuk testing di PC
     el.addEventListener('mousedown', () => touchState[key] = true);
     el.addEventListener('mouseup', () => touchState[key] = false);
+    el.addEventListener('mouseleave', () => touchState[key] = false); // Safety jika mouse keluar area
 };
 ['up','down','left','right'].forEach(k => bindTouch(`btn-${k}`, k));
 
@@ -9916,18 +9956,36 @@ function saveJournal() {
     modal.style.display = 'none';
     STATE.screen = 'play';
 
-    // FIX: Kembalikan ke Fullscreen setelah mengetik (keyboard sering memaksa exit fullscreen)
-    toggleFullScreen();
-
     // 5. Cek apakah ini triggered dari Tidur?
     if (isSleepPending) {
         isSleepPending = false;
-        // Jeda sedikit biar toast terbaca, lalu konfirmasi tidur
+        
+        // FIX: GANTI CONFIRM BROWSER DENGAN DIALOG GAME
+        // Confirm() bawaan browser menyebabkan mobile keluar dari fullscreen.
+        // Kita ganti dengan showDialogue agar tetap imersif.
         setTimeout(() => {
-            if(confirm("Jurnal berhasil disimpan. Lanjut tidur sekarang?")) {
-                handleSleep();
-            }
+            showDialogue("JURNAL TERSIMPAN", "Data refleksi berhasil dicatat.\nApakah kamu ingin melanjutkan tidur?", [
+                {
+                    text: "Ya, Tidur Sekarang (Zzz) 🛌", 
+                    action: () => {
+                        // FIX: Panggil toggleFullScreen() lagi untuk memastikan layar penuh
+                        // Browser butuh interaksi user (klik tombol ini) untuk trigger fullscreen
+                        toggleFullScreen(); 
+                        handleSleep();
+                    }
+                },
+                {
+                    text: "Nanti Dulu", 
+                    action: () => {
+                        closeDialogue();
+                        toggleFullScreen(); // Kembalikan fullscreen jika batal
+                    }
+                }
+            ], 'images/buku.png');
         }, 500);
+    } else {
+        // Jika jurnal manual (bukan mau tidur), kembalikan fullscreen langsung
+        toggleFullScreen();
     }
 }
 
@@ -10571,7 +10629,7 @@ function draw() {
     if(STATE.screen !== 'play' && STATE.screen !== 'dialogue' && STATE.screen !== 'modal' && STATE.screen !== 'minigame') return;
 
     ctx.fillStyle = '#0f172a'; 
-    ctx.fillRect(0,0,GAME_WIDTH, GAME_HEIGHT);
+    ctx.fillRect(0,0,canvas.width, canvas.height); // Gunakan canvas.width/height dinamis
     
     // SAFETY CHECK: Pastikan Map Ada
     if (!maps[STATE.location]) {
@@ -10583,9 +10641,13 @@ function draw() {
     }
 
     ctx.save();
-    ctx.scale(4, 4); 
     
-    ctx.imageSmoothingEnabled = true;
+    // --- OPTIMASI: DYNAMIC SCALING ---
+    // Hitung skala berdasarkan resolusi canvas saat ini (bisa 2x atau 4x)
+    const scaleFactor = canvas.width / GAME_WIDTH; 
+    ctx.scale(scaleFactor, scaleFactor); 
+    
+    ctx.imageSmoothingEnabled = false; // Pastikan crisp pixel art
 
     let shakeX = 0;
     let shakeY = 0;
