@@ -1805,9 +1805,15 @@ button, .round-btn, .d-btn, .auth-btn {
             <div class="dash-sidebar">
                 <div class="dash-title">TEACHER<br>COMMAND CENTER</div>
                 <!-- NEW: Status Koneksi di Sidebar -->
-                <div id="dash-connection-status" style="text-align:center; font-size:10px; margin-bottom:20px; padding:8px; background:rgba(255,255,255,0.05); border-radius:6px; font-weight:bold;">
+                <div id="dash-connection-status" style="text-align:center; font-size:10px; margin-bottom:10px; padding:8px; background:rgba(255,255,255,0.05); border-radius:6px; font-weight:bold;">
                     Connecting...
                 </div>
+
+                <!-- NEW: TOMBOL MANUAL REFRESH (Untuk Guru) -->
+                <button id="dash-refresh-btn" onclick="refreshDashboardData()" style="width: calc(100% - 40px); margin: 0 20px 20px 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; font-size: 11px; padding: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; font-family: 'Exo 2'; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    🔄 Refresh Data
+                </button>
+
                 <ul class="dash-nav">
                     <li onclick="showDashPage('monitoring')" class="active">📡 Live Monitoring</li>
                     <!-- NEW: RANKING MENU -->
@@ -2161,6 +2167,11 @@ button, .round-btn, .d-btn, .auth-btn {
                         - Energi 0 = Pingsan (Denda)<br>
                         - Energi < 20% saat tidur = Bangun Kesiangan
                     </div>
+                </div>
+
+                <!-- NEW: TOMBOL MANUAL SYNC (Agar status Online di dashboard terupdate) -->
+                <div id="sync-btn" onclick="forceSync()" style="margin-top:5px; cursor:pointer; font-size:9px; color:#94a3b8; background:rgba(15, 23, 42, 0.8); padding:4px 8px; border-radius:12px; border:1px solid #334155; display:flex; align-items:center; gap:4px; transition:0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+                    <span id="sync-icon">☁️</span> <span id="sync-text">Sync Data</span>
                 </div>
             </div>
         </div>
@@ -4155,25 +4166,92 @@ function initTeacherDashboard() {
     // Mulai Real-time Listener
     // Fungsi ini akan dipanggil otomatis oleh Firebase setiap ada perubahan data
     teacherMonitorUnsub = DataService.subscribeToStudents((students) => {
-        // 1. Simpan data terbaru ke Global Cache
-        latestStudentData = students;
-
-        // 2. Render Monitoring (Selalu update background)
-        renderMonitoringTable(students);
-
-        // 3. FIX: Refresh Halaman Aktif secara Otomatis
-        // Cek halaman mana yang sedang terbuka dan render ulang dengan data baru
-        const activePage = document.querySelector('.dash-page:not(.hidden)');
-        if(activePage) {
-            const pageId = activePage.id;
-            // Panggil fungsi render tanpa 'await' karena menggunakan cached data
-            if(pageId === 'page-grading') renderGrading();
-            if(pageId === 'page-reflections') renderReflections(); // INI YANG MEMPERBAIKI JURNAL
-            if(pageId === 'page-validation') renderValidation();
-            if(pageId === 'page-ranking') renderRanking();
-            if(pageId === 'page-reset') renderResetPage();
-        }
+        updateDashboardViews(students);
     });
+}
+
+// --- NEW: FUNGSI UPDATE TAMPILAN DASHBOARD (DIPISAH AGAR BISA DIPANGGIL MANUAL) ---
+function updateDashboardViews(students) {
+    // 1. Simpan data terbaru ke Global Cache
+    latestStudentData = students;
+
+    // 2. Render Monitoring (Selalu update background)
+    renderMonitoringTable(students);
+
+    // 3. FIX: Refresh Halaman Aktif secara Otomatis
+    // Cek halaman mana yang sedang terbuka dan render ulang dengan data baru
+    const activePage = document.querySelector('.dash-page:not(.hidden)');
+    if(activePage) {
+        const pageId = activePage.id;
+        // Panggil fungsi render tanpa 'await' karena menggunakan cached data
+        if(pageId === 'page-grading') renderGrading();
+        if(pageId === 'page-reflections') renderReflections(); 
+        if(pageId === 'page-validation') renderValidation();
+        if(pageId === 'page-ranking') renderRanking();
+        if(pageId === 'page-reset') renderResetPage();
+    }
+}
+
+// --- NEW: FUNGSI MANUAL REFRESH UNTUK GURU ---
+async function refreshDashboardData() {
+    const btn = document.getElementById('dash-refresh-btn');
+    let originalText = "🔄 Refresh Data";
+    
+    // Visual Loading
+    if(btn) {
+        originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ Memuat...";
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+        btn.style.borderColor = "#fbbf24"; // Kuning loading
+        btn.style.color = "#fbbf24";
+    }
+
+    try {
+        // 1. Coba Re-Init Koneksi (memastikan tidak offline)
+        await DataService.init(true);
+        
+        // 2. Tarik Data Secara Paksa
+        const students = await DataService.getAllStudents();
+        
+        // 3. Update Tampilan
+        updateDashboardViews(students);
+        
+        // Visual Sukses
+        if(btn) {
+            btn.innerHTML = "✅ Updated";
+            btn.style.borderColor = "#4ade80"; // Hijau sukses
+            btn.style.color = "#4ade80";
+        }
+        
+        // Update Status Label
+        const statusEl = document.getElementById('dash-connection-status');
+        if(statusEl && DataService.mode === 'firebase') {
+             statusEl.innerHTML = '🟢 CLOUD TERHUBUNG<br><span style="font-weight:normal; opacity:0.8;">Data baru saja disinkron</span>';
+             statusEl.style.color = '#4ade80';
+             statusEl.style.border = '1px solid #22c55e';
+        }
+
+    } catch (e) {
+        console.error("Refresh Failed:", e);
+        if(btn) {
+            btn.innerHTML = "❌ Gagal";
+            btn.style.borderColor = "#ef4444";
+            btn.style.color = "#ef4444";
+        }
+        alert("Gagal mengambil data terbaru. Periksa koneksi internet Anda.");
+    } finally {
+        // Reset Tombol setelah 2 detik
+        setTimeout(() => {
+            if(btn) {
+                btn.innerHTML = "🔄 Refresh Data";
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.borderColor = "rgba(59, 130, 246, 0.4)"; // Kembali Biru
+                btn.style.color = "#93c5fd";
+            }
+        }, 2000);
+    }
 }
 
 function showDashPage(page) {
@@ -6547,6 +6625,49 @@ function toggleInventory() {
         screen.style.display = 'none';
         STATE.screen = 'play'; // Resume game
     }
+}
+
+// --- NEW FUNCTION: FORCE SYNC (MANUAL BUTTON) ---
+async function forceSync() {
+    const icon = document.getElementById('sync-icon');
+    const text = document.getElementById('sync-text');
+    const btn = document.getElementById('sync-btn');
+    
+    // 1. Visual Feedback: Loading
+    icon.innerText = "⏳";
+    text.innerText = "Mengirim...";
+    text.style.color = "#fbbf24"; // Kuning
+    btn.style.borderColor = "#fbbf24";
+
+    try {
+        // 2. Lakukan Penyimpanan Manual (Trigger update ke Firebase)
+        await manualSave();
+        
+        // 3. Visual Feedback: Sukses
+        icon.innerText = "✅";
+        text.innerText = "Tersimpan!";
+        text.style.color = "#4ade80"; // Hijau
+        btn.style.borderColor = "#4ade80";
+        
+        // Play SFX
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+
+    } catch (e) {
+        // 4. Visual Feedback: Gagal
+        icon.innerText = "❌";
+        text.innerText = "Gagal (Offline)";
+        text.style.color = "#ef4444"; // Merah
+        btn.style.borderColor = "#ef4444";
+        console.error("Sync failed:", e);
+    }
+
+    // 5. Reset Tampilan setelah 2 detik
+    setTimeout(() => {
+        icon.innerText = "☁️";
+        text.innerText = "Sync Data";
+        text.style.color = "#94a3b8"; // Kembali Abu-abu
+        btn.style.borderColor = "#334155";
+    }, 2000);
 }
 
 // --- NEW FUNCTION: RENDER INVENTORY ITEMS ---
