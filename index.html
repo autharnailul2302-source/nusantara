@@ -3937,6 +3937,7 @@ const DataService = {
 let authMode = 'login';
 let currentRole = 'siswa';
 let teacherMonitorUnsub = null; // Variabel global untuk menyimpan unsubscribe listener monitoring
+let latestStudentData = []; // NEW: Cache Data Siswa Live untuk Dashboard
 
 function switchRole(role) {
     currentRole = role;
@@ -4154,7 +4155,24 @@ function initTeacherDashboard() {
     // Mulai Real-time Listener
     // Fungsi ini akan dipanggil otomatis oleh Firebase setiap ada perubahan data
     teacherMonitorUnsub = DataService.subscribeToStudents((students) => {
+        // 1. Simpan data terbaru ke Global Cache
+        latestStudentData = students;
+
+        // 2. Render Monitoring (Selalu update background)
         renderMonitoringTable(students);
+
+        // 3. FIX: Refresh Halaman Aktif secara Otomatis
+        // Cek halaman mana yang sedang terbuka dan render ulang dengan data baru
+        const activePage = document.querySelector('.dash-page:not(.hidden)');
+        if(activePage) {
+            const pageId = activePage.id;
+            // Panggil fungsi render tanpa 'await' karena menggunakan cached data
+            if(pageId === 'page-grading') renderGrading();
+            if(pageId === 'page-reflections') renderReflections(); // INI YANG MEMPERBAIKI JURNAL
+            if(pageId === 'page-validation') renderValidation();
+            if(pageId === 'page-ranking') renderRanking();
+            if(pageId === 'page-reset') renderResetPage();
+        }
     });
 }
 
@@ -4167,24 +4185,25 @@ function showDashPage(page) {
     const activeLi = Array.from(document.querySelectorAll('.dash-nav li')).find(li => li.innerText.toLowerCase().includes(page)) || event?.currentTarget;
     if(activeLi) activeLi.classList.add('active');
     
-    // Tidak perlu memanggil renderMonitoring di sini karena sudah otomatis via listener
+    // Render Immediately using Cache
     if(page === 'grading') renderGrading();
     if(page === 'reflections') renderReflections();
     if(page === 'validation') renderValidation(); 
     if(page === 'reset') renderResetPage();
-    if(page === 'ranking') renderRanking(); // NEW: Render Ranking Page
+    if(page === 'ranking') renderRanking(); 
 }
 
 // --- NEW: RENDER DASHBOARD RANKING (PODIUM + LIST) ---
-async function renderRanking() {
+function renderRanking() { // Hapus async
     const podiumEl = document.getElementById('ranking-podium');
     const tableEl = document.getElementById('ranking-body');
     
-    podiumEl.innerHTML = '<p>Loading Data...</p>';
+    // podiumEl.innerHTML = '<p>Loading Data...</p>'; // Tidak perlu loading karena data instan
     tableEl.innerHTML = '';
 
-    // 1. Fetch & Sort Data
-    const students = await DataService.getAllStudents();
+    // 1. Gunakan Cache Data Live
+    const students = latestStudentData; 
+    
     const ranked = students
         .filter(s => s.saveData)
         .map(s => ({
@@ -4350,9 +4369,9 @@ async function promptTeacherMessage(email) {
     }
 }
 
-// UPDATE: ASYNC GRADING
-async function renderGrading() {
-    const students = await DataService.getAllStudents();
+// UPDATE: SYNC GRADING (Menggunakan latestStudentData)
+function renderGrading() {
+    const students = latestStudentData; // Gunakan Cache
     const tbody = document.getElementById('grading-body');
     tbody.innerHTML = '';
     
@@ -4388,9 +4407,9 @@ function calculateGrade(data) {
     return Math.floor(consistency + quest + role + reflection + ethics);
 }
 
-// UPDATE: ASYNC REFLECTIONS (TAMPILAN JURNAL YANG LEBIH BAIK)
-async function renderReflections() {
-    const students = await DataService.getAllStudents();
+// UPDATE: SYNC REFLECTIONS (TAMPILAN JURNAL YANG LEBIH BAIK & LIVE)
+function renderReflections() {
+    const students = latestStudentData; // Gunakan Cache (Instant Load)
     const container = document.getElementById('reflections-container');
     container.innerHTML = '';
     
@@ -4446,8 +4465,8 @@ async function renderReflections() {
 }
 
 // NEW: FUNCTION RENDER VALIDATION / COMPETENCY
-async function renderValidation() {
-    const students = await DataService.getAllStudents();
+function renderValidation() { // Hapus async
+    const students = latestStudentData; // Gunakan Cache
     const tbody = document.getElementById('validation-body');
     tbody.innerHTML = '';
     
@@ -4540,8 +4559,8 @@ async function renderValidation() {
 }
 
 // NEW: FUNGSI RENDER HALAMAN RESET (ASYNC UPDATE)
-async function renderResetPage() {
-    const students = await DataService.getAllStudents();
+function renderResetPage() { // Hapus async
+    const students = latestStudentData; // Gunakan Cache
     const tbody = document.getElementById('reset-body');
     tbody.innerHTML = '';
     
@@ -4585,8 +4604,8 @@ async function confirmResetStudent(email, name) {
 }
 
 // UPDATE: ASYNC EXPORT
-async function exportToCSV() {
-    const students = await DataService.getAllStudents();
+function exportToCSV() { // Hapus async
+    const students = latestStudentData; // Gunakan Cache
     let csv = "Nama,Kelas,Role,Hari,Uang,Nilai Akhir\n";
     students.forEach(s => {
         const sd = s.saveData || {};
