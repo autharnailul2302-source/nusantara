@@ -1809,6 +1809,11 @@ button, .round-btn, .d-btn, .auth-btn {
                     Connecting...
                 </div>
 
+                <!-- NEW: TOMBOL GANTI SUMBER DATA (SOURCE TOGGLE) -->
+                <button id="dash-source-btn" onclick="toggleDashboardSource()" style="width: calc(100% - 40px); margin: 0 20px 10px 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; font-size: 10px; padding: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; font-family: 'Exo 2'; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    🌐 Source: AUTO
+                </button>
+
                 <!-- NEW: TOMBOL MANUAL REFRESH (Untuk Guru) -->
                 <button id="dash-refresh-btn" onclick="refreshDashboardData()" style="width: calc(100% - 40px); margin: 0 20px 20px 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; font-size: 11px; padding: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; font-family: 'Exo 2'; display:flex; align-items:center; justify-content:center; gap:6px;">
                     🔄 Refresh Data
@@ -1834,12 +1839,12 @@ button, .round-btn, .d-btn, .auth-btn {
                         <table class="dash-table">
                             <thead>
                                 <tr>
-                                    <th>Nama Siswa</th>
-                                    <th>Kelas</th>
-                                    <th>Status</th>
+                                    <th>Siswa & Email</th> <!-- UPDATED -->
+                                    <th>Last Save</th> <!-- NEW COLUMN -->
+                                    <th>Status & Role</th> <!-- MERGED -->
                                     <th>Lokasi (Map)</th>
                                     <th>HP/Energy</th>
-                                    <th>Pesan GM</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="monitoring-body"></tbody>
@@ -2059,6 +2064,15 @@ button, .round-btn, .d-btn, .auth-btn {
         <div id="job-app-words" class="word-container"></div>
         <button class="main-menu-btn" onclick="checkJobApp()">KIRIM LAMARAN</button>
         <button onclick="closeMinigame()" style="margin-top:10px; background:transparent; border:none; color:#ef4444;">BATAL</button>
+    </div>
+
+    <!-- NEW: INSPECT DATA POPUP -->
+    <div id="inspect-modal" class="minigame-overlay">
+        <div class="journal-box" style="width: 90%; max-width: 600px; max-height: 80vh; background: #0f172a; border: 1px solid var(--accent);">
+            <h3 style="color: var(--accent); margin-top:0;">🔍 INSPECT RAW DATA</h3>
+            <div id="inspect-content" style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.3); padding:10px; font-family:monospace; font-size:10px; color:#cbd5e1; white-space:pre-wrap;"></div>
+            <button class="main-menu-btn" onclick="document.getElementById('inspect-modal').style.display='none'" style="margin-top:15px; width:100%;">TUTUP</button>
+        </div>
     </div>
 
     <!-- NEW: TUTORIAL POINTER ELEMENT -->
@@ -3504,6 +3518,9 @@ const DataService = {
     user: null,
     dbKey: 'na_users_db', 
     unsubscribeMsg: null, // Listener reference
+    
+    // NEW: Dashboard Source Control
+    dashboardSource: 'auto', // 'auto', 'cloud', 'local'
 
     init: async function(useFirebase) {
         // FAST CHECK: Jika navigator offline, langsung set local
@@ -3526,6 +3543,15 @@ const DataService = {
             this.mode = 'local';
             return false;
         }
+    },
+
+    // NEW: Function to toggle source
+    toggleDashboardSource: function() {
+        if (this.dashboardSource === 'auto') this.dashboardSource = 'cloud';
+        else if (this.dashboardSource === 'cloud') this.dashboardSource = 'local';
+        else this.dashboardSource = 'auto';
+        
+        return this.dashboardSource;
     },
 
     getDB: function() {
@@ -3890,32 +3916,39 @@ const DataService = {
 
     // --- NEW: REAL-TIME MONITORING LISTENER ---
     subscribeToStudents: function(onUpdate) {
-        // FIX: PAKSA CEK KONEKSI & PINDAH KE CLOUD JIKA TERSEDIA
-        // Agar Guru bisa melihat siswa dari device lain
-        if (navigator.onLine && typeof firebase !== 'undefined' && db) {
-            console.log("Monitoring: Mendeteksi Internet. Beralih ke CLOUD MODE.");
-            this.mode = 'firebase';
+        let useCloud = false;
+
+        // NEW: Logic Source Selection
+        if (this.dashboardSource === 'cloud') {
+            useCloud = true;
+        } else if (this.dashboardSource === 'local') {
+            useCloud = false;
+        } else {
+            // AUTO: Gunakan Cloud jika tersedia
+            useCloud = (navigator.onLine && typeof firebase !== 'undefined' && db);
         }
 
         // Update UI Status Koneksi di Dashboard
         const statusEl = document.getElementById('dash-connection-status');
         if(statusEl) {
-            if(this.mode === 'firebase') {
-                statusEl.innerHTML = '🟢 CLOUD ONLINE<br><span style="font-weight:normal; opacity:0.8;">Data Seluruh Siswa</span>';
+            if(useCloud) {
+                statusEl.innerHTML = '🟢 CLOUD ONLINE<br><span style="font-weight:normal; opacity:0.8;">Data Seluruh Siswa (Server)</span>';
                 statusEl.style.color = '#4ade80'; // Hijau
                 statusEl.style.border = '1px solid #22c55e';
             } else {
-                statusEl.innerHTML = '🔴 LOCAL OFFLINE<br><span style="font-weight:normal; opacity:0.8;">Hanya Data Perangkat Ini</span>';
-                statusEl.style.color = '#f87171'; // Merah
-                statusEl.style.border = '1px solid #ef4444';
+                statusEl.innerHTML = '🟠 LOCAL VIEW<br><span style="font-weight:normal; opacity:0.8;">Hanya Data Perangkat Ini</span>';
+                statusEl.style.color = '#fbbf24'; // Kuning/Orange
+                statusEl.style.border = '1px solid #f59e0b';
             }
         }
 
-        if (this.mode === 'local') {
+        if (!useCloud) {
             // Fallback untuk mode offline/lokal: Gunakan Polling Interval
             const interval = setInterval(() => {
                 const dbLocal = this.getDB();
                 const students = Object.values(dbLocal).filter(u => u.role === 'siswa');
+                // Tambahkan flag source untuk UI
+                students.forEach(s => s._source = 'local');
                 onUpdate(students);
             }, 2000); // Update tiap 2 detik
             return () => clearInterval(interval); // Return fungsi unsubscribe
@@ -3925,14 +3958,14 @@ const DataService = {
             try {
                 return db.collection('users').where('role', '==', 'siswa')
                     .onSnapshot((snapshot) => {
-                        const students = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data() }));
+                        const students = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data(), _source: 'cloud' }));
                         onUpdate(students);
                     }, (error) => {
                         console.error("Monitoring Error:", error);
                         // Jika error permission/koneksi, fallback ke lokal
                         if(statusEl) {
                             statusEl.innerHTML = '⚠️ KONEKSI TERPUTUS';
-                            statusEl.style.color = '#fbbf24';
+                            statusEl.style.color = '#ef4444';
                         }
                     });
             } catch(e) {
@@ -4154,8 +4187,19 @@ async function handleAuth(role, btnElement) {
     }
 }
 
-function initTeacherDashboard() {
+// FIX: Ubah menjadi ASYNC dan Tambahkan AWAIT DataService.init(true)
+async function initTeacherDashboard() {
     document.getElementById('teacher-dashboard').style.display = 'block';
+    
+    // Tampilkan status connecting agar tidak bingung
+    const statusEl = document.getElementById('dash-connection-status');
+    if(statusEl) statusEl.innerHTML = 'Connecting to Cloud...';
+
+    // FIX CRITICAL: Pastikan koneksi ke Cloud/Firebase sudah siap SEBELUM subscribe data
+    // Masalah sebelumnya: Fungsi ini jalan duluan sebelum DB connect, jadi fallback ke lokal.
+    await DataService.init(true);
+
+    updateSourceBtnLabel(); // Update label tombol saat init
     
     // Hentikan listener lama jika ada (mencegah duplikasi)
     if(teacherMonitorUnsub) {
@@ -4168,6 +4212,37 @@ function initTeacherDashboard() {
     teacherMonitorUnsub = DataService.subscribeToStudents((students) => {
         updateDashboardViews(students);
     });
+}
+
+// --- NEW: FUNGSI HANDLER TOMBOL SOURCE ---
+function toggleDashboardSource() {
+    const newSource = DataService.toggleDashboardSource();
+    updateSourceBtnLabel();
+    
+    // Re-init Dashboard untuk menerapkan source baru
+    initTeacherDashboard(); 
+}
+
+function updateSourceBtnLabel() {
+    const btn = document.getElementById('dash-source-btn');
+    if(!btn) return;
+    
+    const src = DataService.dashboardSource.toUpperCase();
+    btn.innerHTML = `🌐 Source: ${src}`;
+    
+    if(src === 'CLOUD') {
+        btn.style.borderColor = '#3b82f6';
+        btn.style.color = '#60a5fa';
+        btn.style.background = 'rgba(59, 130, 246, 0.1)';
+    } else if (src === 'LOCAL') {
+        btn.style.borderColor = '#f59e0b';
+        btn.style.color = '#fbbf24';
+        btn.style.background = 'rgba(245, 158, 11, 0.1)';
+    } else {
+        btn.style.borderColor = '#10b981';
+        btn.style.color = '#6ee7b7';
+        btn.style.background = 'rgba(16, 185, 129, 0.1)';
+    }
 }
 
 // --- NEW: FUNGSI UPDATE TAMPILAN DASHBOARD (DIPISAH AGAR BISA DIPANGGIL MANUAL) ---
@@ -4356,72 +4431,100 @@ function renderMonitoringTable(students) {
     
     tbody.innerHTML = '';
     
+    if(students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">Tidak ada data siswa ditemukan di sumber ini (${DataService.dashboardSource}).</td></tr>`;
+        return;
+    }
+
     students.forEach(s => {
         // Cek apakah ada save data
         const sd = s.saveData; 
         const hasSave = sd && Object.keys(sd).length > 0;
 
         // Cek online status (batas toleransi 60 detik)
-        // Gunakan timestamp dari saveData jika ada
         const lastActive = (sd && sd.lastActive) ? sd.lastActive : 0;
         const isOnline = (Date.now() - lastActive) < 60000;
         
+        // Format Time String
+        let timeStr = "-";
+        if (lastActive > 0) {
+            const d = new Date(lastActive);
+            // Format: DD/MM HH:MM
+            timeStr = `${d.getDate()}/${d.getMonth()+1} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
+        }
+
         const tr = document.createElement('tr');
         
         // --- 1. LOGIKA TAMPILAN ROLE ---
         let roleHtml = '';
         if (!hasSave) {
-            // Kasus: Baru Register, Belum pernah Save
-            roleHtml = `<br><span style="font-size:9px; color:#94a3b8; font-style:italic;">(Belum Mulai)</span>`;
+            roleHtml = `<span style="font-size:9px; color:#94a3b8; font-style:italic;">(New)</span>`;
         } else if (!sd.role || sd.role === 'none') {
-            // Kasus: Sudah main tapi belum pilih Role (Masih Prolog)
-            roleHtml = `<br><span style="font-size:9px; color:#64748b;">NOVICE</span>`;
+            roleHtml = `<span style="font-size:9px; color:#64748b;">NOVICE</span>`;
         } else {
-            // Kasus: Sudah punya Role
             let roleText = sd.role.toUpperCase();
-            // Tambahkan info jurusan jika Mahasiswa
             if (sd.role === 'student' && sd.major) roleText += ` (${sd.major.substring(0,3).toUpperCase()})`;
-            
-            roleHtml = `<br><span style="font-size:9px; color:var(--primary); font-weight:bold;">${roleText}</span>`;
+            roleHtml = `<span style="font-size:9px; color:var(--primary); font-weight:bold;">${roleText}</span>`;
         }
 
         // --- 2. LOGIKA TAMPILAN LOKASI ---
         let locHtml = '<span style="color:#cbd5e1">-</span>';
-        if (hasSave && sd.location) {
-            let locText = sd.location.toUpperCase();
-            if (locText.includes('INTERIOR')) locText = locText.replace('_INTERIOR', ' (DLM)');
-            locHtml = `📍 ${locText}<br>Day ${sd.day || 1}`;
-        }
-
-        // --- 3. LOGIKA TAMPILAN STATUS (HP/ENERGY) ---
-        let statsHtml = '<span style="color:#cbd5e1">-</span>';
         let hpStyle = "";
-        
+        let statsHtml = '<span style="color:#cbd5e1">-</span>';
+
         if (hasSave) {
-            // Warning merah jika HP rendah
+            if (sd.location) {
+                let locText = sd.location.toUpperCase();
+                if (locText.includes('INTERIOR')) locText = locText.replace('_INTERIOR', ' (DLM)');
+                locHtml = `📍 ${locText}`;
+            }
             if ((sd.hp || 0) < 30) hpStyle = "color:#ef4444; font-weight:bold;";
             statsHtml = `❤️ ${Math.floor(sd.hp||0)} <br> ⚡ ${Math.floor(sd.energy||0)}`;
         }
 
+        // --- NEW: TOMBOL INSPECT DATA ---
+        // Kita simpan data siswa di atribut data agar bisa diinspect
+        const sJson = encodeURIComponent(JSON.stringify(s));
+
         tr.innerHTML = `
             <td>
-                <strong>${s.name}</strong>
-                ${roleHtml}
+                <strong>${s.name}</strong><br>
+                <span style="font-size:9px; color:#64748b;">${s.email}</span>
             </td>
-            <td>${s.details}</td>
             <td>
-                <span class="status-badge ${isOnline ? 'online' : 'offline'}">
-                    ${isOnline ? 'ONLINE 🟢' : 'OFFLINE ⚫'}
+                <div style="font-weight:bold; font-size:11px; ${isOnline ? 'color:#16a34a' : 'color:#64748b'}">${timeStr}</div>
+                <span style="font-size:9px;">Day ${sd ? (sd.day||1) : '-'}</span>
+            </td>
+            <td>
+                ${roleHtml}<br>
+                <span class="status-badge ${isOnline ? 'online' : 'offline'}" style="font-size:8px; padding:2px 6px;">
+                    ${isOnline ? 'ONLINE' : 'OFFLINE'}
                 </span>
             </td>
-            <td style="font-size:11px;">${locHtml}</td>
+            <td style="font-size:10px;">${locHtml}</td>
             <td style="${hpStyle}">
                 ${statsHtml}
             </td>
-            <td><button class="auth-btn" style="width:auto; padding:5px 10px; font-size:10px; margin:0;" onclick="promptTeacherMessage('${s.email}')">✉️ Chat</button></td>
+            <td>
+                <div style="display:flex; gap:5px;">
+                    <button class="auth-btn" style="width:auto; padding:4px 8px; font-size:10px; margin:0;" onclick="promptTeacherMessage('${s.email}')">✉️</button>
+                    <button class="auth-btn" style="width:auto; padding:4px 8px; font-size:10px; margin:0; background:#475569;" onclick="inspectStudentData('${sJson}')">🔍</button>
+                </div>
+            </td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+// --- NEW: FUNGSI INSPECT DATA ---
+function inspectStudentData(encodedJson) {
+    const data = JSON.parse(decodeURIComponent(encodedJson));
+    const modal = document.getElementById('inspect-modal');
+    const content = document.getElementById('inspect-content');
+    
+    // Format JSON agar cantik
+    content.innerText = JSON.stringify(data, null, 2);
+    modal.style.display = 'flex';
 }
 
 // FIX: Hapus fungsi renderMonitoring lama karena sudah diganti renderMonitoringTable
