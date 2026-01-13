@@ -1789,6 +1789,10 @@ button, .round-btn, .d-btn, .auth-btn {
         <div class="dash-container">
             <div class="dash-sidebar">
                 <div class="dash-title">TEACHER<br>COMMAND CENTER</div>
+                <!-- NEW: Status Koneksi di Sidebar -->
+                <div id="dash-connection-status" style="text-align:center; font-size:10px; margin-bottom:20px; padding:8px; background:rgba(255,255,255,0.05); border-radius:6px; font-weight:bold;">
+                    Connecting...
+                </div>
                 <ul class="dash-nav">
                     <li onclick="showDashPage('monitoring')" class="active">📡 Live Monitoring</li>
                     <!-- NEW: RANKING MENU -->
@@ -3476,6 +3480,13 @@ const DataService = {
     unsubscribeMsg: null, // Listener reference
 
     init: async function(useFirebase) {
+        // FAST CHECK: Jika navigator offline, langsung set local
+        if (!navigator.onLine) {
+            this.mode = 'local';
+            console.log("Mode Offline Terdeteksi via Navigator");
+            return false;
+        }
+
         this.mode = 'firebase'; 
         try {
             if (typeof firebase !== 'undefined' && firebase.apps && !firebase.apps.length) {
@@ -3635,7 +3646,8 @@ const DataService = {
     },
 
     getTeachers: async function() {
-        if (this.mode === 'local') {
+        // Cek mode terlebih dahulu atau timeout cepat
+        if (this.mode === 'local' || !navigator.onLine) {
             const dbLocal = this.getDB();
             return Object.values(dbLocal)
                 .filter(u => u.role === 'guru')
@@ -3646,13 +3658,25 @@ const DataService = {
                 }));
         } else {
             try {
-                const snapshot = await db.collection('users').where('role', '==', 'guru').get();
+                // Timeout dipercepat untuk list guru (2 detik)
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
+                const snapshot = await Promise.race([
+                    db.collection('users').where('role', '==', 'guru').get(),
+                    timeout
+                ]);
+                
                 return snapshot.docs.map(doc => {
                     const d = doc.data();
                     return { email: doc.id, name: d.name, school: d.school || 'Unknown School' };
                 });
             } catch(e) {
-                return [];
+                console.warn("Gagal fetch guru cloud, fallback local");
+                const dbLocal = this.getDB();
+                return Object.values(dbLocal).filter(u => u.role === 'guru').map(u => ({
+                    email: Object.keys(dbLocal).find(key => dbLocal[key] === u), 
+                    name: u.name, 
+                    school: u.school || 'Unknown'
+                }));
             }
         }
     },
@@ -3668,23 +3692,24 @@ const DataService = {
             saveData: null 
         };
 
-        if (this.mode === 'local') {
+        if (this.mode === 'local' || !navigator.onLine) {
             const dbLocal = this.getDB();
-            if(dbLocal[data.email]) return { success: false, msg: "Email already registered!" };
+            if(dbLocal[data.email]) return { success: false, msg: "Email already registered (Local)!" };
             dbLocal[data.email] = userData;
             this.saveDB(dbLocal);
-            return { success: true, msg: "Registration Success!" };
+            return { success: true, msg: "Registrasi Lokal Berhasil!" };
         } else {
             try {
                 const docRef = db.collection('users').doc(data.email);
                 
+                // TIMEOUT DIPERCEPAT: 3 Detik
                 const timeout = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Koneksi Timeout (Terlalu Lama)")), 5000)
+                    setTimeout(() => reject(new Error("Koneksi Timeout (Terlalu Lama)")), 3000)
                 );
 
                 const doc = await Promise.race([docRef.get(), timeout]);
                 
-                if (doc.exists) return { success: false, msg: "Email already registered!" };
+                if (doc.exists) return { success: false, msg: "Email already registered in Cloud!" };
                 await docRef.set(userData);
                 return { success: true, msg: "Cloud Registration Success!" };
             } catch (e) {
@@ -3700,44 +3725,88 @@ const DataService = {
     },
 
     login: async function(email, password) {
+        // 1. Cek Koneksi Fisik Browser
+        if (!navigator.onLine) this.mode = 'local';
+
+        // Ambil data lokal untuk perbandingan nanti
+        const dbLocal = this.getDB();
+        const localUser = dbLocal[email];
+
         if (this.mode === 'local') {
-            const dbLocal = this.getDB();
-            const user = dbLocal[email];
-            if(!user) return { success: false, msg: "User not found!" };
-            if(user.password !== password) return { success: false, msg: "Wrong password!" };
+            const user = localUser;
+            if(!user) return { success: false, msg: "User tidak ditemukan di data lokal!" };
+            if(user.password !== password) return { success: false, msg: "Password salah!" };
             this.user = { email: email, ...user };
             return { success: true, user: this.user };
         } else {
             try {
-                // PERBAIKAN "LEMOT": Tambah Timeout 5 Detik
+                // PERBAIKAN: Timeout dikurangi drastis jadi 2.5 Detik agar 'fail-fast'
                 const docRef = db.collection('users').doc(email);
                 
                 const timeout = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Server Timeout")), 5000)
+                    setTimeout(() => reject(new Error("Server Timeout")), 2500)
                 );
 
                 // Balapan antara ambil data vs timeout
                 const doc = await Promise.race([docRef.get(), timeout]);
                 
-                if (!doc.exists) return { success: false, msg: "User not found!" };
-                const userData = doc.data();
-                if (userData.password !== password) return { success: false, msg: "Wrong password!" };
-                this.user = { email: email, ...userData };
+                if (!doc.exists) return { success: false, msg: "Akun tidak ditemukan di Server!" };
+                
+                let cloudUser = doc.data();
+                if (cloudUser.password !== password) return { success: false, msg: "Password salah!" };
+
+                // --- NEW: SMART SYNC (CLOUD vs LOCAL CONFLICT RESOLUTION) ---
+                // Cek data mana yang lebih baru berdasarkan 'lastActive' timestamp
+                let finalUser = cloudUser;
+                let useLocal = false;
+
+                if (localUser && localUser.saveData) {
+                    const localTime = localUser.saveData.lastActive || 0;
+                    const cloudTime = (cloudUser.saveData && cloudUser.saveData.lastActive) || 0;
+
+                    // Jika Data Lokal LEBIH BARU dari Cloud (atau Cloud kosong tapi Lokal ada)
+                    // Ini menangani kasus user main offline atau save cloud gagal
+                    if (localTime > cloudTime) {
+                        console.log("⚠️ Konflik Data: Menggunakan Data LOKAL (Lebih Baru)");
+                        finalUser = localUser;
+                        useLocal = true;
+                        
+                        // Auto-Sync balik ke Cloud secara background (tanpa menunggu)
+                        // Agar login berikutnya data Cloud sudah update
+                        docRef.set({
+                            ...localUser,
+                            lastActive: Date.now() // Update timestamp
+                        }, { merge: true }).catch(e => console.warn("Background sync failed:", e));
+                        
+                    } else {
+                        console.log("✅ Data Cloud Sinkron/Lebih Baru. Update Lokal.");
+                        // Update Local Storage agar sinkron dengan Cloud terbaru
+                        // Penting jika user main di device lain
+                        dbLocal[email] = cloudUser;
+                        this.saveDB(dbLocal);
+                    }
+                } else {
+                    // Tidak ada data lokal, simpan data cloud ke lokal (Fresh Login di device baru)
+                    console.log("📥 Mengunduh Save Data dari Cloud...");
+                    dbLocal[email] = cloudUser;
+                    this.saveDB(dbLocal);
+                }
+
+                this.user = { email: email, ...finalUser };
                 return { success: true, user: this.user };
+
             } catch (e) {
                 console.warn("Login Error / Offline, trying local fallback...", e);
                 
                 // FITUR ANTI-STUCK: Cek Local Storage jika Server Error/Offline
-                const dbLocal = this.getDB();
-                const user = dbLocal[email];
-                
-                if(user && user.password === password) {
+                if(localUser && localUser.password === password) {
                     this.mode = 'local'; // Paksa pindah ke Local Mode
-                    this.user = { email: email, ...user };
-                    return { success: true, user: this.user, msg: "⚠️ Masuk dalam Mode Offline (Koneksi Bermasalah)" };
+                    this.user = { email: email, ...localUser };
+                    return { success: true, user: this.user, msg: "⚠️ Masuk dalam Mode Offline (Server tidak terjangkau)" };
                 }
 
-                return { success: false, msg: "Gagal Login: Koneksi tidak stabil & Data lokal tidak ditemukan." };
+                // Jika di local juga tidak ada, berarti memang belum register
+                return { success: false, msg: "Gagal: Akun tidak ditemukan (Cek koneksi atau Register baru)." };
             }
         }
     },
@@ -3745,6 +3814,9 @@ const DataService = {
     saveGame: async function(gameState) {
         if(!this.user) return;
         
+        // Pastikan timestamp selalu terupdate saat save
+        gameState.lastActive = Date.now();
+
         const dbLocal = this.getDB();
         if(!dbLocal[this.user.email]) {
              dbLocal[this.user.email] = { ...this.user, saveData: gameState };
@@ -3792,6 +3864,27 @@ const DataService = {
 
     // --- NEW: REAL-TIME MONITORING LISTENER ---
     subscribeToStudents: function(onUpdate) {
+        // FIX: PAKSA CEK KONEKSI & PINDAH KE CLOUD JIKA TERSEDIA
+        // Agar Guru bisa melihat siswa dari device lain
+        if (navigator.onLine && typeof firebase !== 'undefined' && db) {
+            console.log("Monitoring: Mendeteksi Internet. Beralih ke CLOUD MODE.");
+            this.mode = 'firebase';
+        }
+
+        // Update UI Status Koneksi di Dashboard
+        const statusEl = document.getElementById('dash-connection-status');
+        if(statusEl) {
+            if(this.mode === 'firebase') {
+                statusEl.innerHTML = '🟢 CLOUD ONLINE<br><span style="font-weight:normal; opacity:0.8;">Data Seluruh Siswa</span>';
+                statusEl.style.color = '#4ade80'; // Hijau
+                statusEl.style.border = '1px solid #22c55e';
+            } else {
+                statusEl.innerHTML = '🔴 LOCAL OFFLINE<br><span style="font-weight:normal; opacity:0.8;">Hanya Data Perangkat Ini</span>';
+                statusEl.style.color = '#f87171'; // Merah
+                statusEl.style.border = '1px solid #ef4444';
+            }
+        }
+
         if (this.mode === 'local') {
             // Fallback untuk mode offline/lokal: Gunakan Polling Interval
             const interval = setInterval(() => {
@@ -3810,6 +3903,11 @@ const DataService = {
                         onUpdate(students);
                     }, (error) => {
                         console.error("Monitoring Error:", error);
+                        // Jika error permission/koneksi, fallback ke lokal
+                        if(statusEl) {
+                            statusEl.innerHTML = '⚠️ KONEKSI TERPUTUS';
+                            statusEl.style.color = '#fbbf24';
+                        }
                     });
             } catch(e) {
                 console.warn("Snapshot failed, fallback to local polling", e);
@@ -4147,23 +4245,56 @@ function renderMonitoringTable(students) {
     tbody.innerHTML = '';
     
     students.forEach(s => {
-        const sd = s.saveData || {};
+        // Cek apakah ada save data
+        const sd = s.saveData; 
+        const hasSave = sd && Object.keys(sd).length > 0;
+
         // Cek online status (batas toleransi 60 detik)
-        const isOnline = (Date.now() - (sd.lastActive || 0)) < 60000;
+        // Gunakan timestamp dari saveData jika ada
+        const lastActive = (sd && sd.lastActive) ? sd.lastActive : 0;
+        const isOnline = (Date.now() - lastActive) < 60000;
         
         const tr = document.createElement('tr');
         
-        // Style khusus jika HP/Energy rendah (Bahaya)
+        // --- 1. LOGIKA TAMPILAN ROLE ---
+        let roleHtml = '';
+        if (!hasSave) {
+            // Kasus: Baru Register, Belum pernah Save
+            roleHtml = `<br><span style="font-size:9px; color:#94a3b8; font-style:italic;">(Belum Mulai)</span>`;
+        } else if (!sd.role || sd.role === 'none') {
+            // Kasus: Sudah main tapi belum pilih Role (Masih Prolog)
+            roleHtml = `<br><span style="font-size:9px; color:#64748b;">NOVICE</span>`;
+        } else {
+            // Kasus: Sudah punya Role
+            let roleText = sd.role.toUpperCase();
+            // Tambahkan info jurusan jika Mahasiswa
+            if (sd.role === 'student' && sd.major) roleText += ` (${sd.major.substring(0,3).toUpperCase()})`;
+            
+            roleHtml = `<br><span style="font-size:9px; color:var(--primary); font-weight:bold;">${roleText}</span>`;
+        }
+
+        // --- 2. LOGIKA TAMPILAN LOKASI ---
+        let locHtml = '<span style="color:#cbd5e1">-</span>';
+        if (hasSave && sd.location) {
+            let locText = sd.location.toUpperCase();
+            if (locText.includes('INTERIOR')) locText = locText.replace('_INTERIOR', ' (DLM)');
+            locHtml = `📍 ${locText}<br>Day ${sd.day || 1}`;
+        }
+
+        // --- 3. LOGIKA TAMPILAN STATUS (HP/ENERGY) ---
+        let statsHtml = '<span style="color:#cbd5e1">-</span>';
         let hpStyle = "";
-        if ((sd.hp || 0) < 30) hpStyle = "color:#ef4444; font-weight:bold;";
         
-        let locText = sd.location ? sd.location.toUpperCase() : '-';
-        if (locText.includes('INTERIOR')) locText = locText.replace('_INTERIOR', ' (DLM)');
-        
+        if (hasSave) {
+            // Warning merah jika HP rendah
+            if ((sd.hp || 0) < 30) hpStyle = "color:#ef4444; font-weight:bold;";
+            statsHtml = `❤️ ${Math.floor(sd.hp||0)} <br> ⚡ ${Math.floor(sd.energy||0)}`;
+        }
+
         tr.innerHTML = `
             <td>
                 <strong>${s.name}</strong>
-                ${sd.role && sd.role !== 'none' ? `<br><span style="font-size:9px; color:#64748b;">${sd.role.toUpperCase()}</span>` : ''}
+                ${roleHtml}
             </td>
             <td>${s.details}</td>
             <td>
@@ -4171,10 +4302,9 @@ function renderMonitoringTable(students) {
                     ${isOnline ? 'ONLINE 🟢' : 'OFFLINE ⚫'}
                 </span>
             </td>
-            <td style="font-size:11px;">📍 ${locText}<br>Day ${sd.day || 1}</td>
+            <td style="font-size:11px;">${locHtml}</td>
             <td style="${hpStyle}">
-                ❤️ ${Math.floor(sd.hp||0)} <br> 
-                ⚡ ${Math.floor(sd.energy||0)}
+                ${statsHtml}
             </td>
             <td><button class="auth-btn" style="width:auto; padding:5px 10px; font-size:10px; margin:0;" onclick="promptTeacherMessage('${s.email}')">✉️ Chat</button></td>
         `;
@@ -5661,6 +5791,9 @@ function setRole(role) {
         STATE.player.int += 5; 
         STATE.player.energy += 20; 
         
+        // FIX: PAKSA SIMPAN DATA SEGERA AGAR MUNCUL DI DASHBOARD GURU
+        manualSave(); 
+        
         // Dialog Mentor Budi menggantikan Surat Penerimaan instan
         showDialogue("MENTOR BUDI", 
             "Pilihan yang cerdas! Pendidikan adalah fondasi masa depan.\n\nNamun, administrasi harus tertib. **Pergilah ke Kampus** di timur desa untuk mendaftar ulang dan memilih jurusanmu di sana.\n\nSemoga berhasil, Nak!", 
@@ -5683,6 +5816,9 @@ function setRole(role) {
                     updateHUDInfo(); // Update UI agar role terlihat
                     closeDialogue();
                     showToast("Misi Baru: Pergi ke Kampus 🎓");
+
+                    // FIX: SIMPAN ULANG SETELAH DIALOG DITUTUP (DATA FINAL)
+                    manualSave();
                     
                     // Optional: Otomatis buka Jurnal untuk menunjukkan misi baru
                     setTimeout(() => showDailyQuestPopup(), 500);
@@ -5698,6 +5834,9 @@ function setRole(role) {
         STATE.player.str += 5; 
         STATE.player.hp += 20; 
         
+        // FIX: PAKSA SIMPAN DATA SEGERA AGAR MUNCUL DI DASHBOARD GURU
+        manualSave();
+
         showDialogue("MENTOR BUDI", 
             "Pilihan tangguh! Jalur Fighter (Pekerja) membutuhkan fisik yang kuat.\n\nLangkah pertamamu: **Pergilah ke Toko Merchant** di selatan desa.\n\nBos Toko sedang mencari pegawai gudang yang rajin. Masuklah ke gedung toko, bicara padanya, dan **Lamar Kerja**!", 
             [{
@@ -5714,6 +5853,9 @@ function setRole(role) {
                     updateHUDInfo();
                     closeDialogue();
                     showToast("Misi Baru: Lamar Kerja di Merchant 💼");
+
+                    // FIX: SIMPAN ULANG SETELAH DIALOG DITUTUP (DATA FINAL)
+                    manualSave();
                     
                     setTimeout(() => showDailyQuestPopup(), 500);
                 }
@@ -5734,6 +5876,9 @@ function setRole(role) {
         showToast("Jalur MENIKAH dipilih. REP Meningkat Drastis!"); 
     }
     
+    // FIX: PAKSA SIMPAN DATA UNTUK ROLE LAINNYA
+    manualSave();
+
     finalizeRoleSetup();
 }
 
@@ -5790,6 +5935,9 @@ function confirmMajor(major, isScholarship) {
         STATE.player.reputation += 5;
     }
     
+    // FIX: SIMPAN DATA JURUSAN SEGERA
+    manualSave();
+
     let msg = `Selamat! Kamu resmi menjadi mahasiswa **${major.toUpperCase()}**.\nStatus: ${isScholarship ? 'BEASISWA PENUH 🏆' : 'REGULER 💰'}`;
     if(isScholarship) msg += "\n(Kamu mendapat uang saku bulanan!)";
     else msg += "\n(Jangan lupa siapkan uang untuk UKT tahunan!)";
@@ -6207,6 +6355,9 @@ function finalizeRoleSetup() {
                 STATE.isPrologue = false;
                 
                 closeDialogue();
+
+                // FIX: SIMPAN ULANG SETELAH DIALOG DITUTUP (DATA FINAL)
+                manualSave();
                 
                 // Optional: Buka jurnal untuk Worker/Other roles agar sadar misi
                 setTimeout(() => showDailyQuestPopup(), 500);
@@ -9750,6 +9901,10 @@ function saveJournal() {
     const expReward = 50;
     STATE.player.money += goldReward;
     gainExp(expReward);
+
+    // FIX: Paksa simpan ke database/cloud segera agar data Jurnal tidak hilang/delay
+    // Sebelumnya hanya mengandalkan auto-save per 2 detik, yang berisiko data belum terkirim.
+    manualSave();
 
     // 3. Feedback Visual & Audio
     if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
