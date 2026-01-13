@@ -2408,6 +2408,14 @@ dungeonAssets.enemy5.src = 'images/monster-lvl5.png';
 dungeonAssets.thief.src = 'images/monster-thief.png'; // Monster Skripsi
 dungeonAssets.boss.src = 'images/monster-boss.png';
 
+// NEW: WALL ASSETS (Custom Walls)
+const wallAssets = {
+    school: new Image(),
+    schoolFloor: new Image() // NEW: Aset Lantai Kampus
+};
+wallAssets.school.src = 'images/tiletembokkampus.png';
+wallAssets.schoolFloor.src = 'images/tilelantaikampus.png';
+
 let bgLoadedCount = 0;
 const onBgLoad = () => {
     bgLoadedCount++;
@@ -4507,7 +4515,8 @@ function renderMonitoringTable(students) {
             </td>
             <td>
                 <div style="display:flex; gap:5px;">
-                    <button class="auth-btn" style="width:auto; padding:4px 8px; font-size:10px; margin:0;" onclick="promptTeacherMessage('${s.email}')">✉️</button>
+                    <!-- UPDATE: Menambahkan 'this' pada parameter promptTeacherMessage agar tombol terdeteksi akurat -->
+                    <button class="auth-btn" style="width:auto; padding:4px 8px; font-size:10px; margin:0;" onclick="promptTeacherMessage('${s.email}', this)">✉️</button>
                     <button class="auth-btn" style="width:auto; padding:4px 8px; font-size:10px; margin:0; background:#475569;" onclick="inspectStudentData('${sJson}')">🔍</button>
                 </div>
             </td>
@@ -4533,20 +4542,46 @@ async function renderMonitoring() {
     // Biarkan kosong atau hapus agar tidak dipanggil setInterval lama
 }
 
-// FIX: UPDATE PROMPT MESSAGE MENJADI ASYNC
-async function promptTeacherMessage(email) {
+// FIX: UPDATE PROMPT MESSAGE MENJADI LEBIH ROBUST
+async function promptTeacherMessage(email, btnElement) {
     const msg = prompt("Kirim pesan motivasi/teguran ke siswa ini:");
     if(msg) {
-        // Tampilkan indikator loading sederhana
-        const btn = event ? event.target : null;
-        if(btn) btn.innerText = "Sending...";
+        // Fallback untuk event jika btnElement tidak terkirim (support legacy call)
+        if (!btnElement && typeof event !== 'undefined') btnElement = event.target;
+
+        let originalText = "✉️";
         
-        const success = await DataService.sendMessage(email, "GURU: " + msg);
+        // Tampilkan indikator loading visual pada tombol
+        if(btnElement) {
+            originalText = btnElement.innerText;
+            btnElement.innerText = "⏳...";
+            btnElement.disabled = true;
+            btnElement.style.opacity = "0.7";
+        }
         
-        if(success) alert("Pesan berhasil dikirim!");
-        else alert("Gagal kirim pesan (Pastikan koneksi aman)");
-        
-        if(btn) btn.innerText = "Send Msg";
+        try {
+            // FIX: Pastikan koneksi ke Cloud siap sebelum kirim
+            await DataService.init(true);
+            
+            const success = await DataService.sendMessage(email, "GURU: " + msg);
+            
+            if(success) {
+                alert("✅ Pesan berhasil dikirim ke Inbox Siswa!");
+            } else {
+                // Jika gagal (misal mode offline atau local storage kosong)
+                alert("❌ Gagal kirim pesan. Pastikan Anda Online dan terhubung ke Cloud.");
+            }
+        } catch (e) {
+            console.error("Message Error:", e);
+            alert("Error Sistem: " + e.message);
+        } finally {
+            // Kembalikan tombol ke kondisi semula
+            if(btnElement) {
+                btnElement.innerText = originalText;
+                btnElement.disabled = false;
+                btnElement.style.opacity = "1";
+            }
+        }
     }
 }
 
@@ -4590,24 +4625,34 @@ function calculateGrade(data) {
 
 // UPDATE: SYNC REFLECTIONS (TAMPILAN JURNAL YANG LEBIH BAIK & LIVE)
 function renderReflections() {
-    const students = latestStudentData; // Gunakan Cache (Instant Load)
+    const students = latestStudentData || []; // Gunakan Cache (Instant Load)
     const container = document.getElementById('reflections-container');
     container.innerHTML = '';
     
-    let hasData = false;
+    let hasJournalData = false;
 
     students.forEach(s => {
-        const refs = s.saveData?.reflections || [];
+        // PERBAIKAN: Ambil data reflections dengan fallback yang lebih aman
+        // Cek di dalam saveData (Struktur Baru) ATAU di root (Struktur Lama/Legacy)
+        const rawRefs = (s.saveData && s.saveData.reflections) ? s.saveData.reflections : (s.reflections || []);
+        
+        // Pastikan itu Array valid
+        const refs = Array.isArray(rawRefs) ? rawRefs : [];
+
         if(refs.length > 0) {
-            hasData = true;
+            hasJournalData = true;
             const card = document.createElement('div');
             card.className = 'dash-card';
             
             // Header Card: Nama Siswa & Jumlah Jurnal
+            // Gunakan s.name atau s.saveData.name sebagai fallback nama
+            const sName = s.name || (s.saveData ? s.saveData.name : "Tanpa Nama");
+            const sDetails = s.details || (s.saveData ? s.saveData.details : "-");
+
             let html = `<div style="border-bottom:1px solid #e2e8f0; padding-bottom:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h4 style="color:var(--primary); margin:0;">${s.name}</h4>
-                    <small style="color:#64748b;">${s.details}</small>
+                    <h4 style="color:var(--primary); margin:0;">${sName}</h4>
+                    <small style="color:#64748b;">${sDetails}</small>
                 </div>
                 <span class="status-badge" style="background:#eff6ff; color:#1d4ed8;">${refs.length} Catatan</span>
             </div>`;
@@ -4618,14 +4663,19 @@ function renderReflections() {
             // Tampilkan dari yang terbaru (Reverse)
             [...refs].reverse().forEach(r => {
                 // Format Tanggal Real-time (jika ada) atau fallback ke Hari Game
-                const timeStr = r.date ? new Date(r.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : `Waktu Server`;
+                let timeStr = `Waktu Server`;
+                if(r.date) {
+                    try {
+                        timeStr = new Date(r.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+                    } catch(e) { timeStr = "Invalid Date"; }
+                }
                 
                 html += `<div style="background:#f8fafc; border-left:4px solid var(--secondary); padding:12px; margin-bottom:12px; border-radius:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                     <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748b; margin-bottom:6px; font-weight:bold;">
-                        <span style="color:var(--primary);">🗓️ GAME DAY ${r.day}</span>
+                        <span style="color:var(--primary);">🗓️ GAME DAY ${r.day || '?'}</span>
                         <span>🕒 ${timeStr}</span>
                     </div>
-                    <p style="margin:0; font-style:italic; color:#334155; font-family:'Exo 2'; line-height:1.6; white-space:pre-wrap;">"${r.text}"</p>
+                    <p style="margin:0; font-style:italic; color:#334155; font-family:'Exo 2'; line-height:1.6; white-space:pre-wrap;">"${r.text || ''}"</p>
                 </div>`;
             });
             
@@ -4636,11 +4686,12 @@ function renderReflections() {
     });
 
     // Tampilan jika belum ada data sama sekali
-    if(!hasData) {
+    if(!hasJournalData) {
         container.innerHTML = `<div style="text-align:center; padding:50px; color:#cbd5e1;">
             <div style="font-size:48px; margin-bottom:10px;">📭</div>
             <p>Belum ada data jurnal siswa yang masuk.</p>
-            <small>Siswa perlu menulis di menu "Buku Harian" di dalam game.</small>
+            <p style="font-size:12px;">Total Siswa Terhubung: <strong>${students.length}</strong></p>
+            <small>Siswa perlu menulis di menu "Buku Harian" di dalam game dan menekan tombol SIMPAN.</small>
         </div>`;
     }
 }
@@ -4973,6 +5024,15 @@ for(let x=0; x<SMITH_W; x++) { smithTiles[0*SMITH_W+x] = 2; smithTiles[(SMITH_H-
 for(let y=0; y<SMITH_H; y++) { smithTiles[y*SMITH_W+0] = 2; smithTiles[y*SMITH_W+(SMITH_W-1)] = 2; }
 smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
 
+// --- NEW: MENTOR INTERIOR MAP (14x12) ---
+const MENTOR_W = 14;
+const MENTOR_H = 12;
+const mentorTiles = new Array(MENTOR_W * MENTOR_H).fill(10); // 10 = Wood Floor
+// Walls (ID 11 = Tembok Putih/Bersih)
+for(let x=0; x<MENTOR_W; x++) { mentorTiles[0*MENTOR_W+x] = 11; mentorTiles[(MENTOR_H-1)*MENTOR_W+x] = 11; }
+for(let y=0; y<MENTOR_H; y++) { mentorTiles[y*MENTOR_W+0] = 11; mentorTiles[y*MENTOR_W+(MENTOR_W-1)] = 11; }
+mentorTiles[(MENTOR_H-1)*MENTOR_W + 7] = 8; // Door Tile
+
 // --- UPDATE: MAP RERUNTUHAN YANG LEBIH DETAIL ---
 const RUINS_W = 22;
 const RUINS_H = 16;
@@ -5059,7 +5119,10 @@ for(let i=0; i<10; i++) {
             { id: 'villager2', x: 26, y: 7, w: 4, h: 4, img: 'images/rumahwarga.png', entrance: {x: 28, y: 11, map: 'villager2'}, name: "Rumah Tetangga 2", openTime: 2500, closeTime: 0 }
         ],
         npcs: [
-            {id: 'mentor', x: 34, y: 20, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'mentor', schedule: 'day'},
+            /* UPDATE: MENTOR BUDI DIHAPUS DARI LUAR RUMAH (DEFAULT HIDDEN) */
+            /* Kita taruh di koordinat -99 agar tidak terlihat, tapi objeknya ADA untuk dipanggil saat Tutorial */
+            {id: 'mentor', x: -99, y: -99, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'static', schedule: 'always'},
+
             /* UPDATE: DOSEN DIHAPUS DARI LUAR, DIGANTI SARJANA TEKNOLOGI */
             {id: 'sarjana_tekno', x: 43, y: 16, name: 'Senior Teknologi', imgSrc: 'images/sarjanateknologi.png', type: 'service', schedule: 'day'}, 
             
@@ -5068,7 +5131,8 @@ for(let i=0; i<10; i++) {
 
             /* NEW: SATPAM KAMPUS (Penjaga Gerbang) */
             /* UPDATE: POSISI DIGESER KE KIRI (38, 16) AGAR TIDAK MENGHALANGI JALAN */
-            {id: 'satpam', x: 38, y: 16, name: 'Satpam', imgSrc: 'images/satpam.png', type: 'static', schedule: 'day'},
+            /* UPDATE: JADWAL JADI 'ALWAYS' (24 JAM) AGAR BISA NGOBROL MALAM */
+            {id: 'satpam', x: 38, y: 16, name: 'Satpam', imgSrc: 'images/satpam.png', type: 'static', schedule: 'always'},
 
             /* REMOVED: job/mercenary npc */
             /* MOVED: Trader menggantikan posisi job (x:25, y:27) */
@@ -5099,7 +5163,8 @@ for(let i=0; i<10; i++) {
             {id: 'cewek_kristen', x: 11, y: 19, name: 'Maria', imgSrc: 'images/cewek-kristen.png', type: 'static', vx:0, vy:0, schedule: 'day'},
 
             /* NEW: PEMANCING SORE-MALAM (Update Posisi ke Ujung Dermaga Baru) */
-            {id: 'pemancing_misterius', x: 47, y: 37, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening'},
+            /* UPDATE: DIGESER KE BAWAH (Y:38) AGAR LEBIH DI PUCUK */
+            {id: 'pemancing_misterius', x: 47, y: 38, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening'},
 
             /* NEW: PUTRI DUYUNG (Pinggir Laut - Selatan Kiri Dermaga) */
             /* UPDATE: Posisi dipindah ke sebelah kiri dermaga (x:38) di air (y:36) */
@@ -5150,6 +5215,10 @@ for(let i=0; i<10; i++) {
         objects: [
             /* UPDATE: Papan Misi & Statue dipindah ke buildings */
             
+            // --- NEW: KOTAK SURAT (MAILBOX) UNTUK PESAN GURU ---
+            // UPDATE FIX: Posisi digeser ke x:20 (Tepat sebelah kiri pintu rumah di x:21) agar "di pinggir pintu"
+            {x: 20, y: 11, w: 1, h: 1, type: 'mailbox', icon: '📬', img: 'images/pos.png'}, 
+
             // Meja & Kursi Santai (DIPINDAH KE KANAN & KIRI POHON SAKURA di 16,13)
             // UPDATE: Ukuran diperbesar (w:2, h:2) setara setengah bangunan
             {x: 13, y: 13, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursi.png'}, // Kiri Pohon
@@ -5281,6 +5350,31 @@ for(let i=0; i<10; i++) {
             // Dekorasi material
             {x: 2, y: 8, type: 'shelf', icon: '🪨', text: "Tumpukan Bijih Besi"},
             {x: 11, y: 8, type: 'shelf', icon: '🪵', text: "Tumpukan Kayu Bakar"},
+
+            {x: 7, y: 11, type: 'door_out', icon: '🚪'}
+        ]
+    },
+    /* NEW: MENTOR INTERIOR ADDED */
+    'mentor_interior': {
+        w: MENTOR_W, h: MENTOR_H,
+        tiles: mentorTiles,
+        buildings: [
+            { id: 'mentor_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Rumah" }
+        ],
+        npcs: [
+            // Gunakan ID 'mentor' agar relationship & dialog sama dengan yang di luar
+            {id: 'mentor', x: 7, y: 4, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'mentor', schedule: 'always'}
+        ],
+        objects: [
+            {x: 2, y: 3, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan"},
+            {x: 3, y: 3, type: 'bookshelf', icon: '🏆', text: "Piala: Guru Terbaik Se-Nusantara"},
+            {x: 11, y: 3, type: 'shelf', icon: '🏺', text: "Vas Bunga Antik dari Murid"},
+            
+            {x: 7, y: 3, type: 'table', icon: '🪑'}, // Meja Kerja Mentor
+            
+            // Dekorasi Rumah
+            {x: 2, y: 8, type: 'shelf', icon: '📦', text: "Tumpukan Tugas Siswa"},
+            {x: 11, y: 8, type: 'shelf', icon: '🖼️', text: "Foto Angkatan Pertama"},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -6021,12 +6115,7 @@ function openRoleSelection() {
         {text: "Wirausaha (Support) - BIZ++", action: () => setRole('entrepreneur')},
         {text: "Menikah (Family) - REP++", action: () => setRole('family')}
     ], 'images/mentor.png');
-}
-
-function setRole(role) {
-    STATE.player.role = role;
-    
-    // NEW: Jika memilih Student (UPDATE: Mentor menyuruh ke kampus)
+            /* NEW: Jika memilih Student (UPDATE: Mentor menyuruh ke kampus) */
     if(role === 'student') {
         STATE.player.int += 5; 
         STATE.player.energy += 20; 
@@ -6044,8 +6133,9 @@ function setRole(role) {
                     const villMap = maps['village'];
                     const mentor = villMap.npcs.find(n => n.id === 'mentor');
                     if (mentor) {
-                        mentor.x = 34; // Koordinat rumah mentor
-                        mentor.y = 20;
+                        // UPDATE: Pindahkan ke -99 (Hilang dari map desa) agar tidak dobel dengan yang di dalam rumah
+                        mentor.x = -99; 
+                        mentor.y = -99;
                         mentor.vx = 0; 
                         mentor.vy = 0;
                     }
@@ -6086,7 +6176,11 @@ function setRole(role) {
                     const villMap = maps['village'];
                     const mentor = villMap.npcs.find(n => n.id === 'mentor');
                     if (mentor) {
-                        mentor.x = 34; mentor.y = 20; mentor.vx = 0; mentor.vy = 0;
+                        // UPDATE: Pindahkan ke -99 (Hilang dari map desa)
+                        mentor.x = -99; 
+                        mentor.y = -99; 
+                        mentor.vx = 0; 
+                        mentor.vy = 0;
                     }
                     
                     STATE.isPrologue = false; 
@@ -6584,8 +6678,9 @@ function finalizeRoleSetup() {
                 const villMap = maps['village'];
                 const mentor = villMap.npcs.find(n => n.id === 'mentor');
                 if (mentor) {
-                    mentor.x = 34; // Koordinat asli (dekat rumah mentor)
-                    mentor.y = 20;
+                    // UPDATE: Pindahkan ke -99 (Hilang dari map desa)
+                    mentor.x = -99; 
+                    mentor.y = -99;
                     // Reset kecepatan gerak jika perlu
                     mentor.vx = 0; 
                     mentor.vy = 0;
@@ -7630,7 +7725,8 @@ function checkAutoTeleport() {
                     'library', 'library_exit', 
                     'guild', 'guild_exit', 
                     'school', 'school_exit',
-                    'blacksmith', 'smith_exit' // Ditambahkan agar Bengkel juga auto-exit
+                    'blacksmith', 'smith_exit',
+                    'mentor', 'mentor_exit' // NEW: Tambahkan Mentor ke Auto-Teleport
                 ];
                 
                 if (autoTeleporters.includes(b.id)) {
@@ -7825,6 +7921,20 @@ function processTeleport(b) {
                 }, 600);
             }
         }
+    }
+    // --- NEW: LOGIKA TELEPORT RUMAH MENTOR ---
+    else if(b.id === 'mentor') {
+        STATE.location = 'mentor_interior';
+        STATE.player.x = 7 * TILE_SIZE; // Tengah Ruangan
+        STATE.player.y = 10 * TILE_SIZE;
+        showToast("Bertamu ke Rumah Mentor 🏠");
+    }
+    else if(b.id === 'mentor_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 31 * TILE_SIZE; // Depan rumah mentor (Village coords: 28,15 size 6x5. Entrance 31,20)
+        STATE.player.y = 21 * TILE_SIZE;
+        clearSpawnZone('village', 31, 21);
+        showToast("Keluar Rumah Mentor");
     }
     else if(b.id === 'dungeon_exit') {
         STATE.location = 'village';
@@ -9057,16 +9167,33 @@ function interactNPC(npc) {
 
     // --- NEW: INTERAKSI SATPAM KAMPUS ---
     else if(npc.id === 'satpam') {
-        showDialogue(npc.name, "STOP! Tunjukkan kartu mahasiswa. \nTugas saya menjaga keamanan kampus dari mahasiswa abadi dan monster liar.", [
-            {text: "Siap Pak (Hormat)", action: () => {
-                showToast("Satpam mengangguk tegas.");
-                closeDialogue();
-            }},
-            {text: "Tanya Aturan Masuk", action: () => {
-                showDialogue(npc.name, "Dengar baik-baik! \n1. Kuliah mulai jam 08:00. \n2. Telat lewat 08:30, gerbang saya kunci! \n3. Dilarang bawa senjata tajam ke dalam kelas, kecuali jurusan Fighter.", [{text:"Siap Pak", action:closeDialogue}], npc.imgSrc);
-            }},
-            {text: "Saya cuma lewat", action: closeDialogue}
-        ], npc.imgSrc);
+        // Cek waktu: Malam (18:00 - 06:00) vs Siang
+        const isNight = STATE.time >= 1800 || STATE.time < 600;
+
+        if (isNight) {
+            // --- DIALOG MALAM (AKRAB & INSPIRATIF) ---
+            showDialogue(npc.name, "Malam-malam begini masih keluyuran, Nak? \nAngin malam di sini jahat, tapi tidak sejahat putus cinta. Hahaha.\n\n(Satpam terlihat santai sambil menyeruput kopi panas)", [
+                {text: "Bapak belum tidur?", action: () => {
+                    showDialogue(npc.name, "Mata ini sudah terlatih terjaga, Nak. \nDulu waktu Bapak seusiamu, Bapak kerja serabutan pagi-siang-malam demi biayai adik-adik sekolah. \n\nLelah? Pasti. Tapi saat melihat mereka jadi sarjana, hilang semua capeknya. Perjuangan itu manis di akhir.", [{text:"Bapak hebat sekali...", action:closeDialogue}], npc.imgSrc);
+                }},
+                {text: "Sedang apa Pak?", action: () => {
+                    showDialogue(npc.name, "Biasalah, ngopi sambil dengerin suara jangkrik. Kadang sepi itu menenangkan. \n\nKamu kalau pusing tugas kuliah, istirahatlah sebentar di sini. Dunia gak akan kiamat kok kalau kamu tarik napas sejenak.", [{text:"Terima kasih Pak", action:closeDialogue}], npc.imgSrc);
+                }},
+                {text: "Saya cuma lewat", action: closeDialogue}
+            ], npc.imgSrc);
+        } else {
+            // --- DIALOG SIANG (TEGAS & DISIPLIN) ---
+            showDialogue(npc.name, "STOP! Tunjukkan kartu mahasiswa. \nTugas saya menjaga keamanan kampus dari mahasiswa abadi dan monster liar.", [
+                {text: "Siap Pak (Hormat)", action: () => {
+                    showToast("Satpam mengangguk tegas.");
+                    closeDialogue();
+                }},
+                {text: "Tanya Aturan Masuk", action: () => {
+                    showDialogue(npc.name, "Dengar baik-baik! \n1. Kuliah mulai jam 08:00. \n2. Telat lewat 08:30, gerbang saya kunci! \n3. Dilarang bawa senjata tajam ke dalam kelas, kecuali jurusan Fighter.", [{text:"Siap Pak", action:closeDialogue}], npc.imgSrc);
+                }},
+                {text: "Saya cuma lewat", action: closeDialogue}
+            ], npc.imgSrc);
+        }
     }
 
     // --- NEW: INTERAKSI DOSEN / SCHOLAR (KHUSUS MAHASISWA & ATURAN TELAT) ---
@@ -10187,11 +10314,13 @@ function saveJournal() {
 
     // FIX: Paksa simpan ke database/cloud segera agar data Jurnal tidak hilang/delay
     // Sebelumnya hanya mengandalkan auto-save per 2 detik, yang berisiko data belum terkirim.
+    showToast("☁️ Mengirim Jurnal ke Cloud..."); // Feedback Visual
     manualSave();
 
     // 3. Feedback Visual & Audio
     if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-    showToast(`📝 Jurnal Disimpan! Dapat ${goldReward}G & ${expReward}XP`);
+    // showToast diganti di atas agar tidak tertumpuk cepat
+    
     createParticle(STATE.player.x, STATE.player.y, '#fbbf24'); // Partikel Emas
 
     // 4. Tutup Modal
@@ -10229,6 +10358,7 @@ function saveJournal() {
     } else {
         // Jika jurnal manual (bukan mau tidur), kembalikan fullscreen langsung
         toggleFullScreen();
+        showToast(`📝 Jurnal Tersimpan! (+${goldReward}G)`);
     }
 }
 
@@ -10977,6 +11107,17 @@ function draw() {
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
+                
+                // NEW: Handle School Floor (ID 10 in School Interior)
+                else if (t === 10 && STATE.location === 'school_interior') {
+                    if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback ke warna dasar jika gambar belum load
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
                 // Handle Dungeon Wall (ID 2 in Dungeon)
                 else if (t === 2 && STATE.location === 'dungeon') {
                     // PERBAIKAN: Gambar Lantai DULU di bawah Tembok agar batu terlihat 'nempel' di lantai, tidak bolong
@@ -10998,6 +11139,17 @@ function draw() {
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE + 25, TILE_SIZE, 5);
                     }
                 }
+                
+                // NEW: Handle School Wall (ID 11 in School Interior)
+                else if (t === 11 && STATE.location === 'school_interior') {
+                    if (wallAssets.school.complete && wallAssets.school.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.school, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback jika gambar belum diload (Warna Putih/Abu)
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
                 // Handle Other Tiles
                 else if(t !== 2 && t !== 12 && t !== 4) {
                     if(!(isBgLoaded && (t === 9 || t === 1))) {
@@ -11514,6 +11666,19 @@ function drawObject(ctx, o) {
         if (!o.loadedImg) {
             o.loadedImg = new Image();
             o.loadedImg.src = o.img;
+            
+            // --- FIX: ADD ERROR HANDLER & FALLBACK FOR OBJECT IMAGES ---
+            o.loadedImg.onerror = function() {
+                this.onerror = null;
+                // Fallback khusus untuk kotak surat (Mailbox Merah) jika gambar tidak ditemukan
+                if (o.type === 'mailbox') {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTE0IDMyIEwxNCAxNSBMOSAxNSBMOSAxMCBMMjMgMTAgTDIzIDE1IEwxOCAxNSBMMTggMzIgWiIgZmlsbD0iIzU5MzgxMSIvPjxwYXRoIGQ9Ik02IDUgTDI2IDUgTDI2IDEyIEMyNiAxNCA2IDE0IDYgMTIgWiIgZmlsbD0iI0RDMjYyNiIvPjxyZWN0IHg9IjgiIHk9IjciIHdpZHRoPSIxNiIgaGVpZ2h0PSIyIiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=';
+                } 
+                // Fallback umum (Box Kayu)
+                else {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOEU1NDJiIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxsaW5lIHgxPSIyIiB5MT0iMiIgeDI9IjMwIiB5Mj0iMzAiIHN0cm9rZT0iIzVENDAzNyIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjMwIiB5MT0iMiIgeDI9IjIiIHkyPSIzMCIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=';
+                }
+            };
         }
         
         if (o.loadedImg.complete && o.loadedImg.naturalWidth !== 0) {
@@ -11522,7 +11687,7 @@ function drawObject(ctx, o) {
             const drawH = (o.h || 1) * TILE_SIZE;
             ctx.drawImage(o.loadedImg, o.x*TILE_SIZE, o.y*TILE_SIZE, drawW, drawH);
         } else {
-            // Fallback
+            // Fallback Text Icon jika gambar benar-benar gagal
             ctx.font = '20px Arial';
             ctx.fillStyle = '#fff';
             ctx.fillText(o.icon, o.x*TILE_SIZE+5, o.y*TILE_SIZE+25);
@@ -11532,6 +11697,31 @@ function drawObject(ctx, o) {
         ctx.font = '20px Arial';
         ctx.fillStyle = '#fff'; // Pastikan warna terlihat
         ctx.fillText(o.icon, o.x*TILE_SIZE+5, o.y*TILE_SIZE+25);
+    }
+
+    // --- NEW: INDIKATOR PESAN BELUM DIBACA (KHUSUS MAILBOX) ---
+    if(o.type === 'mailbox') {
+        const msgs = STATE.player.messages || [];
+        const unreadCount = msgs.filter(m => !m.read).length;
+        
+        if(unreadCount > 0) {
+            // Gambar Notifikasi Merah Melayang
+            const bx = (o.x * TILE_SIZE) + (TILE_SIZE/2);
+            const by = (o.y * TILE_SIZE) - 5; 
+            
+            const floatY = Math.sin(Date.now() / 200) * 3;
+            
+            ctx.fillStyle = '#ef4444'; // Merah
+            ctx.beginPath();
+            ctx.arc(bx, by + floatY, 6, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('!', bx, by + floatY + 1);
+        }
     }
 }
 
@@ -11618,6 +11808,36 @@ function drawBuilding(ctx, b) {
         if(b.id === 'papan_misi') label = "LIHAT"; // Label khusus Papan
         
         ctx.fillText(label, ex + 15, ey - 5);
+    }
+
+    // --- NEW: LABEL NAMA BANGUNAN (SELALU TAMPIL DI ATAS ATAP) ---
+    if (b.name && b.type !== 'trigger' && b.type !== 'dungeon_rock') {
+        ctx.save();
+        ctx.font = 'bold 9px "Exo 2", sans-serif'; 
+        ctx.textAlign = 'center';
+        
+        const bx = b.x * TILE_SIZE;
+        const by = b.y * TILE_SIZE;
+        const bw = b.w * TILE_SIZE;
+        
+        // Posisi Text: Tengah lebar bangunan
+        const tx = bx + (bw / 2);
+        // Posisi Y: Di atas atap (lebih tinggi dari status pill jika ada)
+        const ty = by - 24; 
+
+        // Outline Hitam Tebal (Agar terbaca jelas di background apapun)
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(2, 6, 23, 0.9)'; // Dark Slate
+        ctx.strokeText(b.name.toUpperCase(), tx, ty);
+
+        // Text Fill (Warna)
+        ctx.fillStyle = '#e2e8f0'; // Default Putih Abu
+        if(b.roleSpecific || b.id === 'player_house') ctx.fillStyle = '#fbbf24'; // Emas untuk Bangunan Penting
+        
+        ctx.fillText(b.name.toUpperCase(), tx, ty);
+        
+        ctx.restore();
     }
 
     // --- FITUR BARU: INDIKATOR STATUS BANGUNAN (BUKA/TUTUP/RENOVASI) ---
@@ -11889,7 +12109,8 @@ function drawNPC(ctx, n) {
         }
         
         // --- NEW: LOGIKA VISUAL UNTUK ANAK KECIL (Render Lebih Kecil) ---
-        if(n.id.includes('child')) {
+        // UPDATE: Kecualikan child_blacksmith agar ukurannya normal (seperti player)
+        if(n.id.includes('child') && n.id !== 'child_blacksmith') {
             drawW = 30;  // Lebih kurus
             drawH = 45;  // Lebih pendek (Normal 60)
             offX = -15;  // Adjust offset X tengah
