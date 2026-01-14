@@ -409,15 +409,19 @@
         #dialogue-portrait {
             position: absolute;
             bottom: 0; /* Align bottom with container */
-            left: 0;
-            height: 180px; /* Lebih tinggi agar menonjol */
-            width: 140px; 
-            object-fit: cover; 
-            object-position: top center; 
+            left: -30px; /* UPDATE: Geser ke kiri agar center di area kosong */
+            height: 240px; /* UPDATE: Lebih tinggi untuk Zoom */
+            width: 200px;  /* UPDATE: Lebar ditambah untuk memicu zoom proporsional */
+            
+            /* LOGIKA ZOOM & CROP (Bust Shot) */
+            object-fit: cover; /* Memaksa gambar mengisi frame (Zoom In) */
+            object-position: top center; /* Fokus ke kepala/bahu, potong kaki */
+            
             z-index: 22; /* Di atas box */
             filter: drop-shadow(5px 5px 15px rgba(0,0,0,0.8));
             animation: slideUp 0.3s ease-out;
             display: block; /* Default block inside wrapper */
+            image-rendering: pixelated; /* UPDATE: Agar gambar pixel art tetap tajam saat diperbesar */
         }
 
         /* The Styled Box */
@@ -426,7 +430,8 @@
             background: rgba(15, 23, 42, 0.95);
             border: 1px solid var(--secondary);
             border-top: 4px solid var(--secondary);
-            padding: 20px 20px 20px 150px; /* Left padding for Portrait space */
+            /* UPDATE: Padding kiri diperbesar (150px -> 170px) menyesuaikan gambar yang membesar */
+            padding: 20px 20px 20px 170px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
             font-family: 'Exo 2', sans-serif;
             clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px);
@@ -5385,7 +5390,10 @@ for(let i=0; i<10; i++) {
             
             // Mahasiswa yang sedang belajar
             {id: 'student1', x: 3, y: 7, name: 'Mahasiswa Rajin', imgSrc: 'images/mahasiswakiri.png', type: 'wander', schedule: 'day', w: 40, h: 60},
-            {id: 'student2', x: 12, y: 7, name: 'Mahasiswa Santai', imgSrc: 'images/mahasiswakanan.png', type: 'wander', schedule: 'day', w: 40, h: 60},
+            
+            // UPDATE: MAHASISWA MALAS JADI STATIC & DUDUK (DI BELAKANG MEJA KANAN)
+            // Posisi y:5 agar terlihat duduk di balik meja y:6
+            {id: 'student2', x: 12, y: 5, name: 'Mahasiswa Santai', imgSrc: 'images/mahasiswakanan.png', type: 'static', schedule: 'day', w: 40, h: 60},
             
             // Teman Love Interest (Putri - Scholar) sering di kampus
             {id: 'lover2girl', x: 11, y: 9, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'lover', schedule: 'day', w: 40, h: 60} 
@@ -9387,10 +9395,50 @@ function interactNPC(npc) {
             {text: "📝 Isi Daftar Hadir & Kuliah", action: () => {
                 // Cek Waktu Kuliah (08:00 - 14:00)
                 if (STATE.time >= 800 && STATE.time <= 1400) {
+                    
+                    // HELPER: Show Lecture Content (Fungsi Pembantu untuk menampilkan materi)
+                    const showLectureMaterial = (isReview = false) => {
+                        try {
+                            const major = STATE.player.major || 'teknologi';
+                            let materials = [];
+                            if (typeof COURSE_MATERIALS !== 'undefined' && COURSE_MATERIALS[major]) {
+                                materials = COURSE_MATERIALS[major];
+                            }
+                            
+                            // Fallback jika array kosong
+                            const matIndex = (STATE.day - 1) % (materials.length || 1);
+                            const content = materials[matIndex] || {t: "Review Materi Dasar", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar."};
+                            
+                            const oldTime = Math.floor(STATE.time / 100);
+                            // Tampilkan info waktu berbeda jika review
+                            const timeInfo = isReview ? "(Mode Review: Kamu sudah mengikuti kelas ini)" : `(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`;
+                            
+                            showDialogue(`MATERI KULIAH (HARI ${STATE.day})`, 
+                                `**MATA KULIAH: ${content.t}**\n\n"${content.c}"\n\n${timeInfo}`, 
+                                [{text: isReview ? "Tutup" : "Catat & Pulang (INT +2, EXP +100)", action: () => {
+                                    if(!isReview) {
+                                        // Hanya dapat reward jika bukan review
+                                        STATE.player.int += 2; 
+                                        gainExp(100);
+                                        showToast("📚 Kuliah Selesai. Ilmu Bertambah!");
+                                    }
+                                    closeDialogue();
+                                }}], 
+                                npc.imgSrc
+                            );
+                        } catch(e) {
+                            console.error("Lecture Error:", e);
+                            showDialogue("DOSEN", "Sistem materi sedang gangguan. Silakan lapor Developer.", [{text:"Tutup", action:closeDialogue}], npc.imgSrc);
+                        }
+                    };
+
                     // Cek apakah sudah absen hari ini
                     if (STATE.player.lastAttendanceDay === STATE.day) {
-                        showToast("Kamu sudah absen hari ini!");
-                        showDialogue("DOSEN", "Kamu sudah tercatat hadir hari ini. Fokuslah belajar.", [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
+                        // FIX: Jika sudah absen, tawarkan Review agar materi tetap bisa dibaca
+                        showDialogue("DOSEN", "Kamu sudah tercatat hadir hari ini. Apakah kamu ingin membaca ulang materi tadi?", [
+                            {text: "Ya, Review Materi", action: () => showLectureMaterial(true)},
+                            {text: "Tidak, Terima kasih", action: closeDialogue}
+                        ], npc.imgSrc);
                     } else {
                         // FIX: Tutup dialog lama dulu agar tidak tumpang tindih
                         closeDialogue();
@@ -9408,35 +9456,7 @@ function interactNPC(npc) {
                         
                         // --- UPDATE: LOGIKA MATERI KULIAH (MUNCUL SETIAP HARI) ---
                         setTimeout(() => {
-                            try {
-                                // Default Major fallback jika terjadi bug
-                                const major = STATE.player.major || 'teknologi';
-                                
-                                // Safely access materials (Pastikan COURSE_MATERIALS ada)
-                                let materials = [];
-                                if (typeof COURSE_MATERIALS !== 'undefined' && COURSE_MATERIALS[major]) {
-                                    materials = COURSE_MATERIALS[major];
-                                }
-                                
-                                // Fallback content jika array kosong atau error index
-                                const matIndex = (STATE.day - 1) % (materials.length || 1);
-                                const content = materials[matIndex] || {t: "Review Materi Dasar", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar karena materi spesifik belum tersedia."};
-
-                                showDialogue(`MATERI KULIAH (HARI ${STATE.day})`, 
-                                    `**MATA KULIAH: ${content.t}**\n\n"${content.c}"\n\n(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`, 
-                                    [{text: "Catat & Pulang (INT +2, EXP +100)", action: () => {
-                                        STATE.player.int += 2; // Reward Harian yang seimbang
-                                        gainExp(100);
-                                        showToast("📚 Kuliah Selesai (14:00). Ilmu Bertambah!");
-                                        closeDialogue();
-                                    }}], 
-                                    npc.imgSrc
-                                );
-                            } catch(e) {
-                                console.error("Error displaying lecture:", e);
-                                // Fallback dialog jika terjadi error fatal
-                                showDialogue("DOSEN", "Kelas hari ini telah selesai. (Catatan: Progress tetap tersimpan).", [{text:"Pulang", action:closeDialogue}], npc.imgSrc);
-                            }
+                            showLectureMaterial(false); // false = bukan review (dapat reward)
                         }, 1000); // Jeda 1 detik agar terasa transisinya
                     }
                 } else {
@@ -9889,6 +9909,19 @@ function interactNPC(npc) {
                 } else {
                     showToast("Kamu tidak punya Coklat.");
                 }
+            }},
+            {text: "Dah", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI MAHASISWA SANTAI (LAZY STUDENT) ---
+    else if(npc.id === 'student2') {
+        showDialogue(npc.name, "Hhh... (Menguap) 🥱 \nDosennya ngomong apa sih dari tadi? Aku cuma numpang absen doang.", [
+            {text: "Jangan malas dong", action: () => {
+                showDialogue(npc.name, "Biarin... yang penting lulus. Lagian aku mau jadi Pro Player game aja nanti.", [{text:"Terserah deh", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Pinjam Catatan", action: () => {
+                showDialogue(npc.name, "Catatan? Kertas aku masih bersih nih. Gak ada isinya. Hahaha!", [{text:"Dasar...", action:closeDialogue}], npc.imgSrc);
             }},
             {text: "Dah", action: closeDialogue}
         ], npc.imgSrc);
@@ -10677,11 +10710,16 @@ function checkFishing() {
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Mancing Dapat Ikan
         createParticle(STATE.player.x, STATE.player.y, rarityColor); // Partikel sesuai warna rarity
 
-        // Tampilkan Dialog dengan Gambar Ikan & Rarity
-        showDialogue("MEMANCING BERHASIL!", 
-            `Kamu mendapatkan **${fishName}**!\nTingkat: <strong style="color:${rarityColor}">${rarityLabel}</strong>\n(Nilai Jual: ${value} G)`, 
-            [{text: "Simpan di Tas", action: closeDialogue}], 
-            fishImg // Parameter gambar ikan
+        // --- UPDATE: TAMPILAN GAMBAR BESAR (POPUP DIALOG) ---
+        // Menampilkan Dialog "Mendapatkan Item" dengan Gambar Ikan Besar di Kiri
+        showDialogue(
+            "TANGKAPAN BERHASIL!", 
+            `Kamu mendapatkan:\n**${fishName}**\n\n(Item telah dimasukkan ke dalam Tas)`, 
+            [{
+                text: "Simpan 🎣", 
+                action: closeDialogue
+            }], 
+            fishImg // Gambar Ikan ditampilkan besar di sini
         );
 
     } else {
