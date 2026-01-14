@@ -2186,7 +2186,8 @@ button, .round-btn, .d-btn, .auth-btn {
                     <div class="time-clock">🕘 <span id="clock-display">06:00</span></div>
                     <div style="color:#cbd5e1;">📅 <span id="full-date-display">Spring Y1</span></div>
                     <div id="weather-display" style="color:#94a3b8; font-size:9px;">Cerah</div>
-                    <div style="font-size: 9px; color: var(--danger); margin-top: 2px;">⏳ Trial: <span id="trial-display">30 Hari</span></div>
+                    <!-- FIX: Ubah teks default dari '30 Hari' menjadi 'Loading...' atau angka yang benar -->
+                    <div style="font-size: 9px; color: var(--danger); margin-top: 2px;">⏳ Trial: <span id="trial-display">3 Tahun</span></div>
                     
                     <!-- HOVER INFO BOX -->
                     <div class="time-info-box">
@@ -7208,7 +7209,8 @@ function update() {
     const dayName = DAYS_OF_WEEK[(STATE.day - 1) % 7];
 
     if (!STATE.freeRoamMode) {
-        if (year === 3 && dayInSeason === 1 && STATE.time < 10) {
+        // FIX: Ubah logika notifikasi Trial Selesai ke Tahun ke-4 (Setelah 3 tahun habis)
+        if (year === 4 && dayInSeason === 1 && STATE.time < 10) {
             showToast("🔓 MASA TRIAL SELESAI! Semua Akses Terbuka.");
         }
 
@@ -7219,7 +7221,10 @@ function update() {
 
         const daysInYear = DAYS_PER_SEASON * 4; 
         
-        const trialLimit = 2 * daysInYear; 
+        // FIX: Ubah durasi Trial menjadi 3 Tahun (3 * 120 = 360 Hari)
+        // Sebelumnya: 2 * daysInYear (240 Hari)
+        const trialLimit = 3 * daysInYear; 
+        
         const graduationLimit = 5 * daysInYear; 
         
         let labelText = "";
