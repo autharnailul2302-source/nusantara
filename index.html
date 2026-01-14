@@ -5124,54 +5124,60 @@ for(let i=0; i<10; i++) {
         w: ISLAND_W, h: ISLAND_H,
         tiles: villageTiles,
         buildings: [
-            { id: 'player_house', x: 19, y: 7, w: 4, h: 4, type: 'house_player', entrance: {x: 21, y: 11, map: 'house'}, open24h: true },
+            /* UPDATE: TITIK ENTRANCE DINAIKKAN (Y-1) AGAR MENEMPEL DI PINTU BANGUNAN (VISUAL LEBIH RAPI) */
+            /* Radius deteksi teleport diperbesar agar pemain bisa masuk saat menyentuh tembok */
             
-            /* UPDATE: PAPAN MISI DIGESER NAIK (Y:6) AGAR SEJAJAR BAWAHNYA DENGAN RUMAH */
+            { id: 'player_house', x: 19, y: 7, w: 4, h: 4, type: 'house_player', entrance: {x: 21, y: 10, map: 'house'}, open24h: true },
+            
+            /* UPDATE: PAPAN MISI JUGA DINAIKKAN */
             { 
                 id: 'papan_misi', 
                 x: 12, 
                 y: 6, 
                 w: 6, 
                 h: 5, 
+                /* REVERT: Kembalikan ke gambar asli Papan Desa */
                 img: 'images/papandesa.png', 
-                entrance: {x: 15, y: 11}, 
+                entrance: {x: 15, y: 10}, 
                 name: "Papan Desa",
                 open24h: true
             },
             
-            /* UPDATE: STATUE DIPINDAH AGAK KE ATAS (Y:28) - DI BAWAH WEDDING HALL */
+            /* UPDATE: STATUE */
             { 
                 id: 'statue_rank', 
                 x: 22, 
-                y: 28, /* Naik dari 30 ke 28 (Beri celah 1 tile dr pintu Wedding) */
+                y: 28, 
                 w: 6, 
                 h: 5, 
                 img: 'images/statue.png', 
-                entrance: {x: 25, y: 33}, /* Entrance disesuaikan */
+                entrance: {x: 25, y: 32}, 
                 name: "Patung Peringkat",
                 open24h: true
             },
             
-            /* UPDATE JAM KAMPUS: Buka sampai 18:00 untuk sesi sore */
-            { id: 'school', x: 38, y: 10, w: 6, h: 5, img: 'images/kampus.png', entrance: {x: 41, y: 15, map: 'school_interior'}, name: "Kampus", roleSpecific: 'student', openTime: 700, closeTime: 1800 },
-            { id: 'merchant', x: 26, y: 22, w: 6, h: 5, img: 'images/rumahmerchant.png', entrance: {x: 29, y: 27, map: 'merchant_interior'}, name: "Merchant", openTime: 600, closeTime: 2000 },
-            { id: 'mentor', x: 28, y: 15, w: 6, h: 5, img: 'images/rumahmentor.png', entrance: {x: 31, y: 20, map: 'mentor_interior'}, name: "Rumah Mentor", openTime: 800, closeTime: 2200 },
-            { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 32, map: 'blacksmith_interior'}, name: "Blacksmith", roleSpecific: 'worker', openTime: 800, closeTime: 1800 },
-            { id: 'love_house', x: 14, y: 25, w: 6, h: 5, img: 'images/rumahlove.png', entrance: {x: 17, y: 30, map: 'love_interior'}, name: "Rumah Pasangan", openTime: 900, closeTime: 2100 },
+            /* UPDATE: SEMUA BANGUNAN LAINNYA (Y Pintu dikurangi 1) */
+            { id: 'school', x: 38, y: 10, w: 6, h: 5, img: 'images/kampus.png', entrance: {x: 41, y: 14, map: 'school_interior'}, name: "Kampus", roleSpecific: 'student', openTime: 700, closeTime: 1800 },
+            { id: 'merchant', x: 26, y: 22, w: 6, h: 5, img: 'images/rumahmerchant.png', entrance: {x: 29, y: 26, map: 'merchant_interior'}, name: "Merchant", openTime: 600, closeTime: 2000 },
+            { id: 'mentor', x: 28, y: 15, w: 6, h: 5, img: 'images/rumahmentor.png', entrance: {x: 31, y: 19, map: 'mentor_interior'}, name: "Rumah Mentor", openTime: 800, closeTime: 2200 },
+            { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 31, map: 'blacksmith_interior'}, name: "Blacksmith", roleSpecific: 'worker', openTime: 800, closeTime: 1800 },
+            { id: 'love_house', x: 14, y: 25, w: 6, h: 5, img: 'images/rumahlove.png', entrance: {x: 17, y: 29, map: 'love_interior'}, name: "Rumah Pasangan", openTime: 900, closeTime: 2100 },
+            
             /* MOVED: PERPUSTAKAAN SHIFTED LEFT (Avoiding Dungeon) */
-            { id: 'library', x: 38, y: 18, w: 6, h: 5, img: 'images/perpustakaan.png', entrance: {x: 41, y: 23, map: 'library_interior'}, name: "Perpustakaan", openTime: 800, closeTime: 1700 },
+            { id: 'library', x: 38, y: 18, w: 6, h: 5, img: 'images/perpustakaan.png', entrance: {x: 41, y: 22, map: 'library_interior'}, name: "Perpustakaan", openTime: 800, closeTime: 1700 },
             
-            { id: 'dungeon_gate', x: 48, y: 15, w: 6, h: 6, img: 'images/dungeon.png', entrance: {x: 51, y: 21, map: 'dungeon'}, name: "Dungeon Entrance", open24h: true },
-            { id: 'guild', x: 42, y: 25, w: 7, h: 6, img: 'images/gedungpetualang.png', entrance: {x: 45, y: 31, map: 'guild_interior'}, name: "Gedung Petualang", open24h: true },
-            { id: 'clinic', x: 18, y: 14, w: 5, h: 5, img: 'images/balaipengobatan.png', entrance: {x: 20, y: 19, map: 'clinic_interior'}, name: "Balai Pengobatan", open24h: true },
-            /* UPDATE: WEDDING HALL DIPINDAH KE DEPAN/SAMPING MERCHANT AGAR RAPI */
-            { id: 'wedding', x: 20, y: 22, w: 6, h: 5, img: 'images/balaipernikahan.png', entrance: {x: 23, y: 27, map: 'wedding_interior'}, name: "Balai Pernikahan", roleSpecific: 'family', openTime: 800, closeTime: 1600 },
+            { id: 'dungeon_gate', x: 48, y: 15, w: 6, h: 6, img: 'images/dungeon.png', entrance: {x: 51, y: 20, map: 'dungeon'}, name: "Dungeon Entrance", open24h: true },
+            { id: 'guild', x: 42, y: 25, w: 7, h: 6, img: 'images/gedungpetualang.png', entrance: {x: 45, y: 30, map: 'guild_interior'}, name: "Gedung Petualang", open24h: true },
+            { id: 'clinic', x: 18, y: 14, w: 5, h: 5, img: 'images/balaipengobatan.png', entrance: {x: 20, y: 18, map: 'clinic_interior'}, name: "Balai Pengobatan", open24h: true },
             
-            /* UPDATE: POSISI DERMAGA DIGESER KE Y:34 AGAR MENEMPEL DENGAN PULAU (Bibir Pantai di Y:34) */
+            /* UPDATE: WEDDING HALL */
+            { id: 'wedding', x: 20, y: 22, w: 6, h: 5, img: 'images/balaipernikahan.png', entrance: {x: 23, y: 26, map: 'wedding_interior'}, name: "Balai Pernikahan", roleSpecific: 'family', openTime: 800, closeTime: 1600 },
+            
+            /* UPDATE: PELABUHAN TIDAK DIUBAH KARENA PLAYER BISA JALAN DI ATASNYA */
             { id: 'port', x: 43, y: 34, w: 7, h: 5, img: 'images/pelabuhan.png', entrance: {x: 46, y: 37, map: 'fishing_action'}, name: "Dermaga Mancing", open24h: true },
             
             /* DIHAPUS: Rumah Tetangga Kiri (Villager 1 & 3) */
-            { id: 'villager2', x: 26, y: 7, w: 4, h: 4, img: 'images/rumahwarga.png', entrance: {x: 28, y: 11, map: 'villager2'}, name: "Rumah Tetangga 2", openTime: 2500, closeTime: 0 }
+            { id: 'villager2', x: 26, y: 7, w: 4, h: 4, img: 'images/rumahwarga.png', entrance: {x: 28, y: 10, map: 'villager2'}, name: "Rumah Tetangga 2", openTime: 2500, closeTime: 0 }
         ],
         npcs: [
             /* UPDATE: MENTOR BUDI DIHAPUS DARI LUAR RUMAH (DEFAULT HIDDEN) */
@@ -5195,13 +5201,14 @@ for(let i=0; i<10; i++) {
             {id: 'trader_outside', x: 25, y: 27, name: 'Pedagang Keliling', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day', w: 40, h: 60},
             
             /* UPDATE: KEPALA BENGKEL PINDAH KE DALAM, DIGANTI ANAKNYA DI LUAR */
-            /* UPDATE: LINA DIUBAH KEMBALI SEUKURAN PLAYER (w:40, h:60) SESUAI REQUEST */
+            /* UPDATE: Ukuran Lina disamakan dengan Player (w:40, h:60) */
             {id: 'child_blacksmith', x: 35, y: 32, name: 'Lina (Anak Besi)', imgSrc: 'images/anakblacksmith.png', type: 'static', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
             
             {id: 'lover1girl', x: 14, y: 29, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'day', w: 40, h: 60},
             /* REMOVED: Satria (Ksatria) dihapus dari luar, dipindah ke dalam Guild */
             /* UPDATE: PUTRI DIUBAH JADI 'STATIC' AGAR TIDAK FLOATING SESUAI REQUEST */
-            {id: 'lover2girl', x: 32, y: 14, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'static', schedule: 'day', w: 40, h: 60},
+            /* UPDATE TERBARU: POSISI DINAIKKAN KE Y:12 AGAR TIDAK TERTUTUP ATAP RUMAH MENTOR */
+            {id: 'lover2girl', x: 32, y: 12, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'static', schedule: 'day', w: 40, h: 60},
             
             /* MOVED: CINTA MATRE PINDAH KE INTERIOR (GUILD & PERPUS) */
 
@@ -5221,9 +5228,9 @@ for(let i=0; i<10; i++) {
 
             /* NEW: PEMANCING SORE-MALAM (Update Posisi ke Ujung Dermaga Baru) */
             /* UPDATE: DIGESER KE BAWAH (Y:38) AGAR LEBIH DI PUCUK */
-            /* UPDATE: UKURAN DIPERBESAR SEDIKIT (1.5x) JADI (w:60, h:90) SESUAI REQUEST */
+            /* UPDATE: UKURAN DIUBAH SESUAI REQUEST (50x80) */
             /* UPDATE TERBARU: POSISI DINAIKKAN SEDIKIT KE Y:36 SESUAI REQUEST */
-            {id: 'pemancing_misterius', x: 47, y: 36, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening', w: 60, h: 90},
+            {id: 'pemancing_misterius', x: 47, y: 36, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening', w: 50, h: 80},
 
             /* NEW: PUTRI DUYUNG (Pinggir Laut - Selatan Kiri Dermaga) */
             /* UPDATE: Posisi dipindah ke sebelah kiri dermaga (x:38) di air (y:36) */
@@ -5327,10 +5334,18 @@ for(let i=0; i<10; i++) {
             {id: 'kutubuku', x: 2, y: 8, name: 'Senior Kutubuku', imgSrc: 'images/kutubuku.png', type: 'static', schedule: 'day', w: 40, h: 60}
         ],
         objects: [
-            {x: 2, y: 4, type: 'bookshelf', icon: '📚', text: "Sejarah Pulau Arsa Vol.1"},
-            {x: 11, y: 4, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Monster"},
-            {x: 2, y: 7, type: 'bookshelf', icon: '📚', text: "Resep Masakan Kuno"},
-            {x: 11, y: 7, type: 'bookshelf', icon: '📚', text: "Legenda Cincin Raja"},
+            /* UPDATE: Ukuran Rak Buku Diperbesar (w:2, h:2) agar Presisi */
+            {x: 2, y: 4, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Sejarah Pulau Arsa Vol.1", img: 'images/rakbuku.png'},
+            {x: 11, y: 4, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Monster", img: 'images/rakbuku.png'},
+            {x: 2, y: 7, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Resep Masakan Kuno", img: 'images/rakbuku.png'},
+            {x: 11, y: 7, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Legenda Cincin Raja", img: 'images/rakbuku.png'},
+            
+            /* ADDED: KURSI BACA MAHASISWA DI PERPUSTAKAAN (Sesuai Request) */
+            {x: 6, y: 5, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, 
+            {x: 7, y: 5, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 6, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, 
+            {x: 7, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
     },
@@ -5376,23 +5391,24 @@ for(let i=0; i<10; i++) {
             {id: 'lover2girl', x: 11, y: 9, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'lover', schedule: 'day', w: 40, h: 60} 
         ],
         objects: [
-            // Papan Tulis Besar di Depan
-            {x: 7, y: 1, type: 'sign', icon: '📝', text: "Materi Hari Ini: \n1. Sejarah Nusantara Arsa \n2. Dasar-dasar Ekonomi \n3. Etika Berpetualang"},
+            // Papan Tulis Besar di Depan - UPDATE: Pakai images/papan.png dan diperlebar (w:2) agar proporsional
+            {x: 7, y: 1, w: 2, h: 1, type: 'sign', icon: '📝', img: 'images/papan.png', text: "Materi Hari Ini: \n1. Sejarah Nusantara Arsa \n2. Dasar-dasar Ekonomi \n3. Etika Berpetualang"},
             
             // Meja Dosen
-            {x: 8, y: 2, type: 'table', icon: '👨‍🏫'},
+            {x: 8, y: 2, type: 'table', icon: '👨‍🏫', img: 'images/mejadosen.png'},
 
-            // Barisan Meja Mahasiswa (Kiri) - UPDATE: Pakai images/kursi.png
-            {x: 3, y: 6, type: 'table', icon: '🪑', img: 'images/kursi.png'}, {x: 4, y: 6, type: 'table', icon: '🪑', img: 'images/kursi.png'},
-            {x: 3, y: 9, type: 'table', icon: '🪑', img: 'images/kursi.png'}, {x: 4, y: 9, type: 'table', icon: '🪑', img: 'images/kursi.png'},
+            // Barisan Meja Mahasiswa (Kiri) - UPDATE: Pakai images/kursimahasiswa.png
+            {x: 3, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 3, y: 9, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 9, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
 
-            // Barisan Meja Mahasiswa (Kanan) - UPDATE: Pakai images/kursi.png
-            {x: 11, y: 6, type: 'table', icon: '🪑', img: 'images/kursi.png'}, {x: 12, y: 6, type: 'table', icon: '🪑', img: 'images/kursi.png'},
-            {x: 11, y: 9, type: 'table', icon: '🪑', img: 'images/kursi.png'}, {x: 12, y: 9, type: 'table', icon: '🪑', img: 'images/kursi.png'},
+            // Barisan Meja Mahasiswa (Kanan) - UPDATE: Pakai images/kursimahasiswa.png
+            {x: 11, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 12, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 11, y: 9, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 12, y: 9, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
 
-            // Rak Buku / Referensi di belakang/samping
-            {x: 1, y: 3, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Dunia"},
-            {x: 14, y: 3, type: 'bookshelf', icon: '📚', text: "Jurnal Ilmiah"},
+            // Rak Buku / Referensi di belakang/samping (UPDATE: Ukuran 2x2)
+            {x: 1, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Dunia", img: 'images/rakbuku.png'},
+            /* UPDATE: Posisi rak kanan digeser ke x:13 agar tidak menabrak tembok saat diperlebar */
+            {x: 13, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Jurnal Ilmiah", img: 'images/rakbuku.png'},
             {x: 1, y: 10, type: 'bookshelf', icon: '🌿', text: "Pot Tanaman Hias"}, // Dekorasi
 
             {x: 8, y: 13, type: 'door_out', icon: '🚪'}
@@ -5432,8 +5448,10 @@ for(let i=0; i<10; i++) {
             {id: 'mentor', x: 7, y: 4, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'mentor', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
-            {x: 2, y: 3, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan"},
-            {x: 3, y: 3, type: 'bookshelf', icon: '🏆', text: "Piala: Guru Terbaik Se-Nusantara"},
+            /* UPDATE: Rak Buku Diperbesar (2x2) & Posisi disesuaikan agar tidak tumpang tindih */
+            {x: 1, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan", img: 'images/rakbuku.png'},
+            /* UPDATE: Piala digeser sedikit ke kanan */
+            {x: 4, y: 3, type: 'bookshelf', icon: '🏆', text: "Piala: Guru Terbaik Se-Nusantara"},
             {x: 11, y: 3, type: 'shelf', icon: '🏺', text: "Vas Bunga Antik dari Murid"},
             
             {x: 7, y: 3, type: 'table', icon: '🪑'}, // Meja Kerja Mentor
@@ -7841,9 +7859,9 @@ function checkAutoTeleport() {
             // Jarak deteksi otomatis
             const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
             
-            // UPDATE: Jarak deteksi diperbesar dari 20px ke 30px (Setara 1 Tile)
-            // Ini memperbaiki bug susah keluar pintu (terutama Guild) jika pemain tidak persis di tengah
-            if(dist < 30) {
+            // UPDATE: Jarak deteksi diperbesar dari 30px ke 50px (Hampir 2 Tile)
+            // Ini agar pemain bisa trigger masuk meski tertahan tembok/pintu
+            if(dist < 50) {
                 // Daftar bangunan/trigger yang bisa auto-teleport
                 const autoTeleporters = [
                     'player_house', 'house_exit', 
@@ -8306,24 +8324,37 @@ function checkNPCCollision(x, y) {
     for (let npc of map.npcs) {
         if (!isNPCActive(npc)) continue;
 
-        // --- UPDATE: HITBOX NPC DISESUAIKAN KE KAKI/BADAN ---
-        // Sebelumnya: npc.y * TILE_SIZE + 15 (Tengah Grid/Kepala)
-        // Sekarang: Diturunkan (+30) agar sejajar dengan visual badan/kaki NPC (h=60)
-        // Ini membuat player bisa "bersentuhan" dengan badan NPC, bukan nembus kakinya.
+        // --- FIX: HITBOX DINAMIS MENGIKUTI TINGGI NPC (KAKI SOLID) ---
+        // Masalah sebelumnya: Hitbox fix di tengah, sehingga kaki NPC tinggi bisa ditembus.
+        // Solusi: Hitbox dikunci ke area KAKI (Visual Height - Offset).
         
-        const npcCenterX = (npc.x * TILE_SIZE) + 15;
-        // Offset Y ditambah agar hitbox turun ke badan/kaki
-        const npcCenterY = (npc.y * TILE_SIZE) + 35; 
+        const npcW = npc.w || 40;
+        const npcH = npc.h || 60; // Default height standar NPC
 
-        // Player Center (x+10, y+15) - Sedikit diturunkan juga
-        const playerCenterX = x + 10;
-        const playerCenterY = y + 15;
+        // Pusat X Hitbox = Pusat Sprite secara Horizontal
+        // (npc.x * TILE_SIZE) adalah pojok kiri grid
+        const npcCenterX = (npc.x * TILE_SIZE) + (npcW / 2); // Sesuaikan dengan lebar visual
+        
+        // Pusat Y Hitbox = KAKI Sprite (Y + H) dikurangi sedikit (sekitar 10-15px dari bawah)
+        // Ini memastikan area kepala (atas) kosong bisa dilewati, tapi kaki (bawah) padat.
+        const npcCenterY = (npc.y * TILE_SIZE) + npcH - 10; 
+
+        // Player Center (Estimasi titik tengah kaki pemain)
+        const playerCenterX = x + 10; // Player W = 20, setengahnya 10
+        const playerCenterY = y + 15; // Player H = 20, kaki di y+20, pusat kaki ~y+15
 
         const distX = Math.abs(playerCenterX - npcCenterX);
         const distY = Math.abs(playerCenterY - npcCenterY);
         
-        // Jarak tabrakan diperkecil sedikit agar terasa 'menyentuh' (skin to skin)
-        if (distX < 18 && distY < 15) {
+        // RADIUS COLLISION:
+        // X: Setengah lebar NPC dikurangi sedikit toleransi (biar tidak terlalu lebar/gemuk)
+        const hitRadX = (npcW / 2) - 5; 
+        
+        // Y: Radius vertikal kecil (12px)
+        // Agar tabrakan hanya terjadi jika kaki pemain sejajar dengan kaki NPC
+        const hitRadY = 12; 
+
+        if (distX < hitRadX && distY < hitRadY) {
             return npc;
         }
     }
@@ -8428,7 +8459,8 @@ function checkEntranceProximity() {
             
             const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
             
-            if(dist < 50) return b;
+            // UPDATE: Jarak interaksi tombol aksi juga diperbesar jadi 60px
+            if(dist < 60) return b;
         }
     }
     return null;
@@ -11921,11 +11953,29 @@ function drawObject(ctx, o) {
             // --- FIX: ADD ERROR HANDLER & FALLBACK FOR OBJECT IMAGES ---
             o.loadedImg.onerror = function() {
                 this.onerror = null;
-                // Fallback khusus untuk kotak surat (Mailbox Merah) jika gambar tidak ditemukan
+                const src = o.img || "";
+
+                // Fallback khusus untuk kotak surat (Mailbox Merah)
                 if (o.type === 'mailbox') {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTE0IDMyIEwxNCAxNSBMOSAxNSBMOSAxMCBMMjMgMTAgTDIzIDE1IEwxOCAxNSBMMTggMzIgWiIgZmlsbD0iIzU5MzgxMSIvPjxwYXRoIGQ9Ik02IDUgTDI2IDUgTDI2IDEyIEMyNiAxNCA2IDE0IDYgMTIgWiIgZmlsbD0iI0RDMjYyNiIvPjxyZWN0IHg9IjgiIHk9IjciIHdpZHRoPSIxNiIgaGVpZ2h0PSIyIiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=';
                 } 
-                // Fallback umum (Box Kayu)
+                // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni)
+                else if (src.includes('rakbuku')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOEU1NDJiIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZWY0NDQ0Ii8+PHJlY3QgeD0iMTAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjM2I4MmY2Ii8+PHJlY3QgeD0iMTUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjMTBiOTgxIi8+PHJlY3QgeD0iMjAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZTkxZTYzIi8+PC9zdmc+';
+                }
+                // Fallback: PAPAN TULIS (Hijau/Hitam dengan Bingkai)
+                else if (src.includes('papan')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjI4IiBmaWxsPSIjMDY0ZTNGIiBzdHJva2U9IiM4YTUwMjUiIHN0cm9rZS13aWR0aD0iNCIvPjx0ZXh0IHg9IjMyIiB5PSIyMCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjEyMzwvdGV4dD48L3N2Zz4=';
+                }
+                // Fallback: KURSI (Bentuk Kursi Kayu)
+                else if (src.includes('kursi')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTEwIDIwIEwxMCAxMCBMMjIgMTAgTDIyIDIwIEwyMiAyOCBMMjAgMjggTDIwIDIyIEwxMiAyMiBMMTIgMjggTDEwIDI4IFoiIGZpbGw9IiM4YTUwMjUiIHN0cm9rZT0iIzU5MzUxMSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+';
+                }
+                // Fallback: MEJA DOSEN (Meja Guru)
+                else if (src.includes('mejadosen')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzVENDAzNyIgc3Ryb2tlPSIjM2UyNzIzIiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjxyZWN0IHg9IjI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjwvc3ZnPg==';
+                }
+                // Fallback Umum (Box Kayu)
                 else {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOEU1NDJiIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxsaW5lIHgxPSIyIiB5MT0iMiIgeDI9IjMwIiB5Mj0iMzAiIHN0cm9rZT0iIzVENDAzNyIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjMwIiB5MT0iMiIgeDI9IjIiIHkyPSIzMCIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=';
                 }
@@ -12374,29 +12424,36 @@ function drawNPC(ctx, n) {
         ctx.save();
         
         // UPDATE: Logika Animasi (Static vs Moving)
-        // Jika Tipe Static, Service, atau Mentor -> HANYA BERNAFAS (Scaling), JANGAN FLOATING
-        if (n.type === 'static' || n.type === 'service' || n.type === 'mentor') {
-            // Efek Bernapas: Scale Y berubah sedikit (1.0 hingga 1.02)
+        // Semua NPC Darat (Static, Wander, Animal) sekarang menggunakan efek BERNAFAS yang sama
+        if (n.type !== 'swimmer') {
+            // Efek Bernapas: Scale Y berubah sedikit (1.0 hingga 1.02) agar terlihat hidup
             const breathe = 1 + Math.sin(Date.now() / 300) * 0.02; 
             
-            // Set Pivot ke Kaki Tengah agar tumbuh ke atas
+            // Set Pivot ke Kaki Tengah agar tumbuh ke atas (menapak tanah)
+            // Posisi Y dikurangi 5 (Offset Shadow)
             ctx.translate(x + dw/2, y + dh - 5); 
             ctx.scale(1, breathe);
             
-            // Gambar Image (Offset negatif karena pivot ada di bawah)
-            // Posisi awal y - 5, jadi relatif pivot (y + dh - 5) adalah -dh
+            // Cek Arah Gerak untuk Flip Horizontal
+            if (n.vx < 0) {
+                ctx.scale(-1, 1); // Hadap Kiri
+            }
+            
+            // Gambar Image (Offset negatif karena pivot ada di bawah tengah)
             ctx.drawImage(n.loadedImg, -dw/2, -dh, dw, dh);
         } 
         else {
-            // NPC Bergerak (Wander, Animal, dll): Tetap Floating (Naik Turun) agar terlihat berjalan/hidup
-            const bob = Math.sin(Date.now() / 300) * 2;
+            // Khusus NPC Perenang (Swimmer): Tetap mengapung (bobbing) di air
+            const animY = Math.sin(Date.now() / 300) * 2; 
+            
+            const drawY = y - 5 + animY;
             
             if (n.vx < 0) {
-                ctx.translate(x + dw, y - 5 + bob); // Pivot point adjusted ke kanan sprite
+                ctx.translate(x + dw, drawY); 
                 ctx.scale(-1, 1);
                 ctx.drawImage(n.loadedImg, 0, 0, dw, dh); 
             } else {
-                ctx.drawImage(n.loadedImg, x, y - 5 + bob, dw, dh);
+                ctx.drawImage(n.loadedImg, x, drawY, dw, dh);
             }
         }
         
