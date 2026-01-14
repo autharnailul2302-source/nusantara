@@ -2707,6 +2707,10 @@ function checkDailyCompletion() {
     // Syarat Umum (Harus beraktivitas/Energi berkurang)
     const conditionGeneral = p.energy < 100;
 
+    // UPDATE: Syarat Wajib Jurnal (Harus sudah menulis jurnal hari ini)
+    // Cek apakah ada entry jurnal dengan day == STATE.day
+    const hasJournal = p.reflections && p.reflections.some(r => r.day === STATE.day);
+
     // Jika belum pilih role, belum bisa klaim
     if(role === 'none') return false;
 
@@ -2738,7 +2742,8 @@ function checkDailyCompletion() {
         conditionRole = p.energy < 80;
     }
 
-    return conditionGeneral && conditionRole;
+    // UPDATE: Menambahkan hasJournal ke syarat total
+    return conditionGeneral && conditionRole && hasJournal;
 }
 
 // --- NEW HELPER: CHECK WEEKLY COMPLETION ---
@@ -3025,6 +3030,10 @@ function getQuestContent(tabType) {
         // Umum
         html += `<strong>[Umum]</strong><br>`;
         html += `${check(p.energy < 100)} Gunakan Energi (Aktivitas)<br>`;
+        
+        // UPDATE: Tampilkan Status Jurnal di UI Quest Harian
+        const hasJournal = p.reflections && p.reflections.some(r => r.day === day);
+        html += `${check(hasJournal)} Tulis Jurnal Refleksi (Di Rumah)<br>`;
         
         // Role Spesifik
         html += `<strong>[Role: ${role.toUpperCase()}]</strong><br>`;
@@ -5167,96 +5176,103 @@ for(let i=0; i<10; i++) {
         npcs: [
             /* UPDATE: MENTOR BUDI DIHAPUS DARI LUAR RUMAH (DEFAULT HIDDEN) */
             /* Kita taruh di koordinat -99 agar tidak terlihat, tapi objeknya ADA untuk dipanggil saat Tutorial */
-            {id: 'mentor', x: -99, y: -99, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'static', schedule: 'always'},
+            {id: 'mentor', x: -99, y: -99, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'static', schedule: 'always', w: 40, h: 60},
 
             /* UPDATE: DOSEN DIHAPUS DARI LUAR, DIGANTI SARJANA TEKNOLOGI */
-            {id: 'sarjana_tekno', x: 43, y: 16, name: 'Senior Teknologi', imgSrc: 'images/sarjanateknologi.png', type: 'service', schedule: 'day'}, 
+            {id: 'sarjana_tekno', x: 43, y: 16, name: 'Senior Teknologi', imgSrc: 'images/sarjanateknologi.png', type: 'service', schedule: 'day', w: 40, h: 60}, 
             
             /* NEW: SARJANA SEJARAH (DI RERUNTUHAN KIRI) */
-            {id: 'sarjana_sejarah', x: 9, y: 12, name: 'Ahli Sejarah', imgSrc: 'images/sarjanasejarah.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
+            {id: 'sarjana_sejarah', x: 9, y: 12, name: 'Ahli Sejarah', imgSrc: 'images/sarjanasejarah.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
 
             /* NEW: SATPAM KAMPUS (Penjaga Gerbang) */
             /* UPDATE: POSISI DIGESER KE KIRI (38, 16) AGAR TIDAK MENGHALANGI JALAN */
             /* UPDATE: JADWAL JADI 'ALWAYS' (24 JAM) AGAR BISA NGOBROL MALAM */
-            {id: 'satpam', x: 38, y: 16, name: 'Satpam', imgSrc: 'images/satpam.png', type: 'static', schedule: 'always'},
+            {id: 'satpam', x: 38, y: 16, name: 'Satpam', imgSrc: 'images/satpam.png', type: 'static', schedule: 'always', w: 40, h: 60},
 
             /* REMOVED: job/mercenary npc */
             /* MOVED: Trader menggantikan posisi job (x:25, y:27) */
-            {id: 'merchant', x: 25, y: 27, name: 'Trader', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day'},
+            /* UPDATE: GANTI NAMA JADI 'PEDAGANG KELILING' AGAR TIDAK TERTUKAR DENGAN MERCHANT DI DALAM */
+            {id: 'trader_outside', x: 25, y: 27, name: 'Pedagang Keliling', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day', w: 40, h: 60},
             
             /* UPDATE: KEPALA BENGKEL PINDAH KE DALAM, DIGANTI ANAKNYA DI LUAR */
-            /* PERBAIKAN: Ubah type jadi 'static' agar diam di depan bangunan sesuai permintaan */
-            {id: 'child_blacksmith', x: 35, y: 32, name: 'Lina (Anak Besi)', imgSrc: 'images/anakblacksmith.png', type: 'static', vx:0, vy:0, schedule: 'day'},
+            /* UPDATE: LINA DIUBAH KEMBALI SEUKURAN PLAYER (w:40, h:60) SESUAI REQUEST */
+            {id: 'child_blacksmith', x: 35, y: 32, name: 'Lina (Anak Besi)', imgSrc: 'images/anakblacksmith.png', type: 'static', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
             
-            {id: 'lover1girl', x: 14, y: 29, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'day'},
-            {id: 'lover2boy', x: 41, y: 30, name: 'Satria (Ksatria)', imgSrc: 'images/lover2boy.png', type: 'lover', schedule: 'always'}, 
-            {id: 'lover2girl', x: 32, y: 14, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'lover', schedule: 'day'},
+            {id: 'lover1girl', x: 14, y: 29, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'day', w: 40, h: 60},
+            /* REMOVED: Satria (Ksatria) dihapus dari luar, dipindah ke dalam Guild */
+            /* UPDATE: PUTRI DIUBAH JADI 'STATIC' AGAR TIDAK FLOATING SESUAI REQUEST */
+            {id: 'lover2girl', x: 32, y: 14, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'static', schedule: 'day', w: 40, h: 60},
             
             /* MOVED: CINTA MATRE PINDAH KE INTERIOR (GUILD & PERPUS) */
 
             /* DIHAPUS: Tetangga A (Peer 1) yang tinggal di rumah kiri */
-            {id: 'peer2', x: 28, y: 11, name: 'Tetangga B', imgSrc: 'images/peer2.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
-            {id: 'peer3', x: 35, y: 30, name: 'Petani', imgSrc: 'images/peer3.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
+            {id: 'peer2', x: 28, y: 11, name: 'Tetangga B', imgSrc: 'images/peer2.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
+            {id: 'peer3', x: 35, y: 30, name: 'Petani', imgSrc: 'images/peer3.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
             
             /* UPDATE: POSISI NPC DI DERMAGA MENGIKUTI PERUBAHAN BANGUNAN */
-            {id: 'nelayan', x: 44, y: 36, name: 'Pak Nelayan', imgSrc: 'images/nelayan.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
-            {id: 'istrinelayan', x: 43, y: 35, name: 'Bu Nelayan', imgSrc: 'images/istrinelayan.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
+            {id: 'nelayan', x: 44, y: 36, name: 'Pak Nelayan', imgSrc: 'images/nelayan.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
+            {id: 'istrinelayan', x: 43, y: 35, name: 'Bu Nelayan', imgSrc: 'images/istrinelayan.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
             
             /* NEW: NPC KERUKUNAN (Dipindah ke Area Lapang Kiri & Jadwal DAY) */
             /* UPDATE: Tipe diubah jadi 'static' agar diam di tempat & Posisi didekatkan (x:10 & x:11) */
             /* UPDATE: DIGESER SEDIKIT KE BAWAH (Y:19) KARENA PAPAN TURUN KE Y:7 */
-            {id: 'cewek_islam', x: 10, y: 19, name: 'Aisyah', imgSrc: 'images/cewek-islam.png', type: 'static', vx:0, vy:0, schedule: 'day'},
-            {id: 'cewek_kristen', x: 11, y: 19, name: 'Maria', imgSrc: 'images/cewek-kristen.png', type: 'static', vx:0, vy:0, schedule: 'day'},
+            {id: 'cewek_islam', x: 10, y: 19, name: 'Aisyah', imgSrc: 'images/cewek-islam.png', type: 'static', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
+            {id: 'cewek_kristen', x: 11, y: 19, name: 'Maria', imgSrc: 'images/cewek-kristen.png', type: 'static', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
 
             /* NEW: PEMANCING SORE-MALAM (Update Posisi ke Ujung Dermaga Baru) */
             /* UPDATE: DIGESER KE BAWAH (Y:38) AGAR LEBIH DI PUCUK */
-            {id: 'pemancing_misterius', x: 47, y: 38, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening'},
+            /* UPDATE: UKURAN DIPERBESAR SEDIKIT (1.5x) JADI (w:60, h:90) SESUAI REQUEST */
+            /* UPDATE TERBARU: POSISI DINAIKKAN SEDIKIT KE Y:36 SESUAI REQUEST */
+            {id: 'pemancing_misterius', x: 47, y: 36, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening', w: 60, h: 90},
 
             /* NEW: PUTRI DUYUNG (Pinggir Laut - Selatan Kiri Dermaga) */
             /* UPDATE: Posisi dipindah ke sebelah kiri dermaga (x:38) di air (y:36) */
-            {id: 'putriduyung', x: 38, y: 36, name: 'Putri Duyung', imgSrc: 'images/putriduyung.png', type: 'service', schedule: 'night'},
+            {id: 'putriduyung', x: 38, y: 36, name: 'Putri Duyung', imgSrc: 'images/putriduyung.png', type: 'service', schedule: 'night', w: 40, h: 60},
 
             /* UPDATE: SENIMAN (Dipindah ke bawah Papan Misi - Area Santai) */
-            {id: 'seniman', x: 12, y: 14, name: 'Seniman', imgSrc: 'images/seniman.png', type: 'static', schedule: 'day'},
+            {id: 'seniman', x: 12, y: 14, name: 'Seniman', imgSrc: 'images/seniman.png', type: 'static', schedule: 'day', w: 40, h: 60},
             
             /* UPDATE: PENYANYI (Dipindah ke sebelah Seniman di bawah Papan) */
-            {id: 'penyanyi', x: 13, y: 14, name: 'Penyanyi', imgSrc: 'images/penyanyi.png', type: 'static', schedule: 'day'},
+            {id: 'penyanyi', x: 13, y: 14, name: 'Penyanyi', imgSrc: 'images/penyanyi.png', type: 'static', schedule: 'day', w: 40, h: 60},
 
             /* NEW: PERENANG DI LAUT (Swimmers) */
-            {id: 'swimmer_boy', x: 3, y: 20, name: 'Perenang Santai', imgSrc: 'images/pantai-boy.png', type: 'swimmer', vx: 0.5, vy: 0.5, schedule: 'day'},
-            {id: 'swimmer_girl', x: 50, y: 36, name: 'Perenang Ceria', imgSrc: 'images/pantai-girl.png', type: 'swimmer', vx: -0.5, vy: 0, schedule: 'day'},
+            {id: 'swimmer_boy', x: 3, y: 20, name: 'Perenang Santai', imgSrc: 'images/pantai-boy.png', type: 'swimmer', vx: 0.5, vy: 0.5, schedule: 'day', w: 40, h: 60},
+            {id: 'swimmer_girl', x: 50, y: 36, name: 'Perenang Ceria', imgSrc: 'images/pantai-girl.png', type: 'swimmer', vx: -0.5, vy: 0, schedule: 'day', w: 40, h: 60},
 
             /* NEW: NPC ANAK-ANAK (BERMAIN DI DEKAT KAMPUS) */
             /* Menggunakan aset boy/girl biasa tapi nanti dirender lebih kecil */
-            {id: 'child_boy_1', x: 36, y: 12, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
-            {id: 'child_girl_1', x: 37, y: 13, name: 'Gadis Kecil', imgSrc: 'images/anakkecil2.png', type: 'wander', vx:0, vy:0, schedule: 'day'},
+            {id: 'child_boy_1', x: 36, y: 12, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
+            {id: 'child_girl_1', x: 37, y: 13, name: 'Gadis Kecil', imgSrc: 'images/anakkecil2.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
 
             /* --- RIVAL CINTA (GENDER SPECIFIC & MOVING) --- */
             
             /* RIVAL COWOK (Muncul jika Player Laki-laki) - Nama: Doni */
-            /* Pagi-Siang: Nongkrong depan Ayu (x:14, y:29) -> Posisi Rival (15, 30) */
-            {id: 'fake_boy', x: 15, y: 30, name: 'Doni (Rival)', imgSrc: 'images/rival_boy.png', type: 'wander', schedule: 'morning', genderReq: 'boy'},
-            /* Siang-Malam: Nongkrong depan Putri (x:32, y:14) -> Posisi Rival (31, 15) */
-            {id: 'fake_boy', x: 31, y: 15, name: 'Doni (Rival)', imgSrc: 'images/rival_boy.png', type: 'wander', schedule: 'afternoon', genderReq: 'boy'},
+            /* UPDATE: RIVAL DIPERBESAR (w:40, h:60) setara Player */
+            {id: 'fake_boy', x: 15, y: 30, name: 'Doni (Rival)', imgSrc: 'images/rival_boy.png', type: 'wander', schedule: 'morning', genderReq: 'boy', w: 40, h: 60},
+            {id: 'fake_boy', x: 31, y: 15, name: 'Doni (Rival)', imgSrc: 'images/rival_boy.png', type: 'wander', schedule: 'afternoon', genderReq: 'boy', w: 40, h: 60},
 
             /* RIVAL CEWEK (Muncul jika Player Perempuan) - Nama: Bella */
-            /* Pagi-Siang: Nongkrong depan Klinik/Dr.Budi (x:18, y:14) -> Posisi Rival (19, 16) */
-            {id: 'fake_girl', x: 19, y: 16, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'morning', genderReq: 'girl'},
-            /* Siang-Malam: Nongkrong depan Satria (x:41, y:30) -> Posisi Rival (40, 31) */
-            {id: 'fake_girl', x: 40, y: 31, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'afternoon', genderReq: 'girl'},
+            /* UPDATE: RIVAL DIPERBESAR (w:40, h:60) setara Player */
+            {id: 'fake_girl', x: 19, y: 16, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'morning', genderReq: 'girl', w: 40, h: 60},
+            {id: 'fake_girl', x: 40, y: 31, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'afternoon', genderReq: 'girl', w: 40, h: 60},
 
             /* NEW: MONSTER PENCURI SKRIPSI (Hanya muncul saat Quest Aktif) */
             /* Lokasi: Reruntuhan Hutan Barat (Kiri Peta) */
-            {id: 'monster_skripsi', x: 8, y: 10, name: 'Pencuri Naskah', imgSrc: 'images/monster-thief.png', type: 'static', schedule: 'always', questReq: 'find_draft'},
+            {id: 'monster_skripsi', x: 8, y: 10, name: 'Pencuri Naskah', imgSrc: 'images/monster-thief.png', type: 'static', schedule: 'always', questReq: 'find_draft', w: 45, h: 45},
 
             /* MOVED: Penjaga Dungeon dipindah agak ke depan (y:21) agar sejajar entrance */
-            {id: 'penjagadungeon', x: 46, y: 21, name: 'Penjaga', imgSrc: 'images/penjagadungeon.png', type: 'service', schedule: 'always'}, 
-            {id: 'ayam1', x: 15, y: 15, name: 'Ayam', imgSrc: 'images/ayam.png', type: 'animal', sound: 'ayam', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day'},
-            {id: 'ayam2', x: 20, y: 18, name: 'Ayam', imgSrc: 'images/ayam.png', type: 'animal', sound: 'ayam', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day'},
-            {id: 'kambing1', x: 8, y: 20, name: 'Kambing', imgSrc: 'images/kambing.png', type: 'animal', sound: 'kambing', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day'},
-            {id: 'kambing2', x: 10, y: 22, name: 'Kambing', imgSrc: 'images/kambing.png', type: 'animal', sound: 'kambing', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day'},
-            {id: 'sapi1', x: 45, y: 30, name: 'Sapi', imgSrc: 'images/sapi.png', type: 'animal', sound: 'sapi', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day'},
-            {id: 'kuda1', x: 40, y: 15, name: 'Kuda', imgSrc: 'images/kuda.png', type: 'animal', sound: 'kuda', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day'}
+            {id: 'penjagadungeon', x: 46, y: 21, name: 'Penjaga', imgSrc: 'images/penjagadungeon.png', type: 'service', schedule: 'always', w: 40, h: 60}, 
+            
+            /* UPDATE: AYAM DIKECILKAN (20x20) */
+            {id: 'ayam1', x: 15, y: 15, name: 'Ayam', imgSrc: 'images/ayam.png', type: 'animal', sound: 'ayam', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day', w: 20, h: 20},
+            {id: 'ayam2', x: 20, y: 18, name: 'Ayam', imgSrc: 'images/ayam.png', type: 'animal', sound: 'ayam', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day', w: 20, h: 20},
+            
+            {id: 'kambing1', x: 8, y: 20, name: 'Kambing', imgSrc: 'images/kambing.png', type: 'animal', sound: 'kambing', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day', w: 32, h: 32},
+            {id: 'kambing2', x: 10, y: 22, name: 'Kambing', imgSrc: 'images/kambing.png', type: 'animal', sound: 'kambing', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day', w: 32, h: 32},
+            
+            /* UPDATE: SAPI & KUDA DIPERBESAR (50x40) */
+            {id: 'sapi1', x: 45, y: 30, name: 'Sapi', imgSrc: 'images/sapi.png', type: 'animal', sound: 'sapi', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day', w: 50, h: 40},
+            {id: 'kuda1', x: 40, y: 15, name: 'Kuda', imgSrc: 'images/kuda.png', type: 'animal', sound: 'kuda', vx:0, vy:0, cooldown: 0, loveTimer: 0, schedule: 'day', w: 50, h: 40}
         ],
         objects: [
             /* UPDATE: Papan Misi & Statue dipindah ke buildings */
@@ -5281,7 +5297,9 @@ for(let i=0; i<10; i++) {
             { id: 'shop_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Toko" }
         ],
         npcs: [
-            {id: 'boss_merchant', x: 7, y: 3, name: 'Bos Toko', imgSrc: 'images/merchant.png', type: 'service', schedule: 'always'}
+            /* UPDATE: NAMA DIUBAH JADI 'MERCHANT' (SESUAI REQUEST) */
+            /* UPDATE: GAMBAR DIGANTI KE job.png UNTUK BOSS TOKO */
+            {id: 'boss_merchant', x: 7, y: 3, name: 'Merchant', imgSrc: 'images/job.png', type: 'service', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
             {x: 7, y: 2, type: 'counter', icon: '🪙'},
@@ -5299,14 +5317,14 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             /* UPDATE: Gambar Pustakawan diubah menjadi 'images/penjagaperpus.png' */
-            {id: 'librarian', x: 7, y: 3, name: 'Pustakawan', imgSrc: 'images/penjagaperpus.png', type: 'service', schedule: 'always'},
+            {id: 'librarian', x: 7, y: 3, name: 'Pustakawan', imgSrc: 'images/penjagaperpus.png', type: 'service', schedule: 'always', w: 40, h: 60},
             
             /* ADDED: NPC CINTA MATRE (Hanya muncul di Perpus sesuai gender pemain) */
             /* Siska (cewek matre) muncul jika pemain Cowok - DI PERPUSTAKAAN */
-            {id: 'lover_matre_girl', x: 11, y: 8, name: 'Siska (Sosialita)', imgSrc: 'images/lover_matre_girl.png', type: 'wander', schedule: 'day', genderReq: 'boy'},
+            {id: 'lover_matre_girl', x: 11, y: 8, name: 'Siska (Sosialita)', imgSrc: 'images/lover_matre_girl.png', type: 'wander', schedule: 'day', genderReq: 'boy', w: 40, h: 60},
             
             /* NEW: NPC KUTUBUKU (Pemberi Quest Skripsi Tahun ke-3) */
-            {id: 'kutubuku', x: 2, y: 8, name: 'Senior Kutubuku', imgSrc: 'images/kutubuku.png', type: 'static', schedule: 'day'}
+            {id: 'kutubuku', x: 2, y: 8, name: 'Senior Kutubuku', imgSrc: 'images/kutubuku.png', type: 'static', schedule: 'day', w: 40, h: 60}
         ],
         objects: [
             {x: 2, y: 4, type: 'bookshelf', icon: '📚', text: "Sejarah Pulau Arsa Vol.1"},
@@ -5325,11 +5343,13 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             /* UPDATE: GAMBAR GUILD MASTER DIUBAH KE masterguild.png */
-            {id: 'guild_master', x: 8, y: 3, name: 'Guild Master', imgSrc: 'images/masterguild.png', type: 'service', schedule: 'always'},
-            {id: 'adventurer_npc', x: 4, y: 8, name: 'Petualang Veteran', imgSrc: 'images/lover2boy.png', type: 'wander', schedule: 'always'},
+            {id: 'guild_master', x: 8, y: 3, name: 'Guild Master', imgSrc: 'images/masterguild.png', type: 'service', schedule: 'always', w: 40, h: 60},
+            
+            /* UPDATE: SATRIA (KSATRIA) DIPINDAH KE DALAM SINI (Menggantikan Petualang Veteran) */
+            {id: 'lover2boy', x: 4, y: 8, name: 'Satria (Ksatria)', imgSrc: 'images/lover2boy.png', type: 'lover', schedule: 'always', w: 40, h: 60},
             
             /* ADDED: Rendi (Cowok Matre) muncul jika pemain Cewek - DI GUILD */
-            {id: 'lover_matre_boy', x: 12, y: 8, name: 'Rendi (Anak Sultan)', imgSrc: 'images/lover_matre_boy.png', type: 'wander', schedule: 'day', genderReq: 'girl'}
+            {id: 'lover_matre_boy', x: 12, y: 8, name: 'Rendi (Anak Sultan)', imgSrc: 'images/lover_matre_boy.png', type: 'wander', schedule: 'day', genderReq: 'girl', w: 40, h: 60}
         ],
         objects: [
             {x: 8, y: 2, type: 'table', icon: '🛡️'},
@@ -5346,14 +5366,14 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             // Dosen di depan kelas
-            {id: 'lecture', x: 8, y: 3, name: 'Dosen Pembimbing', imgSrc: 'images/lecture.png', type: 'service', schedule: 'day'},
+            {id: 'lecture', x: 8, y: 3, name: 'Dosen Pembimbing', imgSrc: 'images/lecture.png', type: 'service', schedule: 'day', w: 40, h: 60},
             
             // Mahasiswa yang sedang belajar
-            {id: 'student1', x: 3, y: 7, name: 'Mahasiswa Rajin', imgSrc: 'images/mahasiswakiri.png', type: 'wander', schedule: 'day'},
-            {id: 'student2', x: 12, y: 7, name: 'Mahasiswa Santai', imgSrc: 'images/mahasiswakanan.png', type: 'wander', schedule: 'day'},
+            {id: 'student1', x: 3, y: 7, name: 'Mahasiswa Rajin', imgSrc: 'images/mahasiswakiri.png', type: 'wander', schedule: 'day', w: 40, h: 60},
+            {id: 'student2', x: 12, y: 7, name: 'Mahasiswa Santai', imgSrc: 'images/mahasiswakanan.png', type: 'wander', schedule: 'day', w: 40, h: 60},
             
             // Teman Love Interest (Putri - Scholar) sering di kampus
-            {id: 'lover2girl', x: 11, y: 9, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'lover', schedule: 'day'} 
+            {id: 'lover2girl', x: 11, y: 9, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'lover', schedule: 'day', w: 40, h: 60} 
         ],
         objects: [
             // Papan Tulis Besar di Depan
@@ -5386,7 +5406,7 @@ for(let i=0; i<10; i++) {
             { id: 'smith_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Bengkel" }
         ],
         npcs: [
-            {id: 'blacksmith', x: 7, y: 4, name: 'Kepala Bengkel', imgSrc: 'images/blacksmith.png', type: 'service', schedule: 'always'}
+            {id: 'blacksmith', x: 7, y: 4, name: 'Kepala Bengkel', imgSrc: 'images/blacksmith.png', type: 'service', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
             {x: 2, y: 3, type: 'sign', icon: '🔥', text: "Tungku Peleburan (Panas!)"}, // Furnace
@@ -5409,7 +5429,7 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             // Gunakan ID 'mentor' agar relationship & dialog sama dengan yang di luar
-            {id: 'mentor', x: 7, y: 4, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'mentor', schedule: 'always'}
+            {id: 'mentor', x: 7, y: 4, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'mentor', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
             {x: 2, y: 3, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan"},
@@ -7521,6 +7541,7 @@ function update() {
     const wallX = checkWall(nextX, STATE.player.y);
     const wallY = checkWall(STATE.player.x, nextY);
     
+    // --- UPDATE: Collision Logic diperbaiki di dalam fungsi checkNPCCollision ---
     const npcX = checkNPCCollision(nextX, STATE.player.y);
     const npcY = checkNPCCollision(STATE.player.x, nextY);
 
@@ -7643,61 +7664,82 @@ function update() {
                 let nx = (npc.x * TILE_SIZE) + (npc.vx || 0);
                 let ny = (npc.y * TILE_SIZE) + (npc.vy || 0);
                 
-                if(nx > 0 && nx < curMap.w*TILE_SIZE && ny > 0 && ny < curMap.h*TILE_SIZE) {
+                // --- FIX: Logic Pengecekan Batas Map & Collision NPC ---
+                
+                if (npc.type === 'swimmer') {
+                    // LOGIKA PERENANG: Hanya boleh di Tile 0 (Air)
+                    // Cek titik tengah kaki
+                    const tX = Math.floor((nx + 15) / TILE_SIZE);
+                    const tY = Math.floor((ny + 30) / TILE_SIZE); 
                     
-                    if (npc.type === 'swimmer') {
-                        // LOGIKA PERENANG: Hanya boleh di Tile 0 (Air)
-                        const tX = Math.floor((nx + 15) / TILE_SIZE);
-                        const tY = Math.floor((ny + 30) / TILE_SIZE); // Cek kaki
+                    let canSwim = false;
+                    
+                    // Pastikan di dalam map
+                    if(tX >= 0 && tX < curMap.w && tY >= 0 && tY < curMap.h) {
                         const tIdx = tY * curMap.w + tX;
                         const tile = curMap.tiles[tIdx];
                         
-                        // Jika air (0) atau di bawah dermaga (area dermaga juga air sebenernya tapi kita bolehin)
-                        if (tile === 0) {
-                            npc.x = nx / TILE_SIZE;
-                            npc.y = ny / TILE_SIZE;
-                        } else {
-                            // Nabrak darat, putar balik
-                            npc.vx *= -1;
-                            npc.vy *= -1;
-                        }
-                    } else {
-                        // LOGIKA NPC DARAT (Wander & ANIMAL): JANGAN LEWAT LAUT
-                        // Berlaku untuk manusia biasa DAN hewan ternak
-                        const tX = Math.floor((nx + 15) / TILE_SIZE); // Titik tengah X
-                        const tY = Math.floor((ny + 30) / TILE_SIZE); // Titik kaki Y (Penting agar tidak nyemplung)
-                        const tIdx = tY * curMap.w + tX;
-                        
-                        let isWalkable = true;
+                        // Hanya boleh di air (0)
+                        if (tile === 0) canSwim = true;
+                    }
 
-                        if (tIdx >= 0 && tIdx < curMap.tiles.length) {
-                            const tile = curMap.tiles[tIdx];
-                            
-                            // 1. Cek Laut (Tile 0) -> BLOKIR HEWAN & MANUSIA DARAT
-                            if (tile === 0) {
-                                isWalkable = false;
-                                // Pengecualian: Area Dermaga Kayu (Koordinat 43,34 s/d 50,39)
-                                if (STATE.location === 'village') {
-                                    if (tX >= 43 && tX < 50 && tY >= 34 && tY < 39) {
-                                        isWalkable = true;
-                                    }
+                    if (canSwim) {
+                        npc.x = nx / TILE_SIZE;
+                        npc.y = ny / TILE_SIZE;
+                    } else {
+                        // Nabrak darat/batas map, putar balik
+                        npc.vx *= -1;
+                        npc.vy *= -1;
+                    }
+                } else {
+                    // LOGIKA NPC DARAT (Wander & ANIMAL): JANGAN LEWAT LAUT
+                    // FIX: Gunakan ukuran dinamis NPC (w/h) untuk akurasi hitbox
+                    const pW = npc.w || 32;
+                    const pH = npc.h || 48;
+                    const centerX = nx + (pW / 2);
+                    const bottomY = ny + pH - 5; // Cek tepat di kaki
+
+                    const tX = Math.floor(centerX / TILE_SIZE); 
+                    const tY = Math.floor(bottomY / TILE_SIZE);
+                    const tIdx = tY * curMap.w + tX;
+                    
+                    let isWalkable = true;
+
+                    // 1. Cek Batas Map (Penting agar tidak keluar dunia ke area hitam)
+                    if (nx < 0 || ny < 0 || nx > (curMap.w * TILE_SIZE) - pW || ny > (curMap.h * TILE_SIZE) - pH) {
+                        isWalkable = false;
+                    }
+                    // 2. Cek Tile
+                    else if (tIdx >= 0 && tIdx < curMap.tiles.length) {
+                        const tile = curMap.tiles[tIdx];
+                        
+                        // Cek Laut (Tile 0) -> BLOKIR HEWAN & MANUSIA DARAT
+                        if (tile === 0) {
+                            isWalkable = false;
+                            // Pengecualian: Area Dermaga (HANYA MANUSIA, HEWAN DILARANG)
+                            if (STATE.location === 'village' && npc.type !== 'animal') {
+                                if (tX >= 43 && tX < 50 && tY >= 34 && tY < 39) {
+                                    isWalkable = true;
                                 }
                             }
-                            
-                            // 2. Cek Tembok/Pohon (Tile 2, 11, 12) agar NPC tidak tembus tembok juga
-                            if (tile === 2 || tile === 11 || tile === 12) {
-                                isWalkable = false;
-                            }
                         }
+                        
+                        // Cek Tembok/Pohon (Tile 2, 11, 12)
+                        if (tile === 2 || tile === 11 || tile === 12) {
+                            isWalkable = false;
+                        }
+                    } else {
+                        // Index di luar array tiles
+                        isWalkable = false;
+                    }
 
-                        if (isWalkable) {
-                            npc.x = nx / TILE_SIZE;
-                            npc.y = ny / TILE_SIZE;
-                        } else {
-                            // Nabrak Laut/Tembok -> Putar Balik
-                            npc.vx *= -1;
-                            npc.vy *= -1;
-                        }
+                    if (isWalkable) {
+                        npc.x = nx / TILE_SIZE;
+                        npc.y = ny / TILE_SIZE;
+                    } else {
+                        // Nabrak Laut/Tembok -> Putar Balik
+                        npc.vx *= -1;
+                        npc.vy *= -1;
                     }
                 }
             }
@@ -8264,9 +8306,24 @@ function checkNPCCollision(x, y) {
     for (let npc of map.npcs) {
         if (!isNPCActive(npc)) continue;
 
-        const distX = Math.abs((x+10) - (npc.x * TILE_SIZE + 15));
-        const distY = Math.abs((y+10) - (npc.y * TILE_SIZE + 15));
-        if (distX < 20 && distY < 20) {
+        // --- UPDATE: HITBOX NPC DISESUAIKAN KE KAKI/BADAN ---
+        // Sebelumnya: npc.y * TILE_SIZE + 15 (Tengah Grid/Kepala)
+        // Sekarang: Diturunkan (+30) agar sejajar dengan visual badan/kaki NPC (h=60)
+        // Ini membuat player bisa "bersentuhan" dengan badan NPC, bukan nembus kakinya.
+        
+        const npcCenterX = (npc.x * TILE_SIZE) + 15;
+        // Offset Y ditambah agar hitbox turun ke badan/kaki
+        const npcCenterY = (npc.y * TILE_SIZE) + 35; 
+
+        // Player Center (x+10, y+15) - Sedikit diturunkan juga
+        const playerCenterX = x + 10;
+        const playerCenterY = y + 15;
+
+        const distX = Math.abs(playerCenterX - npcCenterX);
+        const distY = Math.abs(playerCenterY - npcCenterY);
+        
+        // Jarak tabrakan diperkecil sedikit agar terasa 'menyentuh' (skin to skin)
+        if (distX < 18 && distY < 15) {
             return npc;
         }
     }
@@ -8866,12 +8923,12 @@ function interactNPC(npc) {
         
         // Cek apakah pemain BUKAN Worker, Masih dalam Masa Trial (< Thn 4), dan Belum Bekerja
         if (p.role !== 'worker' && currentYear < 4 && !STATE.freeRoamMode && p.jobStatus !== 'employed') {
-            showDialogue("BOS TOKO", 
+            showDialogue("MERCHANT", 
                 "Selamat datang! Kami menyediakan komoditas terbaik untuk kebutuhan warga.\n\n(Maaf, lowongan kerja saat ini **KHUSUS** untuk Role **Fighter/Pekerja**. Kamu harus fokus pada kewajiban Role-mu sendiri selama masa Trial 3 Tahun ini.)", 
                 [
                     {text: "Lihat Pasar Komoditas (Jual/Beli)", action: () => openTradingMenu(npc)},
                     {text: "Ngobrol Bisnis", action: () => {
-                        showDialogue("BOS TOKO", "Harga barang di sini berfluktuasi setiap hari tergantung supply dan demand. Kalau kamu pintar, kamu bisa untung besar dari selisih harga.", [{text:"Ilmu yang bermanfaat", action:closeDialogue}], npc.imgSrc);
+                        showDialogue("MERCHANT", "Harga barang di sini berfluktuasi setiap hari tergantung supply dan demand. Kalau kamu pintar, kamu bisa untung besar dari selisih harga.", [{text:"Ilmu yang bermanfaat", action:closeDialogue}], npc.imgSrc);
                     }},
                     {text: "Tutup", action: closeDialogue}
                 ], 
@@ -8885,7 +8942,7 @@ function interactNPC(npc) {
         let mood = p.bossReputation > 70 ? "Senang" : (p.bossReputation > 30 ? "Netral" : "Marah");
         
         if(jobStatus === 'fired') {
-            showDialogue("BOS TOKO", "Kamu sudah saya pecat! Kinerjamu buruk sekali.", [
+            showDialogue("MERCHANT", "Kamu sudah saya pecat! Kinerjamu buruk sekali.", [
                 {text: "Saya mohon maaf, beri saya kesempatan! (Energy 50)", action: () => {
                     if(p.energy >= 50) {
                         p.energy -= 50;
@@ -8901,7 +8958,7 @@ function interactNPC(npc) {
         }
 
         if(jobStatus === 'unemployed') {
-            showDialogue("BOS TOKO", "Kami mencari pekerja disiplin. Shift 08:00 - 16:00.", [
+            showDialogue("MERCHANT", "Kami mencari pekerja disiplin. Shift 08:00 - 16:00.", [
                 {text: "Saya mau melamar! (Tulis Surat Lamaran)", action: () => {
                     openJobMinigame();
                 }},
@@ -8910,24 +8967,24 @@ function interactNPC(npc) {
         } else if(jobStatus === 'employed') {
             if(!p.shiftStarted) {
                 if(STATE.time >= 800 && STATE.time <= 1000) {
-                    showDialogue("BOS TOKO", "Bagus, datang tepat waktu. Mulai kerjamu!", [{text:"Siap Bos! (Mulai Shift)", action:()=>{
+                    showDialogue("MERCHANT", "Bagus, datang tepat waktu. Mulai kerjamu!", [{text:"Siap Bos! (Mulai Shift)", action:()=>{
                         p.shiftStarted = true;
                         p.bossReputation += 1;
                         showToast("Shift Dimulai 🕗");
                         closeDialogue();
                     }}], npc.imgSrc);
                 } else if (STATE.time > 1000 && STATE.time < 1600) {
-                    showDialogue("BOS TOKO", "Kamu terlambat!! Cepat kerja!", [{text:"Maaf Bos... (Mulai Shift)", action:()=>{
+                    showDialogue("MERCHANT", "Kamu terlambat!! Cepat kerja!", [{text:"Maaf Bos... (Mulai Shift)", action:()=>{
                         p.shiftStarted = true;
                         p.bossReputation -= 5;
                         showToast("Shift Dimulai (Terlambat) 🕗");
                         closeDialogue();
                     }}], npc.imgSrc);
                 } else {
-                    showDialogue("BOS TOKO", "Shift belum dimulai atau toko sudah tutup untuk karyawan.", [{text:"Baik", action:closeDialogue}], npc.imgSrc);
+                    showDialogue("MERCHANT", "Shift belum dimulai atau toko sudah tutup untuk karyawan.", [{text:"Baik", action:closeDialogue}], npc.imgSrc);
                 }
             } else {
-                showDialogue("BOS TOKO", "Kenapa malah ngobrol? Kembali kerja!", [{text:"Siap Bos", action:closeDialogue}], npc.imgSrc);
+                showDialogue("MERCHANT", "Kenapa malah ngobrol? Kembali kerja!", [{text:"Siap Bos", action:closeDialogue}], npc.imgSrc);
             }
         }
         return;
@@ -9510,6 +9567,51 @@ function interactNPC(npc) {
                 // Trigger efek hati visual
                 npc.loveTimer = 60; 
                 
+                // --- UPDATE: UBAH GAMBAR SAPI SAAT DIELUS ---
+                if(npc.id.includes('sapi')) {
+                    npc.imgSrc = 'images/sapi-elus.png';
+                    npc.loadedImg = null; // Paksa render ulang gambar baru
+                    
+                    // Kembalikan ke gambar semula setelah 3 detik
+                    setTimeout(() => {
+                        npc.imgSrc = 'images/sapi.png';
+                        npc.loadedImg = null;
+                    }, 3000);
+                }
+                // --- UPDATE: UBAH GAMBAR KAMBING SAAT DIELUS ---
+                else if(npc.id.includes('kambing')) {
+                    npc.imgSrc = 'images/kambing-elus.png';
+                    npc.loadedImg = null; 
+                    
+                    // Kembalikan ke gambar semula setelah 3 detik
+                    setTimeout(() => {
+                        npc.imgSrc = 'images/kambing.png';
+                        npc.loadedImg = null;
+                    }, 3000);
+                }
+                // --- UPDATE: UBAH GAMBAR KUDA SAAT DIELUS ---
+                else if(npc.id.includes('kuda')) {
+                    npc.imgSrc = 'images/kuda-elus.png';
+                    npc.loadedImg = null; 
+                    
+                    // Kembalikan ke gambar semula setelah 3 detik
+                    setTimeout(() => {
+                        npc.imgSrc = 'images/kuda.png';
+                        npc.loadedImg = null;
+                    }, 3000);
+                }
+                // --- UPDATE: UBAH GAMBAR AYAM SAAT DIELUS ---
+                else if(npc.id.includes('ayam')) {
+                    npc.imgSrc = 'images/ayam-elus.png';
+                    npc.loadedImg = null; 
+                    
+                    // Kembalikan ke gambar semula setelah 3 detik
+                    setTimeout(() => {
+                        npc.imgSrc = 'images/ayam.png';
+                        npc.loadedImg = null;
+                    }, 3000);
+                }
+                
                 // Mainkan suara jika audio aktif
                 if(AudioService.enabled && AudioService.tracks[npc.sound]) {
                     AudioService.tracks[npc.sound].currentTime = 0;
@@ -9517,6 +9619,17 @@ function interactNPC(npc) {
                 }
 
                 createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#ff69b4');
+                
+                // --- NEW: SPAWN LOVE BUBBLE SAAT DIELUS ---
+                STATE.particles.push({
+                    x: (npc.x * TILE_SIZE) + (npc.w ? npc.w/2 : 20), // Tengah di atas kepala
+                    y: (npc.y * TILE_SIZE) - 15,
+                    vx: 0,
+                    vy: -0.5, // Melayang naik pelan
+                    life: 60, // Durasi 1 detik
+                    type: 'love_bubble'
+                });
+
                 showToast(`Kamu mengelus ${npc.name}. Dia terlihat senang! ❤️`);
                 closeDialogue();
             }},
@@ -11410,9 +11523,18 @@ function draw() {
     map.npcs.forEach(n => {
         if (!isNPCActive(n)) return;
 
+        // --- UPDATE: Z-INDEX SORTING FIX ---
+        // Masalah: Player terlihat "menginjak" NPC saat berjalan di belakangnya.
+        // Penyebab: Sorting sebelumnya menggunakan Grid Tile (n.y * 30 + 30).
+        // Solusi: Gunakan tinggi visual NPC (h=60) untuk sorting. 
+        // Rumus: Y Kaki Visual = (n.y * 30) + Tinggi Sprite (n.h) - Offset Gambar (5)
+        
+        const visualHeight = n.h || 48; // Default tinggi sprite
+        const sortY = (n.y * TILE_SIZE) + visualHeight - 5;
+
         renderList.push({
             type: 'npc',
-            y: (n.y * TILE_SIZE) + TILE_SIZE, 
+            y: sortY, 
             data: n
         });
     });
@@ -11549,6 +11671,43 @@ function draw() {
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); // Bentuk bulat air
             ctx.fill();
+            ctx.restore();
+        }
+        // --- NEW: RENDER LOVE BUBBLE (Gelembung Hati) ---
+        else if (p.type === 'love_bubble') {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            
+            // Animasi Pop-up (Membesar saat muncul)
+            let scale = 1;
+            if (p.life > 50) scale = (60 - p.life) / 10;
+            ctx.scale(scale, scale);
+
+            // Bubble Background (Lingkaran Putih)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = '#fda4af'; // Pink pastel border
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            ctx.arc(0, 0, 14, 0, Math.PI*2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Ekor Bubble Kecil (Biar kayak chat)
+            ctx.beginPath();
+            ctx.moveTo(0, 12);
+            ctx.lineTo(-4, 18);
+            ctx.lineTo(4, 16);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.fill();
+
+            // Icon Heart di Tengah
+            ctx.font = "16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#ef4444"; // Merah Hati
+            ctx.fillText("❤️", 0, 2); // Sedikit turun agar pas tengah visual
+            
             ctx.restore();
         }
         else {
@@ -12194,11 +12353,15 @@ function drawNPC(ctx, n) {
     const x = n.x * TILE_SIZE;
     const y = n.y * TILE_SIZE;
 
-    // 2. Gambar Bayangan
+    // UPDATE: Gunakan ukuran Custom jika ada, default 32x48
+    const dw = n.w || 32;
+    const dh = n.h || 48;
+
+    // 2. Gambar Bayangan (Dinamis mengikuti ukuran)
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.beginPath();
     // Bayangan di kaki
-    ctx.ellipse(x + 15, y + 28, 10, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + dw/2, y + dh - 5, dw/3, 4, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // 3. Load & Gambar Sprite NPC
@@ -12210,38 +12373,54 @@ function drawNPC(ctx, n) {
     if (n.loadedImg.complete && n.loadedImg.naturalWidth !== 0) {
         ctx.save();
         
-        // Efek "Bernapas" (Naik turun sedikit)
-        const bob = Math.sin(Date.now() / 300) * 2;
-        
-        // Efek Flip jika jalan ke kiri
-        if (n.vx < 0) {
-            ctx.translate(x + 32, y - 5 + bob); // Pivot point adjusted
-            ctx.scale(-1, 1);
-            // Gambar image (Ukuran standar NPC ~32x48)
-            // Sesuaikan ukuran render agar proporsional
-            ctx.drawImage(n.loadedImg, 0, 0, 32, 48); 
-        } else {
-            ctx.drawImage(n.loadedImg, x, y - 5 + bob, 32, 48);
+        // UPDATE: Logika Animasi (Static vs Moving)
+        // Jika Tipe Static, Service, atau Mentor -> HANYA BERNAFAS (Scaling), JANGAN FLOATING
+        if (n.type === 'static' || n.type === 'service' || n.type === 'mentor') {
+            // Efek Bernapas: Scale Y berubah sedikit (1.0 hingga 1.02)
+            const breathe = 1 + Math.sin(Date.now() / 300) * 0.02; 
+            
+            // Set Pivot ke Kaki Tengah agar tumbuh ke atas
+            ctx.translate(x + dw/2, y + dh - 5); 
+            ctx.scale(1, breathe);
+            
+            // Gambar Image (Offset negatif karena pivot ada di bawah)
+            // Posisi awal y - 5, jadi relatif pivot (y + dh - 5) adalah -dh
+            ctx.drawImage(n.loadedImg, -dw/2, -dh, dw, dh);
+        } 
+        else {
+            // NPC Bergerak (Wander, Animal, dll): Tetap Floating (Naik Turun) agar terlihat berjalan/hidup
+            const bob = Math.sin(Date.now() / 300) * 2;
+            
+            if (n.vx < 0) {
+                ctx.translate(x + dw, y - 5 + bob); // Pivot point adjusted ke kanan sprite
+                ctx.scale(-1, 1);
+                ctx.drawImage(n.loadedImg, 0, 0, dw, dh); 
+            } else {
+                ctx.drawImage(n.loadedImg, x, y - 5 + bob, dw, dh);
+            }
         }
         
         ctx.restore();
     } else {
         // Fallback: Kotak Warna jika gambar belum load
         ctx.fillStyle = '#fca5a5';
-        ctx.fillRect(x + 5, y, 20, 30);
+        ctx.fillRect(x + 5, y, dw - 10, dh - 10);
     }
 
     // 4. Nama NPC & Indikator Quest
+    /* UPDATE: LABEL NAMA NPC DIHILANGKAN SESUAI REQUEST (CUKUP BANGUNAN SAJA) */
+    /*
     ctx.font = 'bold 8px "Exo 2"';
     ctx.textAlign = 'center';
     
     // Stroke Hitam untuk nama agar terbaca
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 2;
-    ctx.strokeText(n.name, x + 16, y - 8);
+    ctx.strokeText(n.name, x + dw/2, y - 8);
     
     ctx.fillStyle = '#fff';
-    ctx.fillText(n.name, x + 16, y - 8);
+    ctx.fillText(n.name, x + dw/2, y - 8);
+    */
 
     // Indikator Quest/Interaksi (Tanda Seru) jika dekat
     // Opsional: Bisa ditambahkan logika jarak jika ingin
@@ -12720,7 +12899,7 @@ function updateEnemies() {
                     open24h: true
                 });
             }
-        }
+        }a
     }
 }
 
