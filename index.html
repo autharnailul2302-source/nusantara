@@ -12184,6 +12184,143 @@ function drawPlayer(ctx, p) {
         ctx.restore();
     }
 }
+
+// --- FIX: MENAMBAHKAN FUNGSI DRAW NPC YANG HILANG ---
+function drawNPC(ctx, n) {
+    // 1. Cek Apakah NPC Aktif (Sesuai Jadwal/Syarat)
+    // Jika tidak aktif, jangan gambar apapun
+    if (!isNPCActive(n)) return;
+
+    const x = n.x * TILE_SIZE;
+    const y = n.y * TILE_SIZE;
+
+    // 2. Gambar Bayangan
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.beginPath();
+    // Bayangan di kaki
+    ctx.ellipse(x + 15, y + 28, 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 3. Load & Gambar Sprite NPC
+    if (!n.loadedImg) {
+        n.loadedImg = new Image();
+        n.loadedImg.src = n.imgSrc;
+    }
+
+    if (n.loadedImg.complete && n.loadedImg.naturalWidth !== 0) {
+        ctx.save();
+        
+        // Efek "Bernapas" (Naik turun sedikit)
+        const bob = Math.sin(Date.now() / 300) * 2;
+        
+        // Efek Flip jika jalan ke kiri
+        if (n.vx < 0) {
+            ctx.translate(x + 32, y - 5 + bob); // Pivot point adjusted
+            ctx.scale(-1, 1);
+            // Gambar image (Ukuran standar NPC ~32x48)
+            // Sesuaikan ukuran render agar proporsional
+            ctx.drawImage(n.loadedImg, 0, 0, 32, 48); 
+        } else {
+            ctx.drawImage(n.loadedImg, x, y - 5 + bob, 32, 48);
+        }
+        
+        ctx.restore();
+    } else {
+        // Fallback: Kotak Warna jika gambar belum load
+        ctx.fillStyle = '#fca5a5';
+        ctx.fillRect(x + 5, y, 20, 30);
+    }
+
+    // 4. Nama NPC & Indikator Quest
+    ctx.font = 'bold 8px "Exo 2"';
+    ctx.textAlign = 'center';
+    
+    // Stroke Hitam untuk nama agar terbaca
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.strokeText(n.name, x + 16, y - 8);
+    
+    ctx.fillStyle = '#fff';
+    ctx.fillText(n.name, x + 16, y - 8);
+
+    // Indikator Quest/Interaksi (Tanda Seru) jika dekat
+    // Opsional: Bisa ditambahkan logika jarak jika ingin
+}
+
+// --- FIX: MENAMBAHKAN FUNGSI DRAW ENEMY YANG HILANG (INI PENYEBAB MONSTER INVISIBLE) ---
+function drawEnemy(ctx, e) {
+    // 1. Gambar Bayangan
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(e.x + e.w/2, e.y + e.h - 2, e.w/2 - 5, 5, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // 2. Efek Hit Flash (Kedip saat dipukul)
+    if (e.hp < e.maxHp && Math.random() < 0.1) {
+        ctx.globalAlpha = 0.7; // Transparan sebentar
+    }
+
+    // 3. Tentukan Gambar Monster (Berdasarkan Tier/Boss)
+    let img = null;
+    
+    // Cek apakah monster punya key gambar spesifik (enemy1, enemy2, dst)
+    if (e.imgKey && dungeonAssets[e.imgKey]) {
+        img = dungeonAssets[e.imgKey];
+    } 
+    // Fallback untuk Boss
+    else if (e.isBoss) {
+        img = dungeonAssets.boss;
+    } 
+    // Fallback default
+    else {
+        img = dungeonAssets.enemy1; 
+    }
+
+    if (img && img.complete && img.naturalWidth !== 0) {
+        ctx.save();
+        
+        // Efek Bernapas/Wobble Monster (Agar terlihat hidup)
+        const wobble = Math.sin(Date.now() / 150 + e.animOffset) * 0.05;
+        const scaleX = 1 + wobble;
+        const scaleY = 1 - wobble;
+
+        // Pivot di tengah monster
+        const cx = e.x + e.w/2;
+        const cy = e.y + e.h/2;
+
+        ctx.translate(cx, cy);
+        // Flip jika musuh bergerak ke kiri (mengejar player di kiri)
+        // Hitung arah berdasarkan posisi player relative
+        if (STATE.player.x < e.x) ctx.scale(-scaleX, scaleY);
+        else ctx.scale(scaleX, scaleY);
+        
+        // Gambar sprite
+        // Pastikan drawImage menggunakan ukuran e.w dan e.h
+        ctx.drawImage(img, -e.w/2, -e.h/2, e.w, e.h);
+        
+        ctx.restore();
+    } else {
+        // Fallback: Kotak Merah jika gambar gagal load
+        ctx.fillStyle = e.color || '#ef4444';
+        ctx.fillRect(e.x, e.y, e.w, e.h);
+    }
+
+    ctx.globalAlpha = 1.0; // Reset Alpha
+
+    // 4. HP Bar Monster
+    const hpPct = Math.max(0, e.hp / e.maxHp);
+    const barW = e.w;
+    const barH = 4;
+    
+    // Background Bar
+    ctx.fillStyle = '#000';
+    ctx.fillRect(e.x, e.y - 10, barW, barH);
+    
+    // Fill Bar
+    ctx.fillStyle = e.isBoss ? '#b91c1c' : '#fbbf24'; // Merah tua utk Boss, Kuning utk Kroco
+    ctx.fillRect(e.x, e.y - 10, barW * hpPct, barH);
+}
+
 // --- NEW FUNCTION: RENDER INVENTORY (DENGAN ACTION KLIK) ---
 function renderInventory() {
     const grid = document.getElementById('inventory-grid');
