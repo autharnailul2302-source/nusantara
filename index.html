@@ -2254,7 +2254,10 @@ button, .round-btn, .d-btn, .auth-btn {
     <div id="journal-modal">
         <div class="journal-box">
             <h3 style="font-family: 'Cinzel'; font-size: 18px; color: var(--secondary); margin-top:0;">JURNAL REFLEKSI</h3>
-            <p style="font-size: 12px; color: #94a3b8;">Catat pembelajaran hari ini untuk mendapatkan EXP dan Penilaian.</p>
+            <!-- UPDATE: Menambahkan ID pada paragraf pertanyaan agar bisa diubah secara dinamis -->
+            <p id="journal-question" style="font-size: 14px; color: #94a3b8; font-style: italic; margin-bottom: 15px; line-height: 1.4;">
+                Bagaimana harimu di dunia Nusantara Arsa?
+            </p>
             <textarea id="journal-input" placeholder="Tulis refleksimu disini..."></textarea>
             <div style="text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
                 <button onclick="closeJournal()" style="background: transparent; border: 1px solid #475569; width: auto;">BATAL</button>
@@ -2428,10 +2431,22 @@ dungeonAssets.boss.src = 'images/monster-boss.png';
 // NEW: WALL ASSETS (Custom Walls)
 const wallAssets = {
     school: new Image(),
-    schoolFloor: new Image() // NEW: Aset Lantai Kampus
+    schoolFloor: new Image(), // NEW: Aset Lantai Kampus
+    libraryFloor: new Image(), // NEW: Aset Lantai Perpus
+    libraryWall: new Image(),   // NEW: Aset Tembok Perpus
+    guildFloor: new Image(),    // NEW: Aset Lantai Guild
+    guildWall: new Image(),      // NEW: Aset Tembok Guild
+    houseWall: new Image(),       // NEW: Aset Tembok Rumah Player
+    houseWallBottom: new Image()  // NEW: Aset Tembok Bawah Rumah Player
 };
 wallAssets.school.src = 'images/tiletembokkampus.png';
 wallAssets.schoolFloor.src = 'images/tilelantaikampus.png';
+wallAssets.libraryFloor.src = 'images/tilelantaiperpus.png';
+wallAssets.libraryWall.src = 'images/tiletembokperpus.png';
+wallAssets.guildFloor.src = 'images/tilelantaiguild.png';
+wallAssets.guildWall.src = 'images/tiletembokguild.png';
+wallAssets.houseWall.src = 'images/tiletembokrumahplayer.png';
+wallAssets.houseWallBottom.src = 'images/titletembokbawahplayer.png'; // Set source baru untuk tembok bawah
 
 let bgLoadedCount = 0;
 const onBgLoad = () => {
@@ -2720,6 +2735,12 @@ function checkDailyCompletion() {
     // NEW: Syarat Mancing Harian (Minimal 1x)
     const hasFishing = (p.dailyFishingCount || 0) >= 1;
 
+    // NEW: Syarat Kalahkan Monster Harian (Minimal 2x)
+    const hasMonsterKills = (p.dailyMonsterKills || 0) >= 2;
+
+    // NEW: Syarat Sosialisasi Harian (Bicara min 1 NPC)
+    const hasTalked = (p.dailyTalkCount || 0) >= 1;
+
     // Jika belum pilih role, belum bisa klaim
     if(role === 'none') return false;
 
@@ -2751,8 +2772,8 @@ function checkDailyCompletion() {
         conditionRole = p.energy < 80;
     }
 
-    // UPDATE: Menambahkan hasJournal dan hasFishing ke syarat total
-    return conditionGeneral && conditionRole && hasJournal && hasFishing;
+    // UPDATE: Menambahkan hasTalked ke syarat total
+    return conditionGeneral && conditionRole && hasJournal && hasFishing && hasMonsterKills && hasTalked;
 }
 
 // --- NEW HELPER: CHECK WEEKLY COMPLETION ---
@@ -3047,6 +3068,15 @@ function getQuestContent(tabType) {
         // NEW: Tampilkan Quest Mancing di Menu
         const hasFishing = (p.dailyFishingCount || 0) >= 1;
         html += `${check(hasFishing)} Mancing Ikan (1x) 🎣<br>`;
+
+        // NEW: Tampilkan Quest Sosialisasi (Bicara NPC)
+        const talkCount = p.dailyTalkCount || 0;
+        html += `${check(talkCount >= 1)} Sosialisasi (Bicara NPC) ${prog(talkCount, 1)} 🗣️<br>`;
+
+        // NEW: Tampilkan Quest Monster di Menu
+        const monsterKills = p.dailyMonsterKills || 0;
+        const targetKills = 2;
+        html += `${check(monsterKills >= targetKills)} Kalahkan Monster (Dungeon) ${prog(monsterKills, targetKills)} ⚔️<br>`;
         
         // Role Spesifik
         html += `<strong>[Role: ${role.toUpperCase()}]</strong><br>`;
@@ -5177,7 +5207,8 @@ for(let i=0; i<10; i++) {
             { id: 'love_house', x: 14, y: 25, w: 6, h: 5, img: 'images/rumahlove.png', entrance: {x: 17, y: 29, map: 'love_interior'}, name: "Rumah Pasangan", openTime: 900, closeTime: 2100 },
             
             /* MOVED: PERPUSTAKAAN SHIFTED LEFT (Avoiding Dungeon) */
-            { id: 'library', x: 38, y: 18, w: 6, h: 5, img: 'images/perpustakaan.png', entrance: {x: 41, y: 22, map: 'library_interior'}, name: "Perpustakaan", openTime: 800, closeTime: 1700 },
+            /* FIX: Jam Buka Diperbaiki menjadi 2000 (8 Malam) */
+            { id: 'library', x: 38, y: 18, w: 6, h: 5, img: 'images/perpustakaan.png', entrance: {x: 41, y: 22, map: 'library_interior'}, name: "Perpustakaan", openTime: 800, closeTime: 2000 },
             
             { id: 'dungeon_gate', x: 48, y: 15, w: 6, h: 6, img: 'images/dungeon.png', entrance: {x: 51, y: 20, map: 'dungeon'}, name: "Dungeon Entrance", open24h: true },
             { id: 'guild', x: 42, y: 25, w: 7, h: 6, img: 'images/gedungpetualang.png', entrance: {x: 45, y: 30, map: 'guild_interior'}, name: "Gedung Petualang", open24h: true },
@@ -5241,9 +5272,9 @@ for(let i=0; i<10; i++) {
 
             /* NEW: PEMANCING SORE-MALAM (Update Posisi ke Ujung Dermaga Baru) */
             /* UPDATE: DIGESER KE BAWAH (Y:38) AGAR LEBIH DI PUCUK */
-            /* UPDATE: UKURAN DIUBAH SESUAI REQUEST (50x80) */
-            /* UPDATE TERBARU: POSISI DINAIKKAN SEDIKIT KE Y:36 SESUAI REQUEST */
-            {id: 'pemancing_misterius', x: 47, y: 36, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening', w: 50, h: 80},
+            /* UPDATE: UKURAN DIUBAH SESUAI REQUEST (SAMA DENGAN PLAYER 40x60) */
+            /* UPDATE TERBARU: POSISI DIGESER TURUN KE Y:37 SESUAI REQUEST */
+            {id: 'pemancing_misterius', x: 47, y: 37, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening', w: 40, h: 60},
 
             /* NEW: PUTRI DUYUNG (Pinggir Laut - Selatan Kiri Dermaga) */
             /* UPDATE: Posisi dipindah ke sebelah kiri dermaga (x:38) di air (y:36) */
@@ -5336,8 +5367,9 @@ for(let i=0; i<10; i++) {
             { id: 'library_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Perpus" }
         ],
         npcs: [
-            /* UPDATE: Gambar Pustakawan diubah menjadi 'images/penjagaperpus.png' */
-            {id: 'librarian', x: 7, y: 3, name: 'Pustakawan', imgSrc: 'images/penjagaperpus.png', type: 'service', schedule: 'always', w: 40, h: 60},
+            /* UPDATE: Pustakawan diposisikan di tengah belakang meja (x:6.5) dan mundur sedikit (y:1.8) */
+            /* Menggunakan koordinat desimal agar presisi di tengah meja yang lebarnya 2 tile */
+            {id: 'librarian', x: 6.5, y: 1.8, name: 'Pustakawan', imgSrc: 'images/penjagaperpus.png', type: 'service', schedule: 'always', w: 40, h: 60},
             
             /* ADDED: NPC CINTA MATRE (Hanya muncul di Perpus sesuai gender pemain) */
             /* Siska (cewek matre) muncul jika pemain Cowok - DI PERPUSTAKAAN */
@@ -5347,17 +5379,27 @@ for(let i=0; i<10; i++) {
             {id: 'kutubuku', x: 2, y: 8, name: 'Senior Kutubuku', imgSrc: 'images/kutubuku.png', type: 'static', schedule: 'day', w: 40, h: 60}
         ],
         objects: [
-            /* UPDATE: Ukuran Rak Buku Diperbesar (w:2, h:2) agar Presisi */
-            {x: 2, y: 4, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Sejarah Pulau Arsa Vol.1", img: 'images/rakbuku.png'},
-            {x: 11, y: 4, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Monster", img: 'images/rakbuku.png'},
-            {x: 2, y: 7, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Resep Masakan Kuno", img: 'images/rakbuku.png'},
-            {x: 11, y: 7, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Legenda Cincin Raja", img: 'images/rakbuku.png'},
+            /* UPDATE: MEJA PUSTAKAWAN (Image Baru & Ukuran Diperbesar w:2) */
+            /* Digeser ke x:6 agar posisinya pas di tengah depan NPC (x:7) */
+            {x: 6, y: 3, w: 2, h: 1, type: 'table', icon: '📖', img: 'images/mejapustakawan.png'},
+
+            /* UPDATE: Ukuran Rak Buku Diperbesar (w:3, h:3) agar terlihat Raksasa & Megah */
+            /* Posisi disesuaikan (x digeser mendekat tembok) agar muat */
+            {x: 1, y: 3, w: 3, h: 3, type: 'bookshelf', icon: '📚', text: "Sejarah Pulau Arsa Vol.1", img: 'images/rakbuku.png'},
+            {x: 10, y: 3, w: 3, h: 3, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Monster", img: 'images/rakbuku.png'},
+            {x: 1, y: 7, w: 3, h: 3, type: 'bookshelf', icon: '📚', text: "Resep Masakan Kuno", img: 'images/rakbuku.png'},
+            {x: 10, y: 7, w: 3, h: 3, type: 'bookshelf', icon: '📚', text: "Legenda Cincin Raja", img: 'images/rakbuku.png'},
             
-            /* ADDED: KURSI BACA MAHASISWA DI PERPUSTAKAAN (Sesuai Request) */
-            {x: 6, y: 5, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, 
-            {x: 7, y: 5, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
-            {x: 6, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, 
-            {x: 7, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            /* UPDATE: KURSI BACA DIPERBESAR (w:2, h:2) & POSISI DISESUAIKAN AGAR TIDAK DEMPET */
+            {x: 5, y: 5, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, 
+            {x: 8, y: 5, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 5, y: 8, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, 
+            {x: 8, y: 8, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+
+            /* UPDATE: Menambahkan Vas Bunga Putih di Kiri Pintu (x:5, y:11) */
+            {x: 5, y: 11, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Harum bunga melati menyambutmu.", img: 'images/vasputih.png'},
+            /* UPDATE: Menambahkan Vas Bunga Putih di Kanan Pintu (x:9, y:11) */
+            {x: 9, y: 11, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Menjaga ketenangan di ruang baca.", img: 'images/vasputih.png'},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -5371,7 +5413,8 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             /* UPDATE: GAMBAR GUILD MASTER DIUBAH KE masterguild.png */
-            {id: 'guild_master', x: 8, y: 3, name: 'Guild Master', imgSrc: 'images/masterguild.png', type: 'service', schedule: 'always', w: 40, h: 60},
+            /* UPDATE: Posisi digeser ke 7.5 agar pas di tengah meja 2 petak */
+            {id: 'guild_master', x: 7.5, y: 3, name: 'Guild Master', imgSrc: 'images/masterguild.png', type: 'service', schedule: 'always', w: 40, h: 60},
             
             /* UPDATE: SATRIA (KSATRIA) DIPINDAH KE DALAM SINI (Menggantikan Petualang Veteran) */
             {id: 'lover2boy', x: 4, y: 8, name: 'Satria (Ksatria)', imgSrc: 'images/lover2boy.png', type: 'lover', schedule: 'always', w: 40, h: 60},
@@ -5380,9 +5423,19 @@ for(let i=0; i<10; i++) {
             {id: 'lover_matre_boy', x: 12, y: 8, name: 'Rendi (Anak Sultan)', imgSrc: 'images/lover_matre_boy.png', type: 'wander', schedule: 'day', genderReq: 'girl', w: 40, h: 60}
         ],
         objects: [
-            {x: 8, y: 2, type: 'table', icon: '🛡️'},
-            {x: 2, y: 5, type: 'sign', icon: '📜', text: "Papan Misi Rank S (Terkunci)"},
-            {x: 13, y: 5, type: 'table', icon: '🍺'},
+            /* UPDATE: MEJA MASTER GUILD (Image Baru & Ukuran Diperbesar w:2) */
+            {x: 7, y: 2, w: 2, h: 1, type: 'table', icon: '🛡️', img: 'images/mejamasterguild.png'},
+            
+            /* UPDATE: Papan Guild Diperbesar (w:3, h:2) dan bisa dilewati belakangnya */
+            {x: 1, y: 5, w: 3, h: 2, type: 'sign', icon: '📜', text: "Papan Misi Rank S (Terkunci)", img: 'images/papanguild.png'},
+            
+            /* UPDATE: MEJA MAKAN GUILD (Dikecilkan w:2, h:2 & Walkable Behind) */
+            /* Posisi digeser ke x:13 agar lebih pas di kanan */
+            {x: 13, y: 5, w: 2, h: 2, type: 'sign', icon: '🍽️', text: "Meja Perjamuan: Hidangan daging panggang & jus buah segar penambah stamina. (100% Non-Alkohol)", img: 'images/mejamakanguild.png'},
+            
+            /* UPDATE: Menambahkan Vas Bunga Putih di Guild (Dekorasi) */
+            {x: 1, y: 10, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Menambah kesan elegan di markas para petarung.", img: 'images/vasputih.png'},
+
             {x: 8, y: 13, type: 'door_out', icon: '🚪'}
         ]
     },
@@ -5425,7 +5478,9 @@ for(let i=0; i<10; i++) {
             {x: 1, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Dunia", img: 'images/rakbuku.png'},
             /* UPDATE: Posisi rak kanan digeser ke x:13 agar tidak menabrak tembok saat diperlebar */
             {x: 13, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Jurnal Ilmiah", img: 'images/rakbuku.png'},
-            {x: 1, y: 10, type: 'bookshelf', icon: '🌿', text: "Pot Tanaman Hias"}, // Dekorasi
+            
+            /* UPDATE: Mengubah Pot Tanaman Hias menjadi Vas Bunga Putih */
+            {x: 1, y: 10, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih", img: 'images/vasputih.png'},
 
             {x: 8, y: 13, type: 'door_out', icon: '🚪'}
         ]
@@ -5505,8 +5560,40 @@ for(let i=0; i<10; i++) {
         w: 12, h: 10,
         tiles: houseTiles,
         npcs: [],
-        buildings: [],
-        objects: []
+        buildings: [
+            { 
+                id: 'house_exit', 
+                x: 6 - 1, // doorX - 1 (doorX = 6)
+                y: 9, // doorY (h-1)
+                w: 3, 
+                h: 1, 
+                type: 'trigger', 
+                entrance: {x: 6, y: 9}, 
+                name: "Keluar Rumah" 
+            }
+        ],
+        objects: [
+            /* ADDED: KASUR PLAYER (Interactive Sleep) */
+            /* UPDATE: Ganti gambar kasur jadi bed.png */
+            /* REVISI POSISI: Dinaikkan ke y:0 agar lebih nempel tembok */
+            /* REVISI UKURAN: Diperbesar jadi 3x4 (King Size) */
+            {x: 1, y: 0, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk"},
+
+            /* UPDATE: MEJA BUKU HARIAN (Menggantikan Buku Melayang) */
+            /* Posisi disesuaikan agar tidak menumpuk */
+            /* REVISI: Mengganti images/mejabuku.png menjadi images/mejabelajar.png */
+            /* UPDATE UKURAN: Diperbesar kembali jadi 2x2 */
+            /* UPDATE POSISI: Diturunkan ke y:0 */
+            {x: 4, y: 0, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Meja Jurnal"},
+            
+            /* REVISI POSISI KALENDER: Geser ke x:6 agar di pinggir meja belajar */
+            {x: 6, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
+            
+            /* UPDATE: MEJA TELEPON (Menggantikan Telepon Melayang) */
+            /* REVISI: Update gambar ke images/mejatelpon.png dan ukuran jadi 2x2 */
+            /* UPDATE POSISI: Dinaikkan ke y:6 agar tidak nempel tembok bawah */
+            {x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon"} 
+        ]
     }
 };
 
@@ -5887,18 +5974,19 @@ function regenerateHouseMap() {
         
         // Create Walls
         for(let x=0; x<w; x++) { 
-            tiles[x] = 11; // Top Wall
-            tiles[(h-1)*w + x] = 11; // Bottom Wall
+            /* REVISI: Tile atas diubah jadi 13 agar sama dengan tile bawah */
+            tiles[x] = 13; // Top Wall (ID 13 - Tembok Bawah Player)
+            tiles[(h-1)*w + x] = 13; // Bottom Wall (ID 13 - Tembok Bawah Player)
         }
         for(let y=0; y<h; y++) { 
-            tiles[y*w] = 11; // Left Wall
-            tiles[y*w + (w-1)] = 11; // Right Wall
+            tiles[y*w] = 11; // Left Wall (ID 11)
+            tiles[y*w + (w-1)] = 11; // Right Wall (ID 11)
         }
 
         // Door Position (Always Bottom Center)
         const doorX = Math.floor(w / 2);
         const doorY = h - 1;
-        tiles[doorY * w + doorX] = 8; // Door Tile ID
+        tiles[doorY * w + doorX] = 8; // Door Tile ID (Overwrites wall)
 
         // Update Global Map Object
         maps['house'] = {
@@ -5919,9 +6007,26 @@ function regenerateHouseMap() {
                 }
             ],
             objects: [
-                {x: 6, y: 2, type: 'diary', icon: '📔', img: 'images/buku.png'},
-                {x: 8, y: 1, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
-                {x: 2, y: 8, type: 'catalog', icon: '☎️', img: 'images/telpon.png'} 
+                /* ADDED: KASUR PLAYER (Interactive Sleep) */
+                // FIX: Ubah 'images/kasur.png' menjadi 'images/bed.png' agar konsisten
+                /* REVISI POSISI: Dinaikkan ke y:0 agar nempel tembok */
+                /* REVISI UKURAN: Diperbesar jadi 3x4 (King Size) */
+                {x: 1, y: 0, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk"},
+
+                /* UPDATE: MEJA BUKU HARIAN (Menggantikan Buku Melayang) */
+                /* Posisi disesuaikan agar tidak menumpuk */
+                /* REVISI: Mengganti images/mejabuku.png menjadi images/mejabelajar.png */
+                /* UPDATE UKURAN: Diperbesar kembali jadi 2x2 */
+                /* UPDATE POSISI: Diturunkan ke y:0 */
+                {x: 4, y: 0, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Meja Jurnal"},
+                
+                /* REVISI POSISI KALENDER: Geser ke x:6 agar di pinggir meja belajar */
+                {x: 6, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
+                
+                /* UPDATE: MEJA TELEPON (Menggantikan Telepon Melayang) */
+                /* REVISI: Update gambar ke images/mejatelpon.png dan ukuran jadi 2x2 */
+                /* UPDATE POSISI: Dinaikkan ke y:6 agar tidak nempel tembok bawah */
+                {x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon"} 
             ]
         };
         console.log(`House Map Regenerated: ${w}x${h}`);
@@ -5955,45 +6060,57 @@ async function initGame() {
 
         const saved = DataService.loadGame();
         if(saved) {
-            // ... existing load logic ...
+            // --- FIX: MEMULIHKAN LOGIKA LOAD DATA INTI YANG HILANG ---
             STATE.day = parseInt(saved.day) || 1;
-            // FIX: Load Waktu, Musim & Cuaca
-            STATE.time = saved.time !== undefined ? saved.time : 600; 
+            STATE.time = saved.time !== undefined ? saved.time : 600;
             STATE.season = saved.season || 'spring';
             STATE.weather = saved.weather || 'clear';
 
-            // FIX: Load Status Fisik (HP/Energy)
+            // Load Player Stats
             STATE.player.hp = saved.hp !== undefined ? saved.hp : 100;
             STATE.player.maxHp = saved.maxHp || 100;
             STATE.player.energy = saved.energy !== undefined ? saved.energy : 100;
-
-            STATE.player.money = saved.money || 1000;
+            STATE.player.money = saved.money !== undefined ? saved.money : 10000;
             STATE.player.level = saved.level || 1;
             STATE.player.exp = saved.exp || 0;
-            STATE.player.maxExp = saved.maxExp || 100;
+            
+            // Load Attributes
             STATE.player.str = saved.str || 5;
             STATE.player.int = saved.int || 5;
-            STATE.player.reputation = saved.reputation || 0; 
-            STATE.player.biz = saved.biz || 0; 
-            
-            STATE.player.role = saved.role || 'none';
-            STATE.player.major = saved.major || null;
-            STATE.player.scholarship = saved.scholarship || false; // Load Beasiswa
-            
-            STATE.player.reflections = saved.reflections || [];
-            STATE.player.messages = saved.messages || []; 
+            STATE.player.biz = saved.biz || 0;
+            STATE.player.reputation = saved.reputation || 0;
             STATE.player.ethics = saved.ethics || 100;
-            STATE.player.spouseId = saved.spouseId || null;
-            STATE.player.married = saved.married || false;
-            STATE.player.houseLevel = saved.houseLevel || 1;
-            STATE.player.furniture = saved.furniture || [];
-            STATE.player.relationships = saved.relationships || {};
-            STATE.player.inventory = saved.inventory || {}; 
+
+            // Load Role & Career
+            STATE.player.role = saved.role || 'none'; // Load role dulu untuk pengecekan
+            STATE.player.major = saved.major || null;
+            STATE.player.scholarship = saved.scholarship || false;
             STATE.player.jobStatus = saved.jobStatus || 'unemployed';
             STATE.player.bossReputation = saved.bossReputation || 50;
+            STATE.player.shiftStarted = saved.shiftStarted || false;
+            STATE.player.salaryDays = saved.salaryDays || 0;
             STATE.player.lastAttendanceDay = saved.lastAttendanceDay || 0;
 
-            // Load Quest Data
+            // --- FIX: LOGIKA PROLOGUE YANG LEBIH KUAT ---
+            // Jika Hari 1 DAN Belum Pilih Role, MAKA WAJIB PROLOGUE (Tutorial Tok-Tok)
+            // Ini mengatasi bug dimana status saved.isPrologue salah simpan jadi false
+            if (STATE.day === 1 && STATE.player.role === 'none') {
+                STATE.isPrologue = true;
+                STATE.time = 600; // FIX: Pastikan Waktu Tutorial Selalu Jam 06:00 Pagi
+            } else {
+                // Selain itu, ikuti status save data (atau false jika tidak ada)
+                STATE.isPrologue = saved.isPrologue !== undefined ? saved.isPrologue : false;
+            }
+
+            // Load Assets & Relations
+            STATE.player.inventory = saved.inventory || {};
+            STATE.player.furniture = saved.furniture || [];
+            STATE.player.houseLevel = saved.houseLevel || 1;
+            STATE.player.relationships = saved.relationships || {};
+            STATE.player.married = saved.married || false;
+            STATE.player.spouseId = saved.spouseId || null;
+
+            // Load Quest & Progress
             STATE.player.activeQuest = saved.activeQuest || null;
             STATE.questProgress = saved.questProgress || {};
             STATE.dungeonLevel = saved.dungeonLevel || 1;
@@ -6006,8 +6123,10 @@ async function initGame() {
             // NEW: LOAD STATUS TUTORIAL DUNGEON
             STATE.player.hasSeenDungeonTutorial = saved.hasSeenDungeonTutorial || false;
 
-            // NEW: LOAD COUNTER MANCING
+            // NEW: LOAD COUNTER MANCING, MONSTER & TALK
             STATE.player.dailyFishingCount = saved.dailyFishingCount || 0;
+            STATE.player.dailyMonsterKills = saved.dailyMonsterKills || 0;
+            STATE.player.dailyTalkCount = saved.dailyTalkCount || 0; // Load Talk Count
             
             STATE.player.attackCooldown = 0;
             STATE.player.isAttacking = false;
@@ -6018,7 +6137,7 @@ async function initGame() {
             // STATE.season sudah di-load di atas
             if(!saved.weather) randomizeWeather(); // Hanya randomize jika tidak ada data save
 
-            showToast("System: Data Loaded Completiy");
+            showToast("System: Data Loaded Completely");
         } else {
             // New Game Setup
             if(!STATE.player.spriteIdle) selectGender('boy', true);
@@ -6027,7 +6146,7 @@ async function initGame() {
             STATE.gameFinished = false;
             STATE.freeRoamMode = false;
             STATE.day = 1;
-            STATE.time = 600; 
+            STATE.time = 600; // Pastikan Mulai Jam 06:00 Pagi
             STATE.player.role = 'none';
             STATE.player.money = 10000;
             randomizeWeather();
@@ -6059,8 +6178,17 @@ async function initGame() {
         
         gameLoop();
         
-        if(!saved && STATE.isPrologue) {
-            setTimeout(() => startWakeUpSequence(), 1000);
+        // FIX: UBAH LOGIKA START WAKE UP SEQUENCE (TOK TOK)
+        // Jalankan jika statusnya Prologue, TIDAK PEDULI ada save data atau tidak.
+        // Ini memastikan setelah reset (yang otomatis save), prolog tetap jalan.
+        if(STATE.isPrologue) {
+            // Pastikan posisi player reset ke kasur atau tengah ruangan saat prolog
+            if(hMap) {
+                STATE.player.x = Math.floor(hMap.w / 2) * TILE_SIZE; 
+                STATE.player.y = (hMap.h - 3) * TILE_SIZE; 
+            }
+            // Delay sedikit lebih lama agar map ter-render sempurna sebelum dialog muncul
+            setTimeout(() => startWakeUpSequence(), 1500);
         } else {
             setTimeout(() => showDailyQuestPopup(), 1000);
             updateHUDInfo();
@@ -6175,11 +6303,11 @@ function startWakeUpSequence() {
                                                                         "📜 **TOMBOL JURNAL**:\nIni adalah navigasi utamamu!\nCek **Misi Harian** & **Target Hidup** di sini.\n\nSelesaikan misi untuk dapat Hadiah Gold & EXP!",
                                                                         [{text: "Mengerti!", action: () => {
                                                                             
-                                                                            // STEP 6: DIARY BUKU (CLOSING)
+                                                                            // STEP 6: KASUR & BUKU (CLOSING)
                                                                             clearTutorialFocus();
                                                                             
                                                                             showDialogue("TUTORIAL (6/6)", 
-                                                                                "Terakhir, lihat **Buku Harian** di atas meja itu? 📔\n\nGunakan untuk **SAVE GAME** dan menulis **Refleksi Diri**.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
+                                                                                "Terakhir, perhatikan perabot di kamarmu:\n\n🛏️ **KASUR**: Gunakan untuk **Tidur** dan menulis **Jurnal Refleksi** harian.\n\n📔 **BUKU**: Gunakan untuk **SAVE GAME** dan **Belajar Mandiri**.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
                                                                                 [{text: "Ayo Keluar!", action: () => {
                                                                                     closeDialogue();
                                                                                 }}]
@@ -6245,7 +6373,13 @@ function openRoleSelection() {
         {text: "Wirausaha (Support) - BIZ++", action: () => setRole('entrepreneur')},
         {text: "Menikah (Family) - REP++", action: () => setRole('family')}
     ], 'images/mentor.png');
-            /* NEW: Jika memilih Student (UPDATE: Mentor menyuruh ke kampus) */
+}
+
+// --- NEW FUNCTION: SET ROLE (FIX: Logika Pemilihan Role Dipisah) ---
+function setRole(role) {
+    STATE.player.role = role;
+
+    /* NEW: Jika memilih Student (UPDATE: Mentor menyuruh ke kampus) */
     if(role === 'student') {
         STATE.player.int += 5; 
         STATE.player.energy += 20; 
@@ -7124,8 +7258,12 @@ function restartGame() {
     STATE.day = 1;
     STATE.time = 600; // UPDATE: Mulai jam 06:00 Pagi
     STATE.location = 'house';
-    STATE.player.x = 5 * TILE_SIZE;
-    STATE.player.y = 4 * TILE_SIZE;
+    
+    // FIX: POSISI SPAWN RESET DISAMAKAN DENGAN INIT (Tengah Rumah)
+    // Sebelumnya hardcode 5*TILE_SIZE yang mungkin di dalam tembok
+    STATE.player.x = 6 * TILE_SIZE; // Tengah (12/2)
+    STATE.player.y = 7 * TILE_SIZE; // Agak bawah (10-3)
+    
     STATE.player.role = 'none'; 
     STATE.player.money = 10000;
     STATE.player.hp = 100;
@@ -7135,7 +7273,7 @@ function restartGame() {
     STATE.player.inventory = {};
     STATE.player.relationships = {};
     
-    STATE.isPrologue = true;
+    STATE.isPrologue = true; // Set True agar Tok-Tok Jalan
     STATE.gameOverTriggered = false;
     STATE.gameFinished = false;
     STATE.freeRoamMode = false;
@@ -7146,6 +7284,10 @@ function restartGame() {
     updateHUDInfo();
     document.getElementById('ui-layer').classList.remove('hidden');
     STATE.screen = 'play';
+
+    // FIX: HAPUS SAVE DATA LAMA & PAKSA SAVE STATUS BARU
+    // Agar jika direfresh, tetap load sebagai Prologue
+    manualSave(); 
 
     setTimeout(() => startWakeUpSequence(), 1000);
     
@@ -7248,8 +7390,10 @@ function update() {
         STATE.time = 0;
         STATE.day++;
 
-        // NEW: RESET COUNTER MANCING HARIAN
+        // NEW: RESET COUNTER HARIAN (MANCING, MONSTER, TALK)
         STATE.player.dailyFishingCount = 0;
+        STATE.player.dailyMonsterKills = 0;
+        STATE.player.dailyTalkCount = 0;
         
         if(STATE.player.shiftStarted) {
             STATE.player.shiftStarted = false;
@@ -7369,43 +7513,64 @@ function update() {
     else {
         // Cek NPC
         const map = maps[STATE.location];
-        let targetX = STATE.player.x + 10; 
-        let targetY = STATE.player.y + 10;
-        const reach = 35;
         
-        // Prediksi titik interaksi di depan pemain
-        if(STATE.player.direction === 'left') targetX -= reach;
-        if(STATE.player.direction === 'right') targetX += reach;
-        if(STATE.player.direction === 'up') targetY -= reach;
-        if(STATE.player.direction === 'down') targetY += reach;
+        // --- UPDATE: Logic Deteksi NPC (Menggunakan Jarak Radial) ---
+        // Cari NPC terdekat dalam radius interaksi
+        let closestNPC = null;
+        let minNPCDist = 50; // Radius deteksi NPC (pixel)
 
-        // Scan NPC Nearby
         for (let npc of map.npcs) {
             if (!isNPCActive(npc)) continue;
-            const dist = Math.hypot(targetX - (npc.x * TILE_SIZE + 15), targetY - (npc.y * TILE_SIZE + 15));
-            if (dist < 40) {
-                showActionButton = true;
-                actionIcon = '💬';
-                break;
+            // Hitung jarak dari tengah player ke tengah NPC
+            const pCX = STATE.player.x + (STATE.player.w/2);
+            const pCY = STATE.player.y + (STATE.player.h/2);
+            const nCX = (npc.x * TILE_SIZE) + ((npc.w||40)/2);
+            const nCY = (npc.y * TILE_SIZE) + ((npc.h||60)/2);
+            
+            const dist = Math.hypot(pCX - nCX, pCY - nCY);
+            if (dist < minNPCDist) {
+                closestNPC = npc;
+                break; // Prioritaskan NPC
             }
+        }
+
+        if (closestNPC) {
+            showActionButton = true;
+            actionIcon = '💬';
         }
 
         // Scan Object Nearby (Jika belum ketemu NPC)
         if (!showActionButton) {
             for(let obj of map.objects) {
-                const ox = obj.x * TILE_SIZE;
-                const oy = obj.y * TILE_SIZE;
-                const size = TILE_SIZE;
+                // --- UPDATE: LOGIKA DETEKSI OBJEK "SENTUH" (BERSENTUHAN) ---
+                // Menggunakan Intersection Box (Player Box vs Object Box + Buffer)
+                // Ini memastikan tombol muncul dari SISI MANAPUN selama dekat/nempel.
                 
-                if (targetX > ox - 10 && targetX < ox + size + 10 &&
-                    targetY > oy - 10 && targetY < oy + size + 10) {
+                const buffer = 5; // Jarak toleransi sentuh (pixel)
+                
+                const pLeft = STATE.player.x - buffer;
+                const pRight = STATE.player.x + STATE.player.w + buffer;
+                const pTop = STATE.player.y - buffer;
+                const pBottom = STATE.player.y + STATE.player.h + buffer;
+
+                const oLeft = obj.x * TILE_SIZE;
+                const oRight = (obj.x + (obj.w || 1)) * TILE_SIZE;
+                const oTop = obj.y * TILE_SIZE;
+                const oBottom = (obj.y + (obj.h || 1)) * TILE_SIZE;
+
+                // Cek apakah kotak pemain (diperluas buffer) bersinggungan dengan kotak objek
+                const isTouching = (pLeft < oRight && pRight > oLeft && 
+                                    pTop < oBottom && pBottom > oTop);
+
+                if (isTouching) {
                     showActionButton = true;
                     // Icon khusus berdasarkan tipe objek
                     if(obj.type === 'mailbox') actionIcon = '📬';
                     else if(obj.type === 'fishing_spot') actionIcon = '🎣';
                     else if(obj.type === 'sign') actionIcon = '🪧';
-                    else if(obj.type === 'bookshelf') actionIcon = '📖'; // NEW: Icon Baca
-                    else actionIcon = '🖐️'; // Tangan (Interact generic)
+                    else if(obj.type === 'bookshelf') actionIcon = '📖'; 
+                    else if(obj.type === 'bed') actionIcon = '🛏️'; // NEW: Icon Kasur
+                    else actionIcon = '🖐️'; 
                     break;
                 }
             }
@@ -7502,7 +7667,7 @@ function update() {
         }
     });
 
-    if(STATE.weather !== 'clear' && STATE.location === 'village') {
+    if (STATE.weather !== 'clear' && STATE.location === 'village') {
         const maxParticles = (STATE.weather === 'rain' || STATE.weather === 'snow') ? 200 : 80;
         
         if(STATE.weatherParticles.length < maxParticles) {
@@ -7760,8 +7925,9 @@ function update() {
                         // Cek Laut (Tile 0) -> BLOKIR HEWAN & MANUSIA DARAT
                         if (tile === 0) {
                             isWalkable = false;
-                            // Pengecualian: Area Dermaga (HANYA MANUSIA, HEWAN DILARANG)
-                            if (STATE.location === 'village' && npc.type !== 'animal') {
+                            // FIX SAPI EROR: Izinkan Hewan Masuk Area Dermaga juga
+                            // Hapus syarat '&& npc.type !== 'animal'' agar sapi tidak stuck di perbatasan laut dermaga
+                            if (STATE.location === 'village') {
                                 if (tX >= 43 && tX < 50 && tY >= 34 && tY < 39) {
                                     isWalkable = true;
                                 }
@@ -7795,6 +7961,9 @@ function update() {
 
     // --- NEW: AUTO TELEPORT CHECK (Agar tidak perlu klik tombol) ---
     checkAutoTeleport();
+    
+    // --- NEW: CEK JAM OPERASIONAL BANGUNAN (KICK OUT SYSTEM) ---
+    checkBuildingHours();
 
     const tx = Math.floor(STATE.player.x / TILE_SIZE);
     const ty = Math.floor(STATE.player.y / TILE_SIZE);
@@ -7904,6 +8073,55 @@ function checkAutoTeleport() {
                     processTeleport(b);
                     return; // Stop checking agar tidak double trigger
                 }
+            }
+        }
+    }
+}
+
+// --- NEW FUNCTION: CHECK BUILDING HOURS (PENGUSIRAN OTOMATIS) ---
+function checkBuildingHours() {
+    // 1. Filter: Hanya jalankan jika Player berada di Indoor (Bukan Village, House, atau Dungeon)
+    // List lokasi aman (tidak ada jam tutup):
+    if (STATE.location === 'village' || STATE.location === 'house' || STATE.location === 'dungeon' || STATE.location === 'ruins_battle') return;
+
+    const villageMap = maps['village'];
+    if(!villageMap) return;
+
+    // 2. Cari data bangunan berdasarkan lokasi map saat ini
+    // Contoh: Jika di 'library_interior', cari bangunan yang punya entrance.map == 'library_interior'
+    const building = villageMap.buildings.find(b => b.entrance && b.entrance.map === STATE.location);
+
+    if (building) {
+        // Cek apakah bangunan memiliki jam tutup dan tidak buka 24 jam
+        if (!building.open24h && building.openTime && building.closeTime) {
+            
+            // 3. Logika Waktu: Jika Sekarang >= Jam Tutup ATAU Sekarang < Jam Buka (Kasus begadang)
+            if (STATE.time >= building.closeTime || STATE.time < building.openTime) {
+                
+                // Play SFX Pintu/Alert
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('door');
+                
+                // Tampilkan Notifikasi
+                showToast(`⛔ ${building.name.toUpperCase()} TUTUP! Kamu diminta keluar.`);
+
+                // 4. Teleport Paksa ke Luar (Village)
+                STATE.location = 'village';
+                
+                // Koordinat tujuan: Tepat di depan pintu masuk bangunan (Entrance Y + 1)
+                // Agar pemain muncul di depan pintu, bukan di dalamnya
+                STATE.player.x = building.entrance.x * TILE_SIZE;
+                STATE.player.y = (building.entrance.y + 1) * TILE_SIZE;
+                
+                // Pastikan area spawn bersih dari NPC yang menghalangi
+                clearSpawnZone('village', building.entrance.x, building.entrance.y + 1);
+                
+                // Set cooldown teleport agar tidak glitch masuk lagi
+                STATE.teleportCooldown = 60;
+
+                // --- NEW: EFEK VISUAL KEBINGUNGAN SAAT DIUSIR ---
+                // Munculkan tanda tanya dan emoji pusing di atas kepala player
+                spawnFloatingText(STATE.player.x + 5, STATE.player.y - 40, "❓❓❓", "#fbbf24", 16); // Tanda Tanya Kuning
+                spawnFloatingText(STATE.player.x + 20, STATE.player.y - 25, "😵", "#fff", 18);   // Emoji Pusing
             }
         }
     }
@@ -8267,7 +8485,8 @@ function checkWall(x, y) {
         return true; // Blocked (Laut Lepas)
     }
     
-    return (t === 2 || t === 12 || t === 11);
+    // UPDATE: Tambahkan ID 13 (Tembok Bawah) sebagai collision
+    return (t === 2 || t === 12 || t === 11 || t === 13);
 }
 
 function checkObjectCollision(x, y) {
@@ -8283,10 +8502,13 @@ function checkObjectCollision(x, y) {
         let oh = originalH;
         let yOffset = 0;
 
-        // CUSTOM COLLISION: MEJA & KURSI (Agar bisa jalan di belakangnya)
-        // Hitbox hanya aktif di setengah bagian bawah (kaki kursi/meja)
+        // CUSTOM COLLISION: MEJA, KURSI, & KASUR (Agar bisa jalan di belakangnya)
+        // Hitbox hanya aktif di setengah bagian bawah (kaki kursi/meja/kasur)
         // Bagian atas (sandaran) bisa dilewati (walkable)
-        if (obj.type === 'table' && (obj.h || 1) > 0) {
+        // UPDATE: Menambahkan 'papanguild' DAN 'mejamakanguild' agar hitbox-nya juga hanya setengah bawah
+        // FIX: Tambahkan 'bed' agar area kepala kasur bisa dilewati
+        /* REVISI: Tambahkan 'catalog' (Meja Telepon) agar bisa jalan di belakangnya */
+        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon')))) && (obj.h || 1) > 0) {
             yOffset = originalH * 0.4; // Turunkan hitbox 40% dari atas
             oh = originalH * 0.6;      // Sisa tinggi hitbox 60%
         }
@@ -8671,31 +8893,25 @@ function handleAction() {
 
     const map = maps[STATE.location];
     
-    // PERBAIKAN: Meningkatkan jangkauan interaksi (Reach) agar lebih mudah kena dari depan
-    let targetX = STATE.player.x + 10; 
-    let targetY = STATE.player.y + 10;
-    const reach = 35; // Diperbesar dari 25 ke 35
+    // --- UPDATE: LOGIKA INTERAKSI PRIORITASKAN JARAK TERDEKAT (BUKAN ARAH HADAP SAJA) ---
     
-    if(STATE.player.direction === 'left') targetX -= reach;
-    if(STATE.player.direction === 'right') targetX += reach;
-    if(STATE.player.direction === 'up') targetY -= reach;
-    if(STATE.player.direction === 'down') targetY += reach;
-
-    // FIX: CARI NPC TERDEKAT, BUKAN YANG PERTAMA KETEMU
-    // Agar saat NPC berdekatan (seperti Aisyah & Maria), yang diajak bicara adalah yang paling dekat
+    // 1. CARI NPC TERDEKAT (Radius diperbesar)
     let closestNPC = null;
-    let minDist = 9999;
+    let minNPCDist = 60; // Pixel
 
     for (let npc of map.npcs) {
         if (!isNPCActive(npc)) continue;
-        const dist = Math.hypot(targetX - (npc.x * TILE_SIZE + 15), targetY - (npc.y * TILE_SIZE + 15));
         
-        // Jarak interaksi 40px
-        if (dist < 40) {
-            if (dist < minDist) {
-                minDist = dist;
-                closestNPC = npc;
-            }
+        const pCX = STATE.player.x + 10;
+        const pCY = STATE.player.y + 10;
+        const nCX = (npc.x * TILE_SIZE) + 15;
+        const nCY = (npc.y * TILE_SIZE) + 30; // Kaki NPC
+
+        const dist = Math.hypot(pCX - nCX, pCY - nCY);
+        
+        if (dist < minNPCDist) {
+            closestNPC = npc;
+            minNPCDist = dist; // Cari yang paling dekat
         }
     }
 
@@ -8704,22 +8920,29 @@ function handleAction() {
         return;
     }
 
-    // PERBAIKAN: Cek objek manual dengan toleransi box lebih besar
-    // Agar tidak terlalu strict harus pas pixelnya
+    // 2. CARI OBJEK TERDEKAT (YANG BERSENTUHAN)
+    // Menggunakan logika yang sama dengan visibility check (Bounding Box Overlap)
     let hitObject = null;
+    
+    // Buffer interaksi sedikit lebih besar dari visibility agar klik pasti kena
+    const buffer = 10; 
+    
+    const pLeft = STATE.player.x - buffer;
+    const pRight = STATE.player.x + STATE.player.w + buffer;
+    const pTop = STATE.player.y - buffer;
+    const pBottom = STATE.player.y + STATE.player.h + buffer;
+
     for(let obj of map.objects) {
-        const ox = obj.x * TILE_SIZE;
-        const oy = obj.y * TILE_SIZE;
-        
-        // UPDATE: Support Custom Size untuk Interaksi
-        const w = (obj.w || 1) * TILE_SIZE;
-        const h = (obj.h || 1) * TILE_SIZE;
-        
-        // Cek apakah titik target berada di dalam area objek (dengan toleransi 10px)
-        if (targetX > ox - 10 && targetX < ox + w + 10 &&
-            targetY > oy - 10 && targetY < oy + h + 10) {
+        const oLeft = obj.x * TILE_SIZE;
+        const oRight = (obj.x + (obj.w || 1)) * TILE_SIZE;
+        const oTop = obj.y * TILE_SIZE;
+        const oBottom = (obj.y + (obj.h || 1)) * TILE_SIZE;
+
+        // Cek Overlap
+        if (pLeft < oRight && pRight > oLeft && 
+            pTop < oBottom && pBottom > oTop) {
             hitObject = obj;
-            break;
+            break; // Ambil objek pertama yang disentuh
         }
     }
 
@@ -8970,6 +9193,9 @@ function interactNPC(npc) {
     // --- UPDATE: Ganti 'chat' ke 'item' agar bunyi (karena file chat mungkin error) ---
     if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
 
+    // NEW: INCREMENT DAILY TALK COUNTER (Hanya tambah 1 per hari per interaksi unik sebenarnya lebih baik, tapi sederhananya setiap bicara dihitung)
+    STATE.player.dailyTalkCount = (STATE.player.dailyTalkCount || 0) + 1;
+
     const p = STATE.player;
     if(!p.relationships[npc.id]) p.relationships[npc.id] = 0;
     const love = p.relationships[npc.id];
@@ -9105,7 +9331,8 @@ function interactNPC(npc) {
                              showToast(`-${cost} Gold (Biaya Gaya Hidup)`);
                          }
 
-                         if(STATE.player.energy > 2) {
+                         // FIX: Mengubah '>' menjadi '>=' agar sisa energi terakhir bisa digunakan (Lalu pingsan jika habis)
+                         if(STATE.player.energy >= 2) {
                              STATE.player.energy -= 2;
                              let chatContent = getRandomChat(npc.id, love);
                              
@@ -9116,15 +9343,16 @@ function interactNPC(npc) {
                              updateRelationship(npc, 1); 
                              
                              showDialogue(npc.name, chatContent, [{text: "Dengarkan", action: closeDialogue}], npc.imgSrc);
-                         } else showToast("Terlalu lelah...");
+                         } else showToast("Terlalu lelah... (Butuh 2 Energi)");
                     }},
 
                     // UPDATE: Tombol Minigame Gombal
                     {text: "Gombal Maut (Pilih Rayuan) 💘", action: () => {
-                         if(STATE.player.energy > 3) {
+                         // FIX: Mengubah '>' menjadi '>=' 
+                         if(STATE.player.energy >= 3) {
                              STATE.player.energy -= 3;
                              startGombalGame(npc); 
-                         } else showToast("Kurang energi buat mikir gombalan.");
+                         } else showToast("Kurang energi buat mikir gombalan. (Butuh 3)");
                     }}
                 ];
 
@@ -10433,6 +10661,41 @@ function interactObject(obj) {
     else if(obj.type === 'fishing_spot') {
         startFishingMinigame(); 
     }
+    // --- NEW: INTERAKSI KASUR (TIDUR) ---
+    else if(obj.type === 'bed') {
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); 
+        
+        // UPDATE: Dialog Tidur yang lebih langsung sesuai request
+        // UPDATE: Ganti gambar potret dialog ke images/bed.png
+        showDialogue("KASUR EMPUK", "Apakah kamu mau tidur sekarang?", [
+            {text: "Ya, Tidur (Save & Next Day) 🛌", action: () => {
+                // Cek apakah sudah nulis jurnal hari ini?
+                const hasJournalToday = STATE.player.reflections.some(r => r.day === STATE.day);
+                
+                if (hasJournalToday) {
+                    closeDialogue();
+                    handleSleep();
+                } else {
+                    // UPDATE: Prompt Jurnal sebelum tidur
+                    showDialogue("REFLEKSI HARIAN", 
+                        "Sebelum tidur, mari refleksikan harimu sejenak di Jurnal.\n\n(Hadiah: +500 Gold & +50 EXP)", 
+                        [{
+                            text: "✍️ Tulis Jurnal", 
+                            action: () => {
+                                closeDialogue();
+                                openJournalModal(true); // true = mode tidur setelah simpan
+                            }
+                        }, {
+                            text: "Batal Tidur", 
+                            action: closeDialogue
+                        }], 
+                        'images/buku.png'
+                    );
+                }
+            }},
+            {text: "Belum ngantuk", action: closeDialogue}
+        ], 'images/bed.png');
+    }
     else if(obj.type === 'diary') {
         // UPDATE: Ganti 'bg' ke 'item' agar bunyi saat interaksi awal
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); 
@@ -10455,11 +10718,13 @@ function interactObject(obj) {
                  [{text: "Kembali", action: () => interactObject(obj)}], 'images/buku.png');
             }},
             
-            /* --- UPDATE: TOMBOL JURNAL MANUAL --- */
-            {text: "📖 Tulis Jurnal (Refleksi)", action: () => {
-                closeDialogue(); 
-                openJournalModal(false); // false = tidak otomatis tidur
+            /* --- NEW: MENU BELAJAR MANDIRI --- */
+            {text: "📚 Belajar Mandiri (Energy -15)", action: () => {
+                closeDialogue();
+                openSelfStudyMenu();
             }},
+            
+            /* UPDATE: HAPUS OPSI JURNAL & TIDUR DARI BUKU (SUDAH PINDAH KE KASUR) */
             
             {text: "💾 Simpan Game (Save)", action: () => {
                 manualSave();
@@ -10468,35 +10733,8 @@ function interactObject(obj) {
                 closeDialogue();
             }},
             
-            /* --- UPDATE: WAJIB JURNAL SAAT TIDUR --- */
-            {text: "🛌 Tidur (Wajib Jurnal)", action: () => {
-                // Cek apakah sudah nulis jurnal hari ini?
-                const hasJournalToday = STATE.player.reflections.some(r => r.day === STATE.day);
-                
-                if (hasJournalToday) {
-                    // Jika sudah, langsung tidur
-                    handleSleep();
-                } else {
-                    // Jika belum, PAKSA tulis jurnal dulu
-                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                    showDialogue("⚠️ JURNAL WAJIB", 
-                        "Eits, tunggu dulu! Sebagai siswa teladan, kamu WAJIB menulis Jurnal Refleksi harian sebelum tidur.\n\n(Hadiah: +500 Gold & +50 EXP setiap menulis)", 
-                        [{
-                            text: "✍️ Tulis Jurnal Sekarang", 
-                            action: () => {
-                                closeDialogue();
-                                openJournalModal(true); // true = mode tidur setelah simpan
-                            }
-                        }, {
-                            text: "Batal Tidur", 
-                            action: closeDialogue
-                        }], 
-                        'images/buku.png'
-                    );
-                }
-            }},
             {text: "Tutup", action: closeDialogue}
-        ], 'images/buku.png');
+        ], 'images/buku.png'); // FIX: Menggunakan 'images/buku.png' untuk ikon dialog, tapi objeknya 'mejabuku.png'
     }
     else if(obj.type === 'catalog') {
         showDialogue("KATALOG BELANJA", "Beli Furnitur & Upgrade:", [
@@ -10511,9 +10749,78 @@ function interactObject(obj) {
 // --- NEW: LOGIKA SISTEM JURNAL & REWARD ---
 let isSleepPending = false; // Flag global untuk menandai niat tidur
 
+// --- NEW: DAFTAR PERTANYAAN REFLEKSI ACAK ---
+const REFLECTION_QUESTIONS = [
+    "Bagaimana harimu di dunia Nusantara Arsa?",
+    "Bagaimana progress kehidupanmu di Nusantara Arsa sejauh ini?",
+    "Hal apa yang paling seru di dunia Nusantara Arsa hari ini?",
+    "Apa tantangan terbesar yang kamu hadapi hari ini?",
+    "Siapa NPC yang paling berkesan bagimu hari ini?",
+    "Apa rencanamu untuk hari esok?",
+    "Pelajaran apa yang kamu dapatkan hari ini?",
+    "Bagaimana kondisi keuanganmu? Apakah sudah cukup makmur?",
+    "Apakah kamu sudah mendekati target impianmu (Lulus/Kaya/Nikah)?",
+    "Adakah momen lucu atau menyedihkan hari ini?"
+];
+
+// --- NEW FUNCTION: BELAJAR MANDIRI ---
+function openSelfStudyMenu() {
+    const subjects = STATE.player.learnedSubjects || [];
+    
+    if (subjects.length === 0) {
+        showDialogue("CATATAN KOSONG", 
+            "Kamu belum memiliki catatan materi kuliah.\n\n**Hadir kuliah** (Jam 08:00 - 14:00) untuk mendapatkan ilmu yang bisa dipelajari ulang di sini.", 
+            [{text: "Baiklah", action: closeDialogue}], 
+            'images/buku.png'
+        );
+        return;
+    }
+
+    // Buat daftar opsi materi (Ambil 3 terakhir biar gak kepanjangan)
+    const opts = [];
+    // Reverse agar materi terbaru di atas
+    const recentSubjects = [...subjects].reverse().slice(0, 3);
+
+    recentSubjects.forEach(sub => {
+        opts.push({
+            text: `📖 ${sub.t}`,
+            action: () => {
+                if(STATE.player.energy >= 15) {
+                    STATE.player.energy -= 15;
+                    STATE.player.int += 1; // Reward kecil
+                    gainExp(10);
+                    
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    createParticle(STATE.player.x, STATE.player.y, '#3b82f6');
+                    
+                    showDialogue(`REVIEW: ${sub.t}`, 
+                        `"${sub.c}"\n\n(Kamu mempelajari ulang materi ini. Pemahamanmu semakin dalam!)`, 
+                        [{text: "Selesai Belajar", action: closeDialogue}], 
+                        'images/buku.png'
+                    );
+                } else {
+                    showToast("Energi tidak cukup (Butuh 15)!");
+                }
+            }
+        });
+    });
+
+    opts.push({text: "Kembali", action: closeDialogue});
+
+    showDialogue("BELAJAR MANDIRI", "Pilih materi untuk dipelajari ulang (INT +1, EXP +10):", opts, 'images/buku.png');
+}
+
 function openJournalModal(fromSleep = false) {
     isSleepPending = fromSleep;
     const modal = document.getElementById('journal-modal');
+    
+    // --- UPDATE: PILIH PERTANYAAN ACAK ---
+    const randomQ = REFLECTION_QUESTIONS[Math.floor(Math.random() * REFLECTION_QUESTIONS.length)];
+    const qElement = document.getElementById('journal-question');
+    if(qElement) {
+        qElement.innerText = randomQ;
+    }
+
     // Reset textarea
     document.getElementById('journal-input').value = "";
     modal.style.display = 'flex';
@@ -10854,8 +11161,10 @@ function manualSave() {
         claimedLifeTrial: STATE.player.claimedLifeTrial,
         hasSeenDungeonTutorial: STATE.player.hasSeenDungeonTutorial, // NEW: SAVE TUTORIAL STATUS
         
-        // NEW: SIMPAN PROGRESS MANCING
+        // NEW: SIMPAN PROGRESS HARIAN
         dailyFishingCount: STATE.player.dailyFishingCount || 0,
+        dailyMonsterKills: STATE.player.dailyMonsterKills || 0,
+        dailyTalkCount: STATE.player.dailyTalkCount || 0, // Save Talk Count
 
         // 10. Pesan & Jurnal
         reflections: STATE.player.reflections,
@@ -11355,7 +11664,8 @@ function draw() {
             }
         }
     } else if (STATE.location === 'house') {
-        // NEW: Draw House Interior Background based on Level
+        // UPDATE: Hapus Background Image Rumah agar menggunakan Tile Tembok & Lantai
+        /*
         const level = STATE.player.houseLevel || 1;
         const bgImg = houseBgAssets['level' + level];
         if (bgImg && bgImg.complete && bgImg.naturalWidth !== 0) {
@@ -11363,6 +11673,8 @@ function draw() {
             ctx.drawImage(bgImg, 0, 0, map.w * TILE_SIZE, map.h * TILE_SIZE);
             isBgLoaded = true;
         }
+        */
+        isBgLoaded = false; // Paksa render sistem Tile
     }
 
     for(let y=startRow; y<=endRow; y++) {
@@ -11408,12 +11720,52 @@ function draw() {
                     }
                 }
                 
+                // NEW: Handle House Floor (ID 10 in House) - MENGGUNAKAN TILE LANTAI KAYU (Sama dengan Kampus)
+                else if (t === 10 && STATE.location === 'house') {
+                    if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        ctx.fillStyle = '#78350f'; // Warna kayu
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
                 // NEW: Handle School Floor (ID 10 in School Interior)
                 else if (t === 10 && STATE.location === 'school_interior') {
                     if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
                         ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
                         // Fallback ke warna dasar jika gambar belum load
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Library Floor (ID 10 in Library Interior)
+                else if (t === 10 && STATE.location === 'library_interior') {
+                    if (wallAssets.libraryFloor.complete && wallAssets.libraryFloor.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.libraryFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback ke warna dasar
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Guild Floor (ID 10 in Guild Interior)
+                else if (t === 10 && STATE.location === 'guild_interior') {
+                    if (wallAssets.guildFloor.complete && wallAssets.guildFloor.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.guildFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback ke warna dasar
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Guild Wall (ID 2 in Guild Interior)
+                else if (t === 2 && STATE.location === 'guild_interior') {
+                    if (wallAssets.guildWall.complete && wallAssets.guildWall.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.guildWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        ctx.fillStyle = '#475569'; // Fallback warna tembok
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
@@ -11440,12 +11792,42 @@ function draw() {
                     }
                 }
                 
+                // NEW: Handle House Wall (ID 11 in House) - MENGGUNAKAN TILE TEMBOK RUMAH PLAYER
+                else if (t === 11 && STATE.location === 'house') {
+                    if (wallAssets.houseWall.complete && wallAssets.houseWall.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.houseWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        ctx.fillStyle = '#f1f5f9';
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle House Wall Bottom (ID 13 in House) - TILE KHUSUS BAWAH
+                else if (t === 13 && STATE.location === 'house') {
+                    if (wallAssets.houseWallBottom.complete && wallAssets.houseWallBottom.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.houseWallBottom, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        ctx.fillStyle = '#f1f5f9'; // Fallback
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
                 // NEW: Handle School Wall (ID 11 in School Interior)
                 else if (t === 11 && STATE.location === 'school_interior') {
                     if (wallAssets.school.complete && wallAssets.school.naturalWidth !== 0) {
                         ctx.drawImage(wallAssets.school, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
                         // Fallback jika gambar belum diload (Warna Putih/Abu)
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Library Wall (ID 11 in Library Interior)
+                else if (t === 11 && STATE.location === 'library_interior') {
+                    if (wallAssets.libraryWall.complete && wallAssets.libraryWall.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.libraryWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback jika gambar belum diload
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
@@ -11458,7 +11840,8 @@ function draw() {
                 }
 
                 // Handle Trees (Village only for ID 2 & 12)
-                if((t===2 || t===12) && STATE.location !== 'dungeon') {
+                // UPDATE: Hanya gambar pohon jika di Village (Agar tidak muncul di Blacksmith/Guild yang pakai ID 2)
+                if((t===2 || t===12) && STATE.location === 'village') {
                     if(!isBgLoaded) {
                         ctx.fillStyle = '#1e293b'; 
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -12022,6 +12405,20 @@ function drawObject(ctx, o) {
                 if (o.type === 'mailbox') {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTE0IDMyIEwxNCAxNSBMOSAxNSBMOSAxMCBMMjMgMTAgTDIzIDE1IEwxOCAxNSBMMTggMzIgWiIgZmlsbD0iIzU5MzgxMSIvPjxwYXRoIGQ9Ik02IDUgTDI2IDUgTDI2IDEyIEMyNiAxNCA2IDE0IDYgMTIgWiIgZmlsbD0iI0RDMjYyNiIvPjxyZWN0IHg9IjgiIHk9IjciIHdpZHRoPSIxNiIgaGVpZ2h0PSIyIiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjUiLz48L3N2Zz4=';
                 } 
+                // NEW: FALLBACK KASUR (Visual Bed)
+                // UPDATE: Cek juga nama file 'bed' agar fallback tetap jalan jika images/bed.png gagal load
+                else if (src.includes('kasur') || src.includes('bed')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI5NiI+PHJlY3QgeD0iNCIgeT0iMTAiIHdpZHRoPSI1NiIgaGVpZ2h0PSI4MCIgZmlsbD0iIzhCNEMzOSIgcng9IjQiLz48cmVjdCB4PSI4IiB5PSIyNSIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjYwIiBmaWxsPSIjRkZGRkZGIiByeD0iMiIvPjxyZWN0IHg9IjgiIHk9IjEyIiB3aWR0aD0iNDgiIGhlaWdodD0iMTIiIGZpbGw9IiNmZmYiIHJ4PSI0Ii8+PC9zdmc+';
+                }
+                // NEW: FALLBACK MEJA BUKU (Meja Kayu + Buku Biru)
+                /* REVISI: Menambahkan 'mejabelajar' ke kondisi fallback agar tetap aman */
+                else if (src.includes('mejabuku') || src.includes('mejabelajar')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iOCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjOEU1NDJCIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjIwIiB5PSI0IiB3aWR0aD0iMjQiIGhlaWdodD0iMTYiIGZpbGw9IiMzYjgyZjYiIHN0cm9rZT0iIzFkNGVkOCIgc3Ryb2tlLXdpZHRoPSIxIi8+PHBhdGggZD0iTTI2IDQgTDI2IDIwIiBzdHJva2U9IndoaXRlIi8+PC9zdmc+';
+                }
+                // NEW: FALLBACK MEJA TELPON (Meja Kayu + Telpon Merah)
+                else if (src.includes('mejatelpon') || src.includes('telpon')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iNCIgeT0iMTIiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzhFNTQyQiIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PHJlY3QgeD0iMTAiIHk9IjQiIHdpZHRoPSIxMiIgaGVpZ2h0PSI4IiBmaWxsPSIjZWY0NDQ0Ii8+PC9zdmc+';
+                }
                 // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni)
                 else if (src.includes('rakbuku')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOEU1NDJiIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZWY0NDQ0Ii8+PHJlY3QgeD0iMTAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjM2I4MmY2Ii8+PHJlY3QgeD0iMTUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjMTBiOTgxIi8+PHJlY3QgeD0iMjAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZTkxZTYzIi8+PC9zdmc+';
@@ -12382,7 +12779,8 @@ function drawPlayer(ctx, p) {
         ctx.translate(p.x + p.w/2, p.y + p.h/2);
         
         if(!isMoving && !p.isAttacking) {
-            const breathe = 1 + Math.sin(Date.now() / 300) * 0.03; 
+            // UPDATE: Efek bernapas diperhalus (0.03 -> 0.015) agar tidak terlihat naik-turun drastis
+            const breathe = 1 + Math.sin(Date.now() / 300) * 0.015; 
             ctx.scale(1, breathe);
         }
 
@@ -12391,7 +12789,9 @@ function drawPlayer(ctx, p) {
         if (p.isAttacking) {
             ctx.drawImage(sprite, -32, -49, 64, 64); 
         } else {
-            ctx.drawImage(sprite, -20, -45, 40, 60); 
+            // UPDATE: Tinggi disesuaikan (60 -> 56) dan Posisi Y diturunkan (-45 -> -42)
+            // Agar kaki lebih menapak ke bayangan dan tinggi setara NPC
+            ctx.drawImage(sprite, -20, -42, 40, 56); 
         }
         
         ctx.restore();
@@ -12821,6 +13221,9 @@ function handleEnemyDrop(en) {
     // FIX: TAMBAHKAN REWARD KE STATUS PLAYER
     STATE.player.money += gold;
     STATE.player.reputation += 1; 
+
+    // NEW: TAMBAH COUNTER KILL MONSTER HARIAN
+    STATE.player.dailyMonsterKills = (STATE.player.dailyMonsterKills || 0) + 1;
 
     // --- KHUSUS QUEST MONSTER ---
     if(en.isQuestTarget) {
