@@ -11730,6 +11730,28 @@ function draw() {
                     }
                 }
 
+                /* REVISI: Handle Merchant Floor (ID 10) - Menggunakan images/tilelantaikampus.png */
+                else if (t === 10 && STATE.location === 'merchant_interior') {
+                    if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback ke warna dasar jika gambar belum load
+                        ctx.fillStyle = '#78350f'; 
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                /* REVISI: Handle Mentor Floor (ID 10) - Menggunakan images/tilelantaikampus.png */
+                else if (t === 10 && STATE.location === 'mentor_interior') {
+                    if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback ke warna dasar jika gambar belum load
+                        ctx.fillStyle = '#78350f'; 
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
                 // NEW: Handle School Floor (ID 10 in School Interior)
                 else if (t === 10 && STATE.location === 'school_interior') {
                     if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
