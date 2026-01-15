@@ -2437,7 +2437,8 @@ const wallAssets = {
     guildFloor: new Image(),    // NEW: Aset Lantai Guild
     guildWall: new Image(),      // NEW: Aset Tembok Guild
     houseWall: new Image(),       // NEW: Aset Tembok Rumah Player
-    houseWallBottom: new Image()  // NEW: Aset Tembok Bawah Rumah Player
+    houseWallBottom: new Image(),  // NEW: Aset Tembok Bawah Rumah Player
+    blacksmithWall: new Image()   // NEW: Aset Tembok Blacksmith
 };
 wallAssets.school.src = 'images/tiletembokkampus.png';
 wallAssets.schoolFloor.src = 'images/tilelantaikampus.png';
@@ -2446,7 +2447,8 @@ wallAssets.libraryWall.src = 'images/tiletembokperpus.png';
 wallAssets.guildFloor.src = 'images/tilelantaiguild.png';
 wallAssets.guildWall.src = 'images/tiletembokguild.png';
 wallAssets.houseWall.src = 'images/tiletembokrumahplayer.png';
-wallAssets.houseWallBottom.src = 'images/titletembokbawahplayer.png'; // Set source baru untuk tembok bawah
+wallAssets.houseWallBottom.src = 'images/titletembokbawahplayer.png'; 
+wallAssets.blacksmithWall.src = 'images/tiletembokblacksmith.png'; // Set Source Baru
 
 let bgLoadedCount = 0;
 const onBgLoad = () => {
@@ -11788,6 +11790,16 @@ function draw() {
                         ctx.drawImage(wallAssets.guildWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
                         ctx.fillStyle = '#475569'; // Fallback warna tembok
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Blacksmith Wall (ID 2 in Blacksmith Interior)
+                else if (t === 2 && STATE.location === 'blacksmith_interior') {
+                    if (wallAssets.blacksmithWall.complete && wallAssets.blacksmithWall.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.blacksmithWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        ctx.fillStyle = '#262626'; // Fallback warna tembok
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
