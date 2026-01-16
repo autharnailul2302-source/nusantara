@@ -10853,80 +10853,105 @@ function interactObject(obj) {
         // UPDATE: Ganti 'bg' ke 'item' agar bunyi
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); 
 
+        // --- NEW: KALENDER HARVEST MOON STYLE ---
         const p = STATE.player;
-        const role = p.role;
-        let title = "KALENDER & TARGET";
-        let content = "";
         
-        // Helper function untuk checklist visual
-        const check = (condition) => condition ? "✅" : "⬜";
+        // Hitung Data Waktu
+        // 1 Tahun = 120 Hari (4 Musim x 30 Hari)
+        // Season Index 0-3 (Spring, Summer, Autumn, Winter)
+        const totalDays = STATE.day - 1;
+        const year = Math.floor(totalDays / (DAYS_PER_SEASON * 4)) + 1;
+        const dayInSeason = (totalDays % DAYS_PER_SEASON) + 1;
+        const currentSeason = STATE.season; // 'spring', 'summer', 'autumn', 'winter'
 
-        if(role === 'none') {
-            content = "⚠️ Kamu belum memilih Jalur Karir (Role)!\n\nTarget Harian:\n⬜ Temui Mentor Budi di Desa\n⬜ Tentukan Masa Depanmu";
-        } 
-        else if(role === 'worker') {
-            content = `PATH: FIGHTER (PEKERJA)\n` +
-                      `"Kerja Keras Pangkal Kaya"\n\n` +
-                      `📋 TARGET HARIAN:\n` +
-                      `${check(p.shiftStarted)} Masuk Shift (08:00 - 16:00)\n` +
-                      `${check(p.energy < 50)} Habiskan Energi untuk Kerja/Latihan\n\n` +
-                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
-                      `${check(p.str >= 50)} Strength 50+ (${p.str}/50)\n` +
-                      `${check(p.money >= 100000)} Tabungan 100k (${(p.money/1000).toFixed(1)}k)\n` +
-                      `${check(p.bossReputation >= 50)} Reputasi Bos 50+\n\n` +
-                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
-                      `${check(p.str >= 100)} Strength Maksimal (${p.str}/100)\n` +
-                      `${check(p.money >= 500000)} Tabungan 500k (${(p.money/1000).toFixed(1)}k)\n` +
-                      `${check(p.bossReputation >= 100)} Menjadi Manajer Toko`;
-        } 
-        else if(role === 'student') {
-            content = `PATH: MAGE (MAHASISWA)\n` +
-                      `"Perjalanan Menuju Sarjana"\n\n` +
-                      `📋 TARGET HARIAN:\n` +
-                      `${check(STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior')} Hadir di Kampus\n` +
-                      `${check(p.int > (p.level * 5))} Baca Buku / Belajar\n\n` +
-                      `🎯 EVALUASI STUDI (TAHUN KE-3):\n` +
-                      `${check(p.int >= 50)} INT 50+ (Target IPK)\n` +
-                      `${check(p.level >= 15)} Level 15 (Pengalaman)\n` +
-                      `${check(Object.keys(p.inventory).some(k=>k.includes('buku')))} Punya Buku Referensi\n\n` +
-                      `🏆 SYARAT WISUDA (TAHUN KE-4/5):\n` +
-                      `${check(p.int >= 100)} INT Maksimal (Cumlaude)\n` +
-                      `${check(p.level >= 50)} Level Karakter 50\n` +
-                      `${check(p.inventory['buku_tesis'] >= 1)} Menyelesaikan Skripsi/Tesis`;
-        } 
-        else if(role === 'entrepreneur') {
-            content = `PATH: SUPPORT (WIRAUSAHA)\n` +
-                      `"Beli Murah, Jual Mahal"\n\n` +
-                      `📋 TARGET HARIAN:\n` +
-                      `${check(STATE.location === 'merchant_interior')} Cek Harga Pasar\n` +
-                      `${check(Object.values(p.inventory).some(v => v > 5))} Stok Barang Dagangan\n\n` +
-                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
-                      `${check(p.biz >= 50)} Business Skill 50+ (${p.biz}/50)\n` +
-                      `${check(p.money >= 250000)} Aset 250k (${(p.money/1000).toFixed(1)}k)\n` +
-                      `${check(p.houseLevel >= 2)} Upgrade Rumah Lv 2\n\n` +
-                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
-                      `${check(p.biz >= 100)} Business Skill Max (${p.biz}/100)\n` +
-                      `${check(p.money >= 1000000)} Aset 1 Juta Gold (${(p.money/1000).toFixed(1)}k)\n` +
-                      `${check(p.houseLevel >= 5)} Punya Rumah Mewah (Lv ${p.houseLevel})`;
-        } 
-        else if(role === 'family') {
-            content = `PATH: TANKER (KELUARGA)\n` +
-                      `"Keluarga adalah Harta Berharga"\n\n` +
-                      `📋 TARGET HARIAN:\n` +
-                      `${check(p.energy < 80)} Bantu Tetangga / NPC\n` +
-                      `${check(Object.keys(p.relationships).length >= 3)} Sosialisasi (Ngobrol)\n\n` +
-                      `🎯 TARGET LOLOS TRIAL (3 TAHUN):\n` +
-                      `${check(p.reputation >= 50)} Reputasi 50+ (${p.reputation}/50)\n` +
-                      `${check(Object.keys(p.relationships).length >= 5)} Punya 5 Teman\n` +
-                      `${check(p.houseLevel >= 2)} Rumah Nyaman (Lv ${p.houseLevel})\n\n` +
-                      `🏆 SYARAT KELULUSAN (5 TAHUN):\n` +
-                      `${check(p.reputation >= 100)} Reputasi Warga (${p.reputation}/100)\n` +
-                      `${check(p.married)} Menikah (${check(p.married)})\n` +
-                      `${check(p.houseLevel >= 3)} Rumah Layak Huni (Lv ${p.houseLevel})`;
+        // DATABASE EVENT & FESTIVAL (HARVEST MOON STYLE)
+        const CALENDAR_EVENTS = {
+            'spring': {
+                1: "🌸 Tahun Baru (Libur Nasional)",
+                4: "🎂 Ultah Dr. Budi",
+                14: "💖 Festival Bunga (Valentine)",
+                18: "🐎 Lomba Pacuan Kuda",
+                25: "🍳 Lomba Memasak"
+            },
+            'summer': {
+                1: "☀️ Buka Giling (Panen Raya)",
+                7: "🐔 Festival Ayam",
+                15: "🎂 Ultah Satria",
+                20: "🏊 Lomba Berenang (Pantai)",
+                24: "🎆 Festival Kembang Api"
+            },
+            'autumn': {
+                2: "🎂 Ultah Putri (Scholar)",
+                5: "🎵 Festival Musik",
+                15: "🍇 Pesta Panen Anggur",
+                21: "🐑 Festival Domba",
+                30: "🎃 Malam Hantu (Halloween)"
+            },
+            'winter': {
+                6: "🎂 Ultah Ayu (Gadis Desa)",
+                10: "🎣 Lomba Mancing Es",
+                19: "🍲 Pesta Sup Hangat",
+                24: "🌟 Malam Bintang (Natal)",
+                30: "🕛 Malam Akhir Tahun"
+            }
+        };
+
+        // Judul Kalender
+        let title = `KALENDER ${currentSeason.toUpperCase()} - TAHUN ${year}`;
+        
+        // Header: Tanggal Hari Ini
+        let content = `📅 **HARI INI: Tanggal ${dayInSeason}**\n`;
+        content += `(Musim ${currentSeason.charAt(0).toUpperCase() + currentSeason.slice(1)})\n\n`;
+
+        // Cek Apakah Hari Ini Ada Event?
+        const todayEvent = CALENDAR_EVENTS[currentSeason][dayInSeason];
+        if (todayEvent) {
+            content += `🎉 **EVENT HARI INI:**\n✨ ${todayEvent} ✨\n\n`;
+        } else {
+            content += `📝 **Agenda Hari Ini:**\nTidak ada festival khusus.\n\n`;
         }
 
+        // List Jadwal Festival Musim Ini
+        content += `🗓️ **JADWAL ${currentSeason.toUpperCase()} INI:**\n`;
+        
+        const seasonEvents = CALENDAR_EVENTS[currentSeason];
+        let upcomingFound = false;
+
+        // Loop tanggal 1 sampai 30 untuk menampilkan event secara urut
+        for (let d = 1; d <= 30; d++) {
+            if (seasonEvents[d]) {
+                let mark = "⭕"; // Belum lewat
+                let style = "";
+                
+                if (d < dayInSeason) {
+                    mark = "✅"; // Sudah lewat
+                    style = "color:#94a3b8; text-decoration:line-through;"; // Abu-abu coret (visual di teks biasa gak bisa style span, jadi kita pakai tanda saja)
+                } else if (d === dayInSeason) {
+                    mark = "📍"; // Hari ini
+                } else {
+                    upcomingFound = true;
+                }
+
+                // Format baris: [Ikon] Tgl X: Nama Event
+                content += `${mark} Tgl ${d}: ${seasonEvents[d]}\n`;
+            }
+        }
+
+        if (!upcomingFound && dayInSeason > 30) {
+            content += "\n(Semua event musim ini telah selesai. Persiapkan diri untuk musim depan!)";
+        }
+
+        // Tambahkan Info Cuaca Besok (Prediksi Sederhana)
+        // Kita intip seed random besok (simplified)
+        const nextDayRand = Math.random(); 
+        let forecast = "Cerah";
+        if (STATE.season === 'spring' && nextDayRand < 0.3) forecast = "Hujan";
+        else if (STATE.season === 'winter' && nextDayRand < 0.6) forecast = "Salju";
+        
+        content += `\n🌤️ **Ramalan Cuaca Besok:** ${forecast}`;
+
         showDialogue(title, content, [
-            {text: "Semangat! 💪", action: closeDialogue}
+            {text: "Tutup Kalender", action: closeDialogue}
         ], 'images/kalender.png');
     }
     // UPDATE: Logika Interaksi Kotak Surat (Inbox) dengan Arsip
