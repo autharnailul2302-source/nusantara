@@ -5205,7 +5205,10 @@ for(let i=0; i<10; i++) {
             { id: 'school', x: 38, y: 10, w: 6, h: 5, img: 'images/kampus.png', entrance: {x: 41, y: 14, map: 'school_interior'}, name: "Kampus", roleSpecific: 'student', openTime: 700, closeTime: 1800 },
             { id: 'merchant', x: 26, y: 22, w: 6, h: 5, img: 'images/rumahmerchant.png', entrance: {x: 29, y: 26, map: 'merchant_interior'}, name: "Merchant", openTime: 600, closeTime: 2000 },
             { id: 'mentor', x: 28, y: 15, w: 6, h: 5, img: 'images/rumahmentor.png', entrance: {x: 31, y: 19, map: 'mentor_interior'}, name: "Rumah Mentor", openTime: 800, closeTime: 2200 },
-            { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 31, map: 'blacksmith_interior'}, name: "Blacksmith", roleSpecific: 'worker', openTime: 800, closeTime: 1800 },
+            
+            /* REVISI: HAPUS roleSpecific: 'worker' DARI BLACKSMITH AGAR BUKA UNTUK UMUM */
+            { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 31, map: 'blacksmith_interior'}, name: "Blacksmith", openTime: 800, closeTime: 1800 },
+            
             { id: 'love_house', x: 14, y: 25, w: 6, h: 5, img: 'images/rumahlove.png', entrance: {x: 17, y: 29, map: 'love_interior'}, name: "Rumah Pasangan", openTime: 900, closeTime: 2100 },
             
             /* MOVED: PERPUSTAKAAN SHIFTED LEFT (Avoiding Dungeon) */
@@ -9208,9 +9211,10 @@ function interactNPC(npc) {
         const currentYear = Math.ceil(STATE.day / 120);
         
         // Cek apakah pemain BUKAN Worker, Masih dalam Masa Trial (< Thn 4), dan Belum Bekerja
+        // REVISI NARASI: Menjelaskan bahwa Toko Buka untuk Belanja, tapi Lowongan Tutup.
         if (p.role !== 'worker' && currentYear < 4 && !STATE.freeRoamMode && p.jobStatus !== 'employed') {
             showDialogue("MERCHANT", 
-                "Selamat datang! Kami menyediakan komoditas terbaik untuk kebutuhan warga.\n\n(Maaf, lowongan kerja saat ini **KHUSUS** untuk Role **Fighter/Pekerja**. Kamu harus fokus pada kewajiban Role-mu sendiri selama masa Trial 3 Tahun ini.)", 
+                "Selamat datang! Silakan lihat-lihat barang dagangan kami.\n\n(Catatan: Bos Merchant hanya membuka lowongan kerja untuk Role **Fighter/Pekerja** selama masa Trial 3 Tahun ini. Kamu bisa melamar setelah lulus Trial.)", 
                 [
                     {text: "Lihat Pasar Komoditas (Jual/Beli)", action: () => openTradingMenu(npc)},
                     {text: "Ngobrol Bisnis", action: () => {
@@ -9357,6 +9361,32 @@ function interactNPC(npc) {
                          } else showToast("Kurang energi buat mikir gombalan. (Butuh 3)");
                     }}
                 ];
+
+                /* --- NEW: OPSI BEROBAT KHUSUS DR. BUDI --- */
+                if (npc.id === 'lover1boy') {
+                    // Masukkan opsi Berobat ke urutan paling atas (unshift)
+                    dialogueOpts.unshift({ 
+                        text: "💉 Berobat (Full Heal - 500G)", 
+                        action: () => {
+                            if(STATE.player.money >= 500) {
+                                STATE.player.money -= 500;
+                                STATE.player.hp = STATE.player.maxHp;
+                                STATE.player.energy = 100;
+                                showToast("Sehat Walafiat! ✨");
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                closeDialogue();
+                            } else showToast("Uang tidak cukup!");
+                        }
+                    });
+                    
+                    // Tambahan Konsultasi
+                    dialogueOpts.splice(1, 0, {
+                        text: "🩺 Konsultasi Kesehatan", 
+                        action: () => {
+                             showDialogue(npc.name, "Jaga pola makan dan tidur. Jangan terlalu sering begadang di Dungeon ya.", [{text:"Baik Dok", action:closeDialogue}], npc.imgSrc);
+                        }
+                    });
+                }
 
                 // --- NEW: LOGIKA TOMBOL LAMAR DENGAN CINCIN RAJA ---
                 const hasRing = (STATE.player.inventory['cincin_legend'] || 0) > 0;
@@ -13469,7 +13499,7 @@ function updateEnemies() {
                     open24h: true
                 });
             }
-        }a
+        }
     }
 }
 
@@ -13618,7 +13648,7 @@ function drawMinimap() {
         });
     }
 
-    // 5. DRAW PLAYERa
+    // 5. DRAW PLAYER
     const px = STATE.player.x * scaleX;
     const py = STATE.player.y * scaleY;
     
