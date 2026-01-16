@@ -515,55 +515,23 @@
             box-sizing: border-box;
         }
 
+        /* FIX: JOYSTICK DIHILANGKAN SESUAI REQUEST */
         .d-pad {
-            width: 140px;
-            height: 140px;
-            position: relative;
-            pointer-events: auto;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.1);
-            /* FIX: Mencegah browser melakukan aksi default seperti scroll/zoom pada pad */
-            touch-action: none; 
+            display: none !important;
         }
 
-        .d-btn {
-            position: absolute;
-            width: 45px;
-            height: 45px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            backdrop-filter: blur(2px);
-            /* FIX: Memastikan tombol menerima sentuhan dengan cepat */
-            touch-action: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .d-btn {
-            position: absolute;
-            width: 45px;
-            height: 45px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            backdrop-filter: blur(2px);
-        }
-        .d-btn:active { background: var(--accent); opacity: 0.5; }
-        .d-up { top: 0; left: 47.5px; }
-        .d-down { bottom: 0; left: 47.5px; }
-        .d-left { top: 47.5px; left: 0; }
-        .d-right { top: 47.5px; right: 0; }
-
+        /* Action Buttons tetap ada di kanan */
         .action-btns {
             display: flex;
-            gap: 15px; /* JARAK KONSISTEN ANTAR TOMBOL (DIPERBAIKI) */
-            align-items: center; /* Rata tengah vertikal agar rapi */
-            justify-content: flex-end; /* Merapat ke kanan */
+            gap: 15px; 
+            align-items: center; 
+            /* FIX: Gunakan absolute positioning agar tetap di kanan bawah meski joystick hilang */
+            position: absolute;
+            right: 40px;
+            bottom: 20px;
+            
             pointer-events: auto;
-            margin-bottom: 30px; /* Jarak dari bawah layar */
-            padding-right: 20px; /* Padding kanan */
-            transform: rotate(-10deg); /* Kemiringan ergonomis yang lebih natural */
+            transform: rotate(-10deg); 
         }
 
         .round-btn {
@@ -2231,12 +2199,9 @@ button, .round-btn, .d-btn, .auth-btn {
         </div>
 
         <div id="controls">
-            <div class="d-pad" id="joystick"> <!-- Added ID joystick -->
-                <div class="d-btn d-up" id="btn-up"></div>
-                <div class="d-btn d-down" id="btn-down"></div>
-                <div class="d-btn d-left" id="btn-left"></div>
-                <div class="d-btn d-right" id="btn-right"></div>
-            </div>
+            <!-- JOYSTICK DIHAPUS DARI DOM (CSS display:none sudah handle, tapi biar bersih di HTML juga) -->
+            <div class="d-pad" id="joystick" style="display:none;"></div> 
+            
             <div class="action-btns">
                 <!-- NEW: TOMBOL QUEST -->
                 <div id="quest-btn" onclick="toggleDailyQuest()" title="Lihat Quest Harian">📜</div>
@@ -4969,17 +4934,29 @@ function resize() {
     // Ini akan sangat meningkatkan FPS di HP tanpa merusak tampilan pixel art
     const isMobile = window.innerWidth < 1000;
     
-    if (isMobile) {
-        canvas.width = 960;  // 480 x 2
-        canvas.height = 540; // 270 x 2
+    // FIX: Paksa resize agar canvas tidak 0x0
+    if (container.clientWidth > 0 && container.clientHeight > 0) {
+        if (isMobile) {
+            canvas.width = 960;  // 480 x 2
+            canvas.height = 540; // 270 x 2
+        } else {
+            canvas.width = 1920; // 480 x 4
+            canvas.height = 1080;// 270 x 4
+        }
     } else {
-        canvas.width = 1920; // 480 x 4
-        canvas.height = 1080;// 270 x 4
+        // Fallback jika container belum ter-render
+        canvas.width = 960;
+        canvas.height = 540;
     }
     
     ctx.imageSmoothingEnabled = false; // Pixel art lebih tajam
 }
 window.addEventListener('resize', resize);
+// FIX: Tambahkan Listener Orientasi untuk HP (Fix Gambar Hilang saat Login)
+window.addEventListener('orientationchange', () => {
+    setTimeout(resize, 200); // Tunggu rotasi selesai
+    setTimeout(resize, 1000); // Cek ulang
+});
 
 /** ASSETS GENERATION (MAP) */
 const ISLAND_W = 60;
@@ -5115,6 +5092,15 @@ for(let x=0; x<SCHOOL_W; x++) { schoolTiles[0*SCHOOL_W+x] = 11; schoolTiles[(SCH
 for(let y=0; y<SCHOOL_H; y++) { schoolTiles[y*SCHOOL_W+0] = 11; schoolTiles[y*SCHOOL_W+(SCHOOL_W-1)] = 11; }
 schoolTiles[(SCHOOL_H-1)*SCHOOL_W + 8] = 8; // Door Tile (Tengah Bawah)
 
+// --- NEW: CLINIC INTERIOR MAP (14x12) ---
+const CLINIC_W = 14;
+const CLINIC_H = 12;
+const clinicTiles = new Array(CLINIC_W * CLINIC_H).fill(10); // 10 = Floor
+// Walls (ID 11 = Putih/Bersih)
+for(let x=0; x<CLINIC_W; x++) { clinicTiles[0*CLINIC_W+x] = 11; clinicTiles[(CLINIC_H-1)*CLINIC_W+x] = 11; }
+for(let y=0; y<CLINIC_H; y++) { clinicTiles[y*CLINIC_W+0] = 11; clinicTiles[y*CLINIC_W+(CLINIC_W-1)] = 11; }
+clinicTiles[(CLINIC_H-1)*CLINIC_W + 7] = 8; // Door Tile
+
 // NEW: BLACKSMITH INTERIOR MAP (14x12)
 const SMITH_W = 14;
 const SMITH_H = 12;
@@ -5132,6 +5118,33 @@ const mentorTiles = new Array(MENTOR_W * MENTOR_H).fill(10); // 10 = Wood Floor
 for(let x=0; x<MENTOR_W; x++) { mentorTiles[0*MENTOR_W+x] = 11; mentorTiles[(MENTOR_H-1)*MENTOR_W+x] = 11; }
 for(let y=0; y<MENTOR_H; y++) { mentorTiles[y*MENTOR_W+0] = 11; mentorTiles[y*MENTOR_W+(MENTOR_W-1)] = 11; }
 mentorTiles[(MENTOR_H-1)*MENTOR_W + 7] = 8; // Door Tile
+
+// --- NEW: WEDDING INTERIOR MAP (14x14) ---
+const WEDDING_W = 14;
+const WEDDING_H = 14;
+const weddingTiles = new Array(WEDDING_W * WEDDING_H).fill(10); // 10 = Floor
+// Walls (ID 11 = Putih/Bersih/Suci)
+for(let x=0; x<WEDDING_W; x++) { weddingTiles[0*WEDDING_W+x] = 11; weddingTiles[(WEDDING_H-1)*WEDDING_W+x] = 11; }
+for(let y=0; y<WEDDING_H; y++) { weddingTiles[y*WEDDING_W+0] = 11; weddingTiles[y*WEDDING_W+(WEDDING_W-1)] = 11; }
+weddingTiles[(WEDDING_H-1)*WEDDING_W + 7] = 8; // Door Tile
+
+// --- NEW: AYU'S HOUSE INTERIOR (14x12) ---
+const LOVER1_W = 14;
+const LOVER1_H = 12;
+const lover1Tiles = new Array(LOVER1_W * LOVER1_H).fill(10); // 10 = Wood Floor
+// Walls (ID 11 = Tembok Putih/Bersih)
+for(let x=0; x<LOVER1_W; x++) { lover1Tiles[0*LOVER1_W+x] = 11; lover1Tiles[(LOVER1_H-1)*LOVER1_W+x] = 11; }
+for(let y=0; y<LOVER1_H; y++) { lover1Tiles[y*LOVER1_W+0] = 11; lover1Tiles[y*LOVER1_W+(LOVER1_W-1)] = 11; }
+lover1Tiles[(LOVER1_H-1)*LOVER1_W + 7] = 8; // Door Tile
+
+// --- NEW: FISHERMAN HOUSE INTERIOR (12x10) ---
+const FISH_W = 12;
+const FISH_H = 10;
+const fishTiles = new Array(FISH_W * FISH_H).fill(10); // 10 = Wood Floor
+// Walls (ID 11 = Tembok)
+for(let x=0; x<FISH_W; x++) { fishTiles[0*FISH_W+x] = 11; fishTiles[(FISH_H-1)*FISH_W+x] = 11; }
+for(let y=0; y<FISH_H; y++) { fishTiles[y*FISH_W+0] = 11; fishTiles[y*FISH_W+(FISH_W-1)] = 11; }
+fishTiles[(FISH_H-1)*FISH_W + 6] = 8; // Door Tile
 
 // --- UPDATE: MAP RERUNTUHAN YANG LEBIH DETAIL ---
 const RUINS_W = 22;
@@ -5209,7 +5222,8 @@ for(let i=0; i<10; i++) {
             /* REVISI: HAPUS roleSpecific: 'worker' DARI BLACKSMITH AGAR BUKA UNTUK UMUM */
             { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 31, map: 'blacksmith_interior'}, name: "Blacksmith", openTime: 800, closeTime: 1800 },
             
-            { id: 'love_house', x: 14, y: 25, w: 6, h: 5, img: 'images/rumahlove.png', entrance: {x: 17, y: 29, map: 'love_interior'}, name: "Rumah Pasangan", openTime: 900, closeTime: 2100 },
+            /* UPDATE: MENGUBAH RUMAH LOVE MENJADI RUMAH AYU */
+            { id: 'lover1_home', x: 14, y: 25, w: 6, h: 5, img: 'images/rumahlove.png', entrance: {x: 17, y: 29, map: 'lover1_interior'}, name: "Rumah Ayu", openTime: 700, closeTime: 2100 },
             
             /* MOVED: PERPUSTAKAAN SHIFTED LEFT (Avoiding Dungeon) */
             /* FIX: Jam Buka Diperbaiki menjadi 2000 (8 Malam) */
@@ -5225,8 +5239,9 @@ for(let i=0; i<10; i++) {
             /* UPDATE: PELABUHAN TIDAK DIUBAH KARENA PLAYER BISA JALAN DI ATASNYA */
             { id: 'port', x: 43, y: 34, w: 7, h: 5, img: 'images/pelabuhan.png', entrance: {x: 46, y: 37, map: 'fishing_action'}, name: "Dermaga Mancing", open24h: true },
             
-            /* DIHAPUS: Rumah Tetangga Kiri (Villager 1 & 3) */
-            { id: 'villager2', x: 26, y: 7, w: 4, h: 4, img: 'images/rumahwarga.png', entrance: {x: 28, y: 10, map: 'villager2'}, name: "Rumah Tetangga 2", openTime: 2500, closeTime: 0 }
+            /* NEW: RUMAH TETANGGA (NELAYAN) - DIAKTIFKAN KEMBALI */
+            /* Posisi: Sebelah kanan rumah player (x:26) */
+            { id: 'fisherman_home', x: 26, y: 7, w: 4, h: 4, img: 'images/rumahwarga.png', entrance: {x: 28, y: 10, map: 'fisherman_interior'}, name: "Rumah Nelayan", openTime: 600, closeTime: 2100 }
         ],
         npcs: [
             /* UPDATE: MENTOR BUDI DIHAPUS DARI LUAR RUMAH (DEFAULT HIDDEN) */
@@ -5267,7 +5282,9 @@ for(let i=0; i<10; i++) {
             
             /* UPDATE: POSISI NPC DI DERMAGA MENGIKUTI PERUBAHAN BANGUNAN */
             {id: 'nelayan', x: 44, y: 36, name: 'Pak Nelayan', imgSrc: 'images/nelayan.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
-            {id: 'istrinelayan', x: 43, y: 35, name: 'Bu Nelayan', imgSrc: 'images/istrinelayan.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
+            
+            /* MOVED: Bu Nelayan dipindah ke dalam rumahnya (fisherman_interior) */
+            /* {id: 'istrinelayan', x: 43, y: 35, name: 'Bu Nelayan', ... }  <-- DIHAPUS DARI LUAR */
             
             /* NEW: NPC KERUKUNAN (Dipindah ke Area Lapang Kiri & Jadwal DAY) */
             /* UPDATE: Tipe diubah jadi 'static' agar diam di tempat & Posisi didekatkan (x:10 & x:11) */
@@ -5401,10 +5418,10 @@ for(let i=0; i<10; i++) {
             {x: 5, y: 8, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, 
             {x: 8, y: 8, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
 
-            /* UPDATE: Menambahkan Vas Bunga Putih di Kiri Pintu (x:5, y:11) */
-            {x: 5, y: 11, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Harum bunga melati menyambutmu.", img: 'images/vasputih.png'},
-            /* UPDATE: Menambahkan Vas Bunga Putih di Kanan Pintu (x:9, y:11) */
-            {x: 9, y: 11, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Menjaga ketenangan di ruang baca.", img: 'images/vasputih.png'},
+            /* REVISI: POSISI VAS BUNGA DIPINDAH KE BELAKANG PUSTAKAWAN (y:1) */
+            /* Ditaruh di x:5 dan x:8 agar mengapit pustakawan, tidak menempel tembok atas (y:0) */
+            {x: 5, y: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Harum bunga melati.", img: 'images/vasputih.png'},
+            {x: 8, y: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Hiasan yang elegan.", img: 'images/vasputih.png'},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -5537,6 +5554,136 @@ for(let i=0; i<10; i++) {
             {x: 11, y: 8, type: 'shelf', icon: '🖼️', text: "Foto Angkatan Pertama"},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
+        ]
+    },
+    /* NEW: CLINIC INTERIOR MAP ADDED */
+    'clinic_interior': {
+        w: CLINIC_W, h: CLINIC_H,
+        tiles: clinicTiles,
+        buildings: [
+            { id: 'clinic_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Klinik" }
+        ],
+        npcs: [
+            /* Dr. Budi (Love Interest) dipindah ke sini */
+            {id: 'lover1boy', x: 7, y: 4, name: 'Dr. Budi', imgSrc: 'images/lover1boy.png', type: 'service', schedule: 'always', w: 40, h: 60},
+            
+            /* NPC Perawat Tambahan */
+            {id: 'nurse', x: 3, y: 5, name: 'Perawat', imgSrc: 'images/girl.png', type: 'wander', schedule: 'day', w: 40, h: 60} 
+        ],
+        objects: [
+            /* Meja Dokter */
+            {x: 7, y: 3, type: 'table', icon: '🩺', img: 'images/mejadosen.png'}, 
+            
+            /* Lemari Obat & Arsip */
+            {x: 1, y: 3, w: 2, h: 2, type: 'shelf', icon: '💊', text: "Lemari Obat Lengkap", img: 'images/rakbuku.png'},
+            {x: 11, y: 3, w: 2, h: 2, type: 'shelf', icon: '🗄️', text: "Arsip Rekam Medis", img: 'images/rakbuku.png'},
+            
+            /* Bed Pasien (Untuk hiasan / interaksi tidur darurat?) */
+            {x: 2, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Bed Pasien 1"},
+            {x: 10, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Bed Pasien 2"},
+
+            {x: 7, y: 11, type: 'door_out', icon: '🚪'}
+        ]
+    },
+    /* NEW: WEDDING INTERIOR ADDED */
+    'wedding_interior': {
+        w: WEDDING_W, h: WEDDING_H,
+        tiles: weddingTiles,
+        buildings: [
+            { id: 'wedding_exit', x: 6, y: 13, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 13}, name: "Keluar Balai" }
+        ],
+        npcs: [
+            /* NPC Penghulu di Altar */
+            /* UPDATE: Ganti gambar Penghulu menjadi modin.png */
+            {id: 'penghulu', x: 6.5, y: 2, name: 'Bapak Penghulu', imgSrc: 'images/modin.png', type: 'service', schedule: 'always', w: 40, h: 60}
+        ],
+        objects: [
+            /* Altar/Meja Akad di Tengah Depan */
+            {x: 6, y: 3, w: 2, h: 1, type: 'table', icon: '📖', img: 'images/mejadosen.png'}, 
+            
+            /* Kursi Tamu Kiri (Barisan Rapi) */
+            {x: 2, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 2, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 2, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+
+            /* Kursi Tamu Kanan (Barisan Rapi) */
+            {x: 9, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 11, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 9, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 11, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 9, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 11, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+
+            /* Hiasan Bunga Mewah di Depan */
+            {x: 1, y: 3, type: 'bookshelf', icon: '🏺', text: "Bunga Pernikahan", img: 'images/vasputih.png'},
+            {x: 12, y: 3, type: 'bookshelf', icon: '🏺', text: "Bunga Pernikahan", img: 'images/vasputih.png'},
+            
+            /* Karpet Merah (Imajiner / Menggunakan tile floor biasa tapi area tengah dikosongkan untuk jalan) */
+
+            {x: 7, y: 13, type: 'door_out', icon: '🚪'}
+        ]
+    },
+    /* NEW: AYU'S HOUSE INTERIOR ADDED */
+    'lover1_interior': {
+        w: LOVER1_W, h: LOVER1_H,
+        tiles: lover1Tiles,
+        buildings: [
+            { id: 'lover1_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Rumah" }
+        ],
+        npcs: [
+            /* Ayu (Gadis Desa) di dalam rumahnya */
+            {id: 'lover1girl', x: 7, y: 4, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'always', w: 40, h: 60}
+        ],
+        objects: [
+            /* Kasur Ayu */
+            {x: 1, y: 2, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Ayu"},
+            
+            /* Dapur Sederhana */
+            {x: 11, y: 2, type: 'shelf', icon: '🍳', text: "Dapur: Bau kue labu yang enak."},
+            {x: 12, y: 2, type: 'shelf', icon: '🥘', text: "Panci Sup Sayur."},
+
+            /* Meja Makan Kecil */
+            {x: 11, y: 5, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursi.png'}, 
+
+            /* Banyak Tanaman/Bunga (Ayu suka bunga) */
+            {x: 1, y: 8, type: 'bookshelf', icon: '🌻', text: "Bunga Matahari", img: 'images/vasputih.png'},
+            {x: 3, y: 8, type: 'bookshelf', icon: '🌹', text: "Mawar Merah", img: 'images/vasputih.png'},
+            {x: 10, y: 8, type: 'bookshelf', icon: '🌷', text: "Tulip", img: 'images/vasputih.png'},
+            {x: 12, y: 8, type: 'bookshelf', icon: '🌼', text: "Melati", img: 'images/vasputih.png'},
+            
+            /* Lemari Pakaian */
+            {x: 4, y: 1, type: 'shelf', icon: '👗', text: "Lemari Pakaian Ayu"},
+
+            {x: 7, y: 11, type: 'door_out', icon: '🚪'}
+        ]
+    },
+    /* NEW: FISHERMAN HOUSE INTERIOR ADDED */
+    'fisherman_interior': {
+        w: FISH_W, h: FISH_H,
+        tiles: fishTiles,
+        buildings: [
+            { id: 'fisherman_exit', x: 5, y: 9, w: 3, h: 1, type: 'trigger', entrance: {x: 6, y: 9}, name: "Keluar Rumah" }
+        ],
+        npcs: [
+            /* Bu Nelayan di dalam rumah (Menjaga rumah saat suami kerja) */
+            {id: 'istrinelayan', x: 6, y: 4, name: 'Bu Nelayan', imgSrc: 'images/istrinelayan.png', type: 'wander', schedule: 'always', w: 40, h: 60}
+        ],
+        objects: [
+            /* Dekorasi Khas Nelayan */
+            {x: 1, y: 2, w: 3, h: 2, type: 'shelf', icon: '🕸️', text: "Jaring Ikan: Sedang dijemur/diperbaiki."},
+            {x: 10, y: 2, type: 'shelf', icon: '🎣', text: "Rak Pancing: Koleksi joran bambu tua."},
+            
+            /* Hasil Tangkapan */
+            {x: 10, y: 5, type: 'shelf', icon: '🐟', text: "Ember Ikan: Bau amis tapi segar!"},
+            {x: 11, y: 5, type: 'shelf', icon: '🧊', text: "Box Es: Untuk mengawetkan ikan."},
+
+            /* Kasur Sederhana */
+            {x: 1, y: 6, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Nelayan"},
+            
+            /* Meja Makan */
+            {x: 6, y: 4, type: 'table', icon: '🪑', img: 'images/kursi.png'},
+            
+            /* Piala/Penghargaan */
+            {x: 5, y: 1, type: 'shelf', icon: '🏆', text: "Piala: Juara Mancing Ikan Mas 2023"},
+
+            {x: 6, y: 9, type: 'door_out', icon: '🚪'}
         ]
     },
     'dungeon': {
@@ -5903,42 +6050,123 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-const touchState = { up: false, down: false, left: false, right: false };
-const bindTouch = (id, key) => {
-    const el = document.getElementById(id);
-    
-    // FIX: Tambahkan preventDefault pada touchstart dan touchend agar tidak delay
-    // Tambahkan juga touchmove untuk menangani jika jari bergeser sedikit
-    el.addEventListener('touchstart', (e) => { 
-        if(e.cancelable) e.preventDefault(); 
-        touchState[key] = true; 
-    }, {passive: false});
-    
-    el.addEventListener('touchend', (e) => { 
-        if(e.cancelable) e.preventDefault(); 
-        touchState[key] = false; 
-    }, {passive: false});
-    
-    // Fallback mouse untuk testing di PC
-    el.addEventListener('mousedown', () => touchState[key] = true);
-    el.addEventListener('mouseup', () => touchState[key] = false);
-    el.addEventListener('mouseleave', () => touchState[key] = false); // Safety jika mouse keluar area
+// --- REVISI TOTAL: TOUCH TO MOVE SYSTEM (INVISIBLE JOYSTICK) ---
+// Menggantikan Joystick Visual dengan sistem sentuh seluruh layar
+const inputState = {
+    active: false,
+    x: 0, // Vektor arah X (-1 s/d 1)
+    y: 0  // Vektor arah Y (-1 s/d 1)
 };
-['up','down','left','right'].forEach(k => bindTouch(`btn-${k}`, k));
 
+function initTouchControls() {
+    const container = document.getElementById('game-container');
+    
+    // Helper untuk memproses input sentuh/mouse
+    const handleInput = (clientX, clientY) => {
+        // Hitung titik tengah layar (Pusat Kamera/Pemain)
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        // Hitung jarak dari sentuhan ke tengah layar
+        const dx = clientX - centerX;
+        const dy = clientY - centerY;
+
+        // Hitung sudut
+        const angle = Math.atan2(dy, dx);
+        
+        // Deadzone kecil (jarak 20px dari tengah tidak dianggap gerak)
+        // Agar tidak goyang sendiri kalau jari pas di tengah
+        const dist = Math.hypot(dx, dy);
+        if(dist < 20) {
+            inputState.active = false;
+            inputState.x = 0;
+            inputState.y = 0;
+            return;
+        }
+
+        // Set vektor gerakan berdasarkan sudut
+        inputState.active = true;
+        inputState.x = Math.cos(angle);
+        inputState.y = Math.sin(angle);
+    };
+
+    // 1. TOUCH EVENTS (HP/Tablet/IFP)
+    container.addEventListener('touchstart', (e) => {
+        // Cek apakah yang disentuh adalah elemen UI (Tombol)?
+        // Jika ya, jangan gerakkan karakter.
+        if (e.target.closest('.action-btns') || e.target.closest('.hud-top') || e.target.closest('.minigame-overlay')) {
+            return; 
+        }
+        
+        e.preventDefault(); // Mencegah scroll/zoom
+        const touch = e.touches[0];
+        handleInput(touch.clientX, touch.clientY);
+    }, {passive: false});
+
+    container.addEventListener('touchmove', (e) => {
+        if (!inputState.active) return; // Jika start-nya di tombol, abaikan move
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleInput(touch.clientX, touch.clientY);
+    }, {passive: false});
+
+    const endTouch = (e) => {
+        inputState.active = false;
+        inputState.x = 0;
+        inputState.y = 0;
+    };
+
+    container.addEventListener('touchend', endTouch);
+    container.addEventListener('touchcancel', endTouch);
+
+    // 2. MOUSE EVENTS (Laptop Touchscreen / Click-to-Move di Desktop)
+    // Opsional: Jika ingin bisa klik tahan mouse untuk jalan (seperti Diablo/MOBA)
+    let isMouseDown = false;
+
+    container.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.action-btns') || e.target.closest('.hud-top')) return;
+        isMouseDown = true;
+        handleInput(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (isMouseDown) {
+            handleInput(e.clientX, e.clientY);
+        }
+    });
+
+    window.addEventListener('mouseup', () => {
+        isMouseDown = false;
+        inputState.active = false;
+        inputState.x = 0;
+        inputState.y = 0;
+    });
+}
+
+// Panggil inisialisasi Kontrol Baru
+initTouchControls();
+
+// FIX: Pastikan tombol aksi tidak memicu gerakan
 const btnAction = document.getElementById('btn-action');
-// Removed btnSkill variable
+const uiButtons = document.querySelectorAll('.action-btns div, button');
+
+uiButtons.forEach(btn => {
+    // Stop propagation agar sentuhan di tombol tidak tembus ke container game
+    btn.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
+    btn.addEventListener('mousedown', (e) => e.stopPropagation());
+});
 
 btnAction.addEventListener('touchstart', (e)=>{
     e.preventDefault(); 
+    e.stopPropagation(); // PENTING
     if(STATE.fishing.active) checkFishing();
     else handleAction();
 });
-btnAction.addEventListener('click', () => {
+btnAction.addEventListener('click', (e) => {
+    e.stopPropagation(); // PENTING
     if(STATE.fishing.active) checkFishing();
     else handleAction();
 });
-// Removed btnSkill event listener
 
 function randomizeWeather() {
     STATE.weather = 'clear'; 
@@ -6166,9 +6394,13 @@ async function initGame() {
         regenerateHouseMap();
         updateBagIcon();
 
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(()=>{});
-        }
+        // FIX: Request Fullscreen di Mobile kadang gagal jika tidak dari event click langsung.
+        // Kita bungkus dalam try-catch agar tidak stop eksekusi
+        try {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch((e)=>{ console.log("Fullscreen blocked:", e); });
+            }
+        } catch(e) {}
         
         STATE.screen = 'play';
         STATE.location = 'house';
@@ -6180,6 +6412,12 @@ async function initGame() {
         } else {
             STATE.player.x = 100; STATE.player.y = 100;
         }
+
+        // FIX: PAKSA RESIZE LAGI UNTUK MEMASTIKAN CANVAS MUNCUL DI HP
+        // (Terkadang canvas size 0x0 saat transisi halaman di mobile browser)
+        setTimeout(resize, 100);
+        setTimeout(resize, 500);
+        setTimeout(resize, 1500); // Safety check terakhir
         
         gameLoop();
         
@@ -7716,14 +7954,32 @@ function update() {
     });
 
     let dx = 0, dy = 0;
+    
+    // --- UPDATE: MOVEMENT LOGIC (KEYBOARD + TOUCH HYBRID) ---
     if (!STATE.fishing.active && !STATE.minigame) {
-        if (keys['ArrowUp'] || keys['KeyW'] || touchState.up) dy = -1;
-        if (keys['ArrowDown'] || keys['KeyS'] || touchState.down) dy = 1;
-        if (keys['ArrowLeft'] || keys['KeyA'] || touchState.left) dx = -1;
-        if (keys['ArrowRight'] || keys['KeyD'] || touchState.right) dx = 1;
+        
+        // 1. Cek Keyboard (WASD / Arrows)
+        if (keys['ArrowUp'] || keys['KeyW']) dy = -1;
+        if (keys['ArrowDown'] || keys['KeyS']) dy = 1;
+        if (keys['ArrowLeft'] || keys['KeyA']) dx = -1;
+        if (keys['ArrowRight'] || keys['KeyD']) dx = 1;
+
+        // 2. Cek Touchscreen (Jika Keyboard tidak ditekan, atau mau digabung)
+        if (dx === 0 && dy === 0 && inputState.active) {
+            dx = inputState.x;
+            dy = inputState.y;
+            
+            // Threshold kecil agar karakter benar-benar berhenti (Deadzone)
+            if (Math.abs(dx) < 0.1) dx = 0;
+            if (Math.abs(dy) < 0.1) dy = 0;
+        }
     }
 
-    if (dx!==0 && dy!==0) { dx*=0.707; dy*=0.707; }
+    // Normalisasi vektor hanya jika input dari keyboard (karena touch input sudah cos/sin)
+    // Jika dx/dy adalah 1/-1 (keyboard), normalisasi. Jika desimal (touch), biarkan (agar kecepatan analog)
+    if ((Math.abs(dx) === 1 || Math.abs(dy) === 1) && !inputState.active) { 
+        if (dx!==0 && dy!==0) { dx*=0.707; dy*=0.707; }
+    }
     
     // --- NEW: SISTEM KELELAHAN BERJALAN (Walking Fatigue) ---
     // Jika pemain bergerak
@@ -8102,6 +8358,7 @@ function checkBuildingHours() {
             
             // 3. Logika Waktu: Jika Sekarang >= Jam Tutup ATAU Sekarang < Jam Buka (Kasus begadang)
             if (STATE.time >= building.closeTime || STATE.time < building.openTime) {
+                // ... (Logic pengusiran) ...
                 
                 // Play SFX Pintu/Alert
                 if(typeof AudioService !== 'undefined') AudioService.playSFX('door');
@@ -8124,9 +8381,8 @@ function checkBuildingHours() {
                 STATE.teleportCooldown = 60;
 
                 // --- NEW: EFEK VISUAL KEBINGUNGAN SAAT DIUSIR ---
-                // Munculkan tanda tanya dan emoji pusing di atas kepala player
-                spawnFloatingText(STATE.player.x + 5, STATE.player.y - 40, "❓❓❓", "#fbbf24", 16); // Tanda Tanya Kuning
-                spawnFloatingText(STATE.player.x + 20, STATE.player.y - 25, "😵", "#fff", 18);   // Emoji Pusing
+                spawnFloatingText(STATE.player.x + 5, STATE.player.y - 40, "❓❓❓", "#fbbf24", 16); 
+                spawnFloatingText(STATE.player.x + 20, STATE.player.y - 25, "😵", "#fff", 18);   
             }
         }
     }
@@ -8134,33 +8390,61 @@ function checkBuildingHours() {
 
 // --- NEW FUNCTION: PROCESS TELEPORT (Centralized Logic) ---
 function processTeleport(b) {
-    // 1. Cek Jam Buka/Tutup
-    if (!b.open24h && b.openTime && b.closeTime) {
-        const t = STATE.time;
-        if (t < b.openTime || t >= b.closeTime) {
-            const openStr = (b.openTime/100).toString().padStart(2,'0') + ":00";
-            const closeStr = (b.closeTime/100).toString().padStart(2,'0') + ":00";
-            if(document.getElementById('toast').style.opacity == 0) {
-                showToast(`🔒 TUTUP! Buka jam ${openStr} - ${closeStr}`);
+    // ... existing logic ...
+}
+
+// UPDATE: Tambahkan 'clinic' dan 'clinic_exit' ke dalam checkAutoTeleport
+function checkAutoTeleport() {
+    // Jika sedang cooldown, jangan cek teleport
+    if (STATE.teleportCooldown > 0) return;
+
+    const map = maps[STATE.location];
+    if (!map.buildings) return;
+
+    // Titik tengah pemain
+    const pCenterX = STATE.player.x + (STATE.player.w / 2);
+    const pCenterY = STATE.player.y + (STATE.player.h / 2);
+
+    for (let b of map.buildings) {
+        if(b.entrance) {
+            // Titik tengah entrance
+            const eCenterX = (b.entrance.x * TILE_SIZE) + (TILE_SIZE / 2);
+            const eCenterY = (b.entrance.y * TILE_SIZE) + (TILE_SIZE / 2);
+            
+            // Jarak deteksi otomatis
+            const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
+            
+            if(dist < 50) {
+                // Daftar bangunan/trigger yang bisa auto-teleport
+                // UPDATE: Menambahkan 'clinic', 'clinic_exit' ke daftar
+                const autoTeleporters = [
+                    'player_house', 'house_exit', 
+                    'dungeon_gate', 'dungeon_exit', 'dungeon_next',
+                    'merchant', 'shop_exit', 
+                    'library', 'library_exit', 
+                    'guild', 'guild_exit', 
+                    'school', 'school_exit',
+                    'blacksmith', 'smith_exit',
+                    'mentor', 'mentor_exit',
+                    'clinic', 'clinic_exit',
+                    'wedding', 'wedding_exit', // NEW: Wedding Teleport
+                    'lover1_home', 'lover1_exit', // NEW: Ayu's House Teleport
+                    'fisherman_home', 'fisherman_exit' // NEW: Fisherman House Teleport
+                ];
+                
+                if (autoTeleporters.includes(b.id)) {
+                    processTeleport(b);
+                    return; 
+                }
             }
-            return; 
         }
     }
+}
 
-    // 2. Cek Role Khusus
-    const totalDays = STATE.day - 1;
-    const year = Math.floor(totalDays / (DAYS_PER_SEASON * 4)) + 1;
-    
-    if(b.roleSpecific) {
-        if(b.roleSpecific !== STATE.player.role && year < 3 && !STATE.freeRoamMode) {
-            if(document.getElementById('toast').style.opacity == 0) {
-                showToast("🔒 Terkunci! Bangunan ini hanya untuk Role " + b.roleSpecific.toUpperCase());
-            }
-            return;
-        }
-    }
+function processTeleport(b) {
+    // ... existing opening hours logic ...
 
-    // SET COOLDOWN SETELAH TELEPORT SUKSES (Agar tidak trigger lagi selama 1 detik/60 frame)
+    // SET COOLDOWN SETELAH TELEPORT SUKSES
     STATE.teleportCooldown = 60;
 
     // --- NEW: PLAY DOOR SFX ---
@@ -8168,12 +8452,43 @@ function processTeleport(b) {
 
     // 3. Eksekusi Teleportasi
     if(b.id === 'player_house') {
-        STATE.location = 'house';
-        const hMap = maps['house'];
-        STATE.player.x = Math.floor(hMap.w / 2) * TILE_SIZE; 
-        STATE.player.y = (hMap.h - 3) * TILE_SIZE;
-        showToast("🏠 Welcome Home");
+        // ...
     } 
+    // ... other teleports ...
+    
+    // --- NEW: LOGIKA TELEPORT RUMAH AYU ---
+    else if(b.id === 'lover1_home') {
+        STATE.location = 'lover1_interior';
+        STATE.player.x = 7 * TILE_SIZE; // Tengah Ruangan
+        STATE.player.y = 10 * TILE_SIZE;
+        showToast("Bertamu ke Rumah Ayu 🌸");
+    }
+    else if(b.id === 'lover1_exit') {
+        STATE.location = 'village';
+        // Koordinat depan Rumah Ayu (Sebelumnya Rumah Love: x:14, y:25, w:6 -> Entrance x:17)
+        STATE.player.x = 17 * TILE_SIZE; 
+        STATE.player.y = 30 * TILE_SIZE; // Depan pintu (Y+1 dari entrance 29)
+        clearSpawnZone('village', 17, 30);
+        showToast("Keluar Rumah Ayu");
+    }
+    
+    // --- NEW: LOGIKA TELEPORT RUMAH NELAYAN (TETANGGA) ---
+    else if(b.id === 'fisherman_home') {
+        STATE.location = 'fisherman_interior';
+        STATE.player.x = 6 * TILE_SIZE; // Tengah Ruangan (12/2)
+        STATE.player.y = 8 * TILE_SIZE;
+        showToast("Bertamu ke Tetangga (Nelayan) ⚓");
+    }
+    else if(b.id === 'fisherman_exit') {
+        STATE.location = 'village';
+        // Koordinat depan Rumah Nelayan (x:26, y:7, w:4 -> Entrance x:28)
+        STATE.player.x = 28 * TILE_SIZE; 
+        STATE.player.y = 11 * TILE_SIZE; // Depan pintu (Y+1 dari entrance 10)
+        clearSpawnZone('village', 28, 11);
+        showToast("Keluar Rumah Nelayan");
+    }
+
+    // ... existing teleport blocks ...
     else if(b.id === 'library') {
         STATE.location = 'library_interior';
         STATE.player.x = 7 * TILE_SIZE; 
@@ -8733,7 +9048,12 @@ function handleAction() {
             'library', 'library_exit',
             'school', 'school_exit',
             'guild', 'guild_exit',
-            'blacksmith', 'smith_exit'
+            'blacksmith', 'smith_exit',
+            'mentor', 'mentor_exit',
+            'clinic', 'clinic_exit',
+            'wedding', 'wedding_exit', // NEW: Wedding Teleport
+            'lover1_home', 'lover1_exit', // NEW: Ayu's House Teleport
+            'fisherman_home', 'fisherman_exit' // NEW: Fisherman House Teleport
         ];
         
         if(teleporters.includes(entranceBuilding.id)) {
@@ -8857,38 +9177,8 @@ function handleAction() {
             return;
         }
 
-        else if(entranceBuilding.id === 'clinic') {
-            const drName = "Dr. Budi";
-            const drImg = "images/lover1boy.png"; 
-            
-            const love = STATE.player.relationships['lover1boy'] || 0;
-            
-            const opts = [
-                {text: "Berobat (Full Heal - 500G)", action: () => {
-                    if(STATE.player.money >= 500) {
-                        STATE.player.money -= 500;
-                        STATE.player.hp = 100;
-                        STATE.player.energy = 100;
-                        showToast("Kesehatan Pulih Total! ✨");
-                        closeDialogue();
-                    } else showToast("Uang tidak cukup!");
-                }},
-                {text: "Konsultasi Kesehatan", action: () => {
-                     showDialogue(drName, "Jaga pola makan dan tidur. Jangan terlalu sering begadang di Dungeon.", [{text:"Baik Dok", action:()=>interactClinic()}], drImg);
-                }},
-                {text: "Ngobrol Pribadi ❤️", action: () => {
-                    closeDialogue();
-                    const tempNPC = {id: 'lover1boy', name: drName, imgSrc: drImg, type: 'lover', x:0, y:0}; 
-                    interactNPC(tempNPC);
-                }},
-                {text: "Keluar", action: closeDialogue}
-            ];
-            
-            window.interactClinic = () => showDialogue(drName, "Selamat datang di Balai Pengobatan. Ada keluhan apa hari ini?", opts, drImg);
-            
-            interactClinic();
-            return;
-        }
+        // REMOVED: Logika Klinik Manual (Dihapus karena sekarang Teleport)
+        /* else if(entranceBuilding.id === 'clinic') { ... } */
 
         else {
              showToast("Masuk ke " + entranceBuilding.name + " (Interior Segera Hadir)");
@@ -11814,6 +12104,18 @@ function draw() {
                     }
                 }
 
+                // NEW: Handle Clinic Floor (ID 10 in Clinic Interior)
+                // Menggunakan lantai perpus/sekolah agar bersih
+                else if (t === 10 && STATE.location === 'clinic_interior') {
+                    if (wallAssets.libraryFloor.complete && wallAssets.libraryFloor.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.libraryFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback ke warna putih/abu
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
                 // NEW: Handle Guild Wall (ID 2 in Guild Interior)
                 else if (t === 2 && STATE.location === 'guild_interior') {
                     if (wallAssets.guildWall.complete && wallAssets.guildWall.naturalWidth !== 0) {
@@ -11893,6 +12195,74 @@ function draw() {
                     } else {
                         // Fallback jika gambar belum diload
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Clinic Wall (ID 11 in Clinic Interior)
+                // Menggunakan tembok perpus (putih)
+                else if (t === 11 && STATE.location === 'clinic_interior') {
+                    if (wallAssets.libraryWall.complete && wallAssets.libraryWall.naturalWidth !== 0) {
+                        ctx.drawImage(wallAssets.libraryWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Wedding Wall & Floor (ID 11 & 10 in Wedding Interior)
+                else if ((t === 11 || t === 10) && STATE.location === 'wedding_interior') {
+                    if (t === 11) { // Wall
+                        if (wallAssets.libraryWall.complete && wallAssets.libraryWall.naturalWidth !== 0) {
+                            ctx.drawImage(wallAssets.libraryWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    } else if (t === 10) { // Floor
+                        if (wallAssets.libraryFloor.complete && wallAssets.libraryFloor.naturalWidth !== 0) {
+                            ctx.drawImage(wallAssets.libraryFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            // Fallback Floor
+                            ctx.fillStyle = '#fdf2f8'; // Pinkish white
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    }
+                }
+                
+                // NEW: Handle Ayu's House Wall & Floor (ID 11 & 10 in Lover1 Interior)
+                else if ((t === 11 || t === 10) && STATE.location === 'lover1_interior') {
+                    if (t === 11) { // Wall (Pakai Wall Rumah Player)
+                        if (wallAssets.houseWall.complete && wallAssets.houseWall.naturalWidth !== 0) {
+                            ctx.drawImage(wallAssets.houseWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            ctx.fillStyle = '#fef3c7'; // Cream wall
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    } else if (t === 10) { // Floor (Pakai Lantai Kayu)
+                        if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
+                            ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            ctx.fillStyle = '#78350f'; 
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    }
+                }
+                
+                // NEW: Handle Fisherman House Wall & Floor (ID 11 & 10 in Fisherman Interior)
+                else if ((t === 11 || t === 10) && STATE.location === 'fisherman_interior') {
+                    if (t === 11) { // Wall
+                        if (wallAssets.houseWall.complete && wallAssets.houseWall.naturalWidth !== 0) {
+                            ctx.drawImage(wallAssets.houseWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            ctx.fillStyle = '#e2e8f0'; // Slate white
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    } else if (t === 10) { // Floor
+                        if (wallAssets.guildFloor.complete && wallAssets.guildFloor.naturalWidth !== 0) {
+                            ctx.drawImage(wallAssets.guildFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE); // Lantai agak kusam
+                        } else {
+                            ctx.fillStyle = '#b45309'; 
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
                     }
                 }
 
@@ -12320,23 +12690,39 @@ function draw() {
         // LOGIKA PENCAHAYAAN (LIGHTING SYSTEM)
         if(STATE.time >= 1800 || STATE.time < 500 || STATE.weather === 'rain') {
             
+            // FIX: Hitung Scale Factor Dinamis (Penting untuk Mobile vs PC)
+            // Sebelumnya hardcode * 4, sekarang menyesuaikan canvas.width aktual
+            const scaleFactor = canvas.width / GAME_WIDTH;
+
             // 1. CAHAYA PEMAIN (SENTER/OBOR)
-            const screenX = (STATE.player.x + 10) - STATE.camera.x;
-            const screenY = (STATE.player.y + 10) - STATE.camera.y;
+            // Tambahkan shakeX/Y agar cahaya ikut bergetar saat gempa/damage
+            let shakeX = 0, shakeY = 0;
+            if(STATE.shakeTimer > 0) {
+                shakeX = (Math.random() - 0.5) * 10;
+                shakeY = (Math.random() - 0.5) * 10;
+            }
+
+            const screenX = (STATE.player.x + 10) - STATE.camera.x + shakeX;
+            const screenY = (STATE.player.y + 10) - STATE.camera.y + shakeY;
             
             if(screenX > -50 && screenX < GAME_WIDTH + 50 && screenY > -50 && screenY < GAME_HEIGHT + 50) {
                 
-                const realX = screenX * 4;
-                const realY = screenY * 4;
+                // UPDATE: Gunakan scaleFactor untuk posisi presisi
+                const realX = screenX * scaleFactor;
+                const realY = screenY * scaleFactor;
                 
-                const rad = ctx.createRadialGradient(realX, realY, 20, realX, realY, 150);
+                // UPDATE: Radius juga disesuaikan skala agar proporsional
+                const r1 = 5 * scaleFactor;    // Radius dalam
+                const r2 = 37.5 * scaleFactor; // Radius luar (Cahaya menyebar)
+                
+                const rad = ctx.createRadialGradient(realX, realY, r1, realX, realY, r2);
                 rad.addColorStop(0, 'rgba(255, 255, 200, 0.3)'); 
                 rad.addColorStop(1, 'rgba(255, 255, 200, 0)');   
 
                 ctx.fillStyle = rad;
                 ctx.globalCompositeOperation = 'overlay'; 
                 ctx.beginPath();
-                ctx.arc(realX, realY, 150, 0, Math.PI*2);
+                ctx.arc(realX, realY, r2, 0, Math.PI*2);
                 ctx.fill();
                 // Reset composite sementara agar cahaya bangunan bisa ditumpuk
                 ctx.globalCompositeOperation = 'source-over'; 
@@ -12376,21 +12762,25 @@ function draw() {
                             lightGameY = (b.y * TILE_SIZE) + (b.h * TILE_SIZE / 2);
                         }
 
-                        // Konversi ke koordinat layar
-                        const bScreenX = lightGameX - STATE.camera.x;
-                        const bScreenY = lightGameY - STATE.camera.y;
+                        // Konversi ke koordinat layar (+ Shake effect sinkron kamera)
+                        const bScreenX = lightGameX - STATE.camera.x + shakeX;
+                        const bScreenY = lightGameY - STATE.camera.y + shakeY;
 
                         // Cek apakah masuk layar (Optimasi render)
                         if(bScreenX > -100 && bScreenX < GAME_WIDTH + 100 && bScreenY > -100 && bScreenY < GAME_HEIGHT + 100) {
-                            const realBX = bScreenX * 4;
-                            const realBY = bScreenY * 4;
+                            // UPDATE: Gunakan scaleFactor
+                            const realBX = bScreenX * scaleFactor;
+                            const realBY = bScreenY * scaleFactor;
 
                             // Efek Kedip Lampu (Sedikit)
                             const flicker = Math.sin(Date.now() / 200 + b.x) * 5; 
-                            const radius = 120 + flicker; // Radius cahaya
+                            
+                            // Radius base disesuaikan skala
+                            const baseRadius = 30 * scaleFactor; 
+                            const radius = baseRadius + flicker; 
 
                             // Warna Lampu Hangat (Kuning/Oranye)
-                            const lightGrad = ctx.createRadialGradient(realBX, realBY, 10, realBX, realBY, radius);
+                            const lightGrad = ctx.createRadialGradient(realBX, realBY, 2.5 * scaleFactor, realBX, realBY, radius);
                             lightGrad.addColorStop(0, 'rgba(255, 220, 100, 0.5)'); // Pusat terang
                             lightGrad.addColorStop(0.5, 'rgba(255, 180, 50, 0.2)'); // Tengah hangat
                             lightGrad.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Pinggir transparan
@@ -12718,7 +13108,7 @@ function drawBuilding(ctx, b) {
             else if(b.id.includes('guild')) icon = '⚔️ ';
             else if(b.id.includes('blacksmith')) icon = '⚒️ ';
             else if(b.id.includes('library')) icon = '📚 ';
-            else if(b.id.includes('wedding')) icon = '💍 ';
+            else if(b.id.includes('wedding')) icon = '💍 '; // Sudah ada
             else if(b.id.includes('port')) icon = '⚓ ';
         }
 
