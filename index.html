@@ -59,9 +59,10 @@
             height: 100vh; /* Fallback */
             height: 100dvh; /* Dynamic Viewport Height (Mobile Friendly) */
             width: 100vw;
-            background: linear-gradient(rgba(15, 23, 42, 0.3), rgba(0, 0, 0, 0.5)), url('images/bg.png');
-            background-size: cover;
-            background-position: center;
+            /* UPDATE: MENGHAPUS BACKGROUND IMAGE PADA BODY AGAR SISI LAYAR HITAM POLOS (BERSIH) */
+            /* background: linear-gradient(rgba(15, 23, 42, 0.3), rgba(0, 0, 0, 0.5)), url('images/bg.png'); */
+            /* background-size: cover; */
+            /* background-position: center; */
         }
 
         /* Landscape Enforcement */
@@ -86,28 +87,21 @@
         #game-container {
             position: relative;
             
-            /* --- UPDATE: PRECISI MOBILE SCALING --- */
-            /* Menggunakan logika aspect-ratio yang mengunci dimensi agar pas di viewport */
-            /* width: min(100% layar, tinggi layar dikali rasio 16:9) */
-            width: min(100vw, 177.78dvh); 
+            /* --- UPDATE: FULL SCREEN IMMERSIVE --- */
+            /* Memaksa kontainer mengisi seluruh layar viewport */
+            width: 100vw;
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Dynamic Height untuk Mobile Browser */
             
-            /* Paksa rasio 16:9 */
-            aspect-ratio: 16/9;
-            
-            /* Tinggi otomatis mengikuti lebar berdasarkan rasio */
-            height: auto;
-            
-            /* Batas maksimal agar tidak pernah lebih tinggi dari layar */
-            max-height: 100dvh;
-            max-width: 100vw;
-            
-            /* Center di tengah layar */
-            margin: auto;
+            margin: 0;
+            padding: 0;
             
             background: #000;
-            box-shadow: 0 0 50px rgba(6, 182, 212, 0.2);
             overflow: hidden;
-            border: 2px solid #334155;
+            
+            /* Border dihapus agar benar-benar full screen */
+            border: none; 
+            box-shadow: none;
         }
 
         canvas {
@@ -965,6 +959,8 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            /* UPDATE: Pastikan bisa diklik, menimpa pointer-events container jika ada */
+            pointer-events: auto; 
         }
 
         .gender-options {
@@ -5152,36 +5148,41 @@ function exportToCSV() { // Hapus async
 /** ENGINE & CONFIG */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const GAME_WIDTH = 480; 
-const GAME_HEIGHT = 270; 
+
+/* UPDATE: UBAH KONSTANTA JADI VARIABEL DINAMIS AGAR RESPONSIF */
+let GAME_WIDTH = 480; 
+let GAME_HEIGHT = 270; 
 
 const TILE_SIZE = 30;
 const DEBUG_MAP_BOUNDARIES = false; 
 
 function resize() {
-    const container = document.getElementById('game-container');
+    /* UPDATE: FUNGSI RESIZE DINAMIS (FULL SCREEN ADAPTIVE) */
     
-    // --- OPTIMASI MOBILE: TURUNKAN RESOLUSI RENDER ---
-    // Jika lebar layar kurang dari 1000px (HP/Tablet), gunakan resolusi setengah (960x540)
-    // Ini akan sangat meningkatkan FPS di HP tanpa merusak tampilan pixel art
+    // Set ukuran canvas sama persis dengan ukuran jendela browser
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Tentukan tingkat Zoom (Scale) berdasarkan lebar layar
+    // Mobile butuh zoom lebih kecil (objek terlihat lebih besar)
+    // Desktop butuh zoom lebih besar (area pandang lebih luas)
     const isMobile = window.innerWidth < 1000;
+    const isTablet = window.innerWidth >= 1000 && window.innerWidth < 1300;
     
-    // FIX: Paksa resize agar canvas tidak 0x0
-    if (container.clientWidth > 0 && container.clientHeight > 0) {
-        if (isMobile) {
-            canvas.width = 960;  // 480 x 2
-            canvas.height = 540; // 270 x 2
-        } else {
-            canvas.width = 1920; // 480 x 4
-            canvas.height = 1080;// 270 x 4
-        }
-    } else {
-        // Fallback jika container belum ter-render
-        canvas.width = 960;
-        canvas.height = 540;
+    let scale = 3; // Default Desktop (Zoom 3x)
+    
+    if (isMobile) {
+        scale = 2; // Mobile (Zoom 2x - Tampilan lebih dekat)
+    } else if (isTablet) {
+        scale = 2.5; // Tablet
     }
     
-    ctx.imageSmoothingEnabled = false; // Pixel art lebih tajam
+    // Hitung dimensi logika game berdasarkan ukuran layar & scale
+    // Ini membuat game tidak gepeng, tapi menambah/mengurangi area pandang kamera
+    GAME_WIDTH = canvas.width / scale;
+    GAME_HEIGHT = canvas.height / scale;
+    
+    ctx.imageSmoothingEnabled = false; // Pixel art tetap tajam
 }
 window.addEventListener('resize', resize);
 // FIX: Tambahkan Listener Orientasi untuk HP (Fix Gambar Hilang saat Login)
@@ -5368,6 +5369,15 @@ const lover1Tiles = new Array(LOVER1_W * LOVER1_H).fill(10); // 10 = Wood Floor
 for(let x=0; x<LOVER1_W; x++) { lover1Tiles[0*LOVER1_W+x] = 11; lover1Tiles[(LOVER1_H-1)*LOVER1_W+x] = 11; }
 for(let y=0; y<LOVER1_H; y++) { lover1Tiles[y*LOVER1_W+0] = 11; lover1Tiles[y*LOVER1_W+(LOVER1_W-1)] = 11; }
 lover1Tiles[(LOVER1_H-1)*LOVER1_W + 7] = 8; // Door Tile
+
+// --- NEW: PLAYER SHOP INTERIOR (14x12) FOR ENTREPRENEUR ---
+const PSHOP_W = 14;
+const PSHOP_H = 12;
+const pShopTiles = new Array(PSHOP_W * PSHOP_H).fill(10); // 10 = Wood Floor
+// Walls (ID 11 = Tembok Putih)
+for(let x=0; x<PSHOP_W; x++) { pShopTiles[0*PSHOP_W+x] = 11; pShopTiles[(PSHOP_H-1)*PSHOP_W+x] = 11; }
+for(let y=0; y<PSHOP_H; y++) { pShopTiles[y*PSHOP_W+0] = 11; pShopTiles[y*PSHOP_W+(PSHOP_W-1)] = 11; }
+pShopTiles[(PSHOP_H-1)*PSHOP_W + 7] = 8; // Door Tile
 
 // --- NEW: FISHERMAN HOUSE INTERIOR (12x10) ---
 const FISH_W = 12;
@@ -5855,6 +5865,33 @@ for(let i=0; i<10; i++) {
             /* Karpet Merah (Imajiner / Menggunakan tile floor biasa tapi area tengah dikosongkan untuk jalan) */
 
             {x: 7, y: 13, type: 'door_out', icon: '🚪'}
+        ]
+    },
+    /* NEW: PLAYER SHOP INTERIOR ADDED (RUKO PLAYER) */
+    'player_shop_interior': {
+        w: PSHOP_W, h: PSHOP_H,
+        tiles: pShopTiles,
+        buildings: [
+            { id: 'pshop_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Toko" }
+        ],
+        npcs: [], // Tidak ada NPC karena ini toko player
+        objects: [
+            /* Meja Kasir Player */
+            {x: 7, y: 3, w: 2, h: 1, type: 'counter', icon: '🪙', img: 'images/mejadosen.png', name: "Meja Kasir (Kelola)"},
+            
+            /* Rak Display Barang */
+            {x: 2, y: 5, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang A", img: 'images/rakbuku.png'}, 
+            {x: 10, y: 5, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang B", img: 'images/rakbuku.png'},
+            {x: 2, y: 8, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang C", img: 'images/rakbuku.png'},
+            {x: 10, y: 8, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang D", img: 'images/rakbuku.png'},
+            
+            /* Area Privat (Kasur di Pojok untuk Tidur) */
+            {x: 1, y: 1, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Player"},
+
+            /* Buku Harian */
+            {x: 12, y: 1, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Pembukuan Toko"},
+
+            {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
     },
     /* NEW: AYU'S HOUSE INTERIOR ADDED */
@@ -6518,12 +6555,15 @@ function initTouchControls() {
         // Jika ya, jangan gerakkan karakter.
         if (e.target.closest('.action-btns') || 
             e.target.closest('.hud-top') || 
-            e.target.id === 'hud-toggle-btn' || /* FIX: Tambahkan pengecualian tombol toggle */
+            e.target.id === 'hud-toggle-btn' || 
             e.target.closest('.minigame-overlay') ||
             /* FIX UTAMA: PENGECUALIAN UNTUK DIALOG, INVENTORY, LOGIN & INPUT FORM */
-            e.target.closest('#dialogue-wrapper') || /* PENTING: Agar tombol dialog bisa ditekan */
-            e.target.closest('#inventory-screen') || /* PENTING: Agar item di tas bisa ditekan */
+            e.target.closest('#dialogue-wrapper') || 
+            e.target.closest('#inventory-screen') || 
             e.target.closest('#login-screen') ||
+            e.target.closest('#gender-screen') || /* UPDATE: TAMBAHKAN GENDER SCREEN KE DAFTAR PENGECUALIAN */
+            e.target.closest('#game-over-screen') || /* UPDATE: TAMBAHKAN GAME OVER SCREEN JUGA */
+            e.target.closest('#audio-prompt') || /* UPDATE: TAMBAHKAN AUDIO PROMPT */
             e.target.tagName === 'INPUT' ||
             e.target.tagName === 'SELECT' ||
             e.target.tagName === 'TEXTAREA' ||
@@ -9107,23 +9147,31 @@ function processTeleport(b) {
 
     // 3. Eksekusi Teleportasi (LOGIKA LENGKAP DIKEMBALIKAN)
     
-    // --- RUMAH PLAYER ---
+    // --- RUMAH PLAYER / TOKO PLAYER ---
     if(b.id === 'player_house') {
-        STATE.location = 'house';
-        // Hitung posisi spawn dinamis berdasarkan ukuran rumah (tengah bawah)
-        const hMap = maps['house'];
-        const doorX = Math.floor(hMap.w / 2);
-        const doorY = hMap.h - 2; 
-        STATE.player.x = doorX * TILE_SIZE;
-        STATE.player.y = doorY * TILE_SIZE;
-        showToast("Masuk Rumah 🏠");
+        // Cek Role: Jika Entrepreneur, masuk ke Toko Player
+        if (STATE.player.role === 'entrepreneur') {
+            STATE.location = 'player_shop_interior';
+            STATE.player.x = 7 * TILE_SIZE;
+            STATE.player.y = 10 * TILE_SIZE;
+            showToast("Masuk Toko Sendiri 🏪");
+        } else {
+            // Role lain masuk rumah biasa
+            STATE.location = 'house';
+            const hMap = maps['house'];
+            const doorX = Math.floor(hMap.w / 2);
+            const doorY = hMap.h - 2; 
+            STATE.player.x = doorX * TILE_SIZE;
+            STATE.player.y = doorY * TILE_SIZE;
+            showToast("Masuk Rumah 🏠");
+        }
     } 
-    else if(b.id === 'house_exit') {
+    else if(b.id === 'house_exit' || b.id === 'pshop_exit') {
         STATE.location = 'village';
         STATE.player.x = 21 * TILE_SIZE; 
         STATE.player.y = 12 * TILE_SIZE; 
         clearSpawnZone('village', 21, 12);
-        showToast("Keluar Rumah");
+        showToast("Keluar");
         
         // Event Mentor Hari 1
         if (STATE.day === 1 && STATE.player.role === 'none') {
@@ -11543,6 +11591,36 @@ function interactObject(obj) {
         handleWorkerInteraction(obj);
         return; // Stop di sini agar tidak lanjut ke logika shelf/counter umum (jika ada)
     }
+    // --- NEW: INTERAKSI TOKO PLAYER (MANAJEMEN TOKO) ---
+    else if (STATE.location === 'player_shop_interior' && STATE.player.role === 'entrepreneur') {
+        if (obj.type === 'counter') {
+            // Manajemen Toko (Collect Profit)
+            const income = Math.floor(STATE.player.biz * 10 * (1 + Math.random())); // Simple passive income
+            
+            showDialogue("MANAJEMEN TOKO", `Level Bisnis: ${STATE.player.biz}\nEstimasi Pendapatan Harian: ${STATE.player.biz * 10} - ${STATE.player.biz * 20} G`, [
+                {text: "Cek Penjualan (Collect)", action: () => {
+                    // Hanya bisa collect sekali sehari (gunakan flag)
+                    if (STATE.player.lastShopCollect !== STATE.day) {
+                        STATE.player.money += income;
+                        STATE.player.lastShopCollect = STATE.day;
+                        // Tambah skill bisnis sedikit
+                        STATE.player.biz += 1;
+                        showToast(`💰 Profit Hari Ini: ${income} G`);
+                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                        closeDialogue();
+                    } else {
+                        showToast("Sudah ambil omset hari ini!");
+                    }
+                }},
+                {text: "Tutup", action: closeDialogue}
+            ], 'images/mejadosen.png');
+            return;
+        } else if (obj.type === 'shelf') {
+            showToast("📦 Rak Display Barang (Stok Otomatis)");
+            return;
+        }
+    }
+
     else if(obj.type === 'bookshelf') {
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
         showToast(`📖 Membaca: "${obj.text}"`);
@@ -12982,12 +13060,12 @@ function draw() {
         ctx.save();
         ctx.strokeStyle = 'red';
         ctx.lineWidth = 5;
+        /* Gunakan konstanta atau nilai besar untuk debug boundary */
         ctx.strokeRect(5 * TILE_SIZE, 5 * TILE_SIZE, 50 * TILE_SIZE, 30 * TILE_SIZE);
         
         ctx.fillStyle = 'red';
         ctx.font = 'bold 30px Arial';
-        ctx.fillText("BATAS PULAU (1500x900px)", 5 * TILE_SIZE + 20, 5 * TILE_SIZE + 50);
-        ctx.fillText("AREA LAUT (150px)", 10, 100);
+        ctx.fillText("BATAS PULAU", 5 * TILE_SIZE + 20, 5 * TILE_SIZE + 50);
         ctx.restore();
     }
 
@@ -13606,10 +13684,15 @@ function drawBuilding(ctx, b) {
         let src = b.img;
         
         if(b.id === 'player_house') {
-            src = `images/houselevel${STATE.player.houseLevel}.png`;
+            // UPDATE: Jika Role Entrepreneur, ganti gambar rumah jadi Toko Player
+            if (STATE.player.role === 'entrepreneur') {
+                src = 'images/tokoplayer.png';
+            } else {
+                src = `images/houselevel${STATE.player.houseLevel}.png`;
+            }
         }
         if(b.id === 'merchant' && STATE.player.role === 'entrepreneur') {
-            src = 'images/tokoplayer.png';
+            // src = 'images/tokoplayer.png'; // REMOVED: Jangan ubah Merchant NPC
         }
         // PERBAIKAN: Handle Gambar Batu Dungeon
         if(b.type === 'dungeon_rock') {
