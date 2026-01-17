@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -7053,17 +7053,39 @@ function startWakeUpSequence() {
                                                                             // Posisi Kalender Rumah Level 1: x=10, y=0 (Pojok Kanan Atas)
                                                                             showInGameFocus(10, 0); 
 
-                                                                            showDialogue("TUTORIAL (6/7)", 
+                                                                            showDialogue("TUTORIAL (6/9)", 
                                                                                 "📅 **KALENDER**:\nLihat benda di dinding itu? Itu Kalender.\n\nGunakan untuk mengecek **Tanggal**, **Musim**, dan **Jadwal Festival** atau **Ulang Tahun NPC**.", 
                                                                                 [{text: "Wah, Penting!", action: () => {
 
-                                                                                    // STEP 7: KASUR & BUKU (CLOSING)
-                                                                                    clearTutorialFocus();
-                                                                                    
-                                                                                    showDialogue("TUTORIAL (7/7)", 
-                                                                                        "Terakhir, perhatikan perabot di kamarmu:\n\n🛏️ **KASUR**: Gunakan untuk **Tidur** dan menulis **Jurnal Refleksi** harian.\n\n📔 **BUKU**: Gunakan untuk **SAVE GAME** dan **Belajar Mandiri**.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
-                                                                                        [{text: "Ayo Keluar!", action: () => {
-                                                                                            closeDialogue();
+                                                                                    // STEP 7: TELEPON (NEW)
+                                                                                    // Posisi Meja Telepon: x=2, y=6
+                                                                                    showInGameFocus(2, 6);
+
+                                                                                    showDialogue("TUTORIAL (7/9)", 
+                                                                                        "☎️ **TELEPON RUMAH**:\nGunakan telepon ini untuk membuka **Katalog Belanja**.\n\nKamu bisa membeli **Furnitur** baru atau melakukan **Upgrade Rumah** agar lebih luas dan mewah!", 
+                                                                                        [{text: "Sip, Lanjut!", action: () => {
+
+                                                                                            // STEP 8: KASUR (NEW HIGHLIGHT)
+                                                                                            // Posisi Kasur: x=1, y=0 (Lebar 3). Titik tengah sekitar x=2, y=1
+                                                                                            showInGameFocus(2, 1);
+
+                                                                                            showDialogue("TUTORIAL (8/9)", 
+                                                                                                "🛏️ **KASUR EMPUK**:\nLelah berpetualang? Gunakan kasur ini untuk **Tidur** (Ganti Hari) dan memulihkan **Energi & HP** sepenuhnya.\n\nJangan lupa tulis Jurnal sebelum tidur!", 
+                                                                                                [{text: "Oke, Mengerti!", action: () => {
+
+                                                                                                    // STEP 9: BUKU (CLOSING)
+                                                                                                    // UPDATE: SOROT MEJA BELAJAR (x:4, y:0) AGAR PEMAIN TAHU LOKASI SAVE
+                                                                                                    showInGameFocus(4, 0); 
+                                                                                                    
+                                                                                                    showDialogue("TUTORIAL (9/9)", 
+                                                                                                        "Terakhir, ini meja belajarmu:\n\n📔 **BUKU JURNAL**: Gunakan untuk **SAVE GAME** manual dan **Belajar Mandiri** (Menambah INT).\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
+                                                                                                        [{text: "Ayo Keluar!", action: () => {
+                                                                                                            clearTutorialFocus();
+                                                                                                            closeDialogue();
+                                                                                                        }}]
+                                                                                                    );
+                                                                                                }}]
+                                                                                            );
                                                                                         }}]
                                                                                     );
                                                                                 }}]
