@@ -2938,11 +2938,16 @@ function checkDailyCompletion() {
         conditionRole = isAtSchool || isStudying || isLibrary;
     } 
     else if(role === 'entrepreneur') {
-        // Syarat: Di pasar ATAU punya barang dagangan
+        // UPDATE: SYARAT HARIAN WIRAUSAHA (JURNAL)
+        // 1. Harus berada di Pasar (Merchant) untuk cek harga
         const atMarket = STATE.location === 'merchant_interior';
+        // 2. Harus punya stok barang dagangan (Inventory > 0)
         const hasStock = Object.values(p.inventory).some(v => v > 0);
+        // 3. Target Skill Bisnis (Sesuai Level)
+        const targetBiz = p.level * 2;
+        const hasSkill = p.biz >= targetBiz;
         
-        conditionRole = atMarket || hasStock;
+        conditionRole = atMarket && (hasStock || hasSkill);
     } 
     else if(role === 'family') {
         // Syarat: Bantu orang (Energi < 80)
@@ -3285,8 +3290,11 @@ function getQuestContent(tabType) {
             // ADDED: QUEST KHUSUS MAHASISWA (Riset di Perpustakaan)
             html += `${check(STATE.location === 'library_interior')} Riset di Perpustakaan<br>`;
         } else if(role === 'entrepreneur') {
-            html += `${check(STATE.location === 'merchant_interior')} Pantau Harga Pasar<br>`;
-            html += `${check(Object.values(p.inventory).some(v=>v>0))} Stok Komoditas<br>`;
+            // UPDATE: TAMPILAN JURNAL WIRAUSAHA
+            html += `${check(STATE.location === 'merchant_interior')} Pantau Harga Pasar (Merchant)<br>`;
+            html += `${check(Object.values(p.inventory).some(v=>v>0))} Manajemen Stok Barang<br>`;
+            const targetBiz = p.level * 2;
+            html += `${check(p.biz >= targetBiz)} Asah Skill Bisnis (BIZ ${targetBiz}+)<br>`;
         } else if(role === 'family') {
             html += `${check(p.energy < 80)} Bantu Tetangga (Interact)<br>`;
             html += `${check(false)} Sapa 2 Orang Berbeda<br>`;
@@ -6512,7 +6520,9 @@ function initTouchControls() {
             e.target.closest('.hud-top') || 
             e.target.id === 'hud-toggle-btn' || /* FIX: Tambahkan pengecualian tombol toggle */
             e.target.closest('.minigame-overlay') ||
-            /* FIX UTAMA: PENGECUALIAN UNTUK LOGIN SCREEN & INPUT FORM AGAR BISA DIKETIK */
+            /* FIX UTAMA: PENGECUALIAN UNTUK DIALOG, INVENTORY, LOGIN & INPUT FORM */
+            e.target.closest('#dialogue-wrapper') || /* PENTING: Agar tombol dialog bisa ditekan */
+            e.target.closest('#inventory-screen') || /* PENTING: Agar item di tas bisa ditekan */
             e.target.closest('#login-screen') ||
             e.target.tagName === 'INPUT' ||
             e.target.tagName === 'SELECT' ||
@@ -11484,8 +11494,10 @@ function getMissionBoardText() {
             txt += `${chk(p.energy < 70)} Belajar Mandiri\n`;
             txt += `${chk(STATE.location === 'library_interior')} Riset di Perpustakaan\n`;
         } else if(role === 'entrepreneur') {
-            txt += `${chk(STATE.location === 'merchant_interior')} Pantau Harga Pasar\n`;
-            txt += `${chk(Object.values(p.inventory).some(v=>v>0))} Stok Komoditas\n`;
+            // UPDATE: TEKS MISI WIRAUSAHA DI PAPAN
+            txt += `${chk(STATE.location === 'merchant_interior')} Pantau Harga Pasar (Merchant)\n`;
+            txt += `${chk(Object.values(p.inventory).some(v=>v>0))} Stok Komoditas Dagang\n`;
+            txt += `${chk(p.biz >= p.level*2)} Riset Bisnis (BIZ)\n`;
         } else if(role === 'family') {
             txt += `${chk(p.energy < 80)} Bantu Tetangga\n`;
             txt += `${chk(false)} Sapa 2 Orang Berbeda\n`;
