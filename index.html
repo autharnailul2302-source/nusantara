@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -4447,7 +4447,14 @@ async function handleAuth(role, btnElement) {
             }
 
             const res = await DataService.register(role, {email, password: pass, name, details, school, mentor});
-            alert(res.msg);
+            
+            // UPDATE: PERINGATAN JIKA MASUK MODE OFFLINE/LOKAL
+            if (res.msg.includes("LOKAL") || res.msg.includes("Offline")) {
+                alert("⚠️ PERINGATAN: Akun dibuat dalam MODE OFFLINE (Lokal).\nData Anda TIDAK AKAN MUNCUL di Dashboard Guru sampai Anda mendapat koneksi internet dan Login kembali.");
+            } else {
+                alert(res.msg);
+            }
+            
             if(res.success) toggleAuthMode(); 
         } else {
             const res = await DataService.login(email, pass);
@@ -4463,8 +4470,23 @@ async function handleAuth(role, btnElement) {
                     if(res.user.mentor) document.getElementById('welcome-mentor').innerText = "Mentor Active"; 
                     
                     if(!res.user.saveData) {
+                        // --- FIX: PAKSA SAVE DATA AWAL KE CLOUD AGAR MUNCUL DI DASHBOARD ---
+                        console.log("New User Login: Sending initial signal to Cloud...");
+                        
+                        // Setup state awal minimal agar tidak error
+                        STATE.player.gender = 'boy'; 
+                        STATE.day = 1;
+                        STATE.isPrologue = true;
+                        
+                        // Panggil Save Manual (akan trigger sync ke Firebase)
+                        await manualSave(); 
+                        
                         startPrologue();
                     } else {
+                        // --- FIX: USER LAMA JUGA PING KE CLOUD SAAT LOGIN ---
+                        // Update lastActive agar status jadi ONLINE di dashboard
+                        manualSave();
+                        
                         document.getElementById('start-screen').classList.remove('hidden');
                     }
                 }
@@ -6522,19 +6544,40 @@ function initTouchControls() {
     
     // Helper untuk memproses input sentuh/mouse
     const handleInput = (clientX, clientY) => {
-        // Hitung titik tengah layar (Pusat Kamera/Pemain)
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
+        // --- FIX: LOGIKA JOYSTICK RELATIF TERHADAP POSISI PEMAIN ---
+        // Masalah lama: Menggunakan tengah layar (window.innerWidth/2) sebagai pivot.
+        // Jika map kecil (Rumah) & kamera mentok, pemain TIDAK di tengah layar.
+        // Akibatnya arah sentuhan jadi kacau (terbalik/stuck).
+        
+        // Solusi: Pivot Joystick = Posisi Visual Pemain di Layar
+        
+        let pivotX, pivotY;
+        
+        // Cek apakah game state sudah siap & player ada
+        if (typeof STATE !== 'undefined' && STATE.player && typeof GAME_WIDTH !== 'undefined') {
+            const scale = canvas.width / GAME_WIDTH;
+            
+            // Posisi Player di Dunia - Posisi Kamera = Posisi Relatif di Canvas (Logical)
+            const relX = STATE.player.x - STATE.camera.x + (STATE.player.w / 2);
+            const relY = STATE.player.y - STATE.camera.y + (STATE.player.h / 2);
+            
+            // Konversi ke Layar Fisik (Pixel)
+            pivotX = relX * scale;
+            pivotY = relY * scale;
+        } else {
+            // Fallback jika belum init (misal di menu awal)
+            pivotX = window.innerWidth / 2;
+            pivotY = window.innerHeight / 2;
+        }
 
-        // Hitung jarak dari sentuhan ke tengah layar
-        const dx = clientX - centerX;
-        const dy = clientY - centerY;
+        // Hitung jarak dari sentuhan ke Pivot (Pemain)
+        const dx = clientX - pivotX;
+        const dy = clientY - pivotY;
 
         // Hitung sudut
         const angle = Math.atan2(dy, dx);
         
-        // Deadzone kecil (jarak 20px dari tengah tidak dianggap gerak)
-        // Agar tidak goyang sendiri kalau jari pas di tengah
+        // Deadzone kecil (jarak 20px dari tubuh pemain tidak dianggap gerak)
         const dist = Math.hypot(dx, dy);
         if(dist < 20) {
             inputState.active = false;
@@ -14992,4 +15035,3 @@ function drawMinimap() {
 </script>
 </body>
 </html>
-
