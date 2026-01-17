@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -1471,6 +1471,10 @@
             /* Scrollbar styling agar terlihat */
             scrollbar-width: thin;
             scrollbar-color: var(--accent) var(--dash-sidebar);
+
+            /* FIX: Mengizinkan scroll vertikal pada layar sentuh */
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* FIX: Optimasi Tampilan Mobile Landscape (Layar Pendek) */
@@ -1510,7 +1514,12 @@
         }
         
         .dash-nav li:hover, .dash-nav li.active { background: rgba(255,255,255,0.05); border-left-color: var(--accent); color: #fff; }
-        .dash-content { flex: 1; padding: 30px; overflow-y: auto; background: #f8fafc; }
+        .dash-content { 
+            flex: 1; padding: 30px; overflow-y: auto; background: #f8fafc;
+            /* FIX: Mengizinkan scroll vertikal pada layar sentuh */
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
         
         .dash-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #e2e8f0; }
         .dash-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px; }
@@ -6607,6 +6616,7 @@ function initTouchControls() {
             e.target.closest('#gender-screen') || /* UPDATE: TAMBAHKAN GENDER SCREEN KE DAFTAR PENGECUALIAN */
             e.target.closest('#game-over-screen') || /* UPDATE: TAMBAHKAN GAME OVER SCREEN JUGA */
             e.target.closest('#audio-prompt') || /* UPDATE: TAMBAHKAN AUDIO PROMPT */
+            e.target.closest('#teacher-dashboard') || /* FIX: TAMBAHKAN DASHBOARD GURU AGAR BISA SCROLL */
             e.target.tagName === 'INPUT' ||
             e.target.tagName === 'SELECT' ||
             e.target.tagName === 'TEXTAREA' ||
@@ -15135,4 +15145,3 @@ function drawMinimap() {
 </script>
 </body>
 </html>
-
