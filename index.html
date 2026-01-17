@@ -804,6 +804,91 @@
             color: #64748b; font-family: 'Exo 2'; margin-top: 50px; font-style: italic;
         }
 
+        /* --- NEW: WORKER MINIGAME STYLES --- */
+        #work-minigame {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 2100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s;
+        }
+        
+        .work-card {
+            background: #1e293b;
+            border: 2px solid var(--secondary);
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .work-item-display {
+            font-size: 80px;
+            margin: 20px 0;
+            animation: bounceIn 0.3s;
+        }
+
+        .work-bins {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .bin-btn {
+            background: #334155;
+            border: 1px solid #475569;
+            color: white;
+            padding: 15px 5px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .bin-btn:active { transform: scale(0.95); }
+        
+        .bin-food { border-bottom: 4px solid #10b981; }
+        .bin-tool { border-bottom: 4px solid #3b82f6; }
+        .bin-luxury { border-bottom: 4px solid #f59e0b; }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .work-score {
+            font-family: 'Cinzel';
+            font-size: 24px;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+        
+        .work-timer {
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            width: 100%;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .work-timer-fill {
+            height: 100%;
+            background: #ef4444;
+            width: 100%;
+            transition: width 1s linear;
+        }
+
         /* --- SCREENS STYLES --- */
 
         /* Splash Screen */
@@ -2112,6 +2197,34 @@ button, .round-btn, .d-btn, .auth-btn {
         </div>
     </div>
 
+    <!-- NEW: WORKER MINIGAME OVERLAY (SORTING) -->
+    <div id="work-minigame">
+        <div class="work-card">
+            <h2 style="color:white; margin:0; font-size:16px;">SORTIR BARANG!</h2>
+            <p style="color:#94a3b8; font-size:10px; margin-bottom:10px;">Masukkan barang ke rak yang benar.</p>
+            
+            <div class="work-score">Skor: <span id="work-score-val">0</span></div>
+            <div class="work-timer"><div id="work-timer-bar" class="work-timer-fill"></div></div>
+
+            <div id="work-target-icon" class="work-item-display">📦</div>
+            <div id="work-target-name" style="font-weight:bold; color:white; margin-bottom:10px;">Item</div>
+
+            <div class="work-bins">
+                <button class="bin-btn bin-food" onclick="handleWorkSort('food')">
+                    <span>🍎</span>MAKANAN
+                </button>
+                <button class="bin-btn bin-tool" onclick="handleWorkSort('tool')">
+                    <span>⚒️</span>PERKAKAS
+                </button>
+                <button class="bin-btn bin-luxury" onclick="handleWorkSort('luxury')">
+                    <span>💎</span>MEWAH
+                </button>
+            </div>
+            
+            <button onclick="quitWorkMinigame()" style="margin-top:15px; background:transparent; border:none; color:#ef4444; font-size:10px;">BATAL KERJA</button>
+        </div>
+    </div>
+
     <!-- NEW: MESSAGE ARCHIVE MODAL (ARSIP PESAN) -->
     <div id="message-archive-modal" class="minigame-overlay">
         <div class="journal-box" style="width: 90%; max-width: 500px; max-height: 80vh;">
@@ -2247,7 +2360,7 @@ button, .round-btn, .d-btn, .auth-btn {
                     <!-- HOVER INFO BOX -->
                     <div class="time-info-box">
                         <strong style="color:var(--secondary)">ℹ️ INFO WAKTU</strong><br>
-                        1 Jam = ±37 Detik<br>
+                        1 Jam = ±60 Detik<br>
                         <hr style="border-color:rgba(255,255,255,0.1)">
                         ⚠️ <strong style="color:#ef4444">PERINGATAN STAMINA</strong><br>
                         - Energi 0 = Pingsan (Denda)<br>
@@ -2802,8 +2915,18 @@ function checkDailyCompletion() {
     let conditionRole = false;
 
     if(role === 'worker') {
-        // Syarat: Sedang kerja ATAU sudah kerja keras seharian (Energi < 50)
-        conditionRole = (p.shiftStarted && p.energy < 80) || p.energy < 50;
+        // UPDATE: CEK HARI LIBUR (AHAD/MINGGU)
+        const dayIndex = (STATE.day - 1) % 7; // 0=Senin ... 6=Minggu
+        const isSunday = (dayIndex === 6);
+
+        if (isSunday) {
+            // Jika hari Ahad, syarat kerja dianggap selesai (Bonus Libur)
+            // Tapi tetap harus ada aktivitas fisik (Energi < 50) sebagai gantinya
+            conditionRole = p.energy < 70; 
+        } else {
+            // Hari Biasa: Sedang kerja ATAU sudah kerja keras seharian
+            conditionRole = (p.shiftStarted && p.energy < 80) || p.energy < 50;
+        }
     } 
     else if(role === 'student') {
         // Syarat: Di Kampus ATAU Belajar (Energi < 70) ATAU di Perpus
@@ -3135,7 +3258,15 @@ function getQuestContent(tabType) {
         // Role Spesifik
         html += `<strong>[Role: ${role.toUpperCase()}]</strong><br>`;
         if(role === 'worker') {
-            html += `${check(p.shiftStarted)} Masuk Shift (08:00-16:00)<br>`;
+            // UPDATE: TAMPILAN LIBUR HARI AHAD
+            const dayIndex = (day - 1) % 7;
+            const isSunday = (dayIndex === 6);
+
+            if (isSunday) {
+                html += `🚫 <span style="color:#64748b; text-decoration:line-through;">Masuk Shift</span> <span style="color:#fbbf24; font-size:10px;">(Libur Hari Ahad)</span><br>`;
+            } else {
+                html += `${check(p.shiftStarted)} Masuk Shift (08:00-16:00)<br>`;
+            }
             html += `${check(p.energy < 50)} Latihan Fisik/Kerja ${prog(p.energy > 50 ? 'Belum' : 'Selesai', 'Lelah')}<br>`;
         } else if(role === 'student') {
             // UPDATE: CEK HARI LIBUR (SABTU & MINGGU)
@@ -7159,6 +7290,272 @@ const THESIS_DB = {
     ]
 };
 
+// --- NEW: WORKER MINIGAME LOGIC & DATA ---
+const WORK_ITEMS = [
+    { name: "Apel Merah", type: "food", icon: "🍎" },
+    { name: "Ikan Segar", type: "food", icon: "🐟" },
+    { name: "Roti Gandum", type: "food", icon: "🍞" },
+    { name: "Susu Sapi", type: "food", icon: "🥛" },
+    { name: "Palu Besi", type: "tool", icon: "🔨" },
+    { name: "Kapak Kayu", type: "tool", icon: "🪓" },
+    { name: "Cangkul", type: "tool", icon: "⛏️" },
+    { name: "Pedang Lama", type: "tool", icon: "⚔️" },
+    { name: "Cincin Emas", type: "luxury", icon: "💍" },
+    { name: "Kalung Mutiara", type: "luxury", icon: "📿" },
+    { name: "Kain Sutra", type: "luxury", icon: "🧣" },
+    { name: "Permata Biru", type: "luxury", icon: "💎" }
+];
+
+let workState = {
+    active: false,
+    currentItem: null,
+    score: 0,
+    timer: 0,
+    maxTime: 10, // 10 detik per sesi sortir
+    interval: null
+};
+
+// --- NEW FUNCTION: HANDLE WORKER INTERACTION (Dipanggil dari interactObject) ---
+function handleWorkerInteraction(obj) {
+    const p = STATE.player;
+    
+    // Validasi Dasar
+    if (p.role !== 'worker') {
+        showToast("Hanya Staff Gudang yang boleh menyentuh ini.");
+        return;
+    }
+    
+    if (!p.shiftStarted) {
+        showDialogue("MERCHANT", "Kamu belum absen masuk shift! Lapor ke saya dulu baru kerja.", [{text:"Siap Bos", action:closeDialogue}], 'images/job.png');
+        return;
+    }
+
+    // A. Interaksi Rak Gudang (Minigame Sortir)
+    if (obj.type === 'shelf') {
+        showDialogue("TUGAS GUDANG", "Ada tumpukan barang baru datang. \nBantu sortir ke rak yang benar agar stok rapi.", [
+            { text: "Mulai Sortir (Energy -5)", action: () => {
+                if (p.energy >= 5) {
+                    p.energy -= 5;
+                    closeDialogue();
+                    startWorkMinigame();
+                } else {
+                    showToast("Terlalu lelah untuk angkat barang...");
+                }
+            }},
+            { text: "Nanti saja", action: closeDialogue }
+        ], 'images/rakbuku.png'); // Pakai gambar rak
+    }
+    
+    // B. Interaksi Kasir (Event Pelanggan)
+    else if (obj.type === 'counter') {
+        triggerCustomerEvent();
+    }
+}
+
+// --- LOGIKA MINIGAME SORTIR ---
+function startWorkMinigame() {
+    workState.active = true;
+    workState.score = 0;
+    workState.timer = workState.maxTime;
+    
+    document.getElementById('work-minigame').style.display = 'flex';
+    document.getElementById('work-score-val').innerText = "0";
+    STATE.screen = 'minigame';
+    
+    nextWorkItem();
+    
+    // Timer Loop
+    if (workState.interval) clearInterval(workState.interval);
+    workState.interval = setInterval(() => {
+        workState.timer -= 0.1;
+        const pct = (workState.timer / workState.maxTime) * 100;
+        document.getElementById('work-timer-bar').style.width = pct + "%";
+        
+        if (workState.timer <= 0) {
+            finishWorkMinigame();
+        }
+    }, 100);
+}
+
+function nextWorkItem() {
+    const rand = Math.floor(Math.random() * WORK_ITEMS.length);
+    workState.currentItem = WORK_ITEMS[rand];
+    
+    // Tampilkan Item
+    const iconEl = document.getElementById('work-target-icon');
+    const nameEl = document.getElementById('work-target-name');
+    
+    // Reset animasi
+    iconEl.style.animation = 'none';
+    iconEl.offsetHeight; /* trigger reflow */
+    iconEl.style.animation = 'bounceIn 0.3s';
+    
+    iconEl.innerText = workState.currentItem.icon;
+    nameEl.innerText = workState.currentItem.name;
+}
+
+function handleWorkSort(type) {
+    if (!workState.active) return;
+    
+    if (workState.currentItem.type === type) {
+        // Benar
+        workState.score++;
+        document.getElementById('work-score-val').innerText = workState.score;
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        nextWorkItem();
+    } else {
+        // Salah (Penalti Waktu)
+        workState.timer -= 2; 
+        showToast("Salah Rak! (-2 Detik)");
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+        // Visual shake
+        const card = document.querySelector('.work-card');
+        card.style.transform = "translateX(5px)";
+        setTimeout(() => card.style.transform = "translateX(0)", 100);
+    }
+}
+
+function finishWorkMinigame() {
+    clearInterval(workState.interval);
+    workState.active = false;
+    document.getElementById('work-minigame').style.display = 'none';
+    STATE.screen = 'play';
+    
+    // Reward Logic
+    const bonusMoney = workState.score * 100; // 100G per item
+    const bonusExp = workState.score * 10;
+    
+    STATE.player.money += bonusMoney;
+    gainExp(bonusExp);
+    STATE.player.str += 1; // Kerja fisik nambah STR
+    
+    // --- UPDATE: SKIP WAKTU KE 16:00 (PULANG KERJA) ---
+    // Efek: Setelah kerja keras di minigame, waktu langsung sore dan shift selesai
+    STATE.time = 1600; 
+    
+    // Boss Reaction
+    let reaction = "Kerja bagus. Gudang jadi rapi.";
+    if (workState.score > 8) {
+        reaction = "Luar biasa! Kamu secepat kilat. Ini bonus untukmu.";
+        STATE.player.bossReputation += 2;
+    } else if (workState.score < 3) {
+        reaction = "Lambat sekali... Kamu melamun ya?";
+        STATE.player.bossReputation -= 1;
+    }
+    
+    showDialogue("LAPORAN KERJA", 
+        `Skor: ${workState.score} Item\nBonus Minigame: ${bonusMoney} Gold\n\n(Waktu berlalu cepat saat bekerja... Tiba saatnya pulang pukul 16:00)\n\nBos: "${reaction}"`, 
+        [{text:"Absen Pulang (Terima Gaji)", action:closeDialogue}], 
+        'images/job.png'
+    );
+}
+
+function quitWorkMinigame() {
+    clearInterval(workState.interval);
+    workState.active = false;
+    document.getElementById('work-minigame').style.display = 'none';
+    STATE.screen = 'play';
+}
+
+// --- LOGIKA EVENT PELANGGAN (CUSTOMER SERVICE) ---
+function triggerCustomerEvent() {
+    // Random Scenario
+    const scenarios = [
+        {
+            type: 'angry_price',
+            npc: 'Pelanggan Ibu-ibu',
+            img: 'images/girl.png', // Placeholder
+            text: "Heh! Kenapa harga gandum di sini mahal sekali?! Di toko sebelah cuma 1000G, di sini 2000G! Kamu mau nipu ya?",
+            options: [
+                { text: "Jelaskan Kualitas (INT)", req: {stat:'int', val:10}, outcome: 'success', msg: "Ibu, gandum kami impor premium. Bebas kutu dan lebih wangi.", reward: {rep:2, tip:0} },
+                { text: "Beri Diskon (Rugi 500G)", action: 'discount', outcome: 'neutral', msg: "Ya sudah, khusus Ibu saya potong 500G dari gaji saya.", reward: {rep:1, tip:0} },
+                { text: "Kalau gak punya uang jangan belanja bu", outcome: 'fail', msg: "Kurang ajar! Saya laporkan bosmu!", reward: {rep:-5, tip:0} }
+            ]
+        },
+        {
+            type: 'scam_check',
+            npc: 'Pelanggan Curiga',
+            img: 'images/peer3.png',
+            text: "Ini Pedang Besi asli bukan? Kok warnanya agak pudar? Jangan-jangan ini barang rongsokan dari Dungeon yang dicat ulang!",
+            options: [
+                { text: "Tunjukkan Cap Pabrik (BIZ)", req: {stat:'biz', val:10}, outcome: 'success', msg: "Lihat cap ini Pak. Ini buatan Blacksmith Lina asli.", reward: {rep:2, tip:200} },
+                { text: "Sumpah Pak, ini asli!", outcome: 'neutral', msg: "Hmm... ya sudah saya percaya. Awas kalau patah.", reward: {rep:0, tip:0} },
+                { text: "Marah balik", outcome: 'fail', msg: "Pelayan kok galak! Saya gak jadi beli!", reward: {rep:-3, tip:0} }
+            ]
+        },
+        {
+            type: 'happy_customer',
+            npc: 'Pelanggan Kaya',
+            img: 'images/lover_matre_boy.png',
+            text: "Pelayanan di sini cepat ya. Tolong bungkuskan 10 Permata, saya buru-buru mau melamar pacar saya.",
+            options: [
+                { text: "Bungkus Rapi (STR)", req: {stat:'str', val:15}, outcome: 'success', msg: "Cepat dan rapi! Ini tip buat kamu.", reward: {rep:3, tip:1000} },
+                { text: "Siap Pak", outcome: 'neutral', msg: "Terima kasih. Kembaliannya ambil saja.", reward: {rep:1, tip:100} }
+            ]
+        }
+    ];
+    
+    const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+    
+    // Build Options dynamically
+    const dialogOpts = scenario.options.map(opt => {
+        let label = opt.text;
+        // Cek requirement stat
+        if (opt.req) label += ` [${opt.req.stat.toUpperCase()} ${opt.req.val}+]`;
+        
+        return {
+            text: label,
+            action: () => {
+                let success = true;
+                
+                // Cek stat requirement
+                if (opt.req) {
+                    const pStat = STATE.player[opt.req.stat] || 0;
+                    if (pStat < opt.req.val) {
+                        success = false;
+                        showToast(`Gagal! Butuh ${opt.req.stat.toUpperCase()} ${opt.req.val}`);
+                    }
+                }
+                
+                // Special Actions
+                if (success && opt.action === 'discount') {
+                    if (STATE.player.money >= 500) {
+                        STATE.player.money -= 500;
+                        showToast("Anda menalangi 500G.");
+                    } else {
+                        success = false;
+                        showToast("Uangmu tidak cukup untuk nalangin!");
+                    }
+                }
+                
+                // Result
+                if (success) {
+                    // Apply Rewards
+                    STATE.player.bossReputation += opt.reward.rep;
+                    if (opt.reward.tip > 0) {
+                        STATE.player.money += opt.reward.tip;
+                        showToast(`Dapat Tip +${opt.reward.tip}G!`);
+                    }
+                    
+                    // Show outcome dialog
+                    showDialogue(scenario.npc, opt.msg, [{text:"Kembali Kerja", action:closeDialogue}], scenario.img);
+                } else {
+                    // Failed stat check fallback
+                    STATE.player.bossReputation -= 2;
+                    showDialogue(scenario.npc, "Kamu ngomong apa sih? Gak jelas! (Pelanggan Kecewa)", [{text:"Maaf...", action:closeDialogue}], scenario.img);
+                }
+            }
+        };
+    });
+    
+    dialogOpts.push({text: "Abaikan (Rep -1)", action: () => {
+        STATE.player.bossReputation -= 1;
+        closeDialogue();
+    }});
+
+    showDialogue(scenario.npc, scenario.text, dialogOpts, scenario.img);
+}
+
 // --- NEW: DATABASE MATERI KULIAH (EXPANDED TO 48 TOPICS - 2 YEARS FULL) ---
 // Logika: 1 Tahun = 120 Hari. Kuliah Spesial tiap 5 hari. Total = 24 Materi/Tahun.
 const COURSE_MATERIALS = {
@@ -7855,7 +8252,9 @@ function update() {
         STATE.lowEnergyWarned = false;
     }
 
-    STATE.time += 0.2; 
+    // UPDATE: Waktu diperlambat (1 Jam Game = 60 Detik Real Time)
+    // Rumus: 100 unit (1 jam) / 60 detik / 60 fps ≈ 0.028
+    STATE.time += 0.028; 
     
     if(STATE.player.shiftStarted) {
         if(STATE.time >= 1600) { 
@@ -9771,13 +10170,20 @@ function interactNPC(npc) {
         }
 
         if(jobStatus === 'unemployed') {
-            showDialogue("MERCHANT", "Kami mencari pekerja disiplin. Shift 08:00 - 16:00.", [
+            showDialogue("MERCHANT", "Kami mencari pekerja disiplin. Shift 08:00 - 16:00. (Senin - Sabtu)", [
                 {text: "Saya mau melamar! (Tulis Surat Lamaran)", action: () => {
                     openJobMinigame();
                 }},
                 {text: "Saya lihat-lihat dulu", action: closeDialogue}
             ], npc.imgSrc);
         } else if(jobStatus === 'employed') {
+            // --- NEW: CEK HARI LIBUR KERJA (MINGGU) ---
+            const dayIndex = (STATE.day - 1) % 7; // 0=Senin ... 6=Minggu
+            if (dayIndex === 6) {
+                 showDialogue("MERCHANT", "Hari ini **MINGGU**, gudang libur operasional. \nIstirahatlah, kumpulkan tenaga untuk besok Senin!", [{text:"Siap Bos, Happy Sunday!", action:closeDialogue}], npc.imgSrc);
+                 return;
+            }
+
             if(!p.shiftStarted) {
                 if(STATE.time >= 800 && STATE.time <= 1000) {
                     showDialogue("MERCHANT", "Bagus, datang tepat waktu. Mulai kerjamu!", [{text:"Siap Bos! (Mulai Shift)", action:()=>{
@@ -10651,7 +11057,7 @@ function interactNPC(npc) {
     // --- NEW: INTERAKSI DEWI ARSA (EVENT BULAN PURNAMA) ---
     else if(npc.id === 'dewi_arsa') {
         showDialogue("DEWI ARSA", "Wahai anak manusia... Kau menemukanku di saat bulan purnama bersinar paling terang.", [
-            {text: "Siapa engkau?", action: () => {
+            {text: "Siapa engkau? (Berkah)", action: () => {
                 showDialogue("DEWI ARSA", "Aku adalah manifestasi roh Pulau Arsa. Karena ketulusanmu datang di jam suci ini, terimalah berkahku.", [
                     {text: "Terima Berkah (Full Heal + Permata)", action: () => {
                         STATE.player.hp = STATE.player.maxHp;
@@ -10663,6 +11069,26 @@ function interactNPC(npc) {
                         closeDialogue();
                     }}
                 ], npc.imgSrc);
+            }},
+            /* NEW: DIALOG TENTANG KEDEWASAAN & KEBIJAKSANAAN */
+            {text: "Makna Kedewasaan", action: () => {
+                 showDialogue("DEWI ARSA", "Kedewasaan bukan sekadar bertambahnya angka usia, Nak. \n\nDewasa adalah saat kau berhenti menyalahkan dunia atas lukamu, dan mulai mengambil tanggung jawab untuk menyembuhkannya sendiri.", 
+                 [
+                     {text: "Lalu, apa itu Kebijaksanaan?", action: () => {
+                         showDialogue("DEWI ARSA", "Kebijaksanaan adalah seni mengetahui apa yang harus diabaikan.\n\nIa adalah ketika kau memiliki kekuatan untuk membalas rasa sakit, namun kau memilih untuk memutus rantai kebencian itu dengan memaafkan.", 
+                         [{
+                             text: "Terima kasih... (Ethics +10)", 
+                             action: () => {
+                                 STATE.player.ethics += 10;
+                                 STATE.player.reputation += 5;
+                                 gainExp(100); // Bonus EXP Besar untuk Wisdom
+                                 createParticle(STATE.player.x, STATE.player.y, '#ffffff');
+                                 showToast("✨ Jiwa Menjadi Tenang (+10 Ethics)");
+                                 closeDialogue();
+                             }
+                         }], npc.imgSrc);
+                     }}
+                 ], npc.imgSrc);
             }},
             {text: "Hanya kebetulan lewat", action: closeDialogue}
         ], npc.imgSrc);
@@ -11035,7 +11461,13 @@ function getMissionBoardText() {
                 txt += `${chk(false)} Pergi ke Merchant (Selatan)\n`;
                 txt += `${chk(false)} Lamar Kerja pada Bos\n`;
             } else {
-                txt += `${chk(p.shiftStarted)} Masuk Shift (08:00-16:00)\n`;
+                // UPDATE: TEXT HARI AHAD
+                const dayIndex = (day - 1) % 7;
+                if (dayIndex === 6) {
+                    txt += `🚫 Libur Kerja (Hari Ahad)\n`;
+                } else {
+                    txt += `${chk(p.shiftStarted)} Masuk Shift (08:00-16:00)\n`;
+                }
                 txt += `${chk(p.energy < 50)} Latihan Fisik/Kerja ${chk(p.energy < 50) === "✅" ? "(Selesai)" : "(Belum)"}\n`;
             }
         } else if(role === 'student') {
@@ -11092,6 +11524,12 @@ function interactObject(obj) {
             // Sign biasa tetap pakai toast
             showToast(obj.text);
         }
+    }
+    // --- NEW: INTEGRASI LOGIKA KERJA (MERCHANT SHELF & COUNTER) ---
+    // Cek dulu apakah ini objek toko dan pemain adalah pekerja
+    else if ((obj.type === 'shelf' || obj.type === 'counter') && STATE.location === 'merchant_interior' && STATE.player.role === 'worker') {
+        handleWorkerInteraction(obj);
+        return; // Stop di sini agar tidak lanjut ke logika shelf/counter umum (jika ada)
     }
     else if(obj.type === 'bookshelf') {
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
