@@ -6111,7 +6111,13 @@ function initTouchControls() {
         if (e.target.closest('.action-btns') || 
             e.target.closest('.hud-top') || 
             e.target.id === 'hud-toggle-btn' || /* FIX: Tambahkan pengecualian tombol toggle */
-            e.target.closest('.minigame-overlay')) {
+            e.target.closest('.minigame-overlay') ||
+            /* FIX UTAMA: PENGECUALIAN UNTUK LOGIN SCREEN & INPUT FORM AGAR BISA DIKETIK */
+            e.target.closest('#login-screen') ||
+            e.target.tagName === 'INPUT' ||
+            e.target.tagName === 'SELECT' ||
+            e.target.tagName === 'TEXTAREA' ||
+            e.target.closest('.journal-box')) {
             return; 
         }
         
