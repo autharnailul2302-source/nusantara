@@ -3571,12 +3571,20 @@ const DataService = {
             return false;
         }
 
-        this.mode = 'firebase'; 
+        // FIX: Default ke local dulu, baru switch ke firebase jika sukses load
+        this.mode = 'local'; 
         try {
             if (typeof firebase !== 'undefined' && firebase.apps && !firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
                 if(!db) db = firebase.firestore();
                 if(!analytics) analytics = firebase.analytics();
+                
+                // Jika sampai sini tanpa error, berarti Firebase siap
+                this.mode = 'firebase';
+            } else if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length) {
+                // Sudah init sebelumnya
+                if(!db) db = firebase.firestore();
+                this.mode = 'firebase';
             }
             return true;
         } catch (e) {
@@ -3860,9 +3868,15 @@ const DataService = {
         const dbLocal = this.getDB();
         const localUser = dbLocal[email];
 
+        // FIX: Pastikan DB ada jika mode firebase. Jika tidak, paksa local.
+        if (this.mode === 'firebase' && !db) {
+            console.warn("Mode Firebase aktif tapi DB tidak terhubung. Fallback ke Local.");
+            this.mode = 'local';
+        }
+
         if (this.mode === 'local') {
             const user = localUser;
-            if(!user) return { success: false, msg: "User tidak ditemukan di data lokal!" };
+            if(!user) return { success: false, msg: "User tidak ditemukan di data lokal (Offline)!" };
             if(user.password !== password) return { success: false, msg: "Password salah!" };
             this.user = { email: email, ...user };
             return { success: true, user: this.user };
@@ -3934,7 +3948,7 @@ const DataService = {
                 }
 
                 // Jika di local juga tidak ada, berarti memang belum register
-                return { success: false, msg: "Gagal: Akun tidak ditemukan (Cek koneksi atau Register baru)." };
+                return { success: false, msg: "Gagal Login: Koneksi bermasalah atau Akun belum terdaftar." };
             }
         }
     },
@@ -4169,6 +4183,8 @@ async function populateTeacherSelect() {
 }
 
 async function handleAuth(role, btnElement) {
+    let originalText = "";
+    
     try {
         // FITUR OTOMATIS FULLSCREEN: Trigger saat klik Login juga (backup)
         toggleFullScreen();
@@ -4178,7 +4194,6 @@ async function handleAuth(role, btnElement) {
         if(!email || !pass) { alert("Email & Password Required!"); return; }
 
         // PERBAIKAN: Indikator Loading Visual
-        let originalText = "";
         if(btnElement) {
             originalText = btnElement.innerText;
             btnElement.disabled = true;
@@ -4186,6 +4201,7 @@ async function handleAuth(role, btnElement) {
             btnElement.style.opacity = "0.7";
         }
 
+        // FIX: Init DataService sebelum login
         await DataService.init(true);
 
         if(authMode === 'register') {
@@ -4195,26 +4211,19 @@ async function handleAuth(role, btnElement) {
                 details = document.getElementById('siswa-kelas').value;
                 mentor = document.getElementById('siswa-guru').value;
                 if(!name || !details) { 
-                    alert("Complete Name & Class!"); 
-                    if(btnElement) {
-                        btnElement.disabled=false; 
-                        btnElement.innerText = originalText;
-                        btnElement.style.opacity = "1";
-                    }
-                    return; 
+                    alert("Lengkapi Nama & Kelas!"); 
+                    // FIX: Restore tombol di sini handled by finally block sebenarnya, 
+                    // tapi karena ada return, kita biarkan finally yang handle atau manual restore.
+                    // Throw error agar masuk finally/catch flow
+                    throw new Error("Validation Failed"); 
                 }
             } else {
                 name = document.getElementById('guru-nama').value;
                 details = document.getElementById('guru-nip').value;
                 school = document.getElementById('guru-sekolah').value;
                 if(!name || !details || !school) { 
-                    alert("Complete Teacher Data!"); 
-                    if(btnElement) {
-                        btnElement.disabled=false; 
-                        btnElement.innerText = originalText;
-                        btnElement.style.opacity = "1";
-                    }
-                    return; 
+                    alert("Lengkapi Data Guru!"); 
+                    throw new Error("Validation Failed");
                 }
             }
 
@@ -4244,20 +4253,17 @@ async function handleAuth(role, btnElement) {
                 alert(res.msg);
             }
         }
-        
-        // Restore button state
-        if(btnElement) {
-            btnElement.disabled = false;
-            btnElement.innerText = originalText;
-            btnElement.style.opacity = "1";
-        }
 
     } catch (err) {
-        alert("Error: " + err.message);
-        console.error(err);
-        if(btnElement) {
+        if(err.message !== "Validation Failed") {
+            alert("Error: " + err.message);
+            console.error(err);
+        }
+    } finally {
+        // FIX: Restore button state SELALU (Sukses maupun Gagal)
+        if(btnElement && originalText) {
             btnElement.disabled = false;
-            btnElement.innerText = originalText; // Restore text on error
+            btnElement.innerText = originalText;
             btnElement.style.opacity = "1";
         }
     }
