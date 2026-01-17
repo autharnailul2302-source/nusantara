@@ -6950,6 +6950,34 @@ function showTutorialFocus(elementId) {
     }
 }
 
+// --- NEW HELPER: FOKUS KE OBJEK DALAM GAME (CANVAS) ---
+function showInGameFocus(tileX, tileY) {
+    // Hapus highlight UI
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+    
+    const pointer = document.getElementById('tutorial-pointer');
+    if (pointer) {
+        // 1. Hitung Scale Factor saat ini (Canvas Width / Logical Game Width)
+        const scaleFactor = canvas.width / GAME_WIDTH;
+        
+        // 2. Hitung Posisi Dunia Objek (Tengah Tile)
+        const worldX = (tileX * TILE_SIZE) + (TILE_SIZE / 2);
+        const worldY = (tileY * TILE_SIZE) + (TILE_SIZE / 2);
+        
+        // 3. Proyeksikan ke Layar (Dikurangi Kamera)
+        // Koordinat Layar = (Posisi Dunia - Posisi Kamera) * Scale
+        const screenX = (worldX - STATE.camera.x) * scaleFactor;
+        const screenY = (worldY - STATE.camera.y) * scaleFactor;
+        
+        // 4. Posisikan Pointer
+        // Pointer ada di DOM (Fixed), jadi koordinatnya relatif terhadap Viewport
+        pointer.style.left = (screenX - 25) + 'px'; // Center pointer width
+        pointer.style.top = (screenY + 20) + 'px';  // Di bawah objek sedikit
+        
+        pointer.style.display = 'block';
+    }
+}
+
 function clearTutorialFocus() {
     document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
     const pointer = document.getElementById('tutorial-pointer');
@@ -6977,58 +7005,67 @@ function startWakeUpSequence() {
                     
                     // --- START VISUAL TUTORIAL ---
                     setTimeout(() => {
-                        // STEP 1: NAVIGASI (GERAKAN) - UPDATE: Highlight Canvas & Teks Baru
-                        // Kita sorot seluruh Canvas karena sekarang sistemnya "Touch Anywhere"
+                        // STEP 1: NAVIGASI (GERAKAN)
                         showTutorialFocus('gameCanvas'); 
                         
-                        showDialogue("TUTORIAL (1/6)", 
+                        showDialogue("TUTORIAL (1/7)", 
                             "Selamat datang! Mari belajar bergerak:\n\n📱 **HP/Tablet**: Sentuh & Geser jari di mana saja pada layar.\n💻 **PC/Laptop**: Gunakan tombol **WASD** atau **Panah**.", 
                             [
                             {
                                 text: "Oke, Paham >>", 
                                 action: () => {
-                                    // STEP 2: TOMBOL AKSI (Munculkan paksa untuk demo)
+                                    // STEP 2: TOMBOL AKSI
                                     const btnAction = document.getElementById('btn-action');
                                     btnAction.style.display = 'flex';
                                     btnAction.innerText = '🔴';
                                     
-                                    showTutorialFocus('btn-action'); // Sorot Tombol Aksi
+                                    showTutorialFocus('btn-action'); 
                                     
-                                    showDialogue("TUTORIAL (2/6)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
+                                    showDialogue("TUTORIAL (2/7)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
                                         {
                                             text: "Lanjut >>", 
                                             action: () => {
-                                                // STEP 3: COMBAT MODE (Ubah Icon)
+                                                // STEP 3: COMBAT MODE
                                                 btnAction.innerText = '⚔️';
                                                 
-                                                showDialogue("TUTORIAL (3/6)", 
+                                                showDialogue("TUTORIAL (3/7)", 
                                                     "⚔️ **MODE TEMPUR**:\nSaat masuk ke Dungeon berbahaya, tombol ini otomatis berubah menjadi **PEDANG**.\n\nTekan cepat untuk menyerang musuh!", 
                                                     [{
                                                         text: "Siap Bertarung!",
                                                         action: () => {
                                                             // STEP 4: MENU TAS
-                                                            btnAction.style.display = 'none'; // Sembunyikan lagi
+                                                            btnAction.style.display = 'none'; 
                                                             
                                                             showTutorialFocus('bag-btn');
                                                             
-                                                            showDialogue("TUTORIAL (4/6)", 
+                                                            showDialogue("TUTORIAL (4/7)", 
                                                                 "🎒 **TAS PENYIMPANAN**:\nKlik tombol Tas ini untuk melihat dan menggunakan item yang kamu miliki.", 
                                                                 [{text: "Lanjut >>", action: () => {
                                                                     
-                                                                    // STEP 5: MENU JURNAL QUEST (NEW)
+                                                                    // STEP 5: MENU JURNAL QUEST
                                                                     showTutorialFocus('quest-btn');
 
-                                                                    showDialogue("TUTORIAL (5/6)",
+                                                                    showDialogue("TUTORIAL (5/7)",
                                                                         "📜 **TOMBOL JURNAL**:\nIni adalah navigasi utamamu!\nCek **Misi Harian** & **Target Hidup** di sini.\n\nSelesaikan misi untuk dapat Hadiah Gold & EXP!",
                                                                         [{text: "Mengerti!", action: () => {
                                                                             
-                                                                            // STEP 6: KASUR & BUKU (CLOSING)
-                                                                            clearTutorialFocus();
-                                                                            
-                                                                            showDialogue("TUTORIAL (6/6)", 
-                                                                                "Terakhir, perhatikan perabot di kamarmu:\n\n🛏️ **KASUR**: Gunakan untuk **Tidur** dan menulis **Jurnal Refleksi** harian.\n\n📔 **BUKU**: Gunakan untuk **SAVE GAME** dan **Belajar Mandiri**.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
-                                                                                [{text: "Ayo Keluar!", action: () => {
-                                                                                    closeDialogue();
+                                                                            // STEP 6: KALENDER (NEW)
+                                                                            // Posisi Kalender Rumah Level 1: x=10, y=0 (Pojok Kanan Atas)
+                                                                            showInGameFocus(10, 0); 
+
+                                                                            showDialogue("TUTORIAL (6/7)", 
+                                                                                "📅 **KALENDER**:\nLihat benda di dinding itu? Itu Kalender.\n\nGunakan untuk mengecek **Tanggal**, **Musim**, dan **Jadwal Festival** atau **Ulang Tahun NPC**.", 
+                                                                                [{text: "Wah, Penting!", action: () => {
+
+                                                                                    // STEP 7: KASUR & BUKU (CLOSING)
+                                                                                    clearTutorialFocus();
+                                                                                    
+                                                                                    showDialogue("TUTORIAL (7/7)", 
+                                                                                        "Terakhir, perhatikan perabot di kamarmu:\n\n🛏️ **KASUR**: Gunakan untuk **Tidur** dan menulis **Jurnal Refleksi** harian.\n\n📔 **BUKU**: Gunakan untuk **SAVE GAME** dan **Belajar Mandiri**.\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
+                                                                                        [{text: "Ayo Keluar!", action: () => {
+                                                                                            closeDialogue();
+                                                                                        }}]
+                                                                                    );
                                                                                 }}]
                                                                             );
                                                                         }}]
@@ -7090,8 +7127,27 @@ function openRoleSelection() {
         {text: "Bekerja (Fighter) - STR++", action: () => setRole('worker')},
         {text: "Kuliah (Mage) - INT++", action: () => setRole('student')},
         {text: "Wirausaha (Support) - BIZ++", action: () => setRole('entrepreneur')},
-        {text: "Menikah (Family) - REP++", action: () => setRole('family')}
+        /* UPDATE: MENAMBAHKAN KONFIRMASI PERINGATAN UNTUK ROLE MENIKAH */
+        {text: "Menikah (Family) - REP++", action: () => confirmFamilyRole()}
     ], 'images/mentor.png');
+}
+
+// --- NEW: FUNGSI KONFIRMASI ROLE MENIKAH (PERINGATAN MENTOR) ---
+function confirmFamilyRole() {
+    showDialogue("MENTOR BUDI", 
+        "✋ Eitss... Tunggu dulu! Apakah kamu yakin dengan pilihan ini?\n\nMenikah itu **TIDAK MUDAH**, Nak. Kamu masih terlalu muda untuk memikul beban rumah tangga.\n\nDi sana ada tanggung jawab finansial dan emosional yang sangat besar. Ini bukan sekadar cinta monyet atau main rumah-rumahan.\n\nApakah kamu benar-benar siap mental dan fisik?", 
+        [
+            {
+                text: "Saya Siap Lahir Batin! (Yakin)", 
+                action: () => setRole('family')
+            },
+            {
+                text: "Hmm... Saya pikir-pikir dulu", 
+                action: () => openRoleSelection() // Kembali ke menu pemilihan
+            }
+        ], 
+        'images/mentor.png'
+    );
 }
 
 // --- NEW FUNCTION: SET ROLE (FIX: Logika Pemilihan Role Dipisah) ---
@@ -7188,9 +7244,37 @@ function setRole(role) {
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Uang Awal
         showToast("Jalur WIRAUSAHA dipilih. BIZ Skill & Modal Awal!"); 
     }
+    /* UPDATE: LOGIKA KHUSUS ROLE FAMILY (MENIKAH) */
     else if(role === 'family') { 
         STATE.player.reputation += 20;
-        showToast("Jalur MENIKAH dipilih. REP Meningkat Drastis!"); 
+        
+        // FIX: PAKSA SIMPAN DATA
+        manualSave();
+
+        showDialogue("MENTOR BUDI", 
+            "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nNamun, niat saja tidak cukup. Kamu harus meresmikannya.\n\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). Temui **Bapak Penghulu (Modin)** untuk mendaftarkan niat sucimu.", 
+            [{
+                text: "Siap, Otw Halal!", 
+                action: () => {
+                    // Logika Mentor Menghilang
+                    const villMap = maps['village'];
+                    const mentor = villMap.npcs.find(n => n.id === 'mentor');
+                    if (mentor) {
+                        mentor.x = -99; mentor.y = -99; mentor.vx = 0; mentor.vy = 0;
+                    }
+                    
+                    STATE.isPrologue = false; 
+                    updateHUDInfo();
+                    closeDialogue();
+                    showToast("Misi Baru: Temui Modin di Balai Nikah 💍");
+
+                    manualSave();
+                    setTimeout(() => showDailyQuestPopup(), 500);
+                }
+            }], 
+            'images/mentor.png' 
+        );
+        return; // Berhenti di sini
     }
     
     // FIX: PAKSA SIMPAN DATA UNTUK ROLE LAINNYA
@@ -10532,6 +10616,77 @@ function interactNPC(npc) {
             }},
             {text: "Tutup", action: closeDialogue}
         ], npc.imgSrc);
+    }
+
+    /* --- NEW: INTERAKSI BAPAK PENGHULU (MODIN) UNTUK ROLE FAMILY --- */
+    else if(npc.id === 'penghulu') {
+        // Cek Role Family
+        if (STATE.player.role === 'family') {
+            // Jika sudah menikah
+            if (STATE.player.married) {
+                showDialogue(npc.name, "Alhamdulillah, kamu sudah menyempurnakan separuh agama. \nJaga pasanganmu baik-baik, sakinah mawaddah warahmah ya!", [{text:"Aamiin", action:closeDialogue}], npc.imgSrc);
+                return;
+            }
+
+            // Dialog Pertanyaan Komitmen
+            showDialogue(npc.name, "Assalamualaikum, anak muda. Mentor Budi memberitahu bahwa kamu memilih jalan Keluarga.\n\nApakah kamu **BENAR-BENAR YAKIN** ingin menikah? \n\nMenikah itu bukan main-main. Konsekuensinya besar: Kamu wajib menafkahi, setia, dan menjaga perasaan pasanganmu seumur hidup. Siap?", 
+                [
+                    {
+                        text: "InsyaAllah Saya Siap & Yakin!", 
+                        action: () => {
+                            // Dialog Pemilihan Pasangan
+                            const gender = STATE.player.gender;
+                            let opts = [];
+
+                            // Helper function untuk set tunangan
+                            const setFiance = (targetId, targetName) => {
+                                // Set Relationship ke level Tunangan (misal 60) agar mudah dinikahi nanti
+                                if(!STATE.player.relationships[targetId]) STATE.player.relationships[targetId] = 0;
+                                STATE.player.relationships[targetId] = Math.max(STATE.player.relationships[targetId], 60);
+                                
+                                // Beri item Cincin Kayu (Starter Ring)
+                                if(!STATE.player.inventory['cincin_kayu']) STATE.player.inventory['cincin_kayu'] = 0;
+                                STATE.player.inventory['cincin_kayu']++;
+
+                                showToast(`Target Terkunci: ${targetName} ❤️`);
+                                createParticle(STATE.player.x, STATE.player.y, '#ec4899');
+                                
+                                showDialogue(npc.name, `Baiklah! Niatmu untuk menikahi **${targetName}** telah dicatat.\n\nSaya berikan **Cincin Kayu** ini sebagai modal awal. Dekati dia, beri perhatian, dan jika hatinya sudah luluh, datanglah lagi ke sini untuk akad nikah!\n\n(Hubunganmu dengan ${targetName} meningkat pesat!)`, 
+                                    [{text: "Siap Pak Penghulu!", action: closeDialogue}], 
+                                    npc.imgSrc
+                                );
+                            };
+
+                            if (gender === 'boy') {
+                                opts = [
+                                    {text: "Ayu (Gadis Desa yg Ceria)", action: () => setFiance('lover1girl', 'Ayu')},
+                                    {text: "Putri (Mahasiswi Pintar)", action: () => setFiance('lover2girl', 'Putri')}
+                                ];
+                            } else {
+                                opts = [
+                                    {text: "Dr. Budi (Dokter Ramah)", action: () => setFiance('lover1boy', 'Dr. Budi')},
+                                    {text: "Satria (Ksatria Tegas)", action: () => setFiance('lover2boy', 'Satria')}
+                                ];
+                            }
+                            
+                            opts.push({text: "Saya pikir-pikir dulu...", action: closeDialogue});
+
+                            showDialogue(npc.name, "Alhamdulillah niatnya sudah lurus.\n\nLalu, **dengan siapa** kamu ingin menikah? Tentukan pilihan hatimu sekarang.", opts, npc.imgSrc);
+                        }
+                    },
+                    {
+                        text: "Waduh, saya jadi ragu...", 
+                        action: () => {
+                            showDialogue(npc.name, "Keraguan adalah tanda belum siap. Pulanglah, tenangkan hatimu dulu.", [{text:"Baik Pak", action:closeDialogue}], npc.imgSrc);
+                        }
+                    }
+                ], 
+                npc.imgSrc
+            );
+        } else {
+            // Dialog untuk Non-Family Role
+            showDialogue(npc.name, "Selamat datang di Balai Pernikahan.\nTempat ini suci bagi mereka yang ingin mengikat janji setia.\n\n(Kamu belum memilih Role Menikah/Family)", [{text:"Permisi Pak", action:closeDialogue}], npc.imgSrc);
+        }
     }
 
     else if(npc.id === 'blacksmith') {
