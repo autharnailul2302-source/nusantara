@@ -139,7 +139,7 @@
             padding: 10px 15px;
             padding-top: max(15px, env(safe-area-inset-top)); 
             background: linear-gradient(to bottom, rgba(2, 6, 23, 0.9), transparent);
-            pointer-events: auto; 
+            pointer-events: none; /* FIX: Ubah ke none agar area kosong bisa disentuh untuk gerak */
             width: 100%;
             box-sizing: border-box;
         }
@@ -149,6 +149,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            pointer-events: auto; /* FIX: Kembalikan interaksi khusus untuk elemen ini */
         }
 
         .hud-avatar-wrapper {
@@ -223,6 +224,7 @@
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(2px);
+            pointer-events: auto; /* FIX: Kembalikan interaksi khusus untuk elemen ini */
         }
 
         .stat-pill {
@@ -242,6 +244,7 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 5px;
+            pointer-events: auto; /* FIX: Kembalikan interaksi khusus untuk elemen ini */
         }
 
         .money-badge {
@@ -5312,6 +5315,11 @@ for(let i=0; i<10; i++) {
             {id: 'swimmer_boy', x: 3, y: 20, name: 'Perenang Santai', imgSrc: 'images/pantai-boy.png', type: 'swimmer', vx: 0.5, vy: 0.5, schedule: 'day', w: 40, h: 60},
             {id: 'swimmer_girl', x: 50, y: 36, name: 'Perenang Ceria', imgSrc: 'images/pantai-girl.png', type: 'swimmer', vx: -0.5, vy: 0, schedule: 'day', w: 40, h: 60},
 
+            /* NEW: DEWI ARSA (EVENT RAHASIA BULAN PURNAMA) */
+            /* Muncul di samping Patung Peringkat (Statue ada di x:22, w:6 -> Berakhir di x:28) */
+            /* Kita taruh di x:29 agar di sebelah kanan patung */
+            {id: 'dewi_arsa', x: 29, y: 30, name: 'Dewi Arsa', imgSrc: 'images/dewiarsa.png', type: 'static', schedule: 'custom_fullmoon', w: 40, h: 60},
+
             /* NEW: NPC ANAK-ANAK (BERMAIN DI DEKAT KAMPUS) */
             /* Menggunakan aset boy/girl biasa tapi nanti dirender lebih kecil */
             {id: 'child_boy_1', x: 36, y: 12, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
@@ -6094,7 +6102,10 @@ function initTouchControls() {
     container.addEventListener('touchstart', (e) => {
         // Cek apakah yang disentuh adalah elemen UI (Tombol)?
         // Jika ya, jangan gerakkan karakter.
-        if (e.target.closest('.action-btns') || e.target.closest('.hud-top') || e.target.closest('.minigame-overlay')) {
+        if (e.target.closest('.action-btns') || 
+            e.target.closest('.hud-top') || 
+            e.target.id === 'hud-toggle-btn' || /* FIX: Tambahkan pengecualian tombol toggle */
+            e.target.closest('.minigame-overlay')) {
             return; 
         }
         
@@ -6504,10 +6515,13 @@ function startWakeUpSequence() {
                     
                     // --- START VISUAL TUTORIAL ---
                     setTimeout(() => {
-                        // STEP 1: ANALOG (GERAKAN)
-                        showTutorialFocus('joystick'); // Sorot Analog
+                        // STEP 1: NAVIGASI (GERAKAN) - UPDATE: Highlight Canvas & Teks Baru
+                        // Kita sorot seluruh Canvas karena sekarang sistemnya "Touch Anywhere"
+                        showTutorialFocus('gameCanvas'); 
                         
-                        showDialogue("TUTORIAL (1/6)", "Selamat datang! Gunakan **Analog** di kiri bawah untuk bergerak menjelajahi pulau.", [
+                        showDialogue("TUTORIAL (1/6)", 
+                            "Selamat datang! Mari belajar bergerak:\n\n📱 **HP/Tablet**: Sentuh & Geser jari di mana saja pada layar.\n💻 **PC/Laptop**: Gunakan tombol **WASD** atau **Panah**.", 
+                            [
                             {
                                 text: "Oke, Paham >>", 
                                 action: () => {
@@ -7750,7 +7764,12 @@ function update() {
     // 3. Cek Interaksi (Bangunan/Pintu)
     else if (entranceNear) {
         showActionButton = true;
-        actionIcon = '🚪';
+        // FIX: Jika di Dermaga ('port'), tampilkan ikon Pancing, bukan Pintu
+        if (entranceNear.id === 'port') {
+            actionIcon = '🎣';
+        } else {
+            actionIcon = '🚪';
+        }
     }
     // 4. Cek Interaksi (NPC & Object)
     else {
@@ -8390,241 +8409,44 @@ function checkBuildingHours() {
 
 // --- NEW FUNCTION: PROCESS TELEPORT (Centralized Logic) ---
 function processTeleport(b) {
-    // ... existing logic ...
-}
-
-// UPDATE: Tambahkan 'clinic' dan 'clinic_exit' ke dalam checkAutoTeleport
-function checkAutoTeleport() {
-    // Jika sedang cooldown, jangan cek teleport
-    if (STATE.teleportCooldown > 0) return;
-
-    const map = maps[STATE.location];
-    if (!map.buildings) return;
-
-    // Titik tengah pemain
-    const pCenterX = STATE.player.x + (STATE.player.w / 2);
-    const pCenterY = STATE.player.y + (STATE.player.h / 2);
-
-    for (let b of map.buildings) {
-        if(b.entrance) {
-            // Titik tengah entrance
-            const eCenterX = (b.entrance.x * TILE_SIZE) + (TILE_SIZE / 2);
-            const eCenterY = (b.entrance.y * TILE_SIZE) + (TILE_SIZE / 2);
-            
-            // Jarak deteksi otomatis
-            const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
-            
-            if(dist < 50) {
-                // Daftar bangunan/trigger yang bisa auto-teleport
-                // UPDATE: Menambahkan 'clinic', 'clinic_exit' ke daftar
-                const autoTeleporters = [
-                    'player_house', 'house_exit', 
-                    'dungeon_gate', 'dungeon_exit', 'dungeon_next',
-                    'merchant', 'shop_exit', 
-                    'library', 'library_exit', 
-                    'guild', 'guild_exit', 
-                    'school', 'school_exit',
-                    'blacksmith', 'smith_exit',
-                    'mentor', 'mentor_exit',
-                    'clinic', 'clinic_exit',
-                    'wedding', 'wedding_exit', // NEW: Wedding Teleport
-                    'lover1_home', 'lover1_exit', // NEW: Ayu's House Teleport
-                    'fisherman_home', 'fisherman_exit' // NEW: Fisherman House Teleport
-                ];
-                
-                if (autoTeleporters.includes(b.id)) {
-                    processTeleport(b);
-                    return; 
-                }
-            }
-        }
-    }
-}
-
-function processTeleport(b) {
-    // ... existing opening hours logic ...
-
     // SET COOLDOWN SETELAH TELEPORT SUKSES
     STATE.teleportCooldown = 60;
 
     // --- NEW: PLAY DOOR SFX ---
     if(typeof AudioService !== 'undefined') AudioService.playSFX('door');
 
-    // 3. Eksekusi Teleportasi
+    // 3. Eksekusi Teleportasi (LOGIKA LENGKAP DIKEMBALIKAN)
+    
+    // --- RUMAH PLAYER ---
     if(b.id === 'player_house') {
-        // ...
+        STATE.location = 'house';
+        // Hitung posisi spawn dinamis berdasarkan ukuran rumah (tengah bawah)
+        const hMap = maps['house'];
+        const doorX = Math.floor(hMap.w / 2);
+        const doorY = hMap.h - 2; 
+        STATE.player.x = doorX * TILE_SIZE;
+        STATE.player.y = doorY * TILE_SIZE;
+        showToast("Masuk Rumah 🏠");
     } 
-    // ... other teleports ...
-    
-    // --- NEW: LOGIKA TELEPORT RUMAH AYU ---
-    else if(b.id === 'lover1_home') {
-        STATE.location = 'lover1_interior';
-        STATE.player.x = 7 * TILE_SIZE; // Tengah Ruangan
-        STATE.player.y = 10 * TILE_SIZE;
-        showToast("Bertamu ke Rumah Ayu 🌸");
-    }
-    else if(b.id === 'lover1_exit') {
+    else if(b.id === 'house_exit') {
         STATE.location = 'village';
-        // Koordinat depan Rumah Ayu (Sebelumnya Rumah Love: x:14, y:25, w:6 -> Entrance x:17)
-        STATE.player.x = 17 * TILE_SIZE; 
-        STATE.player.y = 30 * TILE_SIZE; // Depan pintu (Y+1 dari entrance 29)
-        clearSpawnZone('village', 17, 30);
-        showToast("Keluar Rumah Ayu");
-    }
-    
-    // --- NEW: LOGIKA TELEPORT RUMAH NELAYAN (TETANGGA) ---
-    else if(b.id === 'fisherman_home') {
-        STATE.location = 'fisherman_interior';
-        STATE.player.x = 6 * TILE_SIZE; // Tengah Ruangan (12/2)
-        STATE.player.y = 8 * TILE_SIZE;
-        showToast("Bertamu ke Tetangga (Nelayan) ⚓");
-    }
-    else if(b.id === 'fisherman_exit') {
-        STATE.location = 'village';
-        // Koordinat depan Rumah Nelayan (x:26, y:7, w:4 -> Entrance x:28)
-        STATE.player.x = 28 * TILE_SIZE; 
-        STATE.player.y = 11 * TILE_SIZE; // Depan pintu (Y+1 dari entrance 10)
-        clearSpawnZone('village', 28, 11);
-        showToast("Keluar Rumah Nelayan");
-    }
-
-    // ... existing teleport blocks ...
-    else if(b.id === 'library') {
-        STATE.location = 'library_interior';
-        STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 10 * TILE_SIZE;
-        showToast("Masuk Perpustakaan 📚");
-    }
-    else if(b.id === 'library_exit') {
-        STATE.location = 'village';
-        // Koordinat depan perpus (sesuai posisi baru x:38, y:18)
-        // Pintu masuk di x:41, y:23
-        STATE.player.x = 41 * TILE_SIZE; 
-        STATE.player.y = 24 * TILE_SIZE; 
-        // FIX: Clear Area Spawn agar tidak stuck
-        clearSpawnZone('village', 41, 24);
-        showToast("Keluar Perpustakaan");
-    }
-    else if(b.id === 'guild') {
-        STATE.location = 'guild_interior';
-        STATE.player.x = 8 * TILE_SIZE; 
-        STATE.player.y = 11 * TILE_SIZE;
-        showToast("Masuk Guild Petualang ⚔️");
-    }
-    else if(b.id === 'guild_exit') {
-        STATE.location = 'village';
-        // Koordinat depan Guild (x:42, y:25)
-        // Pintu masuk di x:45, y:31
-        STATE.player.x = 45 * TILE_SIZE; 
-        STATE.player.y = 32 * TILE_SIZE; 
-        // FIX: Clear Area Spawn
-        clearSpawnZone('village', 45, 32);
-        showToast("Keluar Guild");
-    }
-    else if(b.id === 'school') {
-        // --- NEW: SISTEM HARI LIBUR (SABTU & MINGGU) ---
-        const dayIndex = (STATE.day - 1) % 7; // 0=Senin ... 5=Sabtu, 6=Minggu
-        if (dayIndex === 5 || dayIndex === 6) {
-            if(typeof AudioService !== 'undefined') AudioService.playSFX('door'); // Suara pintu
-            
-            showDialogue("SATPAM KAMPUS", "📢 KAMPUS LIBUR! \nHari Sabtu dan Minggu tidak ada perkuliahan. Silakan belajar mandiri di rumah atau kunjungi Perpustakaan.", [
-                {text: "Baik Pak (Kembali)", action: closeDialogue}
-            ]);
-            return; // Batalkan masuk
-        }
-
-        // --- NEW: SISTEM DISIPLIN KULIAH (TELAT = DITOLAK) ---
-        // Kelas Mulai: 08:00. Toleransi sampai: 08:30.
-        // Jika jam > 830 dan < 1400 (Sesi Kuliah), Pintu Dikunci.
-        if (STATE.time > 830 && STATE.time < 1400) {
-            if(typeof AudioService !== 'undefined') AudioService.playSFX('door'); // Suara pintu terkunci
-            
-            showDialogue("SATPAM KAMPUS", "⛔ STOP! Kamu terlambat! \nKuliah sudah dimulai jam 08:00 tadi. Pintu kelas dikunci agar tidak mengganggu Dosen.", [
-                {text: "Saya memaksa masuk!", action: () => {
-                    showDialogue("SUARA DARI DALAM", "📢 KELUAR!! Siapa itu yang berisik di luar?! Jangan ganggu kelas saya!", [
-                        {text: "Ampun Pak... (Kabur)", action: closeDialogue}
-                    ]);
-                }},
-                {text: "Pulang dengan Malu", action: closeDialogue}
-            ]);
-            return; // Batalkan teleport
-        }
-
-        STATE.location = 'school_interior';
-        STATE.player.x = 8 * TILE_SIZE; 
-        STATE.player.y = 12 * TILE_SIZE;
+        STATE.player.x = 21 * TILE_SIZE; 
+        STATE.player.y = 12 * TILE_SIZE; 
+        clearSpawnZone('village', 21, 12);
+        showToast("Keluar Rumah");
         
-        // UPDATE: Notifikasi berbeda untuk sesi sore
-        if(STATE.time >= 1400) {
-             showToast("Kampus Sore (Bebas / Tidak Ada Kuliah)");
-        } else {
-             showToast("Masuk Kampus 🎓");
+        // Event Mentor Hari 1
+        if (STATE.day === 1 && STATE.player.role === 'none') {
+            const villMap = maps['village'];
+            const mentor = villMap.npcs.find(n => n.id === 'mentor');
+            if (mentor) {
+                mentor.x = 21; mentor.y = 14; mentor.vx = 0; mentor.vy = 0;
+                setTimeout(() => { STATE.player.direction = 'down'; runTutorial(); }, 600);
+            }
         }
     }
-    else if(b.id === 'school_exit') {
-        STATE.location = 'village';
-        STATE.player.x = 41 * TILE_SIZE; 
-        STATE.player.y = 16 * TILE_SIZE; 
-        // FIX: Clear Area Spawn
-        clearSpawnZone('village', 41, 16);
-        showToast("Keluar Kampus");
-    }
-    else if(b.id === 'dungeon_gate') {
-        STATE.location = 'dungeon';
-        // UPDATE: Geser Spawn Point ke (5,5) agar jauh dari Exit (2,2)
-        STATE.player.x = TILE_SIZE * 5; 
-        STATE.player.y = TILE_SIZE * 5;
-        STATE.teleportCooldown = 60; // Safety cooldown
-        
-        // Efek transisi
-        showToast(`🌀 WARPING TO LEVEL ${STATE.dungeonLevel}...`);
-        createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
-        
-        spawnEnemies(); // Spawn musuh baru sesuai level
 
-        // --- NEW: TUTORIAL COMBAT PERTAMA KALI MASUK DUNGEON ---
-        if (!STATE.player.hasSeenDungeonTutorial) {
-            STATE.player.hasSeenDungeonTutorial = true;
-            
-            // Delay sedikit agar map dungeon dan UI sempat ter-render
-            setTimeout(() => {
-                // Highlight Tombol Aksi (Pedang)
-                const btnAction = document.getElementById('btn-action');
-                if(btnAction) {
-                    btnAction.innerText = '⚔️'; // Pastikan icon sudah pedang
-                    btnAction.classList.add('tutorial-highlight');
-                }
-
-                // Mainkan SFX Alert
-                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-
-                showDialogue("TUTORIAL COMBAT (1/2)", 
-                    "⚠️ **ZONA BERBAHAYA!**\nKamu telah memasuki Dungeon. Di sini banyak monster berkeliaran.\n\nPerhatikan tombol aksi di kanan bawah. Sekarang ikonnya berubah menjadi **PEDANG** ⚔️.", 
-                    [{
-                        text: "Lanjut >>", 
-                        action: () => {
-                            showDialogue("TUTORIAL COMBAT (2/2)", 
-                                "🔥 **TEKNIK BERTARUNG**:\n1. Tekan tombol Pedang untuk menyerang.\n2. Tekan cepat 3x untuk **COMBO** (Pukulan ke-3 damagenya besar!).\n3. **PERHATIKAN STAMINA!** Setiap serangan menguras energi. Jangan asal pukul jika lelah!", 
-                                [{
-                                    text: "Siap Bertarung! ⚔️", 
-                                    action: () => {
-                                        closeDialogue();
-                                        // Hapus highlight
-                                        if(btnAction) btnAction.classList.remove('tutorial-highlight');
-                                        
-                                        // Save otomatis agar tutorial tidak muncul lagi
-                                        manualSave();
-                                    }
-                                }],
-                                'images/penjagadungeon.png'
-                            );
-                        }
-                    }],
-                    'images/penjagadungeon.png'
-                );
-            }, 1000);
-        }
-    }
+    // --- MERCHANT ---
     else if(b.id === 'merchant') {
         STATE.location = 'merchant_interior';
         STATE.player.x = 7 * TILE_SIZE; 
@@ -8635,64 +8457,181 @@ function processTeleport(b) {
         STATE.location = 'village';
         STATE.player.x = 29 * TILE_SIZE; 
         STATE.player.y = 28 * TILE_SIZE; 
-        // FIX: Clear Area Spawn
         clearSpawnZone('village', 29, 28);
         showToast("Keluar Merchant");
     }
-    else if(b.id === 'house_exit') {
-        STATE.location = 'village';
-        STATE.player.x = 21 * TILE_SIZE; 
-        STATE.player.y = 12 * TILE_SIZE; 
-        
-        // FIX: ANTI-STUCK - Pindahkan NPC yang menghalangi pintu saat pagi hari
-        clearSpawnZone('village', 21, 12);
-        
-        showToast("Keluar Rumah");
 
-        // --- NEW: SPECIAL EVENT TUTORIAL (MENTOR DI DEPAN RUMAH) ---
-        // Jika Hari 1 & Belum pilih Role, Mentor menunggu di depan pintu
-        if (STATE.day === 1 && STATE.player.role === 'none') {
-            const villMap = maps['village'];
-            const mentor = villMap.npcs.find(n => n.id === 'mentor');
-            if (mentor) {
-                // Pindahkan Mentor ke koordinat (21, 14)
-                // Pintu Rumah di (21, 11), Player spawn di (21, 12).
-                // Posisi (21, 14) aman tidak kena teleport dan terlihat jelas.
-                mentor.x = 21;
-                mentor.y = 14;
-                
-                // Hentikan pergerakan random mentor agar dia diam menunggu
-                mentor.vx = 0; 
-                mentor.vy = 0;
-                
-                // Trigger Dialog Tutorial Otomatis setelah jeda singkat
-                setTimeout(() => {
-                    // Pastikan pemain menghadap ke bawah (ke arah Mentor)
-                    STATE.player.direction = 'down';
-                    runTutorial();
-                }, 600);
-            }
-        }
+    // --- KLINIK ---
+    else if(b.id === 'clinic') {
+        STATE.location = 'clinic_interior';
+        STATE.player.x = 7 * TILE_SIZE; 
+        STATE.player.y = 10 * TILE_SIZE; 
+        showToast("Masuk Klinik 🏥");
     }
-    // --- NEW: LOGIKA TELEPORT RUMAH MENTOR ---
+    else if(b.id === 'clinic_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 20 * TILE_SIZE; 
+        STATE.player.y = 19 * TILE_SIZE; 
+        clearSpawnZone('village', 20, 19);
+        showToast("Keluar Klinik");
+    }
+
+    // --- BLACKSMITH ---
+    else if(b.id === 'blacksmith') {
+        STATE.location = 'blacksmith_interior';
+        STATE.player.x = 7 * TILE_SIZE; 
+        STATE.player.y = 10 * TILE_SIZE; 
+        showToast("Masuk Bengkel ⚒️");
+    }
+    else if(b.id === 'smith_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 37 * TILE_SIZE; 
+        STATE.player.y = 32 * TILE_SIZE; 
+        clearSpawnZone('village', 37, 32);
+        showToast("Keluar Bengkel");
+    }
+
+    // --- RUMAH MENTOR ---
     else if(b.id === 'mentor') {
         STATE.location = 'mentor_interior';
-        STATE.player.x = 7 * TILE_SIZE; // Tengah Ruangan
+        STATE.player.x = 7 * TILE_SIZE; 
         STATE.player.y = 10 * TILE_SIZE;
         showToast("Bertamu ke Rumah Mentor 🏠");
     }
     else if(b.id === 'mentor_exit') {
         STATE.location = 'village';
-        STATE.player.x = 31 * TILE_SIZE; // Depan rumah mentor (Village coords: 28,15 size 6x5. Entrance 31,20)
+        STATE.player.x = 31 * TILE_SIZE; 
         STATE.player.y = 21 * TILE_SIZE;
         clearSpawnZone('village', 31, 21);
         showToast("Keluar Rumah Mentor");
+    }
+
+    // --- PERPUSTAKAAN ---
+    else if(b.id === 'library') {
+        STATE.location = 'library_interior';
+        STATE.player.x = 7 * TILE_SIZE; 
+        STATE.player.y = 10 * TILE_SIZE;
+        showToast("Masuk Perpustakaan 📚");
+    }
+    else if(b.id === 'library_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 41 * TILE_SIZE; 
+        STATE.player.y = 24 * TILE_SIZE; 
+        clearSpawnZone('village', 41, 24);
+        showToast("Keluar Perpustakaan");
+    }
+
+    // --- GUILD PETUALANG ---
+    else if(b.id === 'guild') {
+        STATE.location = 'guild_interior';
+        STATE.player.x = 8 * TILE_SIZE; 
+        STATE.player.y = 11 * TILE_SIZE;
+        showToast("Masuk Guild Petualang ⚔️");
+    }
+    else if(b.id === 'guild_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 45 * TILE_SIZE; 
+        STATE.player.y = 32 * TILE_SIZE; 
+        clearSpawnZone('village', 45, 32);
+        showToast("Keluar Guild");
+    }
+
+    // --- KAMPUS (DENGAN LOGIKA JAM & HARI) ---
+    else if(b.id === 'school') {
+        // Cek Hari Libur (Sabtu/Minggu)
+        const dayIndex = (STATE.day - 1) % 7; 
+        if (dayIndex === 5 || dayIndex === 6) {
+            showDialogue("SATPAM KAMPUS", "📢 KAMPUS LIBUR! \nHari Sabtu dan Minggu tidak ada perkuliahan.", [{text: "Baik Pak", action: closeDialogue}]);
+            return; 
+        }
+        // Cek Telat (08:30 - 14:00 dikunci)
+        if (STATE.time > 830 && STATE.time < 1400) {
+            showDialogue("SATPAM KAMPUS", "⛔ STOP! Kamu terlambat! \nKuliah sudah dimulai. Pintu dikunci.", [{text: "Pulang dengan Malu", action: closeDialogue}]);
+            return; 
+        }
+
+        STATE.location = 'school_interior';
+        STATE.player.x = 8 * TILE_SIZE; 
+        STATE.player.y = 12 * TILE_SIZE;
+        
+        if(STATE.time >= 1400) showToast("Kampus Sore (Bebas)");
+        else showToast("Masuk Kampus 🎓");
+    }
+    else if(b.id === 'school_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 41 * TILE_SIZE; 
+        STATE.player.y = 16 * TILE_SIZE; 
+        clearSpawnZone('village', 41, 16);
+        showToast("Keluar Kampus");
+    }
+
+    // --- RUMAH AYU ---
+    else if(b.id === 'lover1_home') {
+        STATE.location = 'lover1_interior';
+        STATE.player.x = 7 * TILE_SIZE; 
+        STATE.player.y = 10 * TILE_SIZE;
+        showToast("Bertamu ke Rumah Ayu 🌸");
+    }
+    else if(b.id === 'lover1_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 17 * TILE_SIZE; 
+        STATE.player.y = 30 * TILE_SIZE; 
+        clearSpawnZone('village', 17, 30);
+        showToast("Keluar Rumah Ayu");
+    }
+    
+    // --- RUMAH NELAYAN ---
+    else if(b.id === 'fisherman_home') {
+        STATE.location = 'fisherman_interior';
+        STATE.player.x = 6 * TILE_SIZE; 
+        STATE.player.y = 8 * TILE_SIZE;
+        showToast("Bertamu ke Tetangga (Nelayan) ⚓");
+    }
+    else if(b.id === 'fisherman_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 28 * TILE_SIZE; 
+        STATE.player.y = 11 * TILE_SIZE; 
+        clearSpawnZone('village', 28, 11);
+        showToast("Keluar Rumah Nelayan");
+    }
+
+    // --- BALAI PERNIKAHAN ---
+    else if(b.id === 'wedding') {
+        STATE.location = 'wedding_interior';
+        STATE.player.x = 7 * TILE_SIZE; 
+        STATE.player.y = 12 * TILE_SIZE;
+        showToast("Masuk Balai Pernikahan 💍");
+    }
+    else if(b.id === 'wedding_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 23 * TILE_SIZE; 
+        STATE.player.y = 27 * TILE_SIZE; 
+        clearSpawnZone('village', 23, 27);
+        showToast("Keluar Balai");
+    }
+
+    // --- DUNGEON ---
+    else if(b.id === 'dungeon_gate') {
+        STATE.location = 'dungeon';
+        STATE.player.x = TILE_SIZE * 5; 
+        STATE.player.y = TILE_SIZE * 5;
+        
+        showToast(`🌀 WARPING TO LEVEL ${STATE.dungeonLevel}...`);
+        createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
+        spawnEnemies(); 
+
+        // Tutorial Combat (One Time)
+        if (!STATE.player.hasSeenDungeonTutorial) {
+            STATE.player.hasSeenDungeonTutorial = true;
+            setTimeout(() => {
+                showDialogue("TUTORIAL COMBAT", "⚠️ **ZONA BERBAHAYA!**\nTombol aksi berubah jadi **PEDANG** ⚔️.\nTekan cepat 3x untuk **COMBO**!", [{text: "Siap Bertarung!", action: () => { closeDialogue(); manualSave(); }}], 'images/penjagadungeon.png');
+            }, 1000);
+        }
     }
     else if(b.id === 'dungeon_exit') {
         STATE.location = 'village';
         STATE.player.x = 48 * TILE_SIZE; 
         STATE.player.y = 22 * TILE_SIZE; 
-        // FIX: Clear Area Spawn
         clearSpawnZone('village', 48, 22);
         showToast("Keluar Dungeon");
     }
@@ -8701,13 +8640,8 @@ function processTeleport(b) {
         STATE.location = 'dungeon';
         STATE.player.x = TILE_SIZE * 5; 
         STATE.player.y = TILE_SIZE * 5; 
-        STATE.teleportCooldown = 60;
-        
-        // FIX: AUTO-SAVE SAAT PINDAH LEVEL AGAR PROGRESS AMAN
         manualSave();
-
         showToast(`🌀 WARPING TO LEVEL ${STATE.dungeonLevel}...`);
-        createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
         spawnEnemies(); 
     }
 }
@@ -8986,6 +8920,24 @@ function isNPCActive(npc) {
     // NEW: Cek Syarat Quest (Untuk Monster Skripsi)
     if (npc.questReq) {
         if (STATE.player.activeQuest !== npc.questReq) return false;
+    }
+
+    // --- NEW: JADWAL KHUSUS DEWI ARSA (SUMMER 23, JAM 00:00-01:00) ---
+    if (npc.schedule === 'custom_fullmoon') {
+        // Hitung Data Waktu Saat Ini
+        const totalDays = STATE.day - 1; 
+        const seasonIndex = Math.floor((totalDays % (DAYS_PER_SEASON * 4)) / DAYS_PER_SEASON);
+        const currentSeason = SEASONS[seasonIndex].toLowerCase();
+        const dayInSeason = (totalDays % DAYS_PER_SEASON) + 1;
+
+        // Syarat 1: Tanggal 23 Musim Panas (Summer)
+        const isDate = (currentSeason === 'summer' && dayInSeason === 23);
+        
+        // Syarat 2: Jam 12 Malam s/d 1 Pagi (00:00 - 01:00)
+        // Di sistem game, jam reset ke 0 saat mencapai 2400. Jadi rentangnya 0 s/d 100.
+        const isTime = (STATE.time >= 0 && STATE.time < 100);
+
+        return isDate && isTime;
     }
 
     if (!npc.schedule || npc.schedule === 'always') return true;
@@ -10415,6 +10367,26 @@ function interactNPC(npc) {
         ], npc.imgSrc);
     }
 
+    // --- NEW: INTERAKSI DEWI ARSA (EVENT BULAN PURNAMA) ---
+    else if(npc.id === 'dewi_arsa') {
+        showDialogue("DEWI ARSA", "Wahai anak manusia... Kau menemukanku di saat bulan purnama bersinar paling terang.", [
+            {text: "Siapa engkau?", action: () => {
+                showDialogue("DEWI ARSA", "Aku adalah manifestasi roh Pulau Arsa. Karena ketulusanmu datang di jam suci ini, terimalah berkahku.", [
+                    {text: "Terima Berkah (Full Heal + Permata)", action: () => {
+                        STATE.player.hp = STATE.player.maxHp;
+                        STATE.player.energy = 100;
+                        addItem('permata', 1); // Hadiah item mahal
+                        showToast("✨ Diberkati Dewi Arsa (Status Pulih & Dapat Permata)");
+                        createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                        closeDialogue();
+                    }}
+                ], npc.imgSrc);
+            }},
+            {text: "Hanya kebetulan lewat", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
     // NEW: INTERAKSI SENIMAN
     else if(npc.id === 'seniman') {
         showDialogue(npc.name, "Jreng... jreng... Hidup itu seperti nada, kadang tinggi, kadang rendah. Nikmati saja iramanya.", [
@@ -10878,6 +10850,7 @@ function interactObject(obj) {
                 7: "🐔 Festival Ayam",
                 15: "🎂 Ultah Satria",
                 20: "🏊 Lomba Berenang (Pantai)",
+                23: "🌕 Bulan Purnama Dony", // NEW: Event Spesial
                 24: "🎆 Festival Kembang Api"
             },
             'autumn': {
@@ -13235,9 +13208,11 @@ function drawPlayer(ctx, p) {
     ctx.fill();
 
     let sprite = p.spriteIdle;
+    
+    // FIX: Mengganti touchState (yang tidak ada) menjadi inputState.active
     let isMoving = keys['ArrowUp'] || keys['ArrowDown'] || keys['ArrowLeft'] || keys['ArrowRight'] || 
                    keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'] ||
-                   touchState.up || touchState.down || touchState.left || touchState.right;
+                   inputState.active; // Gunakan inputState dari touch controls
                    
     // UPDATE: Prioritas Sprite (Attack > Walk > Idle)
     if (p.isAttacking && p.spriteAttack) {
@@ -13275,7 +13250,15 @@ function drawPlayer(ctx, p) {
         
         ctx.restore();
     } else {
-        draw3DBox(ctx, p.x, p.y, 20, 20, p.color);
+        // FIX: Fallback ke kotak sederhana jika gambar gagal, karena draw3DBox tidak ada
+        ctx.fillStyle = p.color || '#fbbf24';
+        ctx.fillRect(p.x, p.y, 20, 20);
+        
+        // Mata sederhana untuk orientasi
+        ctx.fillStyle = '#000';
+        if(p.direction === 'right') ctx.fillRect(p.x+12, p.y+5, 4, 4);
+        else if(p.direction === 'left') ctx.fillRect(p.x+4, p.y+5, 4, 4);
+        else ctx.fillRect(p.x+8, p.y+5, 4, 4); // Depan/Belakang
     }
 
     // --- UPDATE: VISUAL INDIKATOR STAMINA RENDAH (KERINGAT KECIL DI KEPALA) ---
@@ -13378,6 +13361,43 @@ function drawNPC(ctx, n) {
     if (n.loadedImg.complete && n.loadedImg.naturalWidth !== 0) {
         ctx.save();
         
+        // --- NEW: EFEK CAHAYA BULAN (KHUSUS DEWI ARSA) ---
+        if (n.id === 'dewi_arsa') {
+            // A. Aura Lingkaran Bercahaya (Gradient)
+            const cx = x + dw/2;
+            const cy = y + dh/2;
+            const pulse = 1 + Math.sin(Date.now() / 600) * 0.15; // Denyut cahaya pelan
+            
+            // Gradient: Putih Terang -> Kuning Pucat -> Transparan
+            const grad = ctx.createRadialGradient(cx, cy, 15, cx, cy, 55 * pulse);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 0.6)'); 
+            grad.addColorStop(0.5, 'rgba(254, 240, 138, 0.25)'); // Kuning rembulan
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 60, 0, Math.PI*2);
+            ctx.fill();
+
+            // B. Efek Kilauan Bintang (Sparkles)
+            // Muncul acak di sekitar area tubuh
+            if(Math.random() < 0.3) { // 30% chance per frame render
+                 ctx.fillStyle = '#fff';
+                 // Random posisi di sekitar NPC
+                 const sx = x + (Math.random() * dw * 1.5) - (dw * 0.25);
+                 const sy = y + (Math.random() * dh * 1.2) - (dh * 0.1);
+                 
+                 // Gambar bintang kecil (Cross shape)
+                 const size = Math.random() * 3;
+                 ctx.fillRect(sx, sy, size, 1);
+                 ctx.fillRect(sx + (size/2) - 0.5, sy - (size/2) + 0.5, 1, size);
+            }
+            
+            // C. Glow pada Sprite Karakter
+            ctx.shadowColor = '#fef08a'; // Kuning Muda Bercahaya
+            ctx.shadowBlur = 25;
+        }
+
         // UPDATE: Logika Animasi (Static vs Moving)
         // Semua NPC Darat (Static, Wander, Animal) sekarang menggunakan efek BERNAFAS yang sama
         if (n.type !== 'swimmer') {
