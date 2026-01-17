@@ -6836,6 +6836,9 @@ async function initGame() {
             STATE.player.scholarship = saved.scholarship || false;
             STATE.player.jobStatus = saved.jobStatus || 'unemployed';
             STATE.player.bossReputation = saved.bossReputation || 50;
+            // NEW: LOAD JOB LEVEL (Default 1 jika tidak ada)
+            STATE.player.jobLevel = saved.jobLevel || 1;
+            
             STATE.player.shiftStarted = saved.shiftStarted || false;
             STATE.player.salaryDays = saved.salaryDays || 0;
             STATE.player.lastAttendanceDay = saved.lastAttendanceDay || 0;
@@ -8460,17 +8463,24 @@ function update() {
             STATE.player.shiftStarted = false;
             STATE.player.salaryDays++;
             
-            const dailyWage = 5000;
+            // --- UPDATE: SISTEM GAJI BERJENJANG (CAREER PATH) ---
+            const currentLvl = STATE.player.jobLevel || 1;
+            let dailyWage = 5000; // Lv 1 Magang
+
+            if (currentLvl === 2) dailyWage = 7500;  // Staff Senior
+            else if (currentLvl === 3) dailyWage = 12000; // Kepala Gudang
+            else if (currentLvl === 4) dailyWage = 25000; // Manajer Cabang
+
             STATE.player.money += dailyWage;
             STATE.player.energy -= 30; 
             
             if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Gaji
 
             if(STATE.time > 1630) {
-                showToast(`Shift Selesai. (+${dailyWage} G)`);
+                showToast(`Shift Selesai. Gaji: ${dailyWage.toLocaleString()} G`);
             } else {
                 STATE.player.bossReputation += 1;
-                showToast(`Shift Selesai. Boss Senang! (+${dailyWage} G)`);
+                showToast(`Kerja Bagus! (+${dailyWage.toLocaleString()} G, Rep +1)`);
             }
         }
     }
@@ -10340,7 +10350,6 @@ function interactNPC(npc) {
         const currentYear = Math.ceil(STATE.day / 120);
         
         // Cek apakah pemain BUKAN Worker, Masih dalam Masa Trial (< Thn 4), dan Belum Bekerja
-        // REVISI NARASI: Menjelaskan bahwa Toko Buka untuk Belanja, tapi Lowongan Tutup.
         if (p.role !== 'worker' && currentYear < 4 && !STATE.freeRoamMode && p.jobStatus !== 'employed') {
             showDialogue("MERCHANT", 
                 "Selamat datang! Silakan lihat-lihat barang dagangan kami.\n\n(Catatan: Bos Merchant hanya membuka lowongan kerja untuk Role **Fighter/Pekerja** selama masa Trial 3 Tahun ini. Kamu bisa melamar setelah lulus Trial.)", 
@@ -10358,8 +10367,17 @@ function interactNPC(npc) {
 
         // ... (Logic Bos Merchant tetap sama untuk Worker) ...
         const jobStatus = p.jobStatus || 'unemployed';
-        let mood = p.bossReputation > 70 ? "Senang" : (p.bossReputation > 30 ? "Netral" : "Marah");
         
+        // --- NEW: DEFINISI JENJANG KARIR ---
+        const JOB_TIERS = {
+            1: { title: "Magang", salary: 5000 },
+            2: { title: "Staff Senior", salary: 7500 },
+            3: { title: "Kepala Gudang", salary: 12000 },
+            4: { title: "Manajer Cabang", salary: 25000 }
+        };
+        const currentLvl = p.jobLevel || 1;
+        const currentTitle = JOB_TIERS[currentLvl] ? JOB_TIERS[currentLvl].title : "Magang";
+
         if(jobStatus === 'fired') {
             showDialogue("MERCHANT", "Kamu sudah saya pecat! Kinerjamu buruk sekali.", [
                 {text: "Saya mohon maaf, beri saya kesempatan! (Energy 50)", action: () => {
@@ -10367,7 +10385,9 @@ function interactNPC(npc) {
                         p.energy -= 50;
                         p.bossReputation = 30; 
                         p.jobStatus = 'unemployed'; 
-                        showToast("Bos luluh sedikit... Kamu bisa melamar lagi.");
+                        // Reset Job Level jika dipecat
+                        p.jobLevel = 1; 
+                        showToast("Bos luluh sedikit... Kamu bisa melamar lagi (Mulai dari Nol).");
                         closeDialogue();
                     } else showToast("Kurang energi untuk memohon.");
                 }},
@@ -10387,31 +10407,108 @@ function interactNPC(npc) {
             // --- NEW: CEK HARI LIBUR KERJA (MINGGU) ---
             const dayIndex = (STATE.day - 1) % 7; // 0=Senin ... 6=Minggu
             if (dayIndex === 6) {
-                 showDialogue("MERCHANT", "Hari ini **MINGGU**, gudang libur operasional. \nIstirahatlah, kumpulkan tenaga untuk besok Senin!", [{text:"Siap Bos, Happy Sunday!", action:closeDialogue}], npc.imgSrc);
+                 showDialogue("MERCHANT", `Halo ${currentTitle}. Hari ini **MINGGU**, gudang libur operasional. \nIstirahatlah, kumpulkan tenaga untuk besok Senin!`, [{text:"Siap Bos, Happy Sunday!", action:closeDialogue}], npc.imgSrc);
                  return;
             }
 
+            // --- MENU UTAMA PEKERJA (MODIFIED) ---
+            let bossText = `Halo, **${currentTitle}**. Siap bekerja hari ini?`;
+            let menuOptions = [];
+
+            // 1. OPSI MULAI SHIFT (Jika belum mulai & jam kerja)
             if(!p.shiftStarted) {
                 if(STATE.time >= 800 && STATE.time <= 1000) {
-                    showDialogue("MERCHANT", "Bagus, datang tepat waktu. Mulai kerjamu!", [{text:"Siap Bos! (Mulai Shift)", action:()=>{
-                        p.shiftStarted = true;
-                        p.bossReputation += 1;
-                        showToast("Shift Dimulai 🕗");
-                        closeDialogue();
-                    }}], npc.imgSrc);
+                    menuOptions.push({
+                        text: "✅ Mulai Shift (Tepat Waktu)", 
+                        action:()=>{
+                            p.shiftStarted = true;
+                            p.bossReputation += 1;
+                            showToast("Shift Dimulai 🕗");
+                            closeDialogue();
+                        }
+                    });
                 } else if (STATE.time > 1000 && STATE.time < 1600) {
-                    showDialogue("MERCHANT", "Kamu terlambat!! Cepat kerja!", [{text:"Maaf Bos... (Mulai Shift)", action:()=>{
-                        p.shiftStarted = true;
-                        p.bossReputation -= 5;
-                        showToast("Shift Dimulai (Terlambat) 🕗");
-                        closeDialogue();
-                    }}], npc.imgSrc);
+                    bossText = "Kamu terlambat!! Cepat masuk kerja atau gaji dipotong!";
+                    menuOptions.push({
+                        text: "⚠️ Mulai Shift (Terlambat)", 
+                        action:()=>{
+                            p.shiftStarted = true;
+                            p.bossReputation -= 5;
+                            showToast("Shift Dimulai (Terlambat) 🕗");
+                            closeDialogue();
+                        }
+                    });
                 } else {
-                    showDialogue("MERCHANT", "Shift belum dimulai atau toko sudah tutup untuk karyawan.", [{text:"Baik", action:closeDialogue}], npc.imgSrc);
+                    bossText = "Shift kerja belum dimulai (08:00) atau gudang sudah tutup (16:00).";
                 }
             } else {
-                showDialogue("MERCHANT", "Kenapa malah ngobrol? Kembali kerja!", [{text:"Siap Bos", action:closeDialogue}], npc.imgSrc);
+                bossText = "Kenapa malah ngobrol? Kembali ke posisimu!";
+                menuOptions.push({text: "Siap Bos", action: closeDialogue});
             }
+
+            // 2. OPSI PROMOSI & INFO KARIR (Selalu Muncul jika tidak sedang kerja)
+            if (!p.shiftStarted) {
+                menuOptions.push({
+                    text: "📈 Info Karir & Promosi",
+                    action: () => {
+                        const lvl = p.jobLevel || 1;
+                        let promotionMsg = "";
+                        let canPromote = false;
+                        let nextTitle = "";
+                        let reqStr = 0;
+                        let reqRep = 0;
+
+                        if (lvl === 1) {
+                            nextTitle = "Staff Senior"; reqStr = 20; reqRep = 60;
+                        } else if (lvl === 2) {
+                            nextTitle = "Kepala Gudang"; reqStr = 40; reqRep = 80;
+                        } else if (lvl === 3) {
+                            nextTitle = "Manajer Cabang"; reqStr = 60; reqRep = 100;
+                        } else {
+                            promotionMsg = "Kamu sudah mencapai posisi puncak! **Manajer Cabang**. Tidak ada promosi lebih tinggi lagi saat ini.";
+                        }
+
+                        if (lvl < 4) {
+                            promotionMsg = `**POSISI SAAT INI: ${JOB_TIERS[lvl].title}** (Gaji: ${JOB_TIERS[lvl].salary})\n\n`;
+                            promotionMsg += `**SYARAT PROMOSI KE ${nextTitle.toUpperCase()}**:\n`;
+                            promotionMsg += `1. Strength (STR): **${p.str}/${reqStr}** ${p.str >= reqStr ? '✅' : '❌'}\n`;
+                            promotionMsg += `2. Reputasi Bos: **${p.bossReputation}/${reqRep}** ${p.bossReputation >= reqRep ? '✅' : '❌'}\n`;
+                            promotionMsg += `\n(Gaji Baru: ${JOB_TIERS[lvl+1].salary} G)`;
+
+                            if (p.str >= reqStr && p.bossReputation >= reqRep) canPromote = true;
+                        }
+
+                        let promoOpts = [];
+                        if (canPromote) {
+                            promoOpts.push({
+                                text: "✨ AJUKAN PROMOSI SEKARANG!",
+                                action: () => {
+                                    p.jobLevel++;
+                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                                    showToast("NAIK PANGKAT! Gaji Meningkat 📈");
+                                    
+                                    showDialogue("MERCHANT", `Selamat! Saya melihat dedikasimu.\nMulai hari ini, kamu resmi diangkat menjadi **${nextTitle}**.\n\nJangan kecewakan saya!`, [{text:"Terima kasih Bos!", action:closeDialogue}], npc.imgSrc);
+                                    
+                                    // Simpan progress
+                                    manualSave();
+                                }
+                            });
+                        }
+                        
+                        promoOpts.push({text: "Kembali", action: () => interactNPC(npc)});
+
+                        showDialogue("JENJANG KARIR", promotionMsg, promoOpts, 'images/job.png');
+                    }
+                });
+            }
+
+            if(menuOptions.length === 0) {
+                 menuOptions.push({text: "Tutup", action: closeDialogue});
+            }
+
+            // Tampilkan Dialog Utama Bos
+            showDialogue("MERCHANT", bossText, menuOptions, npc.imgSrc);
         }
         return;
     }
@@ -12370,6 +12467,9 @@ function manualSave() {
         scholarship: STATE.player.scholarship,
         jobStatus: STATE.player.jobStatus,
         bossReputation: STATE.player.bossReputation,
+        // NEW: SAVE JOB LEVEL
+        jobLevel: STATE.player.jobLevel,
+        
         shiftStarted: STATE.player.shiftStarted, // Simpan status sedang kerja
         salaryDays: STATE.player.salaryDays,
         lastAttendanceDay: STATE.player.lastAttendanceDay,
