@@ -4060,11 +4060,29 @@ const DataService = {
 
         if(this.mode === 'firebase' && db) {
             try {
-                await db.collection('users').doc(studentEmail).set({ saveData: null }, { merge: true });
+                // UPDATE: Menggunakan FieldValue.delete() untuk penghapusan bersih di Firestore
+                await db.collection('users').doc(studentEmail).update({
+                    saveData: firebase.firestore.FieldValue.delete()
+                });
                 return { success: true, type: 'cloud' };
             } catch (e) {
                 console.error("Gagal reset data cloud:", e);
-                return { success: false, msg: "Koneksi Cloud Gagal: " + e.message };
+
+                // --- DETEKSI ERROR PERMISSION (RULES EXPIRED) ---
+                if (e.code === 'permission-denied') {
+                    return { 
+                        success: false, 
+                        msg: "⛔ AKSES DITOLAK FIREBASE!\n\nKemungkinan 'Test Mode' database Anda sudah kadaluwarsa (Expired 30 Hari).\n\nSOLUSI: Buka Firebase Console -> Firestore Database -> Tab 'Rules', lalu ubah menjadi:\n\nallow read, write: if true;" 
+                    };
+                }
+                
+                // Fallback: Jika dokumen tidak ada atau update gagal, coba set merge null
+                try {
+                     await db.collection('users').doc(studentEmail).set({ saveData: null }, { merge: true });
+                     return { success: true, type: 'cloud_fallback' };
+                } catch (e2) {
+                     return { success: false, msg: "Koneksi Cloud Gagal: " + e.message };
+                }
             }
         } 
         else {
@@ -5371,7 +5389,7 @@ async function confirmResetStudent(email, name) {
             const result = await DataService.adminResetStudent(email);
             
             if (result.success) {
-                const source = result.type === 'cloud' ? 'SERVER CLOUD' : 'DATABASE LOKAL';
+                const source = result.type && result.type.includes('cloud') ? 'SERVER CLOUD' : 'DATABASE LOKAL';
                 alert(`✅ SUKSES!\nData siswa ${name} berhasil di-reset di ${source}.\n\n(Data di Dashboard akan diperbarui...)`);
                 
                 // Refresh data dashboard secara paksa agar tampilan update
@@ -5381,7 +5399,8 @@ async function confirmResetStudent(email, name) {
                     renderResetPage();
                 }
             } else {
-                alert(`❌ GAGAL RESET!\n\nPenyebab: ${result.msg}\n\nPastikan Anda terhubung ke internet jika target ada di Cloud.`);
+                // UPDATE: Tampilkan pesan error yang lebih detail (termasuk saran Firebase Rules)
+                alert(`❌ GAGAL RESET!\n\n${result.msg}`);
             }
         } catch(e) {
             alert("Terjadi kesalahan sistem: " + e.message);
