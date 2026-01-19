@@ -7307,6 +7307,16 @@ function clearTutorialFocus() {
     }
 }
 
+// --- NEW: FUNGSI RESET INPUT (Mencegah Karakter Jalan Sendiri) ---
+function resetInputs() {
+    // Reset Keyboard
+    Object.keys(keys).forEach(key => keys[key] = false);
+    // Reset Touch Joystick
+    inputState.active = false;
+    inputState.x = 0;
+    inputState.y = 0;
+}
+
 function startWakeUpSequence() {
     showToast("🔊 *TOK TOK TOK*");
     if(typeof AudioService !== 'undefined') AudioService.playSFX('knock'); // Play SFX Ketukan
@@ -7319,24 +7329,54 @@ function startWakeUpSequence() {
                     
                     // --- START VISUAL TUTORIAL ---
                     setTimeout(() => {
-                        // STEP 1: NAVIGASI (GERAKAN)
-                        showTutorialFocus('gameCanvas'); 
+                        // UPDATE: TIDAK LAGI MENG-HIGHLIGHT CANVAS (Menghindari bug Z-Index)
+                        // showTutorialFocus('gameCanvas'); 
                         
                         showDialogue("TUTORIAL (1/7)", 
                             "Selamat datang! Mari belajar bergerak:\n\n📱 **HP/Tablet**: Sentuh & Geser jari di mana saja pada layar.\n💻 **PC/Laptop**: Gunakan tombol **WASD** atau **Panah**.", 
                             [
                             {
-                                text: "Coba Gerak Dulu (5 Detik) >>", 
+                                text: "Saya Siap Bergerak >>", 
                                 action: () => {
-                                    // FIX: Jeda Tutorial agar pemain bisa mencoba kontrol Keyboard/Touch
+                                    // FIX: GANTI TIMER 5 DETIK DENGAN DETEKSI GERAKAN
                                     closeDialogue();
                                     clearTutorialFocus();
-                                    showToast("Silakan coba bergerak! Tutorial berlanjut dalam 5 detik...");
                                     
-                                    // Lanjut ke Step 2 setelah 5 detik
+                                    // Mulai monitor gerakan
+                                    const startX = STATE.player.x;
+                                    const startY = STATE.player.y;
+                                    let checkMoveInterval = null;
+                                    
+                                    showToast("SILAKAN BERGERAK SEDIKIT... (Menunggu Input)");
+                                    
+                                    // Cek setiap 200ms apakah pemain sudah bergerak
+                                    checkMoveInterval = setInterval(() => {
+                                        const dist = Math.hypot(STATE.player.x - startX, STATE.player.y - startY);
+                                        
+                                        // Jika sudah bergerak lebih dari 30 pixel (1 langkah tile)
+                                        if(dist > 30) {
+                                            clearInterval(checkMoveInterval); // Stop checking
+                                            showToast("BAGUS! Gerakan Terdeteksi ✅");
+                                            
+                                            // Lanjut ke Step 2
+                                            setTimeout(() => {
+                                                resetInputs(); // Stop player agar tidak jalan terus saat dialog muncul
+                                                continueTutorialStep2();
+                                            }, 500);
+                                        }
+                                    }, 200);
+
+                                    // Fallback: Jika dalam 8 detik tidak bisa gerak (bingung), otomatis lanjut
                                     setTimeout(() => {
-                                        continueTutorialStep2();
-                                    }, 5000);
+                                        if(checkMoveInterval) {
+                                            clearInterval(checkMoveInterval);
+                                            // Cek jika belum lanjut (screen masih play)
+                                            if(STATE.screen === 'play') {
+                                                 showToast("Lewati Latihan Gerak...");
+                                                 continueTutorialStep2();
+                                            }
+                                        }
+                                    }, 8000);
                                 }
                             }
                         ]);
@@ -13232,6 +13272,8 @@ function showDialogue(title, text, opts, imgSrc) {
 function closeDialogue() {
     document.getElementById('dialogue-wrapper').style.display = 'none'; 
     STATE.screen = 'play';
+    // FIX: RESET INPUT SETIAP KALI DIALOG DITUTUP (Agar tidak jalan sendiri)
+    resetInputs();
 }
 function showToast(msg) {
     const t = document.getElementById('toast');
