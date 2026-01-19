@@ -936,7 +936,8 @@
             justify-content: center;
             gap: 25px; /* Jarak antar logo */
             margin-bottom: 10px;
-            animation: fadeIn 1.5s ease-out;
+            /* UPDATE: Menghapus animasi fadeIn agar muncul barengan dengan teks Gemini */
+            /* animation: fadeIn 1.5s ease-out; */ 
         }
 
         .logo-main {
@@ -1854,14 +1855,17 @@ button, .round-btn, .d-btn, .auth-btn {
     <div id="splash-screen">
         <!-- NEW: LOGO INSTANSI HEADER -->
         <div class="splash-logos">
-            <!-- Logo Kiri -->
-            <img src="images/logotkj.png" alt="TKJ" class="logo-side" onerror="this.style.display='none'">
+            <!-- Logo Kiri (TKJ) - Dengan Fallback Placeholder -->
+            <img src="images/logonailul.png" alt="Nailul Authar" class="logo-side" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDcwIDcwIj48Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSIzMCIgZmlsbD0iIzA2YjZkNCIgb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjM1IiB5PSI0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwNmI2ZDQiPlRLSjwvdGV4dD48L3N2Zz4='">
             
-            <!-- Logo Tengah (Utama) -->
-            <img src="images/logonailul.png" alt="Nailul" class="logo-main" onerror="this.style.display='none'">
+            <!-- Logo Tengah (Nailul) - Dengan Fallback Placeholder -->
+            <img src="images/logosmk.png" alt="SMK Negeri 1 Brondong" class="logo-main" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDUiIGZpbGw9IiNmYmJmMjQiIG9wYWNpdHk9IjAuMiIgc3Ryb2tlPSIjZmJiZjI0IiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSI1MCIgeT0iNTUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmJiZjI0Ij5OQUlMVUw8L3RleHQ+PC9zdmc+'">
             
-            <!-- Logo Kanan -->
-            <img src="images/logotkj.png" alt="TKJ" class="logo-side" onerror="this.style.display='none'">
+            <!-- Logo Kanan (TKJ) - Dengan Fallback Placeholder -->
+            <img src="images/logotkj.png" alt="Jurusan Teknik komputer dan Jaringan" class="logo-side" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDcwIDcwIj48Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSIzMCIgZmlsbD0iIzA2YjZkNCIgb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjM1IiB5PSI0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwNmI2ZDQiPlRLSjwvdGV4dD48L3N2Zz4='">
         </div>
 
         <h1 style="font-size: 18px; text-align: center; line-height: 1.5; font-family: 'Cinzel'; margin-top:0;">POWERED BY<br><span style="font-size: 40px; color: var(--accent); text-shadow: 0 0 20px var(--accent);">GEMINI</span></h1>
@@ -5428,14 +5432,13 @@ function resize() {
     const isMobile = window.innerWidth < 1000;
     const isTablet = window.innerWidth >= 1000 && window.innerWidth < 1300;
     
-    /* UPDATE: MENGURANGI SCALE AGAR LEBIH ZOOM-OUT (TERLIHAT LEBIH LUAS) */
-    let scale = 2.0; // Default Desktop (Sebelumnya 3.0 -> Turun jadi 2.0)
+    /* REVERT: MENGEMBALIKAN SCALE KE UKURAN SEMULA (LEBIH ZOOM IN) */
+    let scale = 3.0; // Default Desktop (Dikembalikan dari 2.0 ke 3.0)
     
     if (isMobile) {
-        // Mobile: Disesuaikan agar tombol tidak terlalu kecil tapi view luas
-        scale = 1.25; // (Sebelumnya 2.0 -> Turun jadi 1.25)
+        scale = 2.0; // Mobile (Dikembalikan dari 1.25 ke 2.0)
     } else if (isTablet) {
-        scale = 1.6; // Tablet (Sebelumnya 2.5 -> Turun jadi 1.6)
+        scale = 2.5; // Tablet (Dikembalikan dari 1.6 ke 2.5)
     }
     
     // Hitung dimensi logika game berdasarkan ukuran layar & scale
