@@ -896,8 +896,37 @@
             justify-content: center;
             align-items: center;
             color: white;
-            /* UPDATE: Dipercepat! Delay animasi dikurangi dari 2.5s ke 0.5s */
-            animation: fadeOut 0.5s ease-out 0.5s forwards;
+            /* UPDATE: Hapus animasi CSS otomatis, kita kontrol via JS setelah loading selesai */
+            /* animation: fadeOut 0.5s ease-out 0.5s forwards; */
+            transition: opacity 0.5s ease-out;
+        }
+
+        /* NEW: LOADING BAR STYLES */
+        #loading-container {
+            width: 60%;
+            max-width: 300px;
+            height: 4px;
+            background: #334155;
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #loading-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            transition: width 0.2s;
+            box-shadow: 0 0 10px var(--accent);
+        }
+        
+        #loading-text {
+            font-family: 'Exo 2', sans-serif;
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 8px;
+            letter-spacing: 1px;
         }
 
         @keyframes fadeOut {
@@ -1800,6 +1829,12 @@ button, .round-btn, .d-btn, .auth-btn {
     <!-- 1. SPLASH SCREEN -->
     <div id="splash-screen">
         <h1 style="font-size: 24px; text-align: center; line-height: 1.5; font-family: 'Cinzel';">POWERED BY<br><span style="font-size: 50px; color: var(--accent); text-shadow: 0 0 20px var(--accent);">GEMINI</span></h1>
+        
+        <!-- NEW: LOADING BAR HTML -->
+        <div id="loading-container">
+            <div id="loading-bar"></div>
+        </div>
+        <div id="loading-text">MEMUAT ASET... 0%</div>
     </div>
 
     <!-- NEW: LEADERBOARD OVERLAY (PUBLIC) -->
@@ -3431,6 +3466,82 @@ function getQuestContent(tabType) {
     return html;
 }
 
+// --- NEW: SYSTEM PRELOADER ASSET (FIX GAMBAR LAMA MUNCUL DI MOBILE) ---
+async function preloadAllGameAssets() {
+    const imagesToLoad = [];
+    
+    // 1. Kumpulkan semua gambar dari Peta (Bangunan, NPC, Objek)
+    // Kita iterasi semua map yang ada di variabel 'maps'
+    for (const [mapName, mapData] of Object.entries(maps)) {
+        // Buildings
+        if (mapData.buildings) {
+            mapData.buildings.forEach(b => {
+                if (b.img) imagesToLoad.push({ src: b.img, element: b });
+            });
+        }
+        // NPCs
+        if (mapData.npcs) {
+            mapData.npcs.forEach(n => {
+                if (n.imgSrc) imagesToLoad.push({ src: n.imgSrc, element: n });
+            });
+        }
+        // Objects
+        if (mapData.objects) {
+            mapData.objects.forEach(o => {
+                if (o.img) imagesToLoad.push({ src: o.img, element: o });
+            });
+        }
+    }
+
+    // 2. Tambahkan Aset Player (Gender) & UI Penting
+    imagesToLoad.push({ src: 'images/boy.png' });
+    imagesToLoad.push({ src: 'images/girl.png' });
+    imagesToLoad.push({ src: 'images/boy-walk.png' });
+    imagesToLoad.push({ src: 'images/girl-walk.png' });
+    imagesToLoad.push({ src: 'images/boy-idle.png' });
+    imagesToLoad.push({ src: 'images/girl-idle.png' });
+    imagesToLoad.push({ src: 'images/tas-isi.png' });
+    
+    const total = imagesToLoad.length;
+    let loaded = 0;
+    const loadingBar = document.getElementById('loading-bar');
+    const loadingText = document.getElementById('loading-text');
+
+    // Jika tidak ada aset (aneh), langsung selesai
+    if (total === 0) return;
+
+    // Fungsi Load Satu Gambar
+    const loadImage = (item) => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = item.src;
+            
+            // Jika ini elemen map, simpan referensi agar tidak dimuat ulang di draw()
+            if (item.element) {
+                item.element.loadedImg = img;
+            }
+
+            img.onload = () => {
+                loaded++;
+                const pct = Math.floor((loaded / total) * 100);
+                if(loadingBar) loadingBar.style.width = pct + "%";
+                if(loadingText) loadingText.innerText = `MEMUAT ASET... ${pct}%`;
+                resolve();
+            };
+            
+            img.onerror = () => {
+                console.warn("Gagal memuat:", item.src);
+                loaded++; // Tetap hitung progress meski gagal
+                resolve(); // Jangan reject agar game tetap jalan
+            };
+        });
+    };
+
+    // Jalankan semua (Parallel Loading)
+    // Kita pakai Promise.all agar browser mengunduh bersamaan
+    await Promise.all(imagesToLoad.map(item => loadImage(item)));
+}
+
 // UPDATE: Ganti window.onload dengan Event Listener yang lebih cepat & fleksibel
 function startGameSequence() {
     try {
@@ -3452,24 +3563,34 @@ function startGameSequence() {
             AudioService.init();
         }
 
-        // UPDATE: LOADING DIPERCEPAT!
-        // Timeout dikurangi drastis dari 1000ms jadi 100ms agar terasa instan
-        // Menggunakan requestAnimationFrame agar transisi UI mulus
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                if(splash) {
-                    splash.style.opacity = 0; // Trigger CSS transition fadeOut
-                    setTimeout(() => splash.style.display = 'none', 500); // Hapus elemen setelah animasi CSS selesai
-                }
-                if(audioPrompt) {
-                    audioPrompt.style.display = 'flex';
-                    audioPrompt.style.opacity = 0;
-                    audioPrompt.style.animation = "fadeIn 0.5s forwards"; // Tambahkan animasi masuk halus
-                }
-            }, 200); // Jeda sangat singkat (0.2 detik) hanya untuk memastikan aset CSS termuat
+        // --- UPDATE: JALANKAN PRELOADER SEBELUM MENAMPILKAN MENU ---
+        preloadAllGameAssets().then(() => {
+            // Setelah semua aset siap:
+            
+            // UPDATE: LOADING DIPERCEPAT (Setelah preloading selesai)
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if(splash) {
+                        splash.style.opacity = 0; // Trigger CSS transition fadeOut
+                        setTimeout(() => splash.style.display = 'none', 500); // Hapus elemen setelah animasi CSS selesai
+                    }
+                    if(audioPrompt) {
+                        audioPrompt.style.display = 'flex';
+                        audioPrompt.style.opacity = 0;
+                        audioPrompt.style.animation = "fadeIn 0.5s forwards"; // Tambahkan animasi masuk halus
+                    }
+                }, 200); 
+            });
+            
+            if(typeof resize === 'function') resize();
+
+        }).catch(err => {
+            console.error("Preload Error:", err);
+            // Fallback: Tetap buka game meski error preload
+             if(splash) splash.style.display = 'none';
+             if(audioPrompt) audioPrompt.style.display = 'flex';
         });
-        
-        if(typeof resize === 'function') resize();
+
     } catch(err) {
         console.error("CRITICAL INIT ERROR:", err);
         // Fallback jika error, paksa buka
@@ -3867,21 +3988,29 @@ const DataService = {
         if(this.user) this.user.saveData = null;
     },
 
+    /* FIX: PERBAIKAN FUNGSI RESET DATA SISWA (ADMIN) AGAR LEBIH ROBUST */
     adminResetStudent: async function(studentEmail) {
-        if(this.mode === 'local') {
+        // 1. Coba paksa koneksi Cloud dulu agar yakin tidak offline
+        await this.init(true);
+
+        if(this.mode === 'firebase' && db) {
+            try {
+                await db.collection('users').doc(studentEmail).set({ saveData: null }, { merge: true });
+                return { success: true, type: 'cloud' };
+            } catch (e) {
+                console.error("Gagal reset data cloud:", e);
+                return { success: false, msg: "Koneksi Cloud Gagal: " + e.message };
+            }
+        } 
+        else {
+            // Fallback ke Local jika mode offline
             const dbLocal = this.getDB();
             if(dbLocal[studentEmail]) {
                 dbLocal[studentEmail].saveData = null; 
                 this.saveDB(dbLocal);
+                return { success: true, type: 'local' };
             }
-        } 
-        else {
-            try {
-                await db.collection('users').doc(studentEmail).set({ saveData: null }, { merge: true });
-            } catch (e) {
-                console.error("Gagal reset data cloud:", e);
-                alert("Gagal reset data cloud (Koneksi Error)");
-            }
+            return { success: false, msg: "User tidak ditemukan di Local Storage & Cloud tidak terhubung." };
         }
     },
 
@@ -5153,9 +5282,31 @@ async function confirmResetStudent(email, name) {
     const isConfirmed = confirm(`⚠️ PERINGATAN KERAS ⚠️\n\nAnda akan menghapus SELURUH data permainan siswa atas nama:\n\n"${name}" (${email})\n\nSiswa akan kembali ke awal permainan (Prologue). Tindakan ini TIDAK BISA DIBATALKAN.\n\nLanjutkan?`);
     
     if(isConfirmed) {
-        await DataService.adminResetStudent(email);
-        alert(`Data siswa ${name} berhasil di-reset menjadi baru.`);
-        renderResetPage(); // Refresh tabel
+        // Tampilkan indikator visual sederhana pada kursor
+        document.body.style.cursor = 'wait';
+        
+        try {
+            // FIX: Panggil fungsi yang sudah diperbaiki dan tunggu hasilnya
+            const result = await DataService.adminResetStudent(email);
+            
+            if (result.success) {
+                const source = result.type === 'cloud' ? 'SERVER CLOUD' : 'DATABASE LOKAL';
+                alert(`✅ SUKSES!\nData siswa ${name} berhasil di-reset di ${source}.\n\n(Data di Dashboard akan diperbarui...)`);
+                
+                // Refresh data dashboard secara paksa agar tampilan update
+                if(typeof refreshDashboardData === 'function') {
+                    refreshDashboardData(); 
+                } else {
+                    renderResetPage();
+                }
+            } else {
+                alert(`❌ GAGAL RESET!\n\nPenyebab: ${result.msg}\n\nPastikan Anda terhubung ke internet jika target ada di Cloud.`);
+            }
+        } catch(e) {
+            alert("Terjadi kesalahan sistem: " + e.message);
+        } finally {
+            document.body.style.cursor = 'default';
+        }
     }
 }
 
@@ -5200,12 +5351,14 @@ function resize() {
     const isMobile = window.innerWidth < 1000;
     const isTablet = window.innerWidth >= 1000 && window.innerWidth < 1300;
     
-    let scale = 3; // Default Desktop (Zoom 3x)
+    /* UPDATE: MENGURANGI SCALE AGAR LEBIH ZOOM-OUT (TERLIHAT LEBIH LUAS) */
+    let scale = 2.0; // Default Desktop (Sebelumnya 3.0 -> Turun jadi 2.0)
     
     if (isMobile) {
-        scale = 2; // Mobile (Zoom 2x - Tampilan lebih dekat)
+        // Mobile: Disesuaikan agar tombol tidak terlalu kecil tapi view luas
+        scale = 1.25; // (Sebelumnya 2.0 -> Turun jadi 1.25)
     } else if (isTablet) {
-        scale = 2.5; // Tablet
+        scale = 1.6; // Tablet (Sebelumnya 2.5 -> Turun jadi 1.6)
     }
     
     // Hitung dimensi logika game berdasarkan ukuran layar & scale
@@ -5654,8 +5807,14 @@ for(let i=0; i<10; i++) {
         ],
         objects: [
             {x: 7, y: 2, type: 'counter', icon: '🪙'},
-            {x: 2, y: 5, type: 'shelf', icon: '📦'}, {x: 3, y: 5, type: 'shelf', icon: '📦'},
-            {x: 11, y: 5, type: 'shelf', icon: '🏺'}, {x: 12, y: 5, type: 'shelf', icon: '🏺'},
+            /* UPDATE: Gambar Rak diubah menjadi Etalase sesuai request */
+            /* Etalase Kiri (Tipe 1) */
+            {x: 2, y: 5, type: 'shelf', icon: '📦', img: 'images/etalasetoko1.png'}, 
+            {x: 3, y: 5, type: 'shelf', icon: '📦', img: 'images/etalasetoko1.png'},
+            /* Etalase Kanan (Tipe 2) */
+            {x: 11, y: 5, type: 'shelf', icon: '🏺', img: 'images/etalasetoko2.png'}, 
+            {x: 12, y: 5, type: 'shelf', icon: '🏺', img: 'images/etalasetoko2.png'},
+            
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
     },
@@ -7068,94 +7227,17 @@ function startWakeUpSequence() {
                             "Selamat datang! Mari belajar bergerak:\n\n📱 **HP/Tablet**: Sentuh & Geser jari di mana saja pada layar.\n💻 **PC/Laptop**: Gunakan tombol **WASD** atau **Panah**.", 
                             [
                             {
-                                text: "Oke, Paham >>", 
+                                text: "Coba Gerak Dulu (5 Detik) >>", 
                                 action: () => {
-                                    // STEP 2: TOMBOL AKSI
-                                    const btnAction = document.getElementById('btn-action');
-                                    btnAction.style.display = 'flex';
-                                    btnAction.innerText = '🔴';
+                                    // FIX: Jeda Tutorial agar pemain bisa mencoba kontrol Keyboard/Touch
+                                    closeDialogue();
+                                    clearTutorialFocus();
+                                    showToast("Silakan coba bergerak! Tutorial berlanjut dalam 5 detik...");
                                     
-                                    showTutorialFocus('btn-action'); 
-                                    
-                                    showDialogue("TUTORIAL (2/7)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
-                                        {
-                                            text: "Lanjut >>", 
-                                            action: () => {
-                                                // STEP 3: COMBAT MODE
-                                                btnAction.innerText = '⚔️';
-                                                
-                                                showDialogue("TUTORIAL (3/7)", 
-                                                    "⚔️ **MODE TEMPUR**:\nSaat masuk ke Dungeon berbahaya, tombol ini otomatis berubah menjadi **PEDANG**.\n\nTekan cepat untuk menyerang musuh!", 
-                                                    [{
-                                                        text: "Siap Bertarung!",
-                                                        action: () => {
-                                                            // STEP 4: MENU TAS
-                                                            btnAction.style.display = 'none'; 
-                                                            
-                                                            showTutorialFocus('bag-btn');
-                                                            
-                                                            showDialogue("TUTORIAL (4/7)", 
-                                                                "🎒 **TAS PENYIMPANAN**:\nKlik tombol Tas ini untuk melihat dan menggunakan item yang kamu miliki.", 
-                                                                [{text: "Lanjut >>", action: () => {
-                                                                    
-                                                                    // STEP 5: MENU JURNAL QUEST
-                                                                    showTutorialFocus('quest-btn');
-
-                                                                    showDialogue("TUTORIAL (5/7)",
-                                                                        "📜 **TOMBOL JURNAL**:\nIni adalah navigasi utamamu!\nCek **Misi Harian** & **Target Hidup** di sini.\n\nSelesaikan misi untuk dapat Hadiah Gold & EXP!",
-                                                                        [{text: "Mengerti!", action: () => {
-                                                                            
-                                                                            // STEP 6: KALENDER (NEW)
-                                                                            // Posisi Kalender Rumah Level 1: x=10, y=0 (Pojok Kanan Atas)
-                                                                            showInGameFocus(10, 0); 
-
-                                                                            showDialogue("TUTORIAL (6/9)", 
-                                                                                "📅 **KALENDER**:\nLihat benda di dinding itu? Itu Kalender.\n\nGunakan untuk mengecek **Tanggal**, **Musim**, dan **Jadwal Festival** atau **Ulang Tahun NPC**.", 
-                                                                                [{text: "Wah, Penting!", action: () => {
-
-                                                                                    // STEP 7: TELEPON (NEW)
-                                                                                    // Posisi Meja Telepon: x=2, y=6
-                                                                                    showInGameFocus(2, 6);
-
-                                                                                    showDialogue("TUTORIAL (7/9)", 
-                                                                                        "☎️ **TELEPON RUMAH**:\nGunakan telepon ini untuk membuka **Katalog Belanja**.\n\nKamu bisa membeli **Furnitur** baru atau melakukan **Upgrade Rumah** agar lebih luas dan mewah!", 
-                                                                                        [{text: "Sip, Lanjut!", action: () => {
-
-                                                                                            // STEP 8: KASUR (NEW HIGHLIGHT)
-                                                                                            // Posisi Kasur: x=1, y=0 (Lebar 3). Titik tengah sekitar x=2, y=1
-                                                                                            showInGameFocus(2, 1);
-
-                                                                                            showDialogue("TUTORIAL (8/9)", 
-                                                                                                "🛏️ **KASUR EMPUK**:\nLelah berpetualang? Gunakan kasur ini untuk **Tidur** (Ganti Hari) dan memulihkan **Energi & HP** sepenuhnya.\n\nJangan lupa tulis Jurnal sebelum tidur!", 
-                                                                                                [{text: "Oke, Mengerti!", action: () => {
-
-                                                                                                    // STEP 9: BUKU (CLOSING)
-                                                                                                    // UPDATE: SOROT MEJA BELAJAR (x:4, y:0) AGAR PEMAIN TAHU LOKASI SAVE
-                                                                                                    showInGameFocus(4, 0); 
-                                                                                                    
-                                                                                                    showDialogue("TUTORIAL (9/9)", 
-                                                                                                        "Terakhir, ini meja belajarmu:\n\n📔 **BUKU JURNAL**: Gunakan untuk **SAVE GAME** manual dan **Belajar Mandiri** (Menambah INT).\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
-                                                                                                        [{text: "Ayo Keluar!", action: () => {
-                                                                                                            clearTutorialFocus();
-                                                                                                            closeDialogue();
-                                                                                                        }}]
-                                                                                                    );
-                                                                                                }}]
-                                                                                            );
-                                                                                        }}]
-                                                                                    );
-                                                                                }}]
-                                                                            );
-                                                                        }}]
-                                                                    );
-                                                                }}]
-                                                            );
-                                                        }
-                                                    }]
-                                                );
-                                            }
-                                        }
-                                    ]);
+                                    // Lanjut ke Step 2 setelah 5 detik
+                                    setTimeout(() => {
+                                        continueTutorialStep2();
+                                    }, 5000);
                                 }
                             }
                         ]);
@@ -7164,6 +7246,104 @@ function startWakeUpSequence() {
             }
         ], null);
     }, 1500);
+}
+
+// MEMECAH FUNGSI TUTORIAL AGAR LEBIH RAPI DAN BISA DIJEDA
+function continueTutorialStep2() {
+    // STEP 2: TOMBOL AKSI
+    const btnAction = document.getElementById('btn-action');
+    btnAction.style.display = 'flex';
+    btnAction.innerText = '🔴';
+    
+    showTutorialFocus('btn-action'); 
+    
+    showDialogue("TUTORIAL (2/7)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
+        {
+            text: "Lanjut >>", 
+            action: () => {
+                // STEP 3: COMBAT MODE
+                btnAction.innerText = '⚔️';
+                
+                showDialogue("TUTORIAL (3/7)", 
+                    "⚔️ **MODE TEMPUR**:\nSaat masuk ke Dungeon berbahaya, tombol ini otomatis berubah menjadi **PEDANG**.\n\nTekan cepat untuk menyerang musuh!", 
+                    [{
+                        text: "Siap Bertarung!",
+                        action: () => {
+                            continueTutorialStep4();
+                        }
+                    }]
+                );
+            }
+        }
+    ]);
+}
+
+function continueTutorialStep4() {
+    // STEP 4: MENU TAS
+    const btnAction = document.getElementById('btn-action');
+    btnAction.style.display = 'none'; 
+    
+    showTutorialFocus('bag-btn');
+    
+    showDialogue("TUTORIAL (4/7)", 
+        "🎒 **TAS PENYIMPANAN**:\nKlik tombol Tas ini untuk melihat dan menggunakan item yang kamu miliki.", 
+        [{text: "Lanjut >>", action: () => {
+            
+            // STEP 5: MENU JURNAL QUEST
+            showTutorialFocus('quest-btn');
+
+            showDialogue("TUTORIAL (5/7)",
+                "📜 **TOMBOL JURNAL**:\nIni adalah navigasi utamamu!\nCek **Misi Harian** & **Target Hidup** di sini.\n\nSelesaikan misi untuk dapat Hadiah Gold & EXP!",
+                [{text: "Mengerti!", action: () => {
+                    continueTutorialStep6();
+                }}]
+            );
+        }}]
+    );
+}
+
+function continueTutorialStep6() {
+    // STEP 6: KALENDER (NEW)
+    // Posisi Kalender Rumah Level 1: x=10, y=0 (Pojok Kanan Atas)
+    showInGameFocus(10, 0); 
+
+    showDialogue("TUTORIAL (6/9)", 
+        "📅 **KALENDER**:\nLihat benda di dinding itu? Itu Kalender.\n\nGunakan untuk mengecek **Tanggal**, **Musim**, dan **Jadwal Festival** atau **Ulang Tahun NPC**.", 
+        [{text: "Wah, Penting!", action: () => {
+
+            // STEP 7: TELEPON (NEW)
+            // Posisi Meja Telepon: x=2, y=6
+            showInGameFocus(2, 6);
+
+            showDialogue("TUTORIAL (7/9)", 
+                "☎️ **TELEPON RUMAH**:\nGunakan telepon ini untuk membuka **Katalog Belanja**.\n\nKamu bisa membeli **Furnitur** baru atau melakukan **Upgrade Rumah** agar lebih luas dan mewah!", 
+                [{text: "Sip, Lanjut!", action: () => {
+
+                    // STEP 8: KASUR (NEW HIGHLIGHT)
+                    // Posisi Kasur: x=1, y=0 (Lebar 3). Titik tengah sekitar x=2, y=1
+                    showInGameFocus(2, 1);
+
+                    showDialogue("TUTORIAL (8/9)", 
+                        "🛏️ **KASUR EMPUK**:\nLelah berpetualang? Gunakan kasur ini untuk **Tidur** (Ganti Hari) dan memulihkan **Energi & HP** sepenuhnya.\n\nJangan lupa tulis Jurnal sebelum tidur!", 
+                        [{text: "Oke, Mengerti!", action: () => {
+
+                            // STEP 9: BUKU (CLOSING)
+                            // UPDATE: SOROT MEJA BELAJAR (x:4, y:0) AGAR PEMAIN TAHU LOKASI SAVE
+                            showInGameFocus(4, 0); 
+                            
+                            showDialogue("TUTORIAL (9/9)", 
+                                "Terakhir, ini meja belajarmu:\n\n📔 **BUKU JURNAL**: Gunakan untuk **SAVE GAME** manual dan **Belajar Mandiri** (Menambah INT).\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
+                                [{text: "Ayo Keluar!", action: () => {
+                                    clearTutorialFocus();
+                                    closeDialogue();
+                                }}]
+                            );
+                        }}]
+                    );
+                }}]
+            );
+        }}]
+    );
 }
 
 function runTutorial() {
@@ -15145,4 +15325,3 @@ function drawMinimap() {
 </script>
 </body>
 </html>
-
