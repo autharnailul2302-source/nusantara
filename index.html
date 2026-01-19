@@ -9500,6 +9500,14 @@ function update() {
                         // Nabrak Laut/Tembok -> Putar Balik
                         npc.vx *= -1;
                         npc.vy *= -1;
+                        
+                        // FIX: SOLUSI ANTI-STUCK DI DERMAGA/SUDUT
+                        // Jika NPC menabrak, beri kesempatan 30% untuk ganti arah total
+                        // Ini mencegah NPC 'ping-pong' abadi di area sempit
+                        if(Math.random() < 0.3) { 
+                             npc.vx = (Math.random() - 0.5) * 2;
+                             npc.vy = (Math.random() - 0.5) * 2;
+                        }
                     }
                 }
             }
