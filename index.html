@@ -3567,7 +3567,21 @@ async function preloadAllGameAssets() {
     imagesToLoad.push({ src: 'images/girl-idle.png' });
     imagesToLoad.push({ src: 'images/tas-isi.png' });
     
-    const total = imagesToLoad.length;
+    // Hilangkan duplikat agar loading lebih efisien
+    const uniqueImages = [];
+    const seenSrc = new Set();
+    imagesToLoad.forEach(item => {
+        if (!seenSrc.has(item.src)) {
+            seenSrc.add(item.src);
+            uniqueImages.push(item);
+        } else if (item.element) {
+            // Jika duplikat tapi ada referensi elemen, tetap perlu di-handle referensinya
+            // (Tapi di sini kita sederhanakan, elemen akan load sendiri saat draw jika img belum ready)
+             uniqueImages.push(item);
+        }
+    });
+
+    const total = uniqueImages.length;
     let loaded = 0;
     const loadingBar = document.getElementById('loading-bar');
     const loadingText = document.getElementById('loading-text');
@@ -3579,13 +3593,9 @@ async function preloadAllGameAssets() {
     const loadImage = (item) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
-            img.src = item.src;
             
-            // Jika ini elemen map, simpan referensi agar tidak dimuat ulang di draw()
-            if (item.element) {
-                item.element.loadedImg = img;
-            }
-
+            // FIX: PASANG LISTENER DULU SEBELUM SET SRC
+            // Ini mencegah race condition jika gambar sudah dicache
             img.onload = () => {
                 loaded++;
                 const pct = Math.floor((loaded / total) * 100);
@@ -3596,15 +3606,28 @@ async function preloadAllGameAssets() {
             
             img.onerror = () => {
                 console.warn("Gagal memuat:", item.src);
-                loaded++; // Tetap hitung progress meski gagal
+                loaded++; // Tetap hitung progress meski gagal (agar tidak macet)
+                
+                const pct = Math.floor((loaded / total) * 100);
+                if(loadingBar) loadingBar.style.width = pct + "%";
+                if(loadingText) loadingText.innerText = `MEMUAT ASET... ${pct}%`;
+                
                 resolve(); // Jangan reject agar game tetap jalan
             };
+
+            // BARU SET SRC SETELAH LISTENER SIAP
+            img.src = item.src;
+            
+            // Jika ini elemen map, simpan referensi agar tidak dimuat ulang di draw()
+            if (item.element) {
+                item.element.loadedImg = img;
+            }
         });
     };
 
     // Jalankan semua (Parallel Loading)
     // Kita pakai Promise.all agar browser mengunduh bersamaan
-    await Promise.all(imagesToLoad.map(item => loadImage(item)));
+    await Promise.all(uniqueImages.map(item => loadImage(item)));
 }
 
 // UPDATE: Ganti window.onload dengan Event Listener yang lebih cepat & fleksibel
@@ -3629,10 +3652,20 @@ function startGameSequence() {
         }
 
         // --- UPDATE: JALANKAN PRELOADER SEBELUM MENAMPILKAN MENU ---
-        preloadAllGameAssets().then(() => {
-            // Setelah semua aset siap:
+        // FIX: Tambahkan Timeout Race Condition
+        // Jika loading macet lebih dari 8 detik (misal koneksi lambat/banyak error 404), paksa masuk
+        const assetLoadPromise = preloadAllGameAssets();
+        const timeoutPromise = new Promise(resolve => setTimeout(() => {
+            console.warn("Asset Loading Timeout - Force Starting Game...");
+            const loadingText = document.getElementById('loading-text');
+            if(loadingText) loadingText.innerText = "FORCE STARTING...";
+            resolve();
+        }, 8000)); // 8 Detik Timeout
+
+        Promise.race([assetLoadPromise, timeoutPromise]).then(() => {
+            // Setelah aset siap (atau timeout):
             
-            // UPDATE: LOADING DIPERCEPAT (Setelah preloading selesai)
+            // UPDATE: LOADING DIPERCEPAT
             requestAnimationFrame(() => {
                 setTimeout(() => {
                     if(splash) {
@@ -5905,7 +5938,8 @@ for(let i=0; i<10; i++) {
             {id: 'boss_merchant', x: 7, y: 3, name: 'Merchant', imgSrc: 'images/job.png', type: 'service', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
-            {x: 7, y: 2, type: 'counter', icon: '🪙'},
+            /* UPDATE: Meja Kasir dengan gambar images/mejakasir.png */
+            {x: 7, y: 2, type: 'counter', icon: '🪙', img: 'images/mejakasir.png'},
             /* UPDATE: Gambar Rak diubah menjadi Etalase sesuai request */
             /* Etalase Kiri (Tipe 1) */
             {x: 2, y: 5, type: 'shelf', icon: '📦', img: 'images/etalasetoko1.png'}, 
@@ -6165,8 +6199,8 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [], // Tidak ada NPC karena ini toko player
         objects: [
-            /* Meja Kasir Player */
-            {x: 7, y: 3, w: 2, h: 1, type: 'counter', icon: '🪙', img: 'images/mejadosen.png', name: "Meja Kasir (Kelola)"},
+            /* Meja Kasir Player - UPDATE GAMBAR KE mejakasir.png */
+            {x: 7, y: 3, w: 2, h: 1, type: 'counter', icon: '🪙', img: 'images/mejakasir.png', name: "Meja Kasir (Kelola)"},
             
             /* Rak Display Barang */
             {x: 2, y: 5, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang A", img: 'images/rakbuku.png'}, 
@@ -14228,6 +14262,10 @@ function drawObject(ctx, o) {
                 // NEW: FALLBACK MEJA TELPON (Meja Kayu + Telpon Merah)
                 else if (src.includes('mejatelpon') || src.includes('telpon')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iNCIgeT0iMTIiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzhFNTQyQiIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PHJlY3QgeD0iMTAiIHk9IjQiIHdpZHRoPSIxMiIgaGVpZ2h0PSI4IiBmaWxsPSIjZWY0NDQ0Ii8+PC9zdmc+';
+                }
+                // NEW: FALLBACK MEJA KASUR (Meja Kayu + Mesin Kasir Abu-abu)
+                else if (src.includes('mejakasir')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNiIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI4IiB5PSI2IiB3aWR0aD0iMTYiIGhlaWdodD0iMTAiIGZpbGw9IiM5NDkzOTgiIHN0cm9rZT0iIzMzNDE1NSIvPjxyZWN0IHg9IjEyIiB5PSI4IiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjMWU0MDVmIi8+PC9zdmc+';
                 }
                 // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni)
                 else if (src.includes('rakbuku')) {
