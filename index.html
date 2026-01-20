@@ -4090,17 +4090,12 @@ const DataService = {
         localStorage.setItem(this.dbKey, JSON.stringify(db));
     },
     
+    // --- FIX: RESET DATA SEKARANG MEMBERSIHKAN CLOUD DAN LOCAL STORAGE ---
     resetSaveData: async function() {
         if(!this.user) return;
         
-        if(this.mode === 'local') {
-            const dbLocal = this.getDB();
-            if(dbLocal[this.user.email]) {
-                dbLocal[this.user.email].saveData = null; 
-                this.saveDB(dbLocal);
-            }
-        } 
-        else {
+        // 1. Reset Cloud (Jika Mode Firebase/Online)
+        if(this.mode === 'firebase' && db) {
             try {
                 await db.collection('users').doc(this.user.email).set({ saveData: null }, { merge: true });
             } catch (e) {
@@ -4108,6 +4103,15 @@ const DataService = {
             }
         }
         
+        // 2. Reset Local Storage (WAJIB DILAKUKAN AGAR CHECK SESSION SAAT RELOAD BERSIH)
+        // Masalah sebelumnya: Hanya mereset cloud, tapi cache lokal tertinggal
+        const dbLocal = this.getDB();
+        if(dbLocal[this.user.email]) {
+            dbLocal[this.user.email].saveData = null; 
+            this.saveDB(dbLocal);
+        }
+        
+        // 3. Reset Memory
         if(this.user) this.user.saveData = null;
     },
 
@@ -7722,12 +7726,55 @@ function setRole(role) {
         return; // Berhenti agar tidak memanggil finalizeRoleSetup default
     }
 
+    // --- UPDATE: PENGARAHAN KHUSUS UNTUK WIRAUSAHA (ENTREPRENEUR) ---
     if(role === 'entrepreneur') { 
         STATE.player.biz += 5; // New BIZ stat
-        STATE.player.money += 20000; 
-        if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Uang Awal
-        showToast("Jalur WIRAUSAHA dipilih. BIZ Skill & Modal Awal!"); 
+        STATE.player.money += 20000; // Modal Awal
+        
+        // FIX: PAKSA SIMPAN DATA
+        manualSave();
+
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Uang
+
+        showDialogue("MENTOR BUDI", 
+            "Pilihan brilian! Menjadi Wirausaha berarti kamu adalah bos untuk dirimu sendiri.\n\nSebagai modal awal, saya berikan **20.000 Gold**.\n\nDan lihatlah... **Rumahmu kini telah saya renovasi menjadi RUKO (Rumah Toko)** agar kamu bisa mulai berjualan dari rumah!", 
+            [{
+                text: "Wah, Terima Kasih Mentor!", 
+                action: () => {
+                    // 1. Logika Mentor Menghilang
+                    const villMap = maps['village'];
+                    const mentor = villMap.npcs.find(n => n.id === 'mentor');
+                    if (mentor) {
+                        mentor.x = -99; mentor.y = -99; mentor.vx = 0; mentor.vy = 0;
+                    }
+                    
+                    // 2. UPDATE VISUAL RUMAH SECARA INSTAN
+                    // Cari objek bangunan rumah player
+                    const houseBuilding = villMap.buildings.find(b => b.id === 'player_house');
+                    if (houseBuilding) {
+                        // Paksa reset gambar yang sudah di-load agar sistem menggambar ulang dengan src baru ('tokoplayer.png')
+                        houseBuilding.loadedImg = null; 
+                    }
+
+                    // 3. Finalisasi State
+                    STATE.isPrologue = false; 
+                    updateHUDInfo();
+                    closeDialogue();
+                    
+                    // Efek Visual Perubahan
+                    createParticle(19*TILE_SIZE, 7*TILE_SIZE, '#fbbf24'); // Partikel di posisi rumah
+                    showToast("Rumah berubah menjadi Toko! 🏪");
+
+                    // 4. Simpan
+                    manualSave();
+                    setTimeout(() => showDailyQuestPopup(), 500);
+                }
+            }], 
+            'images/mentor.png' 
+        );
+        return; // Berhenti di sini
     }
+
     /* UPDATE: LOGIKA KHUSUS ROLE FAMILY (MENIKAH) */
     else if(role === 'family') { 
         STATE.player.reputation += 20;
@@ -8903,46 +8950,35 @@ function finishGame() {
     logout();
 }
 
-function restartGame() {
-    document.getElementById('game-over-screen').style.display = 'none';
-    
-    STATE.day = 1;
-    STATE.time = 600; // UPDATE: Mulai jam 06:00 Pagi
-    STATE.location = 'house';
-    
-    // FIX: POSISI SPAWN RESET DISAMAKAN DENGAN INIT (Tengah Rumah)
-    // Sebelumnya hardcode 5*TILE_SIZE yang mungkin di dalam tembok
-    STATE.player.x = 6 * TILE_SIZE; // Tengah (12/2)
-    STATE.player.y = 7 * TILE_SIZE; // Agak bawah (10-3)
-    
-    STATE.player.role = 'none'; 
-    STATE.player.money = 10000;
-    STATE.player.hp = 100;
-    STATE.player.energy = 100;
-    STATE.player.houseLevel = 1;
-    STATE.player.furniture = [];
-    STATE.player.inventory = {};
-    STATE.player.relationships = {};
-    
-    STATE.isPrologue = true; // Set True agar Tok-Tok Jalan
-    STATE.gameOverTriggered = false;
-    STATE.gameFinished = false;
-    STATE.freeRoamMode = false;
+// --- FIX: RESTART GAME SEKARANG MENGGUNAKAN RELOAD UNTUK PEMBERSIHAN TOTAL ---
+async function restartGame() {
+    // 1. Visual Feedback
+    const btn = document.querySelector('#game-over-screen button');
+    if(btn) {
+        btn.innerHTML = "⏳ Wiping Data...";
+        btn.disabled = true;
+    }
+    document.body.style.cursor = 'wait';
 
-    // Reset House Map
-    regenerateHouseMap();
+    // 2. Hentikan Loop Game & Auto Save (Penting!)
+    if(window.gameLoopId) cancelAnimationFrame(window.gameLoopId);
+    if(window.saveIntervalId) clearInterval(window.saveIntervalId);
 
-    updateHUDInfo();
-    document.getElementById('ui-layer').classList.remove('hidden');
-    STATE.screen = 'play';
+    try {
+        // 3. Hapus Data Permanen (Cloud & Local Cache)
+        await DataService.resetSaveData();
+        
+        // 4. Force Reload Halaman
+        // Ini adalah cara paling aman. checkSession() akan berjalan saat reload.
+        // Karena Local Storage sudah dibersihkan di langkah 3, checkSession akan
+        // mendeteksi 'saveData = null' dan OTOMATIS memanggil startPrologue().
+        location.reload();
 
-    // FIX: HAPUS SAVE DATA LAMA & PAKSA SAVE STATUS BARU
-    // Agar jika direfresh, tetap load sebagai Prologue
-    manualSave(); 
-
-    setTimeout(() => startWakeUpSequence(), 1000);
-    
-    randomizeWeather();
+    } catch (e) {
+        console.error("Restart Error:", e);
+        alert("Gagal mereset data. Halaman akan dimuat ulang paksa.");
+        location.reload();
+    }
 }
 
 function returnToTitle() {
