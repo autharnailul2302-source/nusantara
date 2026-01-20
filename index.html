@@ -4097,14 +4097,17 @@ const DataService = {
         // 1. Reset Cloud (Jika Mode Firebase/Online)
         if(this.mode === 'firebase' && db) {
             try {
-                await db.collection('users').doc(this.user.email).set({ saveData: null }, { merge: true });
+                // UPDATE: Kirim "Tiket Reset" dengan timestamp TERBARU.
+                // Ini memaksa semua device lain (yang punya data lama) untuk sadar bahwa data ini sudah di-wipe.
+                await db.collection('users').doc(this.user.email).set({ 
+                    saveData: { isReset: true, lastActive: Date.now() } 
+                }, { merge: true });
             } catch (e) {
                 console.error("Gagal reset data cloud:", e);
             }
         }
         
         // 2. Reset Local Storage (WAJIB DILAKUKAN AGAR CHECK SESSION SAAT RELOAD BERSIH)
-        // Masalah sebelumnya: Hanya mereset cloud, tapi cache lokal tertinggal
         const dbLocal = this.getDB();
         if(dbLocal[this.user.email]) {
             dbLocal[this.user.email].saveData = null; 
@@ -4122,9 +4125,11 @@ const DataService = {
 
         if(this.mode === 'firebase' && db) {
             try {
-                // UPDATE: Menggunakan FieldValue.delete() untuk penghapusan bersih di Firestore
+                // UPDATE: Jangan delete field, tapi timpa dengan OBJECT RESET + TIMESTAMP BARU.
+                // Tujuannya agar 'lastActive' di cloud menjadi LEBIH BARU dari data lokal siswa.
+                // Saat siswa login, sistem sync akan melihat Cloud lebih baru -> mengambil object reset -> menghapus data lokal.
                 await db.collection('users').doc(studentEmail).update({
-                    saveData: firebase.firestore.FieldValue.delete()
+                    saveData: { isReset: true, lastActive: Date.now() }
                 });
                 return { success: true, type: 'cloud' };
             } catch (e) {
@@ -4431,32 +4436,46 @@ const DataService = {
                     const localTime = localUser.saveData.lastActive || 0;
                     const cloudTime = (cloudUser.saveData && cloudUser.saveData.lastActive) || 0;
 
-                    // Jika Data Lokal LEBIH BARU dari Cloud (atau Cloud kosong tapi Lokal ada)
-                    // Ini menangani kasus user main offline atau save cloud gagal
-                    if (localTime > cloudTime) {
+                    // FIX: CEK APAKAH CLOUD ADALAH DATA RESET?
+                    // Jika Cloud punya flag 'isReset', maka Cloud SELALU MENANG (karena itu perintah wipe).
+                    const isCloudReset = cloudUser.saveData && cloudUser.saveData.isReset;
+
+                    if (!isCloudReset && localTime > cloudTime) {
                         console.log("⚠️ Konflik Data: Menggunakan Data LOKAL (Lebih Baru)");
                         finalUser = localUser;
                         useLocal = true;
                         
-                        // Auto-Sync balik ke Cloud secara background (tanpa menunggu)
-                        // Agar login berikutnya data Cloud sudah update
+                        // Auto-Sync balik ke Cloud secara background
                         docRef.set({
                             ...localUser,
-                            lastActive: Date.now() // Update timestamp
+                            lastActive: Date.now() 
                         }, { merge: true }).catch(e => console.warn("Background sync failed:", e));
                         
                     } else {
-                        console.log("✅ Data Cloud Sinkron/Lebih Baru. Update Lokal.");
+                        console.log("✅ Data Cloud Sinkron/Lebih Baru/Reset. Update Lokal.");
+                        
+                        // FIX: JIKA DATA CLOUD ADALAH 'RESET TICKET', BERSIHKAN LOCAL JUGA
+                        if (isCloudReset) {
+                            console.log("🧹 MENDETEKSI PERINTAH RESET DARI CLOUD!");
+                            cloudUser.saveData = null; // Hapus flag reset dari memori user aktif
+                        }
+
                         // Update Local Storage agar sinkron dengan Cloud terbaru
-                        // Penting jika user main di device lain
                         dbLocal[email] = cloudUser;
                         this.saveDB(dbLocal);
+                        finalUser = cloudUser; // Pastikan pakai cloud (yang sudah null/bersih)
                     }
                 } else {
-                    // Tidak ada data lokal, simpan data cloud ke lokal (Fresh Login di device baru)
+                    // Tidak ada data lokal, simpan data cloud ke lokal
+                    // Cek juga reset flag disini
+                    if (cloudUser.saveData && cloudUser.saveData.isReset) {
+                        cloudUser.saveData = null;
+                    }
+                    
                     console.log("📥 Mengunduh Save Data dari Cloud...");
                     dbLocal[email] = cloudUser;
                     this.saveDB(dbLocal);
+                    finalUser = cloudUser;
                 }
 
                 this.user = { email: email, ...finalUser };
