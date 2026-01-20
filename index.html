@@ -9222,10 +9222,19 @@ function update() {
     // 3. Cek Interaksi (Bangunan/Pintu)
     else if (entranceNear) {
         showActionButton = true;
-        // FIX: Jika di Dermaga ('port'), tampilkan ikon Pancing, bukan Pintu
+        // FIX: Custom Icon berdasarkan Tipe Bangunan
         if (entranceNear.id === 'port') {
             actionIcon = '🎣';
-        } else {
+        } 
+        // UPDATE: Ganti Ikon Pintu jadi Scroll untuk Papan Misi
+        else if (entranceNear.id === 'papan_misi') {
+            actionIcon = '📜'; 
+        }
+        // UPDATE: Ganti Ikon Pintu jadi Piala untuk Statue
+        else if (entranceNear.id === 'statue_rank') {
+            actionIcon = '🏆'; 
+        }
+        else {
             actionIcon = '🚪';
         }
     }
@@ -9844,14 +9853,25 @@ function checkAutoTeleport() {
             if(dist < 50) {
                 // Daftar bangunan/trigger yang bisa auto-teleport
                 const autoTeleporters = [
-                    'player_house', 'house_exit', 
+                    // RUMAH & TOKO PLAYER
+                    'player_house', 'house_exit', 'pshop_exit',
+                    
+                    // DUNGEON
                     'dungeon_gate', 'dungeon_exit', 'dungeon_next',
+                    
+                    // FASILITAS UTAMA
                     'merchant', 'shop_exit', 
                     'library', 'library_exit', 
                     'guild', 'guild_exit', 
                     'school', 'school_exit',
                     'blacksmith', 'smith_exit',
-                    'mentor', 'mentor_exit' // NEW: Tambahkan Mentor ke Auto-Teleport
+                    'mentor', 'mentor_exit',
+
+                    // FIX: MENAMBAHKAN BANGUNAN LAIN AGAR KONSISTEN (AUTO KELUAR/MASUK)
+                    'clinic', 'clinic_exit',         // Klinik
+                    'wedding', 'wedding_exit',       // Balai Nikah
+                    'lover1_home', 'lover1_exit',    // Rumah Ayu
+                    'fisherman_home', 'fisherman_exit' // Rumah Nelayan
                 ];
                 
                 if (autoTeleporters.includes(b.id)) {
@@ -10511,6 +10531,7 @@ function handleAction() {
         // UPDATE: MENAMBAHKAN SCHOOL, GUILD, BLACKSMITH KE DAFTAR AGAR LOGIKA LATE/TUTUP JALAN
         const teleporters = [
             'player_house', 'house_exit', 
+            'pshop_exit', // FIX: TAMBAHKAN KELUAR TOKO PLAYER KE SINI JUGA (MANUAL BUTTON)
             'dungeon_gate', 'dungeon_exit', 'dungeon_next',
             'merchant', 'shop_exit', 
             'library', 'library_exit',
