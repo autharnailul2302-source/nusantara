@@ -6220,7 +6220,8 @@ for(let i=0; i<10; i++) {
         objects: [
             /* Altar/Meja Akad di Tengah Depan */
             /* UPDATE: Mengubah gambar meja menjadi mejamodin.png */
-            {x: 6, y: 3, w: 2, h: 1, type: 'table', icon: '📖', img: 'images/mejamodin.png'}, 
+            /* REVISI: Ukuran diperbesar jadi 3x2 (Sebelumnya 2x1) dan digeser sedikit agar tetap di tengah */
+            {x: 5.5, y: 3, w: 3, h: 2, type: 'table', icon: '📖', img: 'images/mejamodin.png'}, 
             
             /* Kursi Tamu Kiri (Barisan Rapi) */
             {x: 2, y: 6, type: 'table', icon: '🪑', img: 'images/kursinikah.png'}, {x: 4, y: 6, type: 'table', icon: '🪑', img: 'images/kursinikah.png'},
@@ -9500,6 +9501,30 @@ function update() {
                     type: 'note', // Tipe khusus untuk render ikon
                     icon: ['🎵', '🎶', '✨', '🎤'][Math.floor(Math.random()*4)],
                     size: 10 + Math.random() * 5
+                });
+            }
+        }
+
+        // --- FIX: KEMBALIKAN EFEK NGOBROL AISYAH & MARIA (BERGANTIAN) ---
+        // Logika: Mereka akan spawning bubble "..." bergantian setiap 3 detik
+        if((npc.id === 'cewek_islam' || npc.id === 'cewek_kristen') && isNPCActive(npc)) {
+            const turnDuration = 3000; // 3 detik per giliran
+            const now = Date.now();
+            const isAisyahTurn = (Math.floor(now / turnDuration) % 2 === 0);
+            
+            // Cek giliran siapa sekarang
+            const myTurn = (npc.id === 'cewek_islam' && isAisyahTurn) || (npc.id === 'cewek_kristen' && !isAisyahTurn);
+
+            // Spawn bubble jika giliran saya (Peluang 3% per frame agar tidak terlalu rapat)
+            if(myTurn && Math.random() < 0.03) { 
+                STATE.particles.push({
+                    x: (npc.x * TILE_SIZE) + 20, // Posisi tengah atas kepala
+                    y: (npc.y * TILE_SIZE) - 10,
+                    vx: 0,
+                    vy: -0.2, // Naik pelan
+                    life: 70, // Durasi tampil (sekitar 1.2 detik)
+                    type: 'chat_bubble', 
+                    icon: '...' 
                 });
             }
         }
@@ -13733,7 +13758,8 @@ function draw() {
     const scaleFactor = canvas.width / GAME_WIDTH; 
     ctx.scale(scaleFactor, scaleFactor); 
     
-    ctx.imageSmoothingEnabled = false; // Pastikan crisp pixel art
+    // FIX: Mengaktifkan smoothing agar sprite NPC HD terlihat halus dan tidak patah-patah
+    ctx.imageSmoothingEnabled = true; 
 
     let shakeX = 0;
     let shakeY = 0;
@@ -14401,6 +14427,44 @@ function draw() {
             ctx.textBaseline = "middle";
             ctx.fillStyle = "#ef4444"; // Merah Hati
             ctx.fillText("❤️", 0, 2); // Sedikit turun agar pas tengah visual
+            
+            ctx.restore();
+        }
+        // --- FIX: RENDER CHAT BUBBLE (GELEMBUNG BICARA "...") ---
+        else if (p.type === 'chat_bubble') {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            
+            // Efek Pop-up (Membesar saat muncul)
+            let scale = 1;
+            if (p.life > 60) scale = (70 - p.life) / 10;
+            ctx.scale(scale, scale);
+
+            // 1. Gambar Bubble Putih (Oval)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = '#64748b'; // Border abu-abu
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 14, 10, 0, 0, Math.PI*2); // Lebar 14, Tinggi 10
+            ctx.fill();
+            ctx.stroke();
+            
+            // 2. Ekor Bubble
+            ctx.beginPath();
+            ctx.moveTo(-2, 8);   // Kiri bawah oval
+            ctx.lineTo(-5, 14);  // Ujung ekor
+            ctx.lineTo(2, 9);    // Kanan bawah oval
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.fill();
+            // Opsional: stroke ekor (biasanya tidak perlu agar menyatu)
+
+            // 3. Teks "..." di Tengah
+            ctx.fillStyle = '#0f172a'; // Teks Hitam
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("...", 0, -2); // Sedikit naik agar pas di tengah
             
             ctx.restore();
         }
@@ -15203,7 +15267,8 @@ function drawNPC(ctx, n) {
             
             // Set Pivot ke Kaki Tengah agar tumbuh ke atas (menapak tanah)
             // Posisi Y dikurangi 5 (Offset Shadow)
-            ctx.translate(x + dw/2, y + dh - 5); 
+            // FIX: Gunakan Math.round() untuk menghindari posisi desimal (patah-patah)
+            ctx.translate(Math.round(x + dw/2), Math.round(y + dh - 5)); 
             ctx.scale(1, breathe);
             
             // Cek Arah Gerak untuk Flip Horizontal
