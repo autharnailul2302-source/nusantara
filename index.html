@@ -6274,21 +6274,34 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [], // Tidak ada NPC karena ini toko player
         objects: [
-            /* Meja Kasir Player - UPDATE GAMBAR KE mejakasir.png */
-            {x: 7, y: 3, w: 2, h: 1, type: 'counter', icon: '🪙', img: 'images/mejakasir.png', name: "Meja Kasir (Kelola)"},
+            /* --- AREA PRIVAT (LANTAI ATAS/BELAKANG) --- */
             
-            /* Rak Display Barang */
-            {x: 2, y: 5, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang A", img: 'images/rakbuku.png'}, 
-            {x: 10, y: 5, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang B", img: 'images/rakbuku.png'},
-            {x: 2, y: 8, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang C", img: 'images/rakbuku.png'},
-            {x: 10, y: 8, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang D", img: 'images/rakbuku.png'},
-            
-            /* Area Privat (Kasur di Pojok untuk Tidur) */
+            /* 1. Kasur Player (Pojok Kiri Atas) - Untuk Tidur & Pulihkan Energi */
             {x: 1, y: 1, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Player"},
 
-            /* Buku Harian */
-            {x: 12, y: 1, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Pembukuan Toko"},
+            /* 2. Meja Telepon (Tengah Atas) - Untuk Belanja Furnitur/Upgrade */
+            {x: 5, y: 1, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon"},
 
+            /* 3. Meja Jurnal/Pembukuan (Pojok Kanan Atas) - Untuk Save Game & Belajar */
+            {x: 11, y: 1, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Pembukuan Toko"},
+
+            /* 4. Kalender (Dinding Atas) - Cek Tanggal & Festival */
+            {x: 9, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
+
+
+            /* --- AREA TOKO (LANTAI BAWAH/DEPAN) --- */
+            
+            /* 5. Meja Kasir (Pemisah Ruangan - Menghadap Pintu) */
+            {x: 6, y: 5, w: 2, h: 1, type: 'counter', icon: '🪙', img: 'images/mejakasir.png', name: "Meja Kasir (Kelola)"},
+            
+            /* 6. Rak Display Barang (Kiri & Kanan) */
+            {x: 1, y: 6, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang A", img: 'images/rakbuku.png'}, 
+            {x: 1, y: 9, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang B", img: 'images/rakbuku.png'},
+            
+            {x: 11, y: 6, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang C", img: 'images/rakbuku.png'},
+            {x: 11, y: 9, w: 2, h: 2, type: 'shelf', icon: '📦', text: "Rak Barang D", img: 'images/rakbuku.png'},
+
+            /* Pintu Keluar */
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
     },
