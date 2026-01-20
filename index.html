@@ -70,18 +70,20 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #0f172a;
+            background: rgba(15, 23, 42, 0.95); /* Sedikit transparan agar canvas terlihat dikit */
             z-index: 9999;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 20px;
+            backdrop-filter: blur(10px);
         }
 
         @media screen and (orientation: portrait) {
             #rotate-warning { display: flex; }
-            #game-container { display: none; }
+            /* FIX: JANGAN SEMBUNYIKAN GAME CONTAINER AGAR TETAP RENDER */
+            /* #game-container { display: none; } <--- HAPUS INI */
         }
 
         #game-container {
@@ -1861,9 +1863,14 @@ button, .round-btn, .d-btn, .auth-btn {
 <body>
 
 <div id="rotate-warning">
-    <h1 style="font-size: 40px;">🔄</h1>
-    <h2 style="font-family: 'Cinzel'">Rotasi Perangkat</h2>
-    <p>Game ini optimal dimainkan dalam mode Landscape.</p>
+    <h1 style="font-size: 40px; margin-bottom: 10px;">🔄</h1>
+    <h2 style="font-family: 'Cinzel'; color: var(--secondary);">Rotasi Perangkat</h2>
+    <p style="color: #94a3b8; font-size: 12px; margin-bottom: 20px;">Game ini optimal dimainkan dalam mode Landscape.</p>
+    
+    <!-- NEW: TOMBOL PAKSA MAIN (UNTUK DEBUGGING/CANVAS VIEW) -->
+    <button onclick="document.getElementById('rotate-warning').style.display='none'" style="background: transparent; border: 1px solid #475569; padding: 8px 16px; font-size: 10px; color: #cbd5e1;">
+        ⚠️ ABAIKAN (DEV MODE)
+    </button>
 </div>
 
 <div id="game-container">
@@ -4172,60 +4179,83 @@ const DataService = {
             text: msg, read: false, time: Date.now()
         };
 
-        // 1. Kirim ke Cloud (Prioritas)
-        if(this.mode === 'firebase' && db) {
-            try {
-                // Gunakan field 'inbox' terpisah agar tidak tertimpa oleh save data siswa
-                await db.collection('users').doc(studentEmail).set({
-                    inbox: firebase.firestore.FieldValue.arrayUnion(msgObj)
-                }, { merge: true });
-                console.log("Pesan terkirim ke Cloud Inbox:", studentEmail);
+        if (this.mode === 'local' || !navigator.onLine) {
+            const dbLocal = this.getDB();
+            if(dbLocal[studentEmail]) {
+                if(!dbLocal[studentEmail].inbox) dbLocal[studentEmail].inbox = [];
+                dbLocal[studentEmail].inbox.push(msgObj);
+                this.saveDB(dbLocal);
                 return true;
-            } catch (e) {
-                console.error("Gagal kirim pesan cloud:", e);
-                // Jangan return false dulu, coba fallback ke local jika memungkinkan
+            }
+            return false;
+        } else {
+            try {
+                // Gunakan arrayUnion untuk atomicity di Firebase
+                await db.collection('users').doc(studentEmail).update({
+                    inbox: firebase.firestore.FieldValue.arrayUnion(msgObj)
+                });
+                return true;
+            } catch(e) {
+                console.warn("Gagal kirim pesan cloud, fallback local", e);
+                return false;
             }
         }
-
-        // 2. Fallback ke Local Storage (Jika offline/mode local)
-        // UPDATE: Tulis ke field 'inbox' di root user, BUKAN di dalam saveData
-        // Ini mencegah tertimpa oleh auto-save siswa yang sedang berjalan
-        const dbLocal = this.getDB();
-        if(dbLocal[studentEmail]) {
-            if(!dbLocal[studentEmail].inbox) dbLocal[studentEmail].inbox = [];
-            dbLocal[studentEmail].inbox.push(msgObj);
-            this.saveDB(dbLocal);
-            console.log("Pesan disimpan di Local DB (Inbox Terpisah)");
-            return true;
-        }
-        return false;
     },
 
-    // --- NEW: LISTENER PESAN UNTUK SISWA (UPDATED: SUPPORT LOCAL POLLING) ---
+    // --- NEW: LISTENER PESAN UNTUK SISWA (UPDATED: SUPPORT LOCAL POLLING & REMOTE RESET) ---
     startMessageListener: function() {
         if(!this.user || this.user.role !== 'siswa') return;
         
-        // Hentikan listener lama jika ada (Function untuk Firestore, Interval ID untuk Local)
+        // Hentikan listener lama jika ada
         if(this.unsubscribeMsg) {
             if (typeof this.unsubscribeMsg === 'function') this.unsubscribeMsg();
             else clearInterval(this.unsubscribeMsg);
             this.unsubscribeMsg = null;
         }
 
-        console.log(`Memulai Listener Pesan (${this.mode})...`);
+        console.log(`Memulai Listener Pesan & Sync (${this.mode})...`);
         
         if (this.mode === 'firebase' && db) {
             // --- MODE CLOUD: REALTIME SNAPSHOT ---
             this.unsubscribeMsg = db.collection('users').doc(this.user.email).onSnapshot((doc) => {
                 const data = doc.data();
-                this.processInbox(data); // Refactored processing logic
+                
+                // --- NEW: DETEKSI REMOTE RESET (FITUR PENTING) ---
+                // Jika Guru menghapus saveData di server (data.saveData === undefined/null)
+                // TAPI siswa sedang berada di dalam game (STATE.screen === 'play' / bukan prologue)
+                // MAKA: Paksa Reset Client Siswa.
+                if (data && !data.saveData && typeof STATE !== 'undefined' && STATE.screen !== 'splash' && STATE.screen !== 'title' && !STATE.isPrologue) {
+                    console.warn("⚠️ REMOTE RESET DETECTED! GURU MENGHAPUS DATA.");
+                    
+                    // 1. Hentikan Auto Save agar tidak menimpa penghapusan guru
+                    if(window.saveIntervalId) clearInterval(window.saveIntervalId);
+                    
+                    // 2. Hapus sesi lokal agar bersih total
+                    localStorage.removeItem(SESSION_KEY);
+                    DataService.user = null;
+                    
+                    // 3. Tampilkan Pesan & Reload
+                    alert("⚠️ PERINGATAN SISTEM ⚠️\n\nData permainan Anda telah di-reset oleh Guru/Admin.\nGame akan dimuat ulang ke awal.");
+                    location.reload();
+                    return;
+                }
+
+                this.processInbox(data); 
             });
         } else {
             // --- MODE LOCAL: POLLING INTERVAL ---
-            // Cek localStorage setiap 3 detik untuk pesan baru dari Guru (tab sebelah)
             this.unsubscribeMsg = setInterval(() => {
                 const dbLocal = this.getDB();
                 const myData = dbLocal[this.user.email];
+                
+                // Cek Reset Lokal juga (jika dihapus via inspect element/tab lain)
+                if (myData && !myData.saveData && typeof STATE !== 'undefined' && STATE.screen === 'play' && !STATE.isPrologue) {
+                     if(window.saveIntervalId) clearInterval(window.saveIntervalId);
+                     alert("⚠️ Data lokal hilang/reset. Game akan dimuat ulang.");
+                     location.reload();
+                     return;
+                }
+                
                 this.processInbox(myData);
             }, 3000);
         }
@@ -5516,7 +5546,9 @@ function resize() {
     GAME_WIDTH = canvas.width / scale;
     GAME_HEIGHT = canvas.height / scale;
     
-    ctx.imageSmoothingEnabled = false; // Pixel art tetap tajam
+    // UPDATE: Mengaktifkan smoothing agar karakter HD terlihat halus (tidak pecah/gerigi)
+    // Sebelumnya 'false' (Pixel Art Mode), sekarang 'true' (HD Mode)
+    ctx.imageSmoothingEnabled = true; 
 }
 window.addEventListener('resize', resize);
 // FIX: Tambahkan Listener Orientasi untuk HP (Fix Gambar Hilang saat Login)
@@ -6167,8 +6199,8 @@ for(let i=0; i<10; i++) {
             {x: 11, y: 3, w: 2, h: 2, type: 'shelf', icon: '🗄️', text: "Arsip Rekam Medis", img: 'images/rakbuku.png'},
             
             /* Bed Pasien (Untuk hiasan / interaksi tidur darurat?) */
-            {x: 2, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Bed Pasien 1"},
-            {x: 10, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Bed Pasien 2"},
+            {x: 2, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bedklinik.png', name: "Bed Pasien 1"},
+            {x: 10, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bedklinik.png', name: "Bed Pasien 2"},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -6187,17 +6219,18 @@ for(let i=0; i<10; i++) {
         ],
         objects: [
             /* Altar/Meja Akad di Tengah Depan */
-            {x: 6, y: 3, w: 2, h: 1, type: 'table', icon: '📖', img: 'images/mejadosen.png'}, 
+            /* UPDATE: Mengubah gambar meja menjadi mejamodin.png */
+            {x: 6, y: 3, w: 2, h: 1, type: 'table', icon: '📖', img: 'images/mejamodin.png'}, 
             
             /* Kursi Tamu Kiri (Barisan Rapi) */
-            {x: 2, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
-            {x: 2, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
-            {x: 2, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 4, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 2, y: 6, type: 'table', icon: '🪑', img: 'images/kursinikah.png'}, {x: 4, y: 6, type: 'table', icon: '🪑', img: 'images/kursinikah.png'},
+            {x: 2, y: 8, type: 'table', icon: '🪑', img: 'images/kursinikah.png'}, {x: 4, y: 8, type: 'table', icon: '🪑', img: 'images/kursinikah.png'},
+            {x: 2, y: 10, type: 'table', icon: '🪑', img: 'images/kursinikah.png'}, {x: 4, y: 10, type: 'table', icon: '🪑', img: 'images/kursinikah.png'},
 
             /* Kursi Tamu Kanan (Barisan Rapi) */
-            {x: 9, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 11, y: 6, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
-            {x: 9, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 11, y: 8, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
-            {x: 9, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'}, {x: 11, y: 10, type: 'table', icon: '🪑', img: 'images/kursimahasiswa.png'},
+            {x: 9, y: 6, type: 'table', icon: '🪑', img: 'images/kursinikah.png'}, {x: 11, y: 6, type: 'table', icon: '🪑', img: 'images/kursinikah.png'},
+            {x: 9, y: 8, type: 'table', icon: '🪑', img: 'images/kursinikah.png'}, {x: 11, y: 8, type: 'table', icon: '🪑', img: 'images/kursinikah.png'},
+            {x: 9, y: 10, type: 'table', icon: '🪑', img: 'images/kursinikah.png'}, {x: 11, y: 10, type: 'table', icon: '🪑', img: 'images/kursinikah.png'},
 
             /* Hiasan Bunga Mewah di Depan */
             {x: 1, y: 3, type: 'bookshelf', icon: '🏺', text: "Bunga Pernikahan", img: 'images/vasputih.png'},
@@ -7192,8 +7225,9 @@ async function initGame() {
             STATE.player.lastMonthlyClaim = saved.lastMonthlyClaim || 0;
             STATE.player.claimedLifeTrial = saved.claimedLifeTrial || false;
             
-            // NEW: LOAD STATUS TUTORIAL DUNGEON
+            // NEW: LOAD STATUS TUTORIAL DUNGEON & FISHING
             STATE.player.hasSeenDungeonTutorial = saved.hasSeenDungeonTutorial || false;
+            STATE.player.hasSeenFishingTutorial = saved.hasSeenFishingTutorial || false;
 
             // NEW: LOAD COUNTER MANCING, MONSTER & TALK
             STATE.player.dailyFishingCount = saved.dailyFishingCount || 0;
@@ -7872,6 +7906,104 @@ const THESIS_DB = {
         {q: "Konferensi Meja Bundar (KMB) yang mengakui kedaulatan Indonesia diadakan di kota?", a: "Den Haag", opts: ["Jakarta", "Den Haag", "Amsterdam"]}
     ]
 };
+
+// --- NEW: DATABASE UJIAN KOMPETENSI MANAJER (WORKER ROLE) ---
+const MANAGER_EXAM_DB = [
+    {q: "Apa prinsip dasar manajemen stok barang agar tidak kadaluarsa?", a: "FIFO (First In First Out)", opts: ["LIFO (Last In First Out)", "FIFO (First In First Out)", "Random Selection"]},
+    {q: "Jika pelanggan marah karena barang rusak, apa tindakan profesional pertama?", a: "Meminta maaf & dengarkan", opts: ["Meminta maaf & dengarkan", "Menyalahkan ekspedisi", "Mengusir pelanggan"]},
+    {q: "Rumus dasar menghitung Laba (Profit) adalah?", a: "Pendapatan - Beban", opts: ["Aset + Hutang", "Pendapatan - Beban", "Modal x Bunga"]},
+    {q: "Apa kunci utama dalam memimpin tim gudang?", a: "Komunikasi & Delegasi", opts: ["Otoriter & Keras", "Komunikasi & Delegasi", "Mengerjakan semua sendiri"]},
+    {q: "Jika stok fisik tidak sesuai dengan catatan komputer, apa yang terjadi?", a: "Selisih Stok (Shrinkage)", opts: ["Surplus Anggaran", "Selisih Stok (Shrinkage)", "Keuntungan Ganda"]},
+    {q: "Etika kerja: Apa yang harus dilakukan jika melihat rekan kerja mencuri barang?", a: "Lapor ke Atasan", opts: ["Ikut mencuri", "Diam saja", "Lapor ke Atasan"]},
+    {q: "Apa tujuan utama dari Stock Opname?", a: "Verifikasi fisik barang", opts: ["Menghabiskan anggaran", "Verifikasi fisik barang", "Liburan karyawan"]}
+];
+
+// --- NEW: LOGIKA UJIAN MANAJER ---
+let currentManagerTest = {
+    score: 0,
+    qIndex: 0,
+    questions: []
+};
+
+function startManagerExam() {
+    currentManagerTest.score = 0;
+    currentManagerTest.qIndex = 0;
+    // Ambil 5 soal acak
+    currentManagerTest.questions = [...MANAGER_EXAM_DB].sort(() => Math.random() - 0.5).slice(0, 5);
+
+    showDialogue("UJI KOMPETENSI MANAJER", 
+        "Syarat menjadi Manajer bukan hanya otot, tapi juga otak & etika.\n\nSaya akan ajukan **5 Pertanyaan Manajemen**.\nSyarat Lulus: **Benar Minimal 4**.\n\nSiap diuji?", 
+        [
+            {text: "SIAP BOS! (Mulai)", action: nextManagerQuestion},
+            {text: "Belum siap mental", action: closeDialogue}
+        ], 
+        'images/job.png'
+    );
+}
+
+function nextManagerQuestion() {
+    if (currentManagerTest.qIndex >= currentManagerTest.questions.length) {
+        finishManagerExam();
+        return;
+    }
+
+    const qData = currentManagerTest.questions[currentManagerTest.qIndex];
+    const opts = qData.opts.map(opt => ({
+        text: opt,
+        action: () => answerManagerQuestion(opt === qData.a)
+    })).sort(() => Math.random() - 0.5);
+
+    showDialogue(`UJIAN MANAJER (${currentManagerTest.qIndex + 1}/5)`, 
+        `PERTANYAAN:\n\n**"${qData.q}"**`, 
+        opts, 
+        'images/job.png'
+    );
+}
+
+function answerManagerQuestion(isCorrect) {
+    if(isCorrect) {
+        currentManagerTest.score++;
+        showToast("Jawaban Tepat! ✅");
+    } else {
+        showToast("Jawaban Kurang Tepat ❌");
+    }
+    
+    if(typeof AudioService !== 'undefined') AudioService.playSFX(isCorrect ? 'item' : 'hit');
+    
+    currentManagerTest.qIndex++;
+    setTimeout(() => nextManagerQuestion(), 800);
+}
+
+function finishManagerExam() {
+    const passed = currentManagerTest.score >= 4;
+    
+    if (passed) {
+        // PROMOTION LOGIC (MANAJER)
+        STATE.player.jobLevel++;
+        STATE.player.bossReputation += 10; // Bonus Reputasi Besar
+        STATE.player.biz += 5; // Bonus Skill Bisnis
+        
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+        
+        showDialogue("HASIL UJIAN: LULUS!", 
+            `Skor: ${currentManagerTest.score}/5.\n\nSelamat! Pengetahuanmu tentang manajemen dan etika sudah mumpuni.\n\nSaya dengan bangga mengangkatmu menjadi **MANAJER CABANG**!`, 
+            [{text: "Terima kasih Bos!", action: () => {
+                closeDialogue();
+                showToast("NAIK PANGKAT: MANAJER! 📈");
+                manualSave();
+            }}], 
+            'images/job.png'
+        );
+    } else {
+        STATE.player.energy = Math.max(0, STATE.player.energy - 20); // Penalty kelelahan mental
+        showDialogue("HASIL UJIAN: GAGAL", 
+            `Skor: ${currentManagerTest.score}/5.\n\nKamu belum siap memimpin. Pelajari lagi tentang bisnis dan etika kerja.\nSeorang Manajer tidak boleh salah ambil keputusan!`, 
+            [{text: "Maaf Bos... (Energy -20)", action: closeDialogue}], 
+            'images/job.png'
+        );
+    }
+}
 
 // --- NEW: WORKER MINIGAME LOGIC & DATA ---
 const WORK_ITEMS = [
@@ -9501,10 +9633,25 @@ function update() {
                         npc.vx *= -1;
                         npc.vy *= -1;
                         
-                        // FIX: SOLUSI ANTI-STUCK DI DERMAGA/SUDUT
-                        // Jika NPC menabrak, beri kesempatan 30% untuk ganti arah total
-                        // Ini mencegah NPC 'ping-pong' abadi di area sempit
-                        if(Math.random() < 0.3) { 
+                        // FIX: SOLUSI ANTI-STUCK SMART (DORONG KE TENGAH)
+                        // Jika NPC menabrak batas laut/tembok, paksa jalan ke arah tengah desa
+                        // Ini mencegah mereka terjebak di pinggiran pantai/dermaga selamanya
+                        if(Math.random() < 0.6) { // Peluang 60% untuk lari ke tengah saat stuck
+                             const centerX = 30 * TILE_SIZE; // Tengah Peta X
+                             const centerY = 20 * TILE_SIZE; // Tengah Peta Y
+                             
+                             // Hitung arah ke tengah
+                             const dx = centerX - (npc.x * TILE_SIZE);
+                             const dy = centerY - (npc.y * TILE_SIZE);
+                             const mag = Math.hypot(dx, dy) || 1;
+                             
+                             // Beri kecepatan sedikit acak agar natural
+                             const speed = 1 + Math.random(); 
+                             
+                             npc.vx = (dx / mag) * speed;
+                             npc.vy = (dy / mag) * speed;
+                        } else {
+                             // Sisa 40%: Random arah biasa (biar gak semua NPC lari ke tengah barengan)
                              npc.vx = (Math.random() - 0.5) * 2;
                              npc.vy = (Math.random() - 0.5) * 2;
                         }
@@ -9941,6 +10088,9 @@ function clearSpawnZone(mapId, spawnTileX, spawnTileY) {
     const safeRadius = 3; 
 
     map.npcs.forEach(npc => {
+        // FIX: Jangan pindahkan NPC Static (Diam) atau Service karena posisinya fixed/diatur designer
+        if (npc.type === 'static' || npc.type === 'service') return;
+
         // Hitung jarak NPC ke titik spawn pemain
         const dist = Math.hypot(npc.x - spawnTileX, npc.y - spawnTileY);
         
@@ -10396,8 +10546,8 @@ function handleAction() {
         if(entranceBuilding.id === 'port') {
             showDialogue("DERMAGA MANCING", "Airnya terlihat tenang. Ingin memancing?", [
                 {text: "Mancing (10 Energy)", action: () => {
-                    startFishingMinigame();
-                    closeDialogue();
+                    closeDialogue(); // FIX: Tutup dialog dulu baru mulai minigame
+                    setTimeout(startFishingMinigame, 100); // Beri jeda sedikit agar mulus
                 }},
                 {text: "Nanti saja", action: closeDialogue}
             ], 'images/pelabuhan.png');
@@ -10869,20 +11019,33 @@ function interactNPC(npc) {
 
                         let promoOpts = [];
                         if (canPromote) {
-                            promoOpts.push({
-                                text: "✨ AJUKAN PROMOSI SEKARANG!",
-                                action: () => {
-                                    p.jobLevel++;
-                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
-                                    showToast("NAIK PANGKAT! Gaji Meningkat 📈");
-                                    
-                                    showDialogue("MERCHANT", `Selamat! Saya melihat dedikasimu.\nMulai hari ini, kamu resmi diangkat menjadi **${nextTitle}**.\n\nJangan kecewakan saya!`, [{text:"Terima kasih Bos!", action:closeDialogue}], npc.imgSrc);
-                                    
-                                    // Simpan progress
-                                    manualSave();
-                                }
-                            });
+                            // UPDATE: CEK LEVEL UNTUK JENIS PROMOSI
+                            if (lvl === 3) {
+                                // Promosi ke Manajer (Level 3 -> 4) Butuh Ujian Kompetensi
+                                promoOpts.push({
+                                    text: "🧠 UJIAN KOMPETENSI MANAJER",
+                                    action: () => {
+                                        closeDialogue();
+                                        startManagerExam();
+                                    }
+                                });
+                            } else {
+                                // Promosi Biasa (Lv 1->2, 2->3) Langsung
+                                promoOpts.push({
+                                    text: "✨ AJUKAN PROMOSI SEKARANG!",
+                                    action: () => {
+                                        p.jobLevel++;
+                                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                        createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                                        showToast("NAIK PANGKAT! Gaji Meningkat 📈");
+                                        
+                                        showDialogue("MERCHANT", `Selamat! Saya melihat dedikasimu.\nMulai hari ini, kamu resmi diangkat menjadi **${nextTitle}**.\n\nJangan kecewakan saya!`, [{text:"Terima kasih Bos!", action:closeDialogue}], npc.imgSrc);
+                                        
+                                        // Simpan progress
+                                        manualSave();
+                                    }
+                                });
+                            }
                         }
                         
                         promoOpts.push({text: "Kembali", action: () => interactNPC(npc)});
@@ -11068,6 +11231,47 @@ function interactNPC(npc) {
                 showDialogue(getLoveTitle(npc.name, love), mainText, dialogueOpts, npc.imgSrc);
             }
         } else {
+            // --- NEW: INTERAKSI DOKTER BUDI UNTUK SESAMA COWOK (PASIEN) ---
+            if (npc.id === 'lover1boy') {
+                 // Bank Data Tips Kesehatan
+                 const HEALTH_TIPS_BANK = [
+                    "Jangan lupa minum air putih minimal 2 liter sehari ya, bro. Ginjal itu aset mahal!",
+                    "Kalau habis dari Dungeon, pastikan luka lu dibersihkan biar gak infeksi. Tetanus itu gak lucu.",
+                    "Tidur itu penting buat regenerasi sel. Jangan mentang-mentang masih muda lu hajar begadang terus.",
+                    "Makan 4 sehat 5 sempurna itu bukan mitos SD. Itu bahan bakar buat lu kerja keras.",
+                    "Stres bisa bikin imun turun drastis. Sekali-kali mancing atau jalan-jalan lah biar rileks.",
+                    "Kurangi gula, bro. Diabetes gak pandang umur. Mending manis di senyum daripada di darah.",
+                    "Otot butuh protein. Kalau lu mau kuat bawa pedang berat, banyakin makan ikan atau telur."
+                 ];
+                 
+                 showDialogue(npc.name, "Halo bro! Kelihatan pucat nih. Ada yang bisa saya bantu? Mau berobat atau sekadar konsultasi?", [
+                    { 
+                        text: "💉 Berobat (Full Heal - 500G)", 
+                        action: () => {
+                            if(STATE.player.money >= 500) {
+                                STATE.player.money -= 500;
+                                STATE.player.hp = STATE.player.maxHp;
+                                STATE.player.energy = 100;
+                                showToast("Tubuh Segar Bugar! ✨");
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                closeDialogue();
+                            } else {
+                                showToast("Waduh, uang lu kurang bro. Sehat itu mahal.");
+                            }
+                        }
+                    },
+                    { 
+                        text: "🩺 Minta Tips Kesehatan", 
+                        action: () => {
+                             const randomTip = HEALTH_TIPS_BANK[Math.floor(Math.random() * HEALTH_TIPS_BANK.length)];
+                             showDialogue(npc.name, `💡 **TIPS DOKTER:**\n\n"${randomTip}"`, [{text:"Siap Dok, makasih!", action:closeDialogue}], npc.imgSrc);
+                        }
+                    },
+                    {text: "Cuma lewat", action: closeDialogue}
+                ], npc.imgSrc);
+                return;
+            }
+
             showDialogue(npc.name, "Halo kawan! Sukses ujiannya ya.", [{text:"Sip", action:closeDialogue}], npc.imgSrc);
         }
         return;
@@ -11276,6 +11480,7 @@ function interactNPC(npc) {
 
     // --- NEW: INTERAKSI SATPAM KAMPUS ---
     else if(npc.id === 'satpam') {
+        // ... existing satpam logic ...
         // Cek waktu: Malam (18:00 - 06:00) vs Siang
         const isNight = STATE.time >= 1800 || STATE.time < 600;
 
@@ -11303,6 +11508,68 @@ function interactNPC(npc) {
                 {text: "Saya cuma lewat", action: closeDialogue}
             ], npc.imgSrc);
         }
+    }
+
+    // --- NEW: INTERAKSI PUSTAKAWAN (LIBRARIAN) ---
+    else if(npc.id === 'librarian') {
+        // BANK DATA TIPS BELAJAR & LITERASI
+        const STUDY_TIPS = [
+            "💡 **Teknik Pomodoro**: Belajar fokus selama 25 menit, lalu istirahat 5 menit. Otak butuh jeda untuk menyerap informasi.",
+            "📖 **Literasi**: Membaca bukan sekadar mengeja huruf, tapi memahami makna dan konteks. Jangan telan informasi mentah-mentah!",
+            "✍️ **Mencatat**: Tulislah poin penting dengan tangan. Koneksi saraf tangan ke otak memperkuat memori jangka panjang.",
+            "🧠 **Feynman Technique**: Cara terbaik menguji pemahamanmu adalah dengan mencoba menjelaskannya kepada orang lain dengan bahasa sederhana.",
+            "📚 **Kutipan**: 'Buku adalah jendela dunia, dan kuncinya adalah membaca.' - Jangan malas buka buku ya!",
+            "🌙 **Tidur**: Jangan begadang SKS (Sistem Kebut Semalam). Tidur yang cukup justru membantu konsolidasi memori hafalanmu.",
+            "🔍 **Validasi**: Di era informasi ini, saringlah berita (hoaks) dengan membaca dari berbagai sumber terpercaya."
+        ];
+
+        // BANK DATA LORE PULAU ARSA
+        const ARSA_LORE = [
+            "Pulau Arsa ini dulunya bagian dari kerajaan kuno bernama **Aethelgard**. Konon, mereka peradaban yang sangat maju dalam sihir dan teknologi.",
+            "Nama 'Arsa' diambil dari bahasa Sanskerta kuno yang berarti 'Kegembiraan' atau 'Harapan'. Pulau ini adalah harapan terakhir bagi mereka yang ingin memperbaiki hidup.",
+            "Hutan di sebelah barat desa itu... di sana banyak reruntuhan tua. Katanya di bawah tanahnya tersimpan perpustakaan raksasa yang terkubur.",
+            "Dungeon di timur pulau sebenarnya adalah 'Penjara Dimensi'. Monster di sana adalah manifestasi dari emosi negatif manusia masa lalu.",
+            "Ada legenda tentang **Cincin Raja**. Katanya, siapa pun yang memakainya akan memiliki karisma yang tak tertandingi."
+        ];
+
+        // BANK DATA CLUE DEWI ARSA
+        const DEWI_CLUES = [
+            "Sstt... pernah dengar legenda **Dewi Arsa**? Katanya dia roh pelindung pulau ini yang sangat cantik.",
+            "Dewi Arsa sangat pemalu. Dia tidak muncul sembarangan. Dia hanya menampakkan diri saat energi bulan sedang di puncaknya.",
+            "Catatan kuno menyebutkan: 'Sang Dewi akan turun di dekat **Patung Peringkat** saat malam **Bulan Purnama**'.",
+            "Coba cek Kalendermu. Bulan Purnama biasanya terjadi di **Musim Panas (Summer)**, sekitar tanggal **23**. Datanglah tepat tengah malam (00:00).",
+            "Hanya hati yang bersih yang bisa melihatnya. Dan mungkin... dia membawa berkah bagi mereka yang menemukannya."
+        ];
+
+        showDialogue("PUSTAKAWAN", "Sstt... Harap tenang di dalam perpustakaan. \nBuku adalah teman yang paling setia. Ada yang bisa saya bantu?", [
+            {
+                text: "💡 Minta Tips Belajar", 
+                action: () => {
+                    const tip = STUDY_TIPS[Math.floor(Math.random() * STUDY_TIPS.length)];
+                    // Reward kecil INT karena belajar
+                    if(Math.random() < 0.3) {
+                        STATE.player.int += 1;
+                        showToast("INT +1 (Wawasan Bertambah)");
+                    }
+                    showDialogue("CATATAN PUSTAKAWAN", tip, [{text:"Terima kasih ilmunya!", action:()=>interactNPC(npc)}], npc.imgSrc);
+                }
+            },
+            {
+                text: "🏝️ Tentang Pulau Arsa (Lore)", 
+                action: () => {
+                    const lore = ARSA_LORE[Math.floor(Math.random() * ARSA_LORE.length)];
+                    showDialogue("ARSIP KUNO", `"${lore}"`, [{text:"Menarik...", action:()=>interactNPC(npc)}], npc.imgSrc);
+                }
+            },
+            {
+                text: "🤫 Rumor Dewi Arsa", 
+                action: () => {
+                    const clue = DEWI_CLUES[Math.floor(Math.random() * DEWI_CLUES.length)];
+                    showDialogue("BISIKAN PUSTAKAWAN", clue, [{text:"Aku akan mengingatnya", action:()=>interactNPC(npc)}], npc.imgSrc);
+                }
+            },
+            {text: "Hanya baca buku", action: closeDialogue}
+        ], npc.imgSrc);
     }
 
     // --- NEW: INTERAKSI DOSEN / SCHOLAR (KHUSUS MAHASISWA & ATURAN TELAT) ---
@@ -12895,7 +13162,8 @@ function manualSave() {
         lastWeeklyClaim: STATE.player.lastWeeklyClaim,
         lastMonthlyClaim: STATE.player.lastMonthlyClaim,
         claimedLifeTrial: STATE.player.claimedLifeTrial,
-        hasSeenDungeonTutorial: STATE.player.hasSeenDungeonTutorial, // NEW: SAVE TUTORIAL STATUS
+        hasSeenDungeonTutorial: STATE.player.hasSeenDungeonTutorial,
+        hasSeenFishingTutorial: STATE.player.hasSeenFishingTutorial, // NEW: Save Fishing Tutorial
         
         // NEW: SIMPAN PROGRESS HARIAN
         dailyFishingCount: STATE.player.dailyFishingCount || 0,
@@ -12908,34 +13176,124 @@ function manualSave() {
     });
 }
 
-// --- NEW FUNCTION: FAINT LOGIC ---
-function handleFaint() {
-    // FIX: Cegah pemanggilan berulang dengan mengubah screen state
-    if(STATE.screen === 'cutscene') return; 
-    STATE.screen = 'cutscene'; // Stop update loop & input
+// --- FIX: FUNGSI MEMANCING YANG DIPERBAIKI (TIDAK DUPLIKAT) ---
+function startFishingMinigame() {
+    // --- NEW: TUTORIAL MEMANCING (FIRST TIME ONLY) ---
+    if (!STATE.player.hasSeenFishingTutorial) {
+        showDialogue("TUTORIAL MEMANCING 🎣", 
+            "Halo pemula! Ingin menangkap ikan? Caranya mudah:\n\n1. Perhatikan **Bar Indikator** yang bergerak.\n2. Tekan **Tombol Aksi (🔴)** atau **Spasi** tepat saat garis putih berada di area **HIJAU**.\n\nSetiap kali melempar kail, kamu butuh **10 Energi**. Ikan yang didapat bisa dimakan untuk pulihkan tenaga atau dijual!", 
+            [{
+                text: "Siap, Saya Mengerti!", 
+                action: () => {
+                    STATE.player.hasSeenFishingTutorial = true;
+                    manualSave(); // Simpan agar tidak muncul lagi
+                    closeDialogue();
+                    // Jeda sedikit sebelum mulai minigame
+                    setTimeout(startFishingMinigame, 500);
+                }
+            }], 
+            'images/nelayan.png' // Menggunakan gambar Pak Nelayan sebagai tutor
+        );
+        return;
+    }
 
-    showToast("😵 KAMU PINGSAN KARENA KELELAHAN!");
+    if(STATE.player.energy < 10) {
+        showToast("Energi tidak cukup!");
+        return;
+    }
     
-    // Blackout overlay
+    // Kurangi Energi & Mulai Minigame
+    STATE.player.energy -= 10;
+    STATE.fishing.active = true;
+    STATE.fishing.barX = 0;
+    STATE.fishing.barDir = 1; // FIX: Reset Arah Gerak agar tidak macet
+    STATE.fishing.targetStart = 30 + Math.random() * 40; 
+    STATE.fishing.targetWidth = 15;
+    
+    STATE.screen = 'play'; 
+    showToast("Tekan AKSI (Space/Tombol) saat di Hijau!");
+}
+
+// --- FIX: FUNGSI CEK HASIL PANCINGAN (DIPASTIKAN ADA) ---
+function checkFishing() {
+    if(!STATE.fishing.active) return;
+    STATE.fishing.active = false; // Stop bar movement
+    
+    // Cek apakah barX berada di dalam area target (Hijau)
+    if(STATE.fishing.barX >= STATE.fishing.targetStart && STATE.fishing.barX <= (STATE.fishing.targetStart + STATE.fishing.targetWidth)) {
+        
+        // UPDATE: TAMBAH COUNTER MANCING BERHASIL
+        STATE.player.dailyFishingCount = (STATE.player.dailyFishingCount || 0) + 1;
+
+        const rand = Math.random() * 100;
+        let fishId = 'ikan_kecil';
+        let fishName = 'Ikan Kecil';
+        let fishImg = 'images/ikankecil.png';
+        let rarityColor = '#94a3b8'; // Abu-abu
+        let expGain = 15;
+
+        // Probabilitas Rarity
+        if (rand < 3) { 
+            fishId = 'ikan_legendary'; fishName = '✨ IKAN LEGENDARIS ✨'; rarityColor = '#fbbf24'; fishImg = 'images/ikanlegendary.png'; expGain = 200;
+        } else if (rand < 18) {
+            fishId = 'ikan_besar'; fishName = 'Ikan Besar'; rarityColor = '#f472b6'; fishImg = 'images/ikanbesar.png'; expGain = 50;
+        } else if (rand < 50) {
+            fishId = 'ikan_sedang'; fishName = 'Ikan Sedang'; rarityColor = '#38bdf8'; fishImg = 'images/ikansedang.png'; expGain = 25;
+        } else {
+            fishId = 'ikan_kecil'; fishName = 'Ikan Kecil'; rarityColor = '#cbd5e1'; fishImg = 'images/ikankecil.png'; expGain = 10;
+        }
+        
+        if(!STATE.player.inventory[fishId]) STATE.player.inventory[fishId] = 0;
+        STATE.player.inventory[fishId]++;
+        
+        gainExp(expGain);
+
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); 
+        createParticle(STATE.player.x, STATE.player.y, rarityColor);
+
+        showDialogue("TANGKAPAN BERHASIL!", 
+            `Kamu mendapatkan:\n**${fishName}**\n\n(Item telah dimasukkan ke dalam Tas)`, 
+            [{text: "Simpan 🎣", action: closeDialogue}], 
+            fishImg
+        );
+
+    } else {
+        showToast("GAGAL... Ikan lepas.");
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+    }
+}
+
+// --- NEW FUNCTION: HANDLE FAINT (PINGSAN) ---
+function handleFaint() {
+    if(STATE.screen === 'cutscene') return;
+    STATE.screen = 'cutscene';
+    closeDialogue();
+    
+    showToast("😵 Kamu Pingsan karena kelelahan...");
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+
+    // Overlay Hitam
     const overlay = document.createElement('div');
     overlay.style.position = 'fixed';
     overlay.style.top = '0'; overlay.style.left = '0';
     overlay.style.width = '100%'; overlay.style.height = '100%';
-    overlay.style.background = '#000';
+    overlay.style.background = 'black';
     overlay.style.zIndex = '9999';
     overlay.style.opacity = '0';
-    // UPDATE: Durasi dipercepat dari 2s menjadi 0.5s
-    overlay.style.transition = 'opacity 0.5s';
-    overlay.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100%; color:red; font-family:Cinzel; font-size:20px; text-align:center;">KAMU PINGSAN...<br>Dibawa ke Klinik (-500 Gold)</div>';
+    overlay.style.transition = 'opacity 1s';
+    overlay.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100%; color:#ef4444; font-family:Cinzel; font-size:24px; flex-direction:column;">
+        <h1>PINGSAN</h1>
+        <p style="font-size:12px; color:#cbd5e1;">Dibawa ke Klinik oleh Warga...</p>
+    </div>`;
     document.body.appendChild(overlay);
 
-    // Fade to black
-    setTimeout(() => overlay.style.opacity = '1', 50);
+    // Fade In
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+    }, 100);
 
-    // UPDATE: Waktu tunggu dipercepat dari 4000ms (4 detik) menjadi 2000ms (2 detik)
     setTimeout(() => {
         // Logic Reset
-        // FIX: Pastikan penambahan hari aman (Integer)
         STATE.day = parseInt(STATE.day) + 1;
         STATE.time = 800; // Bangun jam 8 pagi (telat karena sakit)
         STATE.player.energy = 50; // Bangun tidak full energy
@@ -12950,20 +13308,28 @@ function handleFaint() {
         STATE.player.x = 20 * TILE_SIZE; // Depan klinik
         STATE.player.y = 19 * TILE_SIZE;
 
-        // FIX: Pastikan area respawn aman dari NPC
         clearSpawnZone('village', 20, 19);
 
+        randomizeWeather();
         manualSave();
 
-        // Fade In
+        // Fade Out & Wake Up
         overlay.style.opacity = '0';
-        // UPDATE: Waktu hapus overlay disesuaikan dengan transisi (0.5s)
         setTimeout(() => {
             if(document.body.contains(overlay)) document.body.removeChild(overlay);
+            
             showToast("Bangun di Klinik. Biaya: 500G");
+            
+            // Update Date/Time UI immediately
+            const currentDayName = DAYS_OF_WEEK[(STATE.day - 1) % 7];
+            const totalDays = STATE.day - 1;
+            const year = Math.floor(totalDays / (DAYS_PER_SEASON * 4)) + 1;
+            document.getElementById('full-date-display').innerText = `${currentDayName}, D${(totalDays % DAYS_PER_SEASON) + 1} ${STATE.season.toUpperCase()} Y${year}`;
+            document.getElementById('clock-display').innerText = "08:00";
+
             updateHUDInfo();
-            STATE.screen = 'play'; // FIX: Kembalikan ke mode main setelah selesai
-        }, 500);
+            STATE.screen = 'play'; 
+        }, 1000);
     }, 2000);
 }
 
@@ -14308,6 +14674,10 @@ function drawObject(ctx, o) {
                 // Fallback: MEJA DOSEN (Meja Guru)
                 else if (src.includes('mejadosen')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzVENDAzNyIgc3Ryb2tlPSIjM2UyNzIzIiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjxyZWN0IHg9IjI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjwvc3ZnPg==';
+                }
+                // Fallback: MEJA MODIN (Meja Akad dengan Taplak Putih)
+                else if (src.includes('mejamodin')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzVENDAzNyIgc3Ryb2tlPSIjM2UyNzIzIiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjxyZWN0IHg9IjI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjxyZWN0IHg9IjgiIHk9IjgiIHdpZHRoPSIxNiIgaGVpZ2h0PSI0IiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjkiLz48L3N2Zz4=';
                 }
                 // Fallback Umum (Box Kayu)
                 else {
