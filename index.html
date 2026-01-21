@@ -982,26 +982,45 @@
         #prologue-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #020617;
+            background: #000; /* Fallback color */
             z-index: 999;
             display: none;
-            justify-content: center;
+            /* Layout diubah agar support absolute positioning elemen anak */
+            flex-direction: column;
+            justify-content: flex-end; /* Konten di bawah */
             align-items: center;
-            padding: 40px;
+            padding: 0; /* Reset padding container */
             box-sizing: border-box;
-            text-align: center;
+            
+            /* UPDATE: Background Transition */
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1s ease-in-out;
         }
 
         #prologue-text {
             font-family: 'Cinzel', serif;
-            font-size: 20px;
-            line-height: 1.8;
-            color: var(--secondary);
+            font-size: 20px; /* Ukuran font nyaman dibaca */
+            line-height: 1.6;
+            color: var(--secondary); /* Warna Emas */
             font-style: italic;
-            max-width: 700px;
+            
+            /* UPDATE: POSISI DI BAWAH (CINEMATIC SUBTITLE STYLE) */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            
+            /* Gradient background agar teks terbaca di atas gambar apapun */
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 50%, transparent 100%);
+            
+            padding: 60px 40px 50px 40px; /* Padding atas luas untuk fade, bawah untuk jarak aman */
+            text-align: center;
+            text-shadow: 0 2px 4px #000;
+            
             opacity: 0;
-            transition: opacity 1s ease-in-out;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+            transition: opacity 0.5s ease-in-out;
+            z-index: 1000;
         }
 
         /* Gender Selection Screen */
@@ -1384,17 +1403,22 @@
         /* NEW: Skip Button for Prologue */
         #skip-prologue-btn {
             position: absolute;
-            bottom: 30px;
+            /* UPDATE: Posisi tombol skip agar tidak menutupi teks */
+            top: 30px; 
             right: 30px;
-            background: transparent;
+            
+            background: rgba(0, 0, 0, 0.5); /* Semi transparan */
             border: 1px solid var(--secondary);
             color: var(--secondary);
-            padding: 10px 20px;
+            padding: 8px 16px;
             font-family: 'Exo 2', sans-serif;
             font-weight: bold;
+            font-size: 12px;
             cursor: pointer;
-            z-index: 1000;
+            z-index: 1001; /* Di atas teks */
             display: none; /* Shown by JS */
+            backdrop-filter: blur(4px);
+            border-radius: 4px;
         }
         #skip-prologue-btn:hover {
             background: var(--secondary);
@@ -3962,20 +3986,41 @@ function startPrologue() {
             skipPrologue(); // Done naturally
             return;
         }
+
+        // Fade Out Text
         textEl.style.opacity = 0;
+        
         prologueTimeout = setTimeout(() => {
+            // Update Text
             textEl.innerText = prologueTexts[prologueIndex];
+            
+            // UPDATE: Ganti Background Image Sesuai Scene (1-10)
+            // Menggunakan linear-gradient overlay tipis agar gambar agak gelap sedikit
+            const imgNum = prologueIndex + 1;
+            screen.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('images/scene-${imgNum}.png')`;
+            
+            // Fade In Text
             textEl.style.opacity = 1;
+            
             prologueIndex++;
-            // Diperlambat dari 1500 ke 4000 agar narasi lebih mudah dibaca
-            prologueTimeout = setTimeout(showNextLine, 4000); 
-        }, 500);
+            // Diperlambat dari 4000 ke 5000 agar penonton bisa menikmati gambar scene
+            prologueTimeout = setTimeout(showNextLine, 5000); 
+        }, 500); // Waktu transisi fade out text
     }
-    showNextLine();
+    
+    // Preload image pertama agar tidak flicker
+    const firstImg = new Image();
+    firstImg.src = 'images/scene-1.png';
+    firstImg.onload = () => showNextLine();
+    firstImg.onerror = () => showNextLine(); // Tetap jalan meski gambar gagal
 }
 
 function skipPrologue() {
     clearTimeout(prologueTimeout); // Stop animation
+    
+    // Reset style background prologue agar tidak mengganggu screen lain (just in case)
+    document.getElementById('prologue-screen').style.backgroundImage = 'none';
+    
     document.getElementById('prologue-screen').style.display = 'none';
     document.getElementById('gender-screen').style.display = 'flex';
 }
@@ -5907,6 +5952,9 @@ for(let i=0; i<10; i++) {
             
             /* MOVED: CINTA MATRE PINDAH KE INTERIOR (GUILD & PERPUS) */
 
+            /* DIKEMBALIKAN: Peer 1 (Siswa Laki-laki) */
+            {id: 'peer1', x: 12, y: 12, name: 'Teman Sekelas', imgSrc: 'images/peer1.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
+
             /* DIHAPUS: Tetangga A (Peer 1) yang tinggal di rumah kiri */
             {id: 'peer2', x: 28, y: 11, name: 'Tetangga B', imgSrc: 'images/peer2.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
             {id: 'peer3', x: 35, y: 30, name: 'Petani', imgSrc: 'images/peer3.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
@@ -6013,13 +6061,15 @@ for(let i=0; i<10; i++) {
         objects: [
             /* UPDATE: Meja Kasir dengan gambar images/mejakasir.png */
             {x: 7, y: 2, type: 'counter', icon: '🪙', img: 'images/mejakasir.png'},
-            /* UPDATE: Gambar Rak diubah menjadi Etalase sesuai request */
-            /* Etalase Kiri (Tipe 1) */
-            {x: 2, y: 5, type: 'shelf', icon: '📦', img: 'images/etalasetoko1.png'}, 
-            {x: 3, y: 5, type: 'shelf', icon: '📦', img: 'images/etalasetoko1.png'},
-            /* Etalase Kanan (Tipe 2) */
-            {x: 11, y: 5, type: 'shelf', icon: '🏺', img: 'images/etalasetoko2.png'}, 
-            {x: 12, y: 5, type: 'shelf', icon: '🏺', img: 'images/etalasetoko2.png'},
+            
+            /* UPDATE: Gambar Rak diubah menjadi Etalase Besar (Ukuran 2x2) sesuai request */
+            /* Etalase Kiri (Tipe 1 - Barang Umum) */
+            {x: 1, y: 5, w: 2, h: 2, type: 'shelf', icon: '📦', img: 'images/etalasetoko1.png', text: "Etalase Sembako"}, 
+            {x: 1, y: 8, w: 2, h: 2, type: 'shelf', icon: '📦', img: 'images/etalasetoko1.png', text: "Etalase Perkakas"},
+            
+            /* Etalase Kanan (Tipe 2 - Barang Mewah) */
+            {x: 12, y: 5, w: 2, h: 2, type: 'shelf', icon: '🏺', img: 'images/etalasetoko2.png', text: "Etalase Perhiasan"}, 
+            {x: 12, y: 8, w: 2, h: 2, type: 'shelf', icon: '🏺', img: 'images/etalasetoko2.png', text: "Etalase Kain Sutra"},
             
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -6877,6 +6927,40 @@ const NPC_RELIGIOUS_CHATS = {
         "Tentang pasangan hidup... Alkitab mengingatkan: 'Janganlah kamu merupakan pasangan yang tidak seimbang'. Menikah seagama itu fondasi yang kuat.",
         "Satu iman berarti satu roh. Pernikahan bukan cuma soal perasaan, tapi persekutuan dengan Tuhan. Lebih baik cari yang seiman ya.",
         "Rumah tangga itu butuh tiang doa yang sama. Carilah seseorang yang bisa bergandengan tangan saat berdoa kepeda-Nya."
+    ]
+};
+
+// --- NEW: BANK DIALOG SISWA BARU (TEMAN SEKELAS - LAKI-LAKI) ---
+const PEER_BOY_CHATS = {
+    // FASE 1: ANAK BARU BINGUNG (Relationship < 20)
+    low: [
+        "Sst, bro... lu ngerti nggak sih kita disuruh ngapain di sini? Gue cuma dikasih tau 'bertahan hidup' doang. Bingung gue.",
+        "Eh, lu tau nggak cara dapet duit cepet? Bekal gue dari rumah udah mau abis nih buat beli roti.",
+        "Gue kangen masakan nyokap... Di sini makannya ikan bakar mulu, amis bro.",
+        "Itu bangunan gede di tengah apa sih? Guild ya? Serem amat isinya orang bawa pedang semua.",
+        "Lu udah milih Role? Gue galau nih antara jadi Wirausaha atau Kuliah aja... Takut salah pilih.",
+        "Bro, lu tau 'Dungeon' itu dimana? Gue denger ada monster, emang beneran ya? Kok ngeri sih...",
+        "Tadi gue nyasar pas nyari Kampus. Peta di sini ribet banget, mana nggak ada ojek online.",
+        "Lu udah ketemu Mentor Budi? Katanya dia galak ya kalau kita males?"
+    ],
+    // FASE 2: MULAI BERADAPTASI (Relationship 20 - 79)
+    mid: [
+        "Ternyata kerja di Merchant lumayan juga, bro. Capek sih ngangkat barang, tapi dapet duit buat jajan.",
+        "Gue abis dari Perpus, gila bukunya tebel-tebel banget. Tapi ternyata seru juga baca sejarah pulau ini.",
+        "Lu pernah liat hantu di hutan barat nggak? Katanya ada monster nyolong skripsi, aneh banget ya ekosistem sini.",
+        "Gue mulai paham ritme di sini. Pagi kerja, sore mancing, malem tidur. Simpel tapi bikin sehat.",
+        "Eh bro, mending uang lu ditabung deh. Gue kemarin boros beli baju, eh sekarang nggak bisa upgrade rumah.",
+        "Kalau lu mau hemat, mending mancing sendiri di dermaga. Ikan bakarnya lumayan buat ganjel perut.",
+        "Gue denger kalau mau sukses di sini kuncinya cuma satu: Konsisten. Jangan gonta-ganti kerjaan mulu."
+    ],
+    // FASE 3: SUDAH NYAMAN/SENIOR (Relationship >= 80)
+    high: [
+        "Wih, gear lu makin keren aja bro. Udah siap lawan Boss Dungeon lantai 5 kayaknya nih!",
+        "Inget nggak pas kita baru nyampe dulu? Polos banget ya kita, bingung nyari pintu masuk rumah haha.",
+        "Nanti kalau lulus dari pulau ini, gue mau buka bisnis sendiri ah di kota asal. Ilmunya udah dapet di sini.",
+        "Bro, kita harus lulus bareng ya! Kita buktiin ke Mentor Budi kalau kita bisa bertahan 5 tahun!",
+        "Rasanya gue malah nggak mau pulang. Di sini udaranya seger, orangnya ramah-ramah. Betah gue.",
+        "Kalau lu butuh bantuan buat lawan monster, bilang aja. Gue udah latihan fisik dikit-dikit nih!"
     ]
 };
 
@@ -12114,6 +12198,49 @@ function interactNPC(npc) {
                 startRuinsBattle(); // Mulai Battle Scene
             }},
             {text: "Mundur dulu...", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI TEMAN SEKELAS (PEER1 - SISWA LAKI-LAKI) ---
+    else if(npc.id === 'peer1') {
+        const p = STATE.player;
+        if(!p.relationships[npc.id]) p.relationships[npc.id] = 0;
+        const rel = p.relationships[npc.id];
+        
+        // Pilih Pool Chat berdasarkan Kedekatan (Relationship)
+        let chatPool = PEER_BOY_CHATS.low;
+        let mood = "Bingung";
+        
+        if (rel >= 80) { 
+            chatPool = PEER_BOY_CHATS.high; 
+            mood = "Semangat";
+        } else if (rel >= 20) { 
+            chatPool = PEER_BOY_CHATS.mid; 
+            mood = "Santai";
+        }
+
+        // Ambil kalimat acak
+        const randomChat = chatPool[Math.floor(Math.random() * chatPool.length)];
+
+        showDialogue(`${npc.name} (${mood})`, `"${randomChat}"`, [
+            {
+                text: "Ngobrol (Energi -2)", 
+                action: () => {
+                    if(STATE.player.energy >= 2) {
+                        STATE.player.energy -= 2;
+                        updateRelationship(npc, 2, "Akrab"); // Tambah kedekatan biar dialognya berkembang
+                        
+                        // Respon balik sederhana
+                        const responses = ["Semangat bro!", "Sama, gue juga gitu.", "Haha bener juga.", "Sabar ya."];
+                        const randResp = responses[Math.floor(Math.random() * responses.length)];
+                        
+                        showDialogue(npc.name, `"${randResp} Thanks udah dengerin curhatan gue bro."`, [{text:"Sip", action:closeDialogue}], npc.imgSrc);
+                    } else {
+                        showToast("Terlalu lelah untuk ngobrol panjang...");
+                    }
+                }
+            },
+            {text: "Duluan ya bro", action: closeDialogue}
         ], npc.imgSrc);
     }
 
