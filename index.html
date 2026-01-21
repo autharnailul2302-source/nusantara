@@ -6693,6 +6693,7 @@ const STATE = {
     gameOverTriggered: false, 
     gameFinished: false, 
     freeRoamMode: false, 
+    isDayChanging: false, // FIX: Flag pengaman agar hari tidak ganti ganda
     
     // QUEST FLAGS
     activeQuest: null, // 'find_draft' etc
@@ -11951,7 +11952,14 @@ function interactNPC(npc) {
     }
 
     else if(npc.id === 'blacksmith') {
-        showDialogue("KEPALA BENGKEL", "Dunia kerja butuh bukti, bukan janji.", [
+        showDialogue("KEPALA BENGKEL", "Dunia kerja butuh bukti, bukan janji. Mau konsultasi karir atau beli perlengkapan?", [
+            {text: "⚔️ Beli Perlengkapan (Shop)", action: () => {
+                showDialogue("TOKO BENGKEL", "Selain senjata, kami juga menempa perhiasan dan busana formal. Mau beli apa?", [
+                    {text: "Baju Pengantin (5.000 G) 👘", action: () => buyItem('pakaian_nikah', 5000)},
+                    {text: "Cincin Kayu (1.000 G) 💍", action: () => buyItem('cincin_kayu', 1000)},
+                    {text: "Kembali", action: () => interactNPC(npc)}
+                ], npc.imgSrc);
+            }},
             {text: "Tentang CV", action: () => showDialogue("KEPALA BENGKEL", "Buat CV yang jujur dan menarik. Cantumkan skill nyata dan pengalaman organisasi/magang.", [{text:"Oke", action:closeDialogue}], npc.imgSrc)},
             {text: "Etika Kerja", action: () => showDialogue("KEPALA BENGKEL", "Datang tepat waktu. Hormati atasan dan rekan. Inisiatif tinggi. Itu kunci bertahan di industri.", [{text:"Siap Bos", action:closeDialogue}], npc.imgSrc)},
             {text: "Tutup", action: closeDialogue}
@@ -13870,9 +13878,15 @@ function checkFishing() {
 
 // --- NEW FUNCTION: HANDLE FAINT (PINGSAN) ---
 function handleFaint() {
-    if(STATE.screen === 'cutscene') return;
+    // FIX: Tambahkan cek flag isDayChanging
+    if(STATE.screen === 'cutscene' || STATE.isDayChanging) return;
+    
+    // FIX CRITICAL: Panggil closeDialogue DULUAN sebelum set cutscene
+    // Karena closeDialogue() mereset screen jadi 'play'
+    closeDialogue(); 
+    
     STATE.screen = 'cutscene';
-    closeDialogue();
+    STATE.isDayChanging = true; // Kunci proses ganti hari
     
     showToast("😵 Kamu Pingsan karena kelelahan...");
     if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
@@ -13934,17 +13948,19 @@ function handleFaint() {
 
             updateHUDInfo();
             STATE.screen = 'play'; 
+            STATE.isDayChanging = false; // Buka kunci
         }, 1000);
     }, 2000);
 }
 
 // --- NEW FUNCTION: SLEEP LOGIC ---
 function handleSleep() {
-    // FIX: Cegah double trigger jika tombol diklik cepat
-    if(STATE.screen === 'cutscene') return;
+    // FIX: Tambahkan cek flag isDayChanging
+    if(STATE.screen === 'cutscene' || STATE.isDayChanging) return;
 
     closeDialogue();
     STATE.screen = 'cutscene'; // FIX: Stop update loop saat tidur
+    STATE.isDayChanging = true; // Kunci proses
     
     let oversleep = false;
     // MECHANIC: OVERSLEEP IF ENERGY LOW
@@ -14020,6 +14036,7 @@ function handleSleep() {
                 document.getElementById('clock-display').innerText = oversleep ? "10:00" : "06:00";
                 
                 STATE.screen = 'play'; // FIX: Resume game setelah bangun
+                STATE.isDayChanging = false; // Buka kunci
             }, 1000);
 
         }, 2000); // Durasi layar hitam
@@ -14268,7 +14285,9 @@ function gameOver() {
         STATE.player.x = 20 * TILE_SIZE; 
         STATE.player.y = 20 * TILE_SIZE; 
         
-        STATE.day++;
+        // FIX: Gunakan parseInt agar hari tidak menjadi string "11" (1+1) saat Game Over
+        STATE.day = parseInt(STATE.day) + 1;
+        
         STATE.enemies = []; 
         closeDialogue();
         showToast("Dirawat oleh Dr. Budi ❤️");
