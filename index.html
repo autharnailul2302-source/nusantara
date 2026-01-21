@@ -636,6 +636,42 @@
             width: 50px; height: 50px; font-size: 18px; 
         }
 
+        /* --- NEW: SPRINT BUTTON STYLE --- */
+        #btn-sprint {
+            position: relative;
+            width: 65px; height: 65px;
+            border-radius: 50%;
+            background: rgba(234, 179, 8, 0.2); /* Yellow transparent */
+            border: 2px solid #facc15; /* Bright Yellow */
+            color: #fef08a;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px;
+            box-shadow: 
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 0 10px rgba(234, 179, 8, 0.2);
+            cursor: pointer;
+            z-index: 60;
+            transition: all 0.1s;
+            pointer-events: auto;
+            flex-shrink: 0;
+            /* Animasi denyut halus */
+            animation: pulseYellow 2s infinite;
+        }
+
+        @keyframes pulseYellow {
+            0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
+        }
+
+        #btn-sprint:active {
+            background: rgba(234, 179, 8, 0.6);
+            transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.8);
+            border-color: #fff;
+            color: #fff;
+        }
+
         /* --- NEW: INVENTORY BAG STYLES (PREMIUM GLASS) --- */
         #bag-btn {
             /* UPDATE: POSISI RELATIVE AGAR MENGIKUTI FLEXBOX */
@@ -1882,6 +1918,35 @@ button, .round-btn, .d-btn, .auth-btn {
             to { transform: scale(1.05); box-shadow: 0 0 0 6px #f59e0b, 0 0 40px #f59e0b; }
         }
 
+        /* --- NEW: VIRTUAL JOYSTICK VISUAL --- */
+        #virtual-joystick-base {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); /* Transparan Putih */
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: none; /* Hidden by default */
+            pointer-events: none; /* Pass through agar tidak blokir event */
+            z-index: 40; /* Di bawah tombol UI (z-60) */
+            transform: translate(-50%, -50%); /* Center anchor */
+            backdrop-filter: blur(2px);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        #virtual-joystick-stick {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            /* Gradient Emas sesuai tema */
+            background: radial-gradient(circle at 30% 30%, var(--secondary), #d97706); 
+            border: 2px solid #fffbeb;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
     </style>
 </head>
 <body>
@@ -2456,6 +2521,12 @@ button, .round-btn, .d-btn, .auth-btn {
 
     <!-- UI LAYER (GAME) -->
     <div id="ui-layer" class="hidden">
+        
+        <!-- NEW: VIRTUAL JOYSTICK (FLOATING) -->
+        <div id="virtual-joystick-base">
+            <div id="virtual-joystick-stick"></div>
+        </div>
+
         <!-- REDESIGNED HUD (3 COLUMNS) -->
         <div class="hud-top" id="main-hud"> <!-- Added ID -->
             <!-- 1. LEFT: PROFILE & BARS -->
@@ -2557,6 +2628,9 @@ button, .round-btn, .d-btn, .auth-btn {
             <div class="d-pad" id="joystick" style="display:none;"></div> 
             
             <div class="action-btns">
+                <!-- NEW: TOMBOL SPRINT (LARI) -->
+                <div id="btn-sprint" title="Tahan untuk Lari">⚡</div>
+
                 <!-- NEW: TOMBOL QUEST -->
                 <div id="quest-btn" onclick="toggleDailyQuest()" title="Lihat Quest Harian">📜</div>
 
@@ -5822,6 +5896,22 @@ for(let x=0; x<FISH_W; x++) { fishTiles[0*FISH_W+x] = 11; fishTiles[(FISH_H-1)*F
 for(let y=0; y<FISH_H; y++) { fishTiles[y*FISH_W+0] = 11; fishTiles[y*FISH_W+(FISH_W-1)] = 11; }
 fishTiles[(FISH_H-1)*FISH_W + 6] = 8; // Door Tile
 
+// --- NEW: CANDI INTERIOR MAP (16x16) ---
+const CANDI_W = 16;
+const CANDI_H = 16;
+const candiTiles = new Array(CANDI_W * CANDI_H).fill(4); // 4 = Stone Floor (Dungeon style)
+
+// Walls (ID 2 = Stone Wall)
+for(let x=0; x<CANDI_W; x++) { candiTiles[0*CANDI_W+x] = 2; candiTiles[(CANDI_H-1)*CANDI_W+x] = 2; }
+for(let y=0; y<CANDI_H; y++) { candiTiles[y*CANDI_W+0] = 2; candiTiles[y*CANDI_W+(CANDI_W-1)] = 2; }
+
+// Pathway / Karpet Merah/Ungu (Magic Floor ID 6) leading to Altar
+for(let y=3; y<CANDI_H-1; y++) {
+    candiTiles[y*CANDI_W + 7] = 6;
+    candiTiles[y*CANDI_W + 8] = 6;
+}
+candiTiles[(CANDI_H-1)*CANDI_W + 7] = 8; // Door Tile (Tengah Bawah)
+
 // --- UPDATE: MAP RERUNTUHAN YANG LEBIH DETAIL ---
 const RUINS_W = 22;
 const RUINS_H = 16;
@@ -5917,7 +6007,21 @@ for(let i=0; i<10; i++) {
             
             /* NEW: RUMAH TETANGGA (NELAYAN) - DIAKTIFKAN KEMBALI */
             /* Posisi: Sebelah kanan rumah player (x:26) */
-            { id: 'fisherman_home', x: 26, y: 7, w: 4, h: 4, img: 'images/rumahwarga.png', entrance: {x: 28, y: 10, map: 'fisherman_interior'}, name: "Rumah Nelayan", openTime: 600, closeTime: 2100 }
+            { id: 'fisherman_home', x: 26, y: 7, w: 4, h: 4, img: 'images/rumahwarga.png', entrance: {x: 28, y: 10, map: 'fisherman_interior'}, name: "Rumah Nelayan", openTime: 600, closeTime: 2100 },
+
+            /* NEW: CANDI KUNO (TAMBAHAN) */
+            /* Posisi: Pojok Kanan Atas (Di atas Dungeon) */
+            { 
+                id: 'candi', 
+                x: 48, 
+                y: 6, 
+                w: 6, 
+                h: 5, 
+                img: 'images/candi.png', 
+                entrance: {x: 51, y: 10, map: 'candi_interior'}, // LINK KE INTERIOR BARU
+                name: "Candi Kuno",
+                open24h: true
+            }
         ],
         npcs: [
             /* UPDATE: MENTOR BUDI DIHAPUS DARI LUAR RUMAH (DEFAULT HIDDEN) */
@@ -5927,8 +6031,9 @@ for(let i=0; i<10; i++) {
             /* UPDATE: DOSEN DIHAPUS DARI LUAR, DIGANTI SARJANA TEKNOLOGI */
             {id: 'sarjana_tekno', x: 43, y: 16, name: 'Senior Teknologi', imgSrc: 'images/sarjanateknologi.png', type: 'service', schedule: 'day', w: 40, h: 60}, 
             
-            /* NEW: SARJANA SEJARAH (DI RERUNTUHAN KIRI) */
-            {id: 'sarjana_sejarah', x: 9, y: 12, name: 'Ahli Sejarah', imgSrc: 'images/sarjanasejarah.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
+            /* NEW: SARJANA SEJARAH (PINDAH KE AREA CANDI) */
+            /* UPDATE: Posisi dipindah ke x:46, y:9 (Sebelah Kiri Candi Kuno) */
+            {id: 'sarjana_sejarah', x: 46, y: 9, name: 'Ahli Sejarah', imgSrc: 'images/sarjanasejarah.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 40, h: 60},
 
             /* NEW: SATPAM KAMPUS (Penjaga Gerbang) */
             /* UPDATE: POSISI DIGESER KE KIRI (38, 16) AGAR TIDAK MENGHALANGI JALAN */
@@ -6000,6 +6105,10 @@ for(let i=0; i<10; i++) {
             /* Menggunakan aset boy/girl biasa tapi nanti dirender lebih kecil */
             {id: 'child_boy_1', x: 36, y: 12, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
             {id: 'child_girl_1', x: 37, y: 13, name: 'Gadis Kecil', imgSrc: 'images/anakkecil2.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
+
+            /* NEW: KAIA (SENIOR PSIKOLOGI - GUIDE ADAPTASI) */
+            /* Posisi: Duduk santai di dekat pohon sakura area kampus (x:34, y:12) */
+            {id: 'senior_kaia', x: 34, y: 12, name: 'Kaia (Senior)', imgSrc: 'images/girl.png', type: 'static', schedule: 'day', w: 40, h: 60},
 
             /* --- RIVAL CINTA (GENDER SPECIFIC & MOVING) --- */
             
@@ -6421,6 +6530,32 @@ for(let i=0; i<10; i++) {
             {x: 6, y: 9, type: 'door_out', icon: '🚪'}
         ]
     },
+    /* NEW: CANDI INTERIOR MAP ADDED */
+    'candi_interior': {
+        w: CANDI_W, h: CANDI_H,
+        tiles: candiTiles,
+        buildings: [
+            { id: 'candi_exit', x: 6, y: 15, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 15}, name: "Keluar Candi" }
+        ],
+        npcs: [], // Suasana hening dan sakral
+        objects: [
+            // ARCA UTAMA (Di Tengah Atas)
+            // Menggunakan gambar statue.png
+            {x: 7, y: 2, w: 2, h: 2, type: 'sign', icon: '🗿', text: "Arca Utama: Memancarkan aura ketenangan masa lalu.", img: 'images/statue.png'},
+            
+            // ARTIFAK KUNO (Kiri & Kanan)
+            {x: 2, y: 4, type: 'shelf', icon: '🏺', text: "Guci Abu: Peninggalan dinasti kuno."},
+            {x: 13, y: 4, type: 'shelf', icon: '📜', text: "Prasasti Batu: Tertulis dalam bahasa Sansekerta."},
+            
+            {x: 2, y: 8, type: 'shelf', icon: '🕯️', text: "Lilin Abadi: Apinya tidak pernah padam."},
+            {x: 13, y: 8, type: 'shelf', icon: '🕯️', text: "Lilin Abadi: Menerangi kegelapan candi."},
+            
+            // Meja Persembahan (Kuno) - Pakai gambar meja modin (altar)
+            {x: 7, y: 5, w: 2, h: 1, type: 'table', icon: '💐', text: "Altar Persembahan", img: 'images/mejamodin.png'},
+
+            {x: 7, y: 15, type: 'door_out', icon: '🚪'}
+        ]
+    },
     'dungeon': {
         w: DUNGEON_W, h: DUNGEON_H,
         tiles: dungeonTiles,
@@ -6545,6 +6680,9 @@ const STATE = {
         comboCount: 0,      // Hitungan combo saat ini (1, 2, 3)
         comboWindow: 0,     // Waktu toleransi untuk lanjut ke combo berikutnya
         
+        // NEW: SPRINT STATE
+        isSprinting: false,
+
         reflections: [], 
         messages: [], 
         ethics: 100,
@@ -7004,8 +7142,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.code] = false);
 
-// --- REVISI TOTAL: TOUCH TO MOVE SYSTEM (INVISIBLE JOYSTICK) ---
-// Menggantikan Joystick Visual dengan sistem sentuh seluruh layar
+// --- REVISI TOTAL: TOUCH TO MOVE SYSTEM (VISUAL FLOATING JOYSTICK) ---
 const inputState = {
     active: false,
     x: 0, // Vektor arah X (-1 s/d 1)
@@ -7014,73 +7151,36 @@ const inputState = {
 
 function initTouchControls() {
     const container = document.getElementById('game-container');
+    const joystickBase = document.getElementById('virtual-joystick-base');
+    const joystickStick = document.getElementById('virtual-joystick-stick');
     
-    // Helper untuk memproses input sentuh/mouse
-    const handleInput = (clientX, clientY) => {
-        // --- FIX: LOGIKA JOYSTICK RELATIF TERHADAP POSISI PEMAIN ---
-        // Masalah lama: Menggunakan tengah layar (window.innerWidth/2) sebagai pivot.
-        // Jika map kecil (Rumah) & kamera mentok, pemain TIDAK di tengah layar.
-        // Akibatnya arah sentuhan jadi kacau (terbalik/stuck).
-        
-        // Solusi: Pivot Joystick = Posisi Visual Pemain di Layar
-        
-        let pivotX, pivotY;
-        
-        // Cek apakah game state sudah siap & player ada
-        if (typeof STATE !== 'undefined' && STATE.player && typeof GAME_WIDTH !== 'undefined') {
-            const scale = canvas.width / GAME_WIDTH;
-            
-            // Posisi Player di Dunia - Posisi Kamera = Posisi Relatif di Canvas (Logical)
-            const relX = STATE.player.x - STATE.camera.x + (STATE.player.w / 2);
-            const relY = STATE.player.y - STATE.camera.y + (STATE.player.h / 2);
-            
-            // Konversi ke Layar Fisik (Pixel)
-            pivotX = relX * scale;
-            pivotY = relY * scale;
-        } else {
-            // Fallback jika belum init (misal di menu awal)
-            pivotX = window.innerWidth / 2;
-            pivotY = window.innerHeight / 2;
-        }
+    // Variabel untuk Floating Joystick
+    let startX = 0;
+    let startY = 0;
+    const maxRadius = 50; // Jarak maksimal stick bisa digeser dari pusat (pixel)
 
-        // Hitung jarak dari sentuhan ke Pivot (Pemain)
-        const dx = clientX - pivotX;
-        const dy = clientY - pivotY;
-
-        // Hitung sudut
-        const angle = Math.atan2(dy, dx);
-        
-        // Deadzone kecil (jarak 20px dari tubuh pemain tidak dianggap gerak)
-        const dist = Math.hypot(dx, dy);
-        if(dist < 20) {
-            inputState.active = false;
-            inputState.x = 0;
-            inputState.y = 0;
-            return;
-        }
-
-        // Set vektor gerakan berdasarkan sudut
-        inputState.active = true;
-        inputState.x = Math.cos(angle);
-        inputState.y = Math.sin(angle);
+    // Helper untuk reset joystick UI
+    const hideJoystick = () => {
+        if(joystickBase) joystickBase.style.display = 'none';
+        inputState.active = false;
+        inputState.x = 0;
+        inputState.y = 0;
     };
 
     // 1. TOUCH EVENTS (HP/Tablet/IFP)
     container.addEventListener('touchstart', (e) => {
         // Cek apakah yang disentuh adalah elemen UI (Tombol)?
-        // Jika ya, jangan gerakkan karakter.
         if (e.target.closest('.action-btns') || 
             e.target.closest('.hud-top') || 
             e.target.id === 'hud-toggle-btn' || 
             e.target.closest('.minigame-overlay') ||
-            /* FIX UTAMA: PENGECUALIAN UNTUK DIALOG, INVENTORY, LOGIN & INPUT FORM */
             e.target.closest('#dialogue-wrapper') || 
             e.target.closest('#inventory-screen') || 
             e.target.closest('#login-screen') ||
-            e.target.closest('#gender-screen') || /* UPDATE: TAMBAHKAN GENDER SCREEN KE DAFTAR PENGECUALIAN */
-            e.target.closest('#game-over-screen') || /* UPDATE: TAMBAHKAN GAME OVER SCREEN JUGA */
-            e.target.closest('#audio-prompt') || /* UPDATE: TAMBAHKAN AUDIO PROMPT */
-            e.target.closest('#teacher-dashboard') || /* FIX: TAMBAHKAN DASHBOARD GURU AGAR BISA SCROLL */
+            e.target.closest('#gender-screen') || 
+            e.target.closest('#game-over-screen') || 
+            e.target.closest('#audio-prompt') || 
+            e.target.closest('#teacher-dashboard') || 
             e.target.tagName === 'INPUT' ||
             e.target.tagName === 'SELECT' ||
             e.target.tagName === 'TEXTAREA' ||
@@ -7088,48 +7188,119 @@ function initTouchControls() {
             return; 
         }
         
-        e.preventDefault(); // Mencegah scroll/zoom
+        e.preventDefault(); 
         const touch = e.touches[0];
-        handleInput(touch.clientX, touch.clientY);
+        
+        // --- FLOATING JOYSTICK LOGIC ---
+        // 1. Set Pusat Joystick di posisi sentuhan awal
+        startX = touch.clientX;
+        startY = touch.clientY;
+        
+        // 2. Tampilkan Visual Joystick di posisi tersebut
+        if(joystickBase) {
+            joystickBase.style.display = 'block';
+            joystickBase.style.left = startX + 'px';
+            joystickBase.style.top = startY + 'px';
+            // Reset stick ke tengah
+            joystickStick.style.transform = `translate(-50%, -50%)`; 
+        }
+        
+        inputState.active = true;
+        // Awal sentuh belum ada gerakan (0,0)
+        inputState.x = 0;
+        inputState.y = 0;
+
     }, {passive: false});
 
     container.addEventListener('touchmove', (e) => {
-        if (!inputState.active) return; // Jika start-nya di tombol, abaikan move
+        if (!inputState.active) return; 
         e.preventDefault();
         const touch = e.touches[0];
-        handleInput(touch.clientX, touch.clientY);
+        
+        // 1. Hitung Delta (Jarak dari pusat awal ke posisi jari sekarang)
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        
+        // 2. Hitung Jarak & Sudut
+        const distance = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx);
+        
+        // 3. Batasi Gerakan Visual Stick (Clamping)
+        const clampDist = Math.min(distance, maxRadius);
+        const stickX = Math.cos(angle) * clampDist;
+        const stickY = Math.sin(angle) * clampDist;
+        
+        // Update Visual Stick
+        if(joystickStick) {
+            joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+        }
+
+        // 4. Update Input State (Normalized Vector)
+        // Deadzone kecil (10px) agar karakter tidak gerak sendiri kalau jari goyang dikit
+        if (distance > 10) {
+            inputState.x = Math.cos(angle);
+            inputState.y = Math.sin(angle);
+        } else {
+            inputState.x = 0;
+            inputState.y = 0;
+        }
+
     }, {passive: false});
 
     const endTouch = (e) => {
-        inputState.active = false;
-        inputState.x = 0;
-        inputState.y = 0;
+        hideJoystick();
     };
 
     container.addEventListener('touchend', endTouch);
     container.addEventListener('touchcancel', endTouch);
 
-    // 2. MOUSE EVENTS (Laptop Touchscreen / Click-to-Move di Desktop)
-    // Opsional: Jika ingin bisa klik tahan mouse untuk jalan (seperti Diablo/MOBA)
+    // 2. MOUSE EVENTS (Untuk Testing di PC / Laptop Touchscreen)
     let isMouseDown = false;
 
     container.addEventListener('mousedown', (e) => {
         if (e.target.closest('.action-btns') || e.target.closest('.hud-top')) return;
+        
         isMouseDown = true;
-        handleInput(e.clientX, e.clientY);
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        if(joystickBase) {
+            joystickBase.style.display = 'block';
+            joystickBase.style.left = startX + 'px';
+            joystickBase.style.top = startY + 'px';
+            joystickStick.style.transform = `translate(-50%, -50%)`;
+        }
+        
+        inputState.active = true;
+        inputState.x = 0;
+        inputState.y = 0;
     });
 
     window.addEventListener('mousemove', (e) => {
-        if (isMouseDown) {
-            handleInput(e.clientX, e.clientY);
+        if (!isMouseDown) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const distance = Math.hypot(dx, dy);
+        const angle = Math.atan2(dy, dx);
+        
+        const clampDist = Math.min(distance, maxRadius);
+        const stickX = Math.cos(angle) * clampDist;
+        const stickY = Math.sin(angle) * clampDist;
+        
+        if(joystickStick) {
+            joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+        }
+
+        if (distance > 5) {
+            inputState.x = Math.cos(angle);
+            inputState.y = Math.sin(angle);
         }
     });
 
     window.addEventListener('mouseup', () => {
         isMouseDown = false;
-        inputState.active = false;
-        inputState.x = 0;
-        inputState.y = 0;
+        hideJoystick();
     });
 }
 
@@ -7138,6 +7309,7 @@ initTouchControls();
 
 // FIX: Pastikan tombol aksi tidak memicu gerakan
 const btnAction = document.getElementById('btn-action');
+const btnSprint = document.getElementById('btn-sprint'); // NEW
 const uiButtons = document.querySelectorAll('.action-btns div, button');
 
 uiButtons.forEach(btn => {
@@ -7145,6 +7317,29 @@ uiButtons.forEach(btn => {
     btn.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
     btn.addEventListener('mousedown', (e) => e.stopPropagation());
 });
+
+// --- NEW: SPRINT BUTTON LISTENERS ---
+const startSprint = (e) => {
+    e.preventDefault(); 
+    e.stopPropagation();
+    STATE.player.isSprinting = true;
+};
+const endSprint = (e) => {
+    e.preventDefault(); 
+    e.stopPropagation();
+    STATE.player.isSprinting = false;
+};
+
+// Touch Events
+if(btnSprint) {
+    btnSprint.addEventListener('touchstart', startSprint, {passive: false});
+    btnSprint.addEventListener('touchend', endSprint, {passive: false});
+    btnSprint.addEventListener('touchcancel', endSprint, {passive: false});
+    // Mouse Events (PC)
+    btnSprint.addEventListener('mousedown', (e) => { e.stopPropagation(); STATE.player.isSprinting = true; });
+    btnSprint.addEventListener('mouseup', (e) => { e.stopPropagation(); STATE.player.isSprinting = false; });
+    btnSprint.addEventListener('mouseleave', () => { STATE.player.isSprinting = false; });
+}
 
 btnAction.addEventListener('touchstart', (e)=>{
     e.preventDefault(); 
@@ -9564,11 +9759,37 @@ function update() {
         if (dx!==0 && dy!==0) { dx*=0.707; dy*=0.707; }
     }
     
+    // --- NEW: LOGIKA SPRINT (KECEPATAN) ---
+    let currentSpeed = STATE.player.speed;
+    
+    if (STATE.player.isSprinting) {
+        currentSpeed *= 1.8; // Kecepatan meningkat 1.8x
+        
+        // Efek visual: Partikel debu saat lari (hanya jika bergerak)
+        if ((dx !== 0 || dy !== 0)) {
+            // Chance spawn lebih sering (30%) untuk efek jejak yang mulus
+            if (Math.random() < 0.3) {
+                STATE.particles.push({
+                    x: STATE.player.x + 10 + (Math.random() * 14 - 7), // Random di sekitar kaki
+                    y: STATE.player.y + 20, // Tepat di bawah kaki
+                    vx: (Math.random() - 0.5) * 1, // Menyebar kiri-kanan pelan
+                    vy: (Math.random() * -0.5) - 0.2, // Naik sedikit (menguap)
+                    life: 20 + Math.random() * 10, // Umur variatif
+                    color: '#e5e7eb', // Abu-abu muda (Debu/Asap)
+                    type: 'dust', // Tipe khusus
+                    size: 3 + Math.random() * 3 // Ukuran acak
+                });
+            }
+        }
+    }
+
     // --- NEW: SISTEM KELELAHAN BERJALAN (Walking Fatigue) ---
     // Jika pemain bergerak
     if (dx !== 0 || dy !== 0) {
         // Tambahkan counter langkah
-        STATE.player.stepsTaken = (STATE.player.stepsTaken || 0) + 1;
+        // UPDATE: Jika Sprint, langkah dihitung lebih cepat (lebih cepat lelah sedikit)
+        const stepCost = STATE.player.isSprinting ? 2 : 1;
+        STATE.player.stepsTaken = (STATE.player.stepsTaken || 0) + stepCost;
         
         // Setiap 300 frame gerakan (sekitar 5 detik jalan terus menerus), kurangi 1 Energi
         if (STATE.player.stepsTaken > 300) {
@@ -9587,8 +9808,8 @@ function update() {
         }
     }
 
-    const nextX = STATE.player.x + dx * STATE.player.speed;
-    const nextY = STATE.player.y + dy * STATE.player.speed;
+    const nextX = STATE.player.x + dx * currentSpeed; // UPDATE: Gunakan currentSpeed
+    const nextY = STATE.player.y + dy * currentSpeed; // UPDATE: Gunakan currentSpeed
 
     // --- CHECK ALL COLLISIONS ---
     const wallX = checkWall(nextX, STATE.player.y);
@@ -9968,7 +10189,8 @@ function checkAutoTeleport() {
                     'clinic', 'clinic_exit',         // Klinik
                     'wedding', 'wedding_exit',       // Balai Nikah
                     'lover1_home', 'lover1_exit',    // Rumah Ayu
-                    'fisherman_home', 'fisherman_exit' // Rumah Nelayan
+                    'fisherman_home', 'fisherman_exit', // Rumah Nelayan
+                    'candi', 'candi_exit'            // Candi Kuno
                 ];
                 
                 if (autoTeleporters.includes(b.id)) {
@@ -10223,6 +10445,21 @@ function processTeleport(b) {
         STATE.player.y = 11 * TILE_SIZE; 
         clearSpawnZone('village', 28, 11);
         showToast("Keluar Rumah Nelayan");
+    }
+
+    // --- CANDI KUNO ---
+    else if(b.id === 'candi') {
+        STATE.location = 'candi_interior';
+        STATE.player.x = 7 * TILE_SIZE; 
+        STATE.player.y = 13 * TILE_SIZE;
+        showToast("Masuk Candi Kuno 🗿");
+    }
+    else if(b.id === 'candi_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 51 * TILE_SIZE; 
+        STATE.player.y = 11 * TILE_SIZE;
+        clearSpawnZone('village', 51, 11);
+        showToast("Keluar Candi");
     }
 
     // --- BALAI PERNIKAHAN ---
@@ -11661,6 +11898,65 @@ function interactNPC(npc) {
             }},
             {text: "Dah Kak", action: closeDialogue}
         ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI KAIA (SENIOR PSIKOLOGI - ADAPTASI SOSIAL) ---
+    else if(npc.id === 'senior_kaia') {
+        const p = STATE.player;
+        const rel = p.relationships[npc.id] || 0;
+        
+        // FASE 1: ANAK BARU (Relationship 0-20) - Pengenalan & Culture Shock
+        if (rel < 20) {
+            showDialogue(npc.name, "Hai, kamu siswi baru itu kan? Kelihatan banget dari cara jalanmu yang masih bingung. \nSini duduk, jangan tegang gitu. Adaptasi di Pulau Arsa itu emang *tricky*.", [
+                {text: "Warga sini kok dingin ya?", action: () => {
+                    showDialogue(npc.name, "Nah, itu dia! Warga sini punya **'Trust Issue'**. \nSecara psikologis, mereka gak benci kamu, mereka cuma *defensive*. \n\nTips pertama: **Jangan Baper**. Tetap sapa mereka walau dicuekin. Itu namanya *Exposure Effect*. Makin sering mereka liat mukamu, makin luluh tembok mereka.", 
+                    [{text: "Ooh gitu... makasih Kak!", action: () => {
+                        updateRelationship(npc, 5, "Mentor");
+                        closeDialogue();
+                    }}], npc.imgSrc);
+                }},
+                {text: "Cara biar cepat akrab?", action: () => {
+                    showDialogue(npc.name, "Rumus sosial di sini simpel: **Sapa + Bantu + Hadiah**. \nJangan cuma lewat doang. Interaksi itu mata uang sosial. \n\nCoba deh mulai dari hal kecil kayak ngasih Bunga liar ke Gadis Desa. Itu *gesture* kecil tapi *impact*-nya gede.", 
+                    [{text: "Siap dicoba!", action: closeDialogue}], npc.imgSrc);
+                }},
+                {text: "Dah Kak", action: closeDialogue}
+            ], npc.imgSrc);
+        }
+        
+        // FASE 2: MULAI BERGAUL (Relationship 20-60) - Tips Spesifik & Love Language
+        else if (rel < 60) {
+            showDialogue(npc.name, "Hei! Kulihat kamu mulai luwes ya keliling desa. Gimana progresnya?", [
+                {text: "Ada yang suka, ada yang enggak...", action: () => {
+                    showDialogue(npc.name, "Wajar! Tiap orang punya **'Bahasa Cinta'** beda-beda. \n\nContoh: Si Matre itu tipe *Receiving Gifts* (harus barang mahal). Tapi kalau Pak Nelayan atau Satria, mereka tipe *Acts of Service* (suka kalau kamu rajin kerja/kuat). \n\nKenali pola mereka, jangan pukul rata semua dikasih Bunga.", 
+                    [{text: "Wah, analisis mantap!", action: () => {
+                        updateRelationship(npc, 2, "Mentor");
+                        closeDialogue();
+                    }}], npc.imgSrc);
+                }},
+                {text: "Aku capek basa-basi...", action: () => {
+                    showDialogue(npc.name, "Itu namanya *Social Fatigue*. Istirahat dulu gih di kasur. \nIngat, energi sosial kamu (Energy Bar) itu terbatas. \nJangan paksain *People Pleasing* ke semua orang dalam satu hari. Fokus ke 1-2 orang dulu aja.", 
+                    [{text: "Bener juga...", action: closeDialogue}], npc.imgSrc);
+                }}
+            ], npc.imgSrc);
+        }
+        
+        // FASE 3: DITERIMA MASYARAKAT (Relationship > 60) - Analisis Perubahan & Validasi
+        else {
+            showDialogue(npc.name, `Wah, aura kamu beda banget sekarang! Lebih percaya diri. \nKamu sadar gak sih perubahan sikap warga ke kamu?`, [
+                {text: "Mereka jadi lebih ramah...", action: () => {
+                    showDialogue(npc.name, "Itu fase **'Social Acceptance'**. \nDulu mereka liat kamu sebagai *Outsider* (Orang Asing), sekarang kamu udah jadi *Insider* (Keluarga). \n\nLiat deh, mata mereka kalau ngomong sekarang natap kamu, bukan buang muka. Senyum mereka tulus, bukan sopan santun doang. \nSelamat ya, kamu berhasil menaklukkan hati Pulau Arsa! ❤️", 
+                    [{text: "Berkat tips Kakak juga!", action: () => {
+                        updateRelationship(npc, 2, "Bestie");
+                        createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                        closeDialogue();
+                    }}], npc.imgSrc);
+                }},
+                {text: "Tips terakhir dong Kak", action: () => {
+                    showDialogue(npc.name, "Sekarang, tinggal maintain aja. Hubungan itu kayak tanaman, harus disiram terus. \n\nOiya, hati-hati sama **Toxic Relationship**. Kalau ada NPC yang cuma manfaatin duit kamu (ehem... si Matre), mending *Cut Off* aja. Kesehatan mentalmu lebih penting!", 
+                    [{text: "Siap laksanakan!", action: closeDialogue}], npc.imgSrc);
+                }}
+            ], npc.imgSrc);
+        }
     }
 
     // --- NEW: INTERAKSI SARJANA SEJARAH (DI RERUNTUHAN) ---
@@ -14057,11 +14353,13 @@ function draw() {
                 // DRAW TILE BASE
                 ctx.fillStyle = c;
                 
-                // Handle Dungeon Floor (ID 4) Image
-                if (t === 4 && STATE.location === 'dungeon') {
+                // Handle Dungeon/Candi Floor (ID 4)
+                // UPDATE: Menggunakan tekstur lantai dungeon untuk Candi juga agar terlihat kuno/batu
+                if (t === 4 && (STATE.location === 'dungeon' || STATE.location === 'candi_interior')) {
                     if(dungeonAssets.floor.complete && dungeonAssets.floor.naturalWidth !== 0) {
                         ctx.drawImage(dungeonAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
+                        ctx.fillStyle = '#3f3f46'; // Fallback Stone Color
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
@@ -14160,8 +14458,9 @@ function draw() {
                     }
                 }
 
-                // Handle Dungeon Wall (ID 2 in Dungeon)
-                else if (t === 2 && STATE.location === 'dungeon') {
+                // Handle Dungeon/Candi Wall (ID 2)
+                // UPDATE: Menggunakan tekstur tembok dungeon untuk Candi juga
+                else if (t === 2 && (STATE.location === 'dungeon' || STATE.location === 'candi_interior')) {
                     // PERBAIKAN: Gambar Lantai DULU di bawah Tembok agar batu terlihat 'nempel' di lantai, tidak bolong
                     if(dungeonAssets.floor.complete && dungeonAssets.floor.naturalWidth !== 0) {
                         ctx.drawImage(dungeonAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -14681,6 +14980,22 @@ function draw() {
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText("...", 0, -2); // Sedikit naik agar pas di tengah
+            
+            ctx.restore();
+        }
+        // --- NEW: RENDER DUST PARTICLE (JEJAK LARI) ---
+        else if (p.type === 'dust') {
+            ctx.save();
+            ctx.fillStyle = p.color;
+            // Efek Fade Out: Transparansi berkurang seiring sisa umur (life)
+            ctx.globalAlpha = Math.max(0, p.life / 30); 
+            
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); // Lingkaran debu
+            ctx.fill();
+            
+            // Efek Shrink: Mengecil perlahan
+            if(p.size > 0.5) p.size *= 0.95;
             
             ctx.restore();
         }
@@ -16087,6 +16402,7 @@ function drawMinimap() {
             else if(STATE.location === 'school_interior') locName = "KAMPUS";
             else if(STATE.location === 'library_interior') locName = "PERPUS"; // NEW
             else if(STATE.location === 'guild_interior') locName = "GUILD"; // NEW
+            else if(STATE.location === 'candi_interior') locName = "CANDI"; // NEW: Label Candi
             labelEl.innerText = locName;
         }
     }
