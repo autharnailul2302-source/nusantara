@@ -6108,7 +6108,7 @@ for(let i=0; i<10; i++) {
 
             /* NEW: KAIA (SENIOR PSIKOLOGI - GUIDE ADAPTASI) */
             /* Posisi: Duduk santai di dekat pohon sakura area kampus (x:34, y:12) */
-            {id: 'senior_kaia', x: 34, y: 12, name: 'Kaia (Senior)', imgSrc: 'images/girl.png', type: 'static', schedule: 'day', w: 40, h: 60},
+            {id: 'senior_kaia', x: 34, y: 12, name: 'Kaia (Senior)', imgSrc: 'images/kaia.png', type: 'static', schedule: 'day', w: 40, h: 60},
 
             /* --- RIVAL CINTA (GENDER SPECIFIC & MOVING) --- */
             
@@ -8090,11 +8090,19 @@ function setRole(role) {
     else if(role === 'family') { 
         STATE.player.reputation += 20;
         
+        // NEW: BERIKAN CINCIN KAYU SEBAGAI MODAL AWAL
+        if(!STATE.player.inventory['cincin_kayu']) STATE.player.inventory['cincin_kayu'] = 0;
+        STATE.player.inventory['cincin_kayu']++;
+
+        // NEW: BERIKAN PAKAIAN NIKAH JUGA
+        if(!STATE.player.inventory['pakaian_nikah']) STATE.player.inventory['pakaian_nikah'] = 0;
+        STATE.player.inventory['pakaian_nikah']++;
+        
         // FIX: PAKSA SIMPAN DATA
         manualSave();
 
         showDialogue("MENTOR BUDI", 
-            "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nNamun, niat saja tidak cukup. Kamu harus meresmikannya.\n\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). Temui **Bapak Penghulu (Modin)** untuk mendaftarkan niat sucimu.", 
+            "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nSebagai bekal awal, saya berikan **Cincin Kayu** dan **Baju Pengantin** ini. Gunakan untuk melamar pasanganmu nanti.\n\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). Temui **Bapak Penghulu (Modin)** untuk mendaftarkan niat sucimu.", 
             [{
                 text: "Siap, Otw Halal!", 
                 action: () => {
@@ -8108,7 +8116,7 @@ function setRole(role) {
                     STATE.isPrologue = false; 
                     updateHUDInfo();
                     closeDialogue();
-                    showToast("Misi Baru: Temui Modin di Balai Nikah 💍");
+                    showToast("Dapat Cincin & Baju Pengantin 👘");
 
                     manualSave();
                     setTimeout(() => showDailyQuestPopup(), 500);
@@ -8342,11 +8350,15 @@ function finishManagerExam() {
         STATE.player.bossReputation += 10; // Bonus Reputasi Besar
         STATE.player.biz += 5; // Bonus Skill Bisnis
         
+        // --- NEW: BERIKAN SERTIFIKAT PROFESI ---
+        addItem('sertifikat_manajer', 1);
+        showToast("🎓 DITEMUKAN: Sertifikat Profesi Manajer!");
+        
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
         createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
         
         showDialogue("HASIL UJIAN: LULUS!", 
-            `Skor: ${currentManagerTest.score}/5.\n\nSelamat! Pengetahuanmu tentang manajemen dan etika sudah mumpuni.\n\nSaya dengan bangga mengangkatmu menjadi **MANAJER CABANG**!`, 
+            `Skor: ${currentManagerTest.score}/5.\n\nSelamat! Pengetahuanmu tentang manajemen dan etika sudah mumpuni.\n\nSaya dengan bangga menyerahkan **Sertifikat Profesi** ini dan mengangkatmu menjadi **MANAJER CABANG**!`, 
             [{text: "Terima kasih Bos!", action: () => {
                 closeDialogue();
                 showToast("NAIK PANGKAT: MANAJER! 📈");
@@ -8901,7 +8913,7 @@ function finishDefense() {
         if (currentDefense.score === 5) reaction += "\n(Nilai Sempurna! Dosen terkesan!)";
 
         showDialogue("DOSEN PEMBIMBING", reaction, [{
-            text: "Alhamdulillah! (Terima Jilid Tesis)", 
+            text: "Alhamdulillah! (Terima Ijazah & Gelar)", 
             action: () => {
                 // CONSUME DRAFT
                 if(STATE.player.inventory['draft_proposal'] > 0) {
@@ -8910,17 +8922,25 @@ function finishDefense() {
                 }
 
                 // BERI HADIAH KELULUSAN
-                addItem('buku_tesis', 1); 
+                addItem('buku_tesis', 1); // Simpan Tesis sebagai kenang-kenangan
+                
+                // NEW: BERIKAN IJAZAH SESUAI JURUSAN
+                if (currentDefense.major === 'teknologi') {
+                    addItem('ijazah_teknologi', 1);
+                    showToast("🎓 DITEMUKAN: Ijazah Sarjana Komputer (S.Kom)!");
+                } else {
+                    addItem('ijazah_sejarah', 1);
+                    showToast("🎓 DITEMUKAN: Ijazah Sarjana Humaniora (S.Hum)!");
+                }
+
                 STATE.player.reputation += 50; // Reputasi naik drastis
                 STATE.player.money += 5000; // Hadiah kelulusan dari kampus/ortu
                 gainExp(5000); // Big Exp
                 
-                showToast("🎓 LULUS SIDANG! Mendapatkan Buku Tesis.");
-                createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
-                
                 // Achievement Sound
                 if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
                 
+                createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
                 closeDialogue();
             }
         }], 'images/lecture.png');
@@ -9332,16 +9352,23 @@ function update() {
             else if (currentLvl === 3) dailyWage = 12000; // Kepala Gudang
             else if (currentLvl === 4) dailyWage = 25000; // Manajer Cabang
 
+            // --- NEW: BONUS CINCIN RAJA (PASIF GOLD++) ---
+            let bonusMsg = "";
+            if ((STATE.player.inventory['cincin_legend'] || 0) > 0) {
+                dailyWage = Math.floor(dailyWage * 1.5); // +50% Gaji
+                bonusMsg = " 💍"; // Indikator Bonus
+            }
+
             STATE.player.money += dailyWage;
             STATE.player.energy -= 30; 
             
             if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Gaji
 
             if(STATE.time > 1630) {
-                showToast(`Shift Selesai. Gaji: ${dailyWage.toLocaleString()} G`);
+                showToast(`Shift Selesai. Gaji: ${dailyWage.toLocaleString()} G${bonusMsg}`);
             } else {
                 STATE.player.bossReputation += 1;
-                showToast(`Kerja Bagus! (+${dailyWage.toLocaleString()} G, Rep +1)`);
+                showToast(`Kerja Bagus! (+${dailyWage.toLocaleString()} G${bonusMsg}, Rep +1)`);
             }
         }
     }
@@ -11838,10 +11865,54 @@ function interactNPC(npc) {
                                 if(!STATE.player.inventory['cincin_kayu']) STATE.player.inventory['cincin_kayu'] = 0;
                                 STATE.player.inventory['cincin_kayu']++;
 
+                                // --- NEW: UBAH SPRITE PLAYER JADI PENGANTIN ---
+                                const pGender = STATE.player.gender;
+                                // Ganti source gambar sprite player saat ini ke versi wedding
+                                // Format: images/boy-idle-weding.png, images/girl-walk-weding.png, dst.
+                                if (STATE.player.spriteIdle) STATE.player.spriteIdle.src = `images/${pGender}-idle-weding.png`;
+                                if (STATE.player.spriteWalk) STATE.player.spriteWalk.src = `images/${pGender}-walk-weding.png`;
+                                if (STATE.player.spriteWalkUp) STATE.player.spriteWalkUp.src = `images/${pGender}-atas-weding.png`;
+                                if (STATE.player.spriteWalkDown) STATE.player.spriteWalkDown.src = `images/${pGender}-bawah-weding.png`;
+                                
+                                // Fallback: Jika gambar wedding tidak ditemukan, kembalikan ke default agar tidak hilang
+                                if (STATE.player.spriteIdle) {
+                                    STATE.player.spriteIdle.onerror = function() { 
+                                        this.src = `images/${pGender}-idle.png`; 
+                                        console.warn("Gambar wedding player tidak ditemukan, kembali ke default.");
+                                    };
+                                }
+
+                                // --- NEW: SPAWN PASANGAN DI WEDDING HALL (VISUAL LANGSUNG) ---
+                                const weddingImages = {
+                                    'lover1girl': 'images/lover1girlweding.png',
+                                    'lover2girl': 'images/lover2girlweding.png',
+                                    'lover1boy': 'images/lover1boyweding.png',
+                                    'lover2boy': 'images/lover2boyweding.png'
+                                };
+                                const weddingImg = weddingImages[targetId] || 'images/lover1girlweding.png'; // Fallback
+
+                                const wMap = maps['wedding_interior'];
+                                if (wMap) {
+                                    // Bersihkan NPC lover lain jika ada (agar tidak tumpuk)
+                                    wMap.npcs = wMap.npcs.filter(n => !n.id.startsWith('lover'));
+                                    
+                                    // Munculkan Calon Pasangan di sebelah kanan altar
+                                    wMap.npcs.push({
+                                        id: targetId,
+                                        x: 8.5, y: 3, // Posisi di sebelah kanan altar/penghulu
+                                        name: targetName + " (Calon)",
+                                        imgSrc: weddingImg, // Menggunakan baju pengantin
+                                        type: 'static',
+                                        schedule: 'always',
+                                        w: 40, h: 60
+                                    });
+                                }
+                                // -------------------------------------------------------------
+
                                 showToast(`Target Terkunci: ${targetName} ❤️`);
                                 createParticle(STATE.player.x, STATE.player.y, '#ec4899');
                                 
-                                showDialogue(npc.name, `Baiklah! Niatmu untuk menikahi **${targetName}** telah dicatat.\n\nSaya berikan **Cincin Kayu** ini sebagai modal awal. Dekati dia, beri perhatian, dan jika hatinya sudah luluh, datanglah lagi ke sini untuk akad nikah!\n\n(Hubunganmu dengan ${targetName} meningkat pesat!)`, 
+                                showDialogue(npc.name, `Baiklah! Niatmu untuk menikahi **${targetName}** telah dicatat.\n\nLihatlah, dia sudah hadir di sini karena ikatan batin kalian.\n\nSaya berikan **Cincin Kayu** ini sebagai modal awal. Dekati dia, beri perhatian, dan jika hatinya sudah luluh, datanglah lagi ke sini untuk akad nikah!`, 
                                     [{text: "Siap Pak Penghulu!", action: closeDialogue}], 
                                     npc.imgSrc
                                 );
@@ -12997,12 +13068,9 @@ function executeTrade(id, price, qty, type, npc) {
     showCommodityAction(COMMODITIES.find(c=>c.id===id), price, npc);
 }
 
-function giveGift(npc, item, value) {
-    STATE.player.inventory[item]--;
-    STATE.player.relationships[npc.id] += value;
-    showToast(`Memberi ${item}! Hati ++`);
-    showDialogue(npc.name, "Wah! Terima kasih banyak! Aku suka ini.", [{text:"Sama-sama", action:closeDialogue}], npc.imgSrc);
-}
+// --- FIX: MENGHAPUS FUNGSI DUPLIKAT YANG MENYEBABKAN ERROR REPUTASI ---
+// Fungsi giveGift(npc, item, value) di bawah ini telah dihapus karena menimpa logika giveGift utama.
+// Sistem sekarang akan menggunakan fungsi giveGift(npc, item) yang memiliki database likes/dislikes di atas.
 
 // --- NEW FUNCTION: GENERATE PLAIN TEXT MISSION LIST ---
 function getMissionBoardText() {
@@ -15935,6 +16003,13 @@ function renderInventory() {
 
     // DATABASE ITEM UPDATE: Tambahkan Item Dungeon & Legendary & Consumables
     const ITEM_DB = {
+        // --- NEW: ITEM IJAZAH SARJANA ---
+        'ijazah_teknologi': { name: 'Ijazah S.Kom', icon: '🎓', desc: 'Bukti kelulusan Sarjana Teknologi.', img: 'images/ijazah-teknologi.png' },
+        'ijazah_sejarah': { name: 'Ijazah S.Hum', icon: '📜', desc: 'Bukti kelulusan Sarjana Sejarah.', img: 'images/ijazah-sejarah.png' },
+        
+        // --- NEW: ITEM SERTIFIKAT PEKERJA ---
+        'sertifikat_manajer': { name: 'Sertifikat Profesi', icon: '👔', desc: 'Sertifikat Kompetensi Manajer Profesional (BNSP).', img: 'images/sertifikat-manajer.png' },
+
         // --- UPDATE: IKAN-IKAN BARU ---
         'ikan_kecil': { name: 'Ikan Kecil', img: 'images/ikankecil.png', type: 'consumable', action: 'eat_fish_small', desc: 'Makan: +10 Energi. Ikan mungil biasa.' },
         'ikan_sedang': { name: 'Ikan Sedang', img: 'images/ikansedang.png', type: 'consumable', action: 'eat_fish_medium', desc: 'Makan: +25 Energi. Lumayan mengenyangkan.' },
@@ -15958,6 +16033,11 @@ function renderInventory() {
         'zirah_legend': { name: 'Zirah Abadi', icon: '🛡️', desc: 'Armor Legendaris (Pasif: Def++).' },
         'cincin_legend': { name: 'Cincin Raja', icon: '💍', desc: 'Cincin Legendaris (Pasif: Gold++).' },
         
+        // NEW: ITEM CINCIN KAYU (ROLE FAMILY)
+        'cincin_kayu': { name: 'Cincin Kayu', icon: '💍', desc: 'Cincin sederhana untuk melamar pasangan.' },
+        // NEW: ITEM PAKAIAN NIKAH (ROLE FAMILY)
+        'pakaian_nikah': { name: 'Baju Pengantin', icon: '👘', desc: 'Busana sakral untuk akad nikah.' },
+
         // Consumables (Bisa Dipakai)
         'tonic_stamina': { name: 'Tonic Stamina', icon: '⚡🧪', type: 'consumable', action: 'useStamina', desc: 'Pulihkan 100% Energi.' },
         'tonic_kebal': { name: 'Tonic Kebal', icon: '🛡️🧪', type: 'consumable', action: 'useImmune', desc: 'Kebal serangan 10 detik.' },
@@ -16109,6 +16189,13 @@ function handleEnemyDrop(en) {
     // 1. Reward Dasar
     let gold = 2500;
     let exp = 20;
+
+    // --- NEW: BONUS CINCIN RAJA (PASIF GOLD++) ---
+    let ringBonusText = "";
+    if ((STATE.player.inventory['cincin_legend'] || 0) > 0) {
+        gold = Math.floor(gold * 1.5); // +50% Gold dari Monster
+        ringBonusText = " 💍";
+    }
     
     // FIX: TAMBAHKAN REWARD KE STATUS PLAYER
     STATE.player.money += gold;
@@ -16215,10 +16302,10 @@ function handleEnemyDrop(en) {
     }
 
     // 3. Feedback Visual & Audio (Disatukan disini)
-    showToast(`+${gold.toLocaleString()} G${dropText}`);
+    showToast(`+${gold.toLocaleString()} G${dropText}${ringBonusText}`);
     
     // NEW: Floating Text Indikator di posisi monster
-    spawnFloatingText(en.x, en.y, `+${gold} G`, '#fbbf24', 12);
+    spawnFloatingText(en.x, en.y, `+${gold} G${ringBonusText}`, '#fbbf24', 12);
     if(floatedItem) {
         spawnFloatingText(en.x, en.y - 15, `+ ${floatedItem}`, '#4ade80', 12);
     }
