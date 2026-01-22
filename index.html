@@ -3666,8 +3666,23 @@ function getQuestContent(tabType) {
 async function preloadAllGameAssets() {
     const imagesToLoad = [];
     
-    // 1. Kumpulkan semua gambar dari Peta (Bangunan, NPC, Objek)
-    // Kita iterasi semua map yang ada di variabel 'maps'
+    // 1. Kumpulkan URL dari Aset Global (Variable Global)
+    // Helper untuk mengambil src dari objek aset
+    const collectGlobal = (collection) => {
+        Object.values(collection).forEach(img => {
+            if (img && img.src) imagesToLoad.push({ src: img.src }); // Hanya butuh src untuk cache browser
+        });
+    };
+
+    collectGlobal(treeAssets);
+    collectGlobal(bagAssets);
+    collectGlobal(bgSeasons);
+    collectGlobal(houseBgAssets);
+    collectGlobal(dungeonAssets);
+    collectGlobal(wallAssets);
+    collectGlobal(grassAssets);
+
+    // 2. Kumpulkan semua gambar dari Peta (Bangunan, NPC, Objek)
     for (const [mapName, mapData] of Object.entries(maps)) {
         // Buildings
         if (mapData.buildings) {
@@ -3689,25 +3704,44 @@ async function preloadAllGameAssets() {
         }
     }
 
-    // 2. Tambahkan Aset Player (Gender) & UI Penting
-    imagesToLoad.push({ src: 'images/boy.png' });
-    imagesToLoad.push({ src: 'images/girl.png' });
-    imagesToLoad.push({ src: 'images/boy-walk.png' });
-    imagesToLoad.push({ src: 'images/girl-walk.png' });
-    imagesToLoad.push({ src: 'images/boy-idle.png' });
-    imagesToLoad.push({ src: 'images/girl-idle.png' });
-    imagesToLoad.push({ src: 'images/tas-isi.png' });
+    // 3. Tambahkan Aset Player (Gender & Kostum) & UI Penting SECARA MANUAL
+    // Agar tidak blank saat ganti baju atau pertama login
+    const manualAssets = [
+        // UI & Backgrounds
+        'images/bg.png', 'images/landinggame.png', 'images/lobby.png', 'images/leaderboard.png',
+        'images/tas-isi.png', 'images/tas-kosong.png', 'images/quest-scroll.png',
+        'images/logosmk.png', 'images/loganailul.png', 'images/logotkj.png',
+        
+        // Player Boy
+        'images/boy.png', 'images/boy-idle.png', 'images/boy-walk.png', 
+        'images/boy-atas.png', 'images/boy-bawah.png', 'images/boy-pukul.png',
+        'images/boy-idle-weding.png', 'images/boy-walk-weding.png',
+        
+        // Player Girl
+        'images/girl.png', 'images/girl-idle.png', 'images/girl-walk.png', 
+        'images/girl-atas.png', 'images/girl-bawah.png', 'images/girl-pukul.png',
+        'images/girl-idle-weding.png', 'images/girl-walk-weding.png',
+        
+        // Item Icons (Penting)
+        'images/ikankecil.png', 'images/ikansedang.png', 'images/ikanbesar.png', 'images/ikanlegendary.png',
+        'images/buku.png', 'images/buku-tesis-teknologi.png', 'images/buku-tesis-sejarah.png',
+        'images/draftskripsi-teknologi.png', 'images/draftskripsi-sejarah.png',
+        'images/sertifikat-manajer.png', 'images/ijazah-teknologi.png', 'images/ijazah-sejarah.png'
+    ];
+    
+    manualAssets.forEach(src => imagesToLoad.push({ src: src }));
     
     // Hilangkan duplikat agar loading lebih efisien
     const uniqueImages = [];
     const seenSrc = new Set();
     imagesToLoad.forEach(item => {
-        if (!seenSrc.has(item.src)) {
+        // Normalisasi src (kadang browser nambahin base url)
+        // Kita pakai raw src string untuk cek duplikasi
+        if (item.src && !seenSrc.has(item.src)) {
             seenSrc.add(item.src);
             uniqueImages.push(item);
         } else if (item.element) {
-            // Jika duplikat tapi ada referensi elemen, tetap perlu di-handle referensinya
-            // (Tapi di sini kita sederhanakan, elemen akan load sendiri saat draw jika img belum ready)
+            // Jika duplikat tapi ada referensi elemen map, tetap perlu di-handle referensinya
              uniqueImages.push(item);
         }
     });
@@ -3720,39 +3754,40 @@ async function preloadAllGameAssets() {
     // Jika tidak ada aset (aneh), langsung selesai
     if (total === 0) return;
 
+    console.log(`Memulai Preload untuk ${total} Aset Gambar...`);
+
     // Fungsi Load Satu Gambar
     const loadImage = (item) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
             
             // FIX: PASANG LISTENER DULU SEBELUM SET SRC
-            // Ini mencegah race condition jika gambar sudah dicache
             img.onload = () => {
                 loaded++;
                 const pct = Math.floor((loaded / total) * 100);
                 if(loadingBar) loadingBar.style.width = pct + "%";
-                if(loadingText) loadingText.innerText = `MEMUAT ASET... ${pct}%`;
+                if(loadingText) loadingText.innerText = `MEMUAT ASET (${loaded}/${total})... ${pct}%`;
+                
+                // Jika ini elemen map, simpan referensi gambar yang SUDAH DILOAD
+                if (item.element) {
+                    item.element.loadedImg = img;
+                }
                 resolve();
             };
             
             img.onerror = () => {
                 console.warn("Gagal memuat:", item.src);
-                loaded++; // Tetap hitung progress meski gagal (agar tidak macet)
-                
+                loaded++; 
                 const pct = Math.floor((loaded / total) * 100);
                 if(loadingBar) loadingBar.style.width = pct + "%";
-                if(loadingText) loadingText.innerText = `MEMUAT ASET... ${pct}%`;
+                if(loadingText) loadingText.innerText = `MEMUAT ASET (${loaded}/${total})... ${pct}%`;
                 
-                resolve(); // Jangan reject agar game tetap jalan
+                // Jangan reject agar game tetap jalan (gunakan fallback nanti)
+                resolve(); 
             };
 
-            // BARU SET SRC SETELAH LISTENER SIAP
+            // SET SRC TERAKHIR
             img.src = item.src;
-            
-            // Jika ini elemen map, simpan referensi agar tidak dimuat ulang di draw()
-            if (item.element) {
-                item.element.loadedImg = img;
-            }
         });
     };
 
@@ -3783,18 +3818,18 @@ function startGameSequence() {
         }
 
         // --- UPDATE: JALANKAN PRELOADER SEBELUM MENAMPILKAN MENU ---
-        // FIX: Tambahkan Timeout Race Condition
-        // Jika loading macet lebih dari 8 detik (misal koneksi lambat/banyak error 404), paksa masuk
+        // FIX: Tambahkan Timeout Race Condition yang lebih lama (15 detik) untuk koneksi lambat
         const assetLoadPromise = preloadAllGameAssets();
         const timeoutPromise = new Promise(resolve => setTimeout(() => {
-            console.warn("Asset Loading Timeout - Force Starting Game...");
+            console.warn("Asset Loading Timeout (15s) - Force Starting Game...");
             const loadingText = document.getElementById('loading-text');
-            if(loadingText) loadingText.innerText = "FORCE STARTING...";
+            if(loadingText) loadingText.innerText = "KONEKSI LAMBAT... MEMAKSA MASUK...";
             resolve();
-        }, 8000)); // 8 Detik Timeout
+        }, 15000)); // 15 Detik Timeout (Aman untuk 3G/4G)
 
         Promise.race([assetLoadPromise, timeoutPromise]).then(() => {
             // Setelah aset siap (atau timeout):
+            console.log("Assets Ready. Showing Menu.");
             
             // UPDATE: LOADING DIPERCEPAT
             requestAnimationFrame(() => {
@@ -4079,7 +4114,9 @@ function startPrologue() {
             // UPDATE: Ganti Background Image Sesuai Scene (1-10)
             // Menggunakan linear-gradient overlay tipis agar gambar agak gelap sedikit
             const imgNum = prologueIndex + 1;
-            screen.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('images/scene-${imgNum}.png')`;
+            
+            // FIX: Tambahkan fallback gradient jika gambar tidak ada agar tidak hitam polos total
+            screen.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('images/scene-${imgNum}.png')`;
             
             // Fade In Text
             textEl.style.opacity = 1;
@@ -4090,11 +4127,9 @@ function startPrologue() {
         }, 500); // Waktu transisi fade out text
     }
     
-    // Preload image pertama agar tidak flicker
-    const firstImg = new Image();
-    firstImg.src = 'images/scene-1.png';
-    firstImg.onload = () => showNextLine();
-    firstImg.onerror = () => showNextLine(); // Tetap jalan meski gambar gagal
+    // FIX: Langsung jalankan animasi teks tanpa menunggu gambar loading
+    // Ini memperbaiki masalah layar hitam jika file gambar scene-1.png belum ada
+    showNextLine();
 }
 
 function skipPrologue() {
@@ -6008,7 +6043,8 @@ for(let i=0; i<10; i++) {
             { id: 'clinic', x: 18, y: 14, w: 5, h: 5, img: 'images/balaipengobatan.png', entrance: {x: 20, y: 18, map: 'clinic_interior'}, name: "Balai Pengobatan", open24h: true },
             
             /* UPDATE: WEDDING HALL */
-            { id: 'wedding', x: 20, y: 22, w: 6, h: 5, img: 'images/balaipernikahan.png', entrance: {x: 23, y: 26, map: 'wedding_interior'}, name: "Balai Pernikahan", roleSpecific: 'family', openTime: 800, closeTime: 1600 },
+            /* UPDATE JAM BUKA: DIUBAH JADI 06:00 PAGI */
+            { id: 'wedding', x: 20, y: 22, w: 6, h: 5, img: 'images/balaipernikahan.png', entrance: {x: 23, y: 26, map: 'wedding_interior'}, name: "Balai Pernikahan", roleSpecific: 'family', openTime: 600, closeTime: 1600 },
             
             /* UPDATE: PELABUHAN TIDAK DIUBAH KARENA PLAYER BISA JALAN DI ATASNYA */
             { id: 'port', x: 43, y: 34, w: 7, h: 5, img: 'images/pelabuhan.png', entrance: {x: 46, y: 37, map: 'fishing_action'}, name: "Dermaga Mancing", open24h: true },
@@ -6490,7 +6526,11 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             /* Ayu (Gadis Desa) di dalam rumahnya */
-            {id: 'lover1girl', x: 7, y: 4, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'always', w: 40, h: 60}
+            {id: 'lover1girl', x: 7, y: 4, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'always', w: 40, h: 60},
+            
+            /* NEW: AYA (SAUDARA KEMBAR AYU) */
+            /* Posisi di sebelah kiri ruangan */
+            {id: 'aya_twin', x: 4, y: 4, name: 'Aya (Kembaran)', imgSrc: 'images/aya.png', type: 'static', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
             /* Kasur Ayu */
@@ -7474,7 +7514,11 @@ function regenerateHouseMap() {
                 /* UPDATE: MEJA TELEPON (Menggantikan Telepon Melayang) */
                 /* REVISI: Update gambar ke images/mejatelpon.png dan ukuran jadi 2x2 */
                 /* UPDATE POSISI: Dinaikkan ke y:6 agar tidak nempel tembok bawah */
-                {x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon"} 
+                {x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon"},
+
+                /* NEW: VAS MERAH (DEKORASI) */
+                /* Posisi di sebelah kanan Lemari Pakaian (x:9, y:0) */
+                {x: 9, y: 0, w: 1, h: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Merah", img: 'images/vasmerah.png'}
             ]
         };
         
@@ -10856,19 +10900,28 @@ function checkBuildingCollision(x, y) {
         const bw = b.w * TILE_SIZE;
         
         // CUSTOM COLLISION FOR ROCKS & BUILDINGS
-        // Agar bisa jalan di belakang objek: Hitbox hanya di bagian bawah
         
-        let collisionHeight = b.h * TILE_SIZE;
-        let yOffset = 0;
+        let collisionHeight, yOffset;
 
         if (b.type === 'dungeon_rock') {
             // Batu hitboxnya cuma setengah bawah (15px)
             collisionHeight = 15; 
             yOffset = (b.h * TILE_SIZE) - collisionHeight;
         } else {
-            // Bangunan biasa collisionnya agak pendek biar bisa jalan di belakang atap
-            collisionHeight = b.h > 2 ? 1.5 * TILE_SIZE : b.h * TILE_SIZE;
-            yOffset = ((b.h * TILE_SIZE) - collisionHeight); // Hitbox nempel bawah
+            // REVISI: AGAR BISA JALAN DI BELAKANG BANGUNAN (TAPI TIDAK TEMBUS)
+            // Hitbox hanya aktif di bagian bawah bangunan (Dinding/Kaki).
+            // Bagian atas (Atap) tidak memiliki hitbox fisik (Walkable).
+            
+            // Logika: 
+            // Jika bangunan tinggi (> 2 tile), hitbox hanya 1.8 tile terbawah (~54px).
+            // Sisanya adalah atap yang bisa dilewati di belakangnya.
+            // Jika pemain berjalan dari belakang ke depan, dia akan menabrak 'dinding belakang' hitbox ini.
+            
+            const isTall = b.h > 2;
+            const solidTiles = isTall ? 1.8 : b.h; // 1.8 tile (54px) cukup untuk memblokir, sisanya atap
+            
+            collisionHeight = solidTiles * TILE_SIZE;
+            yOffset = (b.h * TILE_SIZE) - collisionHeight;
         }
         
         // Koordinat hitbox absolut
@@ -10877,7 +10930,8 @@ function checkBuildingCollision(x, y) {
         const pw = 20; 
         const ph = 20;
 
-        // Cek tabrakan: Pemain (x,y) vs Hitbox Batu
+        // Cek tabrakan: Pemain (x,y) vs Hitbox Bangunan
+        // Logika AABB standard
         if (x < bx + bw && x + pw > bx && 
             y < hitboxY + collisionHeight && y + ph > hitboxY) {
             return true;
@@ -10979,6 +11033,15 @@ function checkEnemyWall(x, y) {
 }
 
 function isNPCActive(npc) {
+    // --- UPDATE: LOGIKA PASANGAN MENIKAH (HILANG DARI TEMPAT LAIN) ---
+    // Jika sudah menikah, pasangan hanya muncul di Rumah Player (house atau player_shop_interior)
+    // Di tempat lain (Village, Kampus, Klinik, dll), mereka akan disembunyikan.
+    if (STATE.player.married && STATE.player.spouseId === npc.id) {
+        if (STATE.location !== 'house' && STATE.location !== 'player_shop_interior') {
+            return false;
+        }
+    }
+
     // NEW: Cek Syarat Gender (Untuk Fake Interest/Rival)
     if (npc.genderReq && npc.genderReq !== STATE.player.gender) return false;
 
@@ -13170,6 +13233,22 @@ function interactNPC(npc) {
                 showDialogue(npc.name, "Catatan? Kertas aku masih bersih nih. Gak ada isinya. Hahaha!", [{text:"Dasar...", action:closeDialogue}], npc.imgSrc);
             }},
             {text: "Dah", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI AYA (KEMBARAN AYU) ---
+    else if(npc.id === 'aya_twin') {
+        showDialogue(npc.name, "Hai! Jangan salah panggil ya, aku Aya, bukan Ayu. \nKami memang kembar identik, tapi kepribadian kami beda lho.", [
+            {text: "Apa bedanya?", action: () => {
+                showDialogue(npc.name, "Ayu itu anak *outdoor*, dia suka berkebun dan keliling desa menyapa orang. \nKalau aku anak *indoor*, lebih suka beres-beres rumah, memasak, dan membaca buku.", [{text:"Ooh begitu, menarik", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Kalian akur?", action: () => {
+                showDialogue(npc.name, "Banget! Walaupun kadang rebutan baju sih. Hehe. \nOiya, kalau kamu cari Ayu, dia biasanya ada di sebelah kanan ruangan ini atau sedang keluar.", [{text:"Oke makasih", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Masakanmu enak?", action: () => {
+                showDialogue(npc.name, "Tentu saja! Kue Labu buatan Ayu itu resep dari aku lho. \nKapan-kapan mampir lagi ya kalau lapar.", [{text:"Siap!", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Dah Aya", action: closeDialogue}
         ], npc.imgSrc);
     }
 
@@ -15980,6 +16059,10 @@ function drawObject(ctx, o) {
                 // NEW: FALLBACK LEMARI (Wardrobe tall box)
                 else if (src.includes('lemari')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI5NiI+PHJlY3QgeD0iNCIgeT0iMiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjkyIiBmaWxsPSIjOEU1NDJCIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjgiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PHJlY3QgeD0iMzQiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PGNpcmNsZSBjeD0iMjYiIGN5PSI1MCIgcj0iMiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjM4IiBjeT0iNTAiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
+                }
+                // NEW: FALLBACK VAS MERAH
+                else if (src.includes('vasmerah')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTEwIDI0IEwxMCAxMiBDMTAgNiAyMiA2IDIyIDEyIEwyMiAyNCBDMjIgMzAgMTAgMzAgMTAgMjQgWiIgZmlsbD0iI2VmNDQ0NCIgc3Ryb2tlPSIjYjkxYzFjIiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSBjeD0iMTYiIGN5PSI4IiByeD0iNCIgcnk9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
                 }
                 // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni)
                 else if (src.includes('rakbuku')) {
