@@ -2878,7 +2878,8 @@ const AudioService = {
         inside: new Audio('audio/inside.mp3'), // NEW: Audio Dalam Ruangan
         dungeon: new Audio('audio/dungeon.mp3'), // NEW: Audio Dungeon
         boss: new Audio('audio/boss.mp3'), // NEW: Audio Boss Battle
-        knock: new Audio('audio/knock.mp3') // NEW: Audio Ketukan Pintu
+        knock: new Audio('audio/knock.mp3'), // NEW: Audio Ketukan Pintu
+        wedding: new Audio('audio/wedding.mp3') // NEW: Audio Pernikahan
     },
     currentTrack: null,
 
@@ -2892,6 +2893,7 @@ const AudioService = {
             if(this.tracks.inside) this.tracks.inside.loop = true; 
             if(this.tracks.dungeon) this.tracks.dungeon.loop = true; 
             if(this.tracks.boss) this.tracks.boss.loop = true; // Loop musik Boss
+            if(this.tracks.wedding) this.tracks.wedding.loop = true; // Loop musik Wedding
             
             if(this.tracks.opening) this.tracks.opening.volume = 0.5;
             if(this.tracks.village) this.tracks.village.volume = 0.5;
@@ -2913,6 +2915,7 @@ const AudioService = {
             if(this.tracks.dungeon) this.tracks.dungeon.volume = 0.6; // Volume Musik Dungeon
             if(this.tracks.boss) this.tracks.boss.volume = 0.8; // Volume Musik Boss (Lebih Keras)
             if(this.tracks.knock) this.tracks.knock.volume = 1.0; // Volume Ketukan Pintu
+            if(this.tracks.wedding) this.tracks.wedding.volume = 0.8; // Volume Musik Wedding
         } catch(e) {
             console.warn("Audio Init Error (Non-Fatal):", e);
         }
@@ -2985,7 +2988,12 @@ const AudioService = {
                 }
             } else {
                 // Untuk semua lokasi dalam ruangan (house, merchant, school, dll)
-                this.playBGM('inside');
+                // UPDATE: Jika di Balai Pernikahan, mainkan lagu wedding
+                if (STATE.location === 'wedding_interior') {
+                    this.playBGM('wedding');
+                } else {
+                    this.playBGM('inside');
+                }
             }
         }
 
@@ -6453,6 +6461,9 @@ for(let i=0; i<10; i++) {
             /* 4. Kalender (Dinding Atas) - Cek Tanggal & Festival */
             {x: 9, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
 
+            /* UPDATE: MENAMBAHKAN LEMARI PAKAIAN (WARDROBE) */
+            /* Posisi di x:7, y:0 (Sebelah Meja Telepon) */
+            {x: 7, y: 0, w: 2, h: 3, type: 'shelf', icon: '👗', text: "Lemari Pakaian Bisnis", img: 'images/lemari.png'},
 
             /* --- AREA TOKO (LANTAI BAWAH/DEPAN) --- */
             
@@ -7466,6 +7477,33 @@ function regenerateHouseMap() {
                 {x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon"} 
             ]
         };
+        
+        // --- UPDATE: SPAWN PASANGAN DI RUMAH JIKA MENIKAH ---
+        if (STATE.player.married && STATE.player.spouseId) {
+            const sid = STATE.player.spouseId;
+            let sName = "Pasangan";
+            let sImg = "images/lover1girl.png"; // Fallback
+            
+            // Mapping Data Pasangan
+            if(sid === 'lover1girl') { sName = "Ayu"; sImg = "images/lover1girl.png"; }
+            else if(sid === 'lover2girl') { sName = "Putri"; sImg = "images/lover2girl.png"; }
+            else if(sid === 'lover1boy') { sName = "Dr. Budi"; sImg = "images/lover1boy.png"; }
+            else if(sid === 'lover2boy') { sName = "Satria"; sImg = "images/lover2boy.png"; }
+            
+            // Tambahkan ke Array NPC Rumah
+            maps['house'].npcs.push({
+                id: sid, // Gunakan ID asli agar interaksi "Married" aktif
+                x: Math.floor(w/2) + 2, // Posisi agak ke kanan tengah
+                y: Math.floor(h/2),
+                name: sName,
+                imgSrc: sImg,
+                type: 'wander', // Jalan-jalan dalam rumah
+                schedule: 'always',
+                w: 40, h: 60,
+                vx: 0, vy: 0
+            });
+        }
+
         console.log(`House Map Regenerated: ${w}x${h}`);
     } catch(e) {
         console.error("Error regenerating house map:", e);
@@ -12036,14 +12074,148 @@ function interactNPC(npc) {
                                         schedule: 'always',
                                         w: 40, h: 60
                                     });
+
+                                    // EFEK VISUAL: Partikel Hati saat pasangan muncul
+                                    createParticle(8.5 * TILE_SIZE, 3 * TILE_SIZE, '#ec4899');
+                                    createParticle(8.5 * TILE_SIZE, 3 * TILE_SIZE, '#ffffff');
                                 }
                                 // -------------------------------------------------------------
 
                                 showToast(`Target Terkunci: ${targetName} ❤️`);
                                 createParticle(STATE.player.x, STATE.player.y, '#ec4899');
                                 
-                                showDialogue(npc.name, `Baiklah! Niatmu untuk menikahi **${targetName}** telah dicatat.\n\nLihatlah, dia sudah hadir di sini karena ikatan batin kalian.\n\nSaya berikan **Cincin Kayu** ini sebagai modal awal. Dekati dia, beri perhatian, dan jika hatinya sudah luluh, datanglah lagi ke sini untuk akad nikah!`, 
-                                    [{text: "Siap Pak Penghulu!", action: closeDialogue}], 
+                                // UPDATE: Modin langsung menawarkan pernikahan
+                                showDialogue(npc.name, `MasyaAllah, calon pasanganmu **${targetName}** sudah hadir di sampingmu.\n\nLihatlah, dia tampak serasi dengan pakaian pengantin itu.\n\nApakah kamu sudah siap untuk melangsungkan akad nikah sekarang?`, 
+                                    [
+                                        {
+                                            text: "Bismillah, Saya Siap! (Akad)", 
+                                            action: () => {
+                                                // 1. LOGIKA PERNIKAHAN (DATA)
+                                                STATE.player.married = true;
+                                                STATE.player.spouseId = targetId;
+                                                STATE.player.reputation += 100;
+                                                STATE.player.money += 5000;
+                                                
+                                                // 2. MAINKAN MUSIK & PARTIKEL
+                                                if(typeof AudioService !== 'undefined') {
+                                                    AudioService.playBGM('wedding'); 
+                                                    AudioService.playSFX('item');    
+                                                }
+                                                
+                                                // Efek Ledakan Partikel (Confetti)
+                                                const confettiColors = ['#ef4444', '#f97316', '#facc15', '#4ade80', '#3b82f6', '#a855f7', '#ec4899', '#ffffff'];
+                                                for(let i=0; i < 100; i++) {
+                                                    const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                                                    const speed = 2 + Math.random() * 6;
+                                                    const angle = Math.random() * Math.PI * 2;
+                                                    STATE.particles.push({
+                                                        x: STATE.player.x + 10, y: STATE.player.y + 10,
+                                                        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                                                        life: 60 + Math.random() * 40, color: color
+                                                    });
+                                                }
+                                                
+                                                // Efek Teks "SAH"
+                                                spawnFloatingText(STATE.player.x, STATE.player.y - 60, "SAH!!!", "#fbbf24", 30);
+                                                spawnFloatingText(STATE.player.x - 40, STATE.player.y - 40, "SAH!", "#ffffff", 15);
+                                                spawnFloatingText(STATE.player.x + 40, STATE.player.y - 40, "SAH!", "#ffffff", 15);
+                                                
+                                                // --- START CUTSCENE CINEMATIC ---
+                                                
+                                                // A. Tutup Dialog & Kunci Game
+                                                closeDialogue();
+                                                STATE.screen = 'cutscene'; 
+                                                STATE.cutsceneOverride = true; // Ambil alih kamera
+                                                
+                                                // B. Gerakkan Kamera ke Atas (Pan Up)
+                                                let panCount = 0;
+                                                const panInterval = setInterval(() => {
+                                                    STATE.camera.y -= 1; // Geser kamera ke atas pelan-pelan
+                                                    panCount++;
+                                                    if(panCount > 200) clearInterval(panInterval); // Stop setelah beberapa saat
+                                                }, 20);
+
+                                                // C. Layar Gelap & Teks Muncul (Setelah 1 Detik)
+                                                setTimeout(() => {
+                                                    const layer = document.getElementById('cutscene-layer');
+                                                    const txt = document.getElementById('cutscene-text');
+                                                    const sub = document.getElementById('cutscene-sub');
+                                                    
+                                                    txt.innerText = "MENIKAH DENGAN BAHAGIA";
+                                                    sub.innerText = `Selamat menempuh hidup baru bersama ${targetName}.\nSemoga cinta kalian abadi selamanya.`;
+                                                    
+                                                    layer.style.display = 'flex';
+                                                    // Trigger animasi fade in CSS
+                                                    requestAnimationFrame(() => layer.style.opacity = 1);
+                                                }, 1000); 
+
+                                                // D. Selesai Cutscene (Ganti Hari & Pindah ke Rumah)
+                                                setTimeout(() => {
+                                                    const layer = document.getElementById('cutscene-layer');
+                                                    layer.style.opacity = 0; // Fade out hitam
+                                                    
+                                                    setTimeout(() => {
+                                                        layer.style.display = 'none';
+                                                        STATE.cutsceneOverride = false; // Kembalikan kamera ke player
+                                                        
+                                                        // --- LOGIKA BARU: BANGUN DI RUMAH BERSAMA PASANGAN ---
+                                                        
+                                                        // 1. Ganti Hari & Reset Status
+                                                        STATE.day++;
+                                                        STATE.time = 600; // 06:00 Pagi
+                                                        STATE.player.energy = 100;
+                                                        STATE.player.hp = STATE.player.maxHp;
+                                                        
+                                                        // 2. Pindah Lokasi ke Rumah
+                                                        STATE.location = 'house';
+                                                        STATE.player.x = 2 * TILE_SIZE; // Dekat kasur
+                                                        STATE.player.y = 2 * TILE_SIZE;
+                                                        STATE.player.direction = 'right';
+                                                        
+                                                        // 3. Regen Map Rumah (Agar Pasangan Muncul)
+                                                        regenerateHouseMap();
+                                                        
+                                                        // 4. Resume Game
+                                                        STATE.screen = 'play';
+                                                        manualSave();
+                                                        
+                                                        // 5. Notifikasi & Dialog Pagi
+                                                        showToast("Keesokan paginya... ☀️");
+                                                        
+                                                        // Dialog sapaan dari pasangan (Delay dikit biar map load dulu)
+                                                        setTimeout(() => {
+                                                            const spouse = maps['house'].npcs.find(n => n.id === targetId);
+                                                            if(spouse) {
+                                                                // EFEK VISUAL CINTA PAGI HARI
+                                                                createParticle(spouse.x * TILE_SIZE, spouse.y * TILE_SIZE, '#ec4899'); // Partikel Hati di Pasangan
+                                                                createParticle(STATE.player.x, STATE.player.y, '#ec4899'); // Partikel Hati di Player
+                                                                
+                                                                // Mainkan suara manis
+                                                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+
+                                                                showDialogue(spouse.name, 
+                                                                    "Selamat pagi sayang! ❤️ \n\nRasanya seperti mimpi kita sudah tinggal serumah.\nAku sangat bahagia bisa melihat wajahmu saat bangun tidur.\n\nSemoga hari ini menyenangkan ya!", 
+                                                                    [{
+                                                                        text: "Pagi juga cintaku! (Cium Kening)", 
+                                                                        action: () => {
+                                                                            createParticle(STATE.player.x, STATE.player.y, '#fbbf24'); // Efek senang
+                                                                            closeDialogue();
+                                                                        }
+                                                                    }], 
+                                                                    spouse.imgSrc
+                                                                );
+                                                            }
+                                                        }, 1500);
+
+                                                    }, 2000); // Tunggu fade out selesai
+                                                }, 7000); // Durasi total cutscene
+                                            }
+                                        },
+                                        {
+                                            text: "Sebentar Pak, saya grogi...", 
+                                            action: closeDialogue
+                                        }
+                                    ], 
                                     npc.imgSrc
                                 );
                             };
@@ -13404,9 +13576,119 @@ function interactObject(obj) {
             ], 'images/mejadosen.png');
             return;
         } else if (obj.type === 'shelf') {
-            showToast("📦 Rak Display Barang (Stok Otomatis)");
-            return;
+            // UPDATE: Cek apakah ini Lemari Pakaian atau Rak Barang Dagangan
+            // Jika namanya mengandung "Lemari", biarkan lanjut ke logika ganti baju di bawah
+            if (!obj.text.includes("Lemari")) {
+                showToast("📦 Rak Display Barang (Stok Otomatis)");
+                return;
+            }
         }
+    }
+
+    // --- NEW: INTERAKSI LEMARI PAKAIAN (HOUSE & SHOP) - 4 OUTFIT SYSTEM ---
+    // UPDATE: Kondisi ditambahkan untuk support 'player_shop_interior'
+    else if (obj.type === 'shelf' && (STATE.location === 'house' || (STATE.location === 'player_shop_interior' && obj.text.includes("Lemari")))) {
+        const p = STATE.player;
+        
+        // Helper ganti baju (lokal scope)
+        const changeOutfit = (type) => {
+            const gender = p.gender;
+            let suffix = "";
+            let outfitName = "Seragam Sekolah";
+
+            if (type === 'default') {
+                suffix = ""; 
+                outfitName = "Seragam Sekolah";
+            } else if (type === 'wedding') {
+                suffix = "-weding"; // Sesuai aset yang ada (typo di aset lama 'weding')
+                outfitName = "Baju Pengantin";
+            } else if (type === 'armor') {
+                suffix = "-armor"; // Aset baru (pastikan file ada atau fallback)
+                outfitName = "Zirah Abadi";
+            } else if (type === 'special') {
+                suffix = "-special"; // Aset baru
+                outfitName = "Kostum Spesial";
+            }
+
+            // Update Source Gambar Player
+            // Kita reset src image objek yang sudah ada di STATE.player
+            if(p.spriteIdle) p.spriteIdle.src = `images/${gender}-idle${suffix}.png`;
+            if(p.spriteWalk) p.spriteWalk.src = `images/${gender}-walk${suffix}.png`;
+            if(p.spriteWalkUp) p.spriteWalkUp.src = `images/${gender}-atas${suffix}.png`;
+            if(p.spriteWalkDown) p.spriteWalkDown.src = `images/${gender}-bawah${suffix}.png`;
+            if(p.spriteAttack) p.spriteAttack.src = `images/${gender}-pukul${suffix}.png`;
+
+            // Setup Fallback Error (Jika gambar baju belum ada, balik ke default)
+            // Cukup pasang di spriteIdle sebagai indikator utama
+            if(p.spriteIdle) {
+                p.spriteIdle.onerror = function() { 
+                    this.src = `images/${gender}-idle.png`; 
+                    showToast(`Visual ${outfitName} belum tersedia, kembali ke default.`);
+                };
+            }
+
+            showToast(`Berganti ke: ${outfitName}`);
+            
+            // Efek Partikel Ganti Baju
+            createParticle(p.x, p.y, '#ffffff');
+            if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+            
+            closeDialogue();
+        };
+
+        // Menu Pilihan Baju
+        let clothesOpts = [];
+
+        // 1. Seragam Sekolah (Default) - Selalu Ada
+        clothesOpts.push({
+            text: "Seragam Sekolah (Default)", 
+            action: () => changeOutfit('default')
+        });
+
+        // 2. Baju Nikah (Syarat: Punya item 'pakaian_nikah' ATAU Sudah Menikah)
+        if(p.inventory['pakaian_nikah'] || p.married) {
+            clothesOpts.push({
+                text: "👘 Baju Pengantin", 
+                action: () => changeOutfit('wedding')
+            });
+        } else {
+            clothesOpts.push({
+                text: "🔒 ??? (Baju Pengantin)", 
+                action: () => showToast("Dapatkan 'Baju Pengantin' dari Marine (Penjahit) atau Misi.")
+            });
+        }
+
+        // 3. Baju Zirah (Syarat: Punya item 'zirah_legend')
+        if(p.inventory['zirah_legend']) {
+            clothesOpts.push({
+                text: "🛡️ Zirah Abadi", 
+                action: () => changeOutfit('armor')
+            });
+        } else {
+            clothesOpts.push({
+                text: "🔒 ??? (Drop Boss Dungeon)", 
+                action: () => showToast("Kalahkan Boss Dungeon untuk dapat Zirah Abadi!")
+            });
+        }
+
+        // 4. Baju Special (Syarat: Level 10 atau Item Khusus)
+        // Kita buat syarat Level 10 sebagai 'Special'
+        if(p.level >= 10 || p.inventory['kostum_special']) {
+            clothesOpts.push({
+                text: "✨ Kostum Spesial (Lv 10)", 
+                action: () => changeOutfit('special')
+            });
+        } else {
+            clothesOpts.push({
+                text: "🔒 ??? (Capai Level 10)", 
+                action: () => showToast("Tingkatkan Levelmu sampai 10 untuk membuka!")
+            });
+        }
+
+        clothesOpts.push({text: "Tutup", action: closeDialogue});
+
+        showDialogue("LEMARI PAKAIAN", "Pilih pakaian untuk dikenakan hari ini:", clothesOpts, 'images/lemari.png');
+        return;
     }
 
     else if(obj.type === 'bookshelf') {
@@ -14240,6 +14522,63 @@ function handleSleep() {
                 
                 STATE.screen = 'play'; // FIX: Resume game setelah bangun
                 STATE.isDayChanging = false; // Buka kunci
+
+                // --- NEW: LOGIKA NAFKAH HARIAN (JIKA MENIKAH & DI RUMAH) ---
+                if (STATE.player.married && STATE.location === 'house') {
+                    // Cari data NPC Pasangan
+                    const spouseId = STATE.player.spouseId;
+                    const spouse = maps['house'].npcs.find(n => n.id === spouseId);
+                    
+                    if (spouse) {
+                        setTimeout(() => {
+                            const dailyCost = 2500;
+                            
+                            // Cek Saldo
+                            if (STATE.player.money >= dailyCost) {
+                                // Mampu Bayar
+                                STATE.player.money -= dailyCost;
+                                
+                                // Efek Visual
+                                createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                
+                                showDialogue(spouse.name, 
+                                    `Selamat pagi sayang! ❤️\n\nSeperti biasa, aku ambil **2.500 Gold** untuk belanja pasar dan kebutuhan rumah hari ini ya.\n\nSarapan sudah siap di meja. Semangat kerjanya!`, 
+                                    [{
+                                        text: `Ikhlas (Sisa: ${STATE.player.money.toLocaleString()} G)`, 
+                                        action: () => {
+                                            updateRelationship(spouse, 1); // Tambah cinta sedikit
+                                            closeDialogue();
+                                        }
+                                    }], 
+                                    spouse.imgSrc
+                                );
+                            } else {
+                                // Tidak Mampu Bayar (Hutang/Minus)
+                                STATE.player.money -= dailyCost; // Saldo jadi minus
+                                
+                                // Hukuman: Reputasi & Cinta Turun
+                                STATE.player.reputation = Math.max(0, STATE.player.reputation - 5);
+                                if(STATE.player.relationships[spouseId]) STATE.player.relationships[spouseId] -= 5;
+                                
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Suara sedih/hit
+
+                                showDialogue(spouse.name, 
+                                    `Selamat pagi... sayang? 😟\n\nUang belanja di laci habis... Tukang sayur sudah menagih.\nAku terpaksa ngutang dulu ke warung sebelah.\n\nTolong lebih giat bekerja ya, aku malu sama tetangga kalau kita hutang terus.\n\n(Saldo Minus! Reputasi -5, Cinta -5)`, 
+                                    [{
+                                        text: `Maafkan aku... (Sisa: ${STATE.player.money.toLocaleString()} G)`, 
+                                        action: closeDialogue
+                                    }], 
+                                    spouse.imgSrc
+                                );
+                            }
+                            
+                            // Simpan lagi setelah transaksi otomatis
+                            manualSave();
+                        }, 1200); // Jeda setelah bangun tidur
+                    }
+                }
+
             }, 1000);
 
         }, 2000); // Durasi layar hitam
