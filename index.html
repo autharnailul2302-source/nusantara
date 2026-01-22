@@ -2635,7 +2635,7 @@ button, .round-btn, .d-btn, .auth-btn {
                 <div id="quest-btn" onclick="toggleDailyQuest()" title="Lihat Quest Harian">📜</div>
 
                 <!-- NEW: TOMBOL TAS INVENTORI -->
-                <div id="bag-btn" onclick="toggleInventory()" style="background-image: url('images/tas-kosong.png');"></div>
+                <div id="bag-btn" onclick="toggleInventory()" style="background-image: url('images/tas-kosong.png');" title="Buka Tas Inventori"></div>
                 
                 <!-- Action Button: Hidden by default, shown via JS when interactive -->
                 <div class="round-btn" id="btn-action" style="display: none;">💬</div>
@@ -6317,7 +6317,10 @@ for(let i=0; i<10; i++) {
             { id: 'smith_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Bengkel" }
         ],
         npcs: [
-            {id: 'blacksmith', x: 7, y: 4, name: 'Kepala Bengkel', imgSrc: 'images/blacksmith.png', type: 'service', schedule: 'always', w: 40, h: 60}
+            {id: 'blacksmith', x: 7, y: 4, name: 'Kepala Bengkel', imgSrc: 'images/blacksmith.png', type: 'service', schedule: 'always', w: 40, h: 60},
+            /* NEW: MARINE (PENJAHIT/ISTRI BLACKSMITH) */
+            /* Posisi di sebelah kiri, dekat material */
+            {id: 'marine_tailor', x: 3, y: 5, name: 'Marine (Penjahit)', imgSrc: 'images/marine.png', type: 'service', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
             {x: 2, y: 3, type: 'sign', icon: '🔥', text: "Tungku Peleburan (Panas!)"}, // Furnace
@@ -6327,6 +6330,9 @@ for(let i=0; i<10; i++) {
             // Dekorasi material
             {x: 2, y: 8, type: 'shelf', icon: '🪨', text: "Tumpukan Bijih Besi"},
             {x: 11, y: 8, type: 'shelf', icon: '🪵', text: "Tumpukan Kayu Bakar"},
+            
+            /* NEW: MEJA JAHIT MARINE (Dekat posisinya) */
+            {x: 2, y: 5, type: 'table', icon: '🧵', text: "Meja Jahit: Penuh dengan kain sutra dan benang emas."},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -6537,7 +6543,11 @@ for(let i=0; i<10; i++) {
         buildings: [
             { id: 'candi_exit', x: 6, y: 15, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 15}, name: "Keluar Candi" }
         ],
-        npcs: [], // Suasana hening dan sakral
+        npcs: [
+            /* NEW: DEWI RORO (PENJAGA CANDI) */
+            /* Posisi di depan Arca Utama (x:7, y:3.5) agar terlihat melayang di depan patung */
+            {id: 'dewi_roro', x: 7, y: 3.5, name: 'Dewi Roro', imgSrc: 'images/roro.png', type: 'static', schedule: 'always', w: 40, h: 60}
+        ], 
         objects: [
             // ARCA UTAMA (Di Tengah Atas)
             // Menggunakan gambar statue.png
@@ -6598,8 +6608,8 @@ for(let i=0; i<10; i++) {
             /* ADDED: KASUR PLAYER (Interactive Sleep) */
             /* UPDATE: Ganti gambar kasur jadi bed.png */
             /* REVISI POSISI: Dinaikkan ke y:0 agar lebih nempel tembok */
-            /* REVISI UKURAN: Diperbesar jadi 3x4 (King Size) */
-            {x: 1, y: 0, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk"},
+            /* REVISI UKURAN: Dikecilkan jadi 2x3 (Single Bed) agar proporsional */
+            {x: 1, y: 0, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk"},
 
             /* UPDATE: MEJA BUKU HARIAN (Menggantikan Buku Melayang) */
             /* Posisi disesuaikan agar tidak menumpuk */
@@ -6607,6 +6617,9 @@ for(let i=0; i<10; i++) {
             /* UPDATE UKURAN: Diperbesar kembali jadi 2x2 */
             /* UPDATE POSISI: Diturunkan ke y:0 */
             {x: 4, y: 0, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Meja Jurnal"},
+            
+            /* NEW: LEMARI PAKAIAN (WARDROBE) */
+            {x: 7, y: 0, w: 2, h: 3, type: 'shelf', icon: '👗', text: "Lemari Pakaian: Berisi seragam dan baju santai.", img: 'images/lemari.png'},
             
             /* REVISI POSISI KALENDER: Geser ke x:10 (Pojok Kanan dinding atas) agar tidak mepet */
             {x: 10, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
@@ -6685,6 +6698,7 @@ const STATE = {
 
         reflections: [], 
         messages: [], 
+        learnedSubjects: [], // FIX: Inisialisasi Array Mata Pelajaran
         ethics: 100,
         relationships: {}, 
         inventory: {}
@@ -7429,8 +7443,8 @@ function regenerateHouseMap() {
                 /* ADDED: KASUR PLAYER (Interactive Sleep) */
                 // FIX: Ubah 'images/kasur.png' menjadi 'images/bed.png' agar konsisten
                 /* REVISI POSISI: Dinaikkan ke y:0 agar nempel tembok */
-                /* REVISI UKURAN: Diperbesar jadi 3x4 (King Size) */
-                {x: 1, y: 0, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk"},
+                /* REVISI UKURAN: Dikecilkan jadi 2x3 (Single Bed) agar proporsional */
+                {x: 1, y: 0, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk"},
 
                 /* UPDATE: MEJA BUKU HARIAN (Menggantikan Buku Melayang) */
                 /* Posisi disesuaikan agar tidak menumpuk */
@@ -7438,6 +7452,10 @@ function regenerateHouseMap() {
                 /* UPDATE UKURAN: Diperbesar kembali jadi 2x2 */
                 /* UPDATE POSISI: Diturunkan ke y:0 */
                 {x: 4, y: 0, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Meja Jurnal"},
+                
+                /* NEW: LEMARI PAKAIAN (WARDROBE) */
+                /* Posisi di x:7 (sebelah meja belajar) */
+                {x: 7, y: 0, w: 2, h: 3, type: 'shelf', icon: '👗', text: "Lemari Pakaian", img: 'images/lemari.png'},
                 
                 /* REVISI POSISI KALENDER: Geser ke POJOK KANAN (w-2) agar selalu di ujung kanan sesuai lebar rumah */
                 {x: w - 2, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
@@ -7542,6 +7560,9 @@ async function initGame() {
             STATE.player.lastMonthlyClaim = saved.lastMonthlyClaim || 0;
             STATE.player.claimedLifeTrial = saved.claimedLifeTrial || false;
             
+            // FIX: LOAD DATA MATA PELAJARAN YANG SUDAH DIPELAJARI
+            STATE.player.learnedSubjects = saved.learnedSubjects || [];
+
             // NEW: LOAD STATUS TUTORIAL DUNGEON & FISHING
             STATE.player.hasSeenDungeonTutorial = saved.hasSeenDungeonTutorial || false;
             STATE.player.hasSeenFishingTutorial = saved.hasSeenFishingTutorial || false;
@@ -8162,6 +8183,66 @@ const EXAM_DB = {
         {q: "Peristiwa penculikan Soekarno-Hatta oleh golongan muda ke luar kota disebut?", a: "Rengasdengklok", opts: ["Bandung Lautan Api", "Rengasdengklok", "G30S"]}
     ]
 };
+
+// --- NEW: DATABASE SOAL KUIS TKJ (INTERAKSI BANGKU KAMPUS) ---
+const TKJ_QUIZ_DB = [
+    {q: "Kepanjangan dari TKJ adalah?", a: "Teknik Komputer dan Jaringan", opts: ["Teknik Komputer dan Jaringan", "Teknologi Kecepatan Jaringan", "Teknik Komunikasi Jaringan"]},
+    {q: "Perangkat yang berfungsi menghubungkan dua jaringan yang berbeda segmen adalah?", a: "Router", opts: ["Switch", "Hub", "Router"]},
+    {q: "Urutan warna kabel UTP tipe Straight pada pin 1 adalah?", a: "Putih Orange", opts: ["Putih Hijau", "Putih Orange", "Putih Biru"]}, 
+    {q: "Port default untuk layanan HTTP web server adalah?", a: "80", opts: ["21", "80", "443"]},
+    {q: "Perintah CLI di Windows untuk memeriksa konektivitas jaringan ke tujuan adalah?", a: "Ping", opts: ["Ping", "Ipconfig", "Tracert"]},
+    {q: "Layer OSI urutan ke-1 yang berhubungan dengan kabel dan sinyal listrik adalah?", a: "Physical Layer", opts: ["Network Layer", "Data Link Layer", "Physical Layer"]},
+    {q: "IP Address 192.168.10.1 termasuk dalam kelas IP?", a: "C", opts: ["A", "B", "C"]},
+    {q: "Server yang berfungsi menerjemahkan nama domain (google.com) menjadi IP Address adalah?", a: "DNS Server", opts: ["DHCP Server", "DNS Server", "FTP Server"]},
+    {q: "Topologi jaringan dimana setiap node terhubung ke satu perangkat pusat disebut?", a: "Star", opts: ["Bus", "Ring", "Star"]},
+    {q: "Protokol standar untuk mengirim email adalah?", a: "SMTP", opts: ["POP3", "IMAP", "SMTP"]},
+    {q: "Alat yang digunakan untuk memasang konektor RJ45 ke kabel UTP disebut?", a: "Tang Crimping", opts: ["Tang Potong", "Tang Crimping", "Obeng"]},
+    {q: "Jenis kabel yang menggunakan serat kaca untuk mentransmisikan data via cahaya adalah?", a: "Fiber Optic", opts: ["Coaxial", "Fiber Optic", "Twisted Pair"]}
+];
+
+// --- NEW FUNCTION: START TKJ QUIZ ---
+function startTKJStudy() {
+    // Cek Energi
+    if(STATE.player.energy < 10) {
+        showToast("Terlalu lelah untuk belajar... (Butuh 10 Energi)");
+        return;
+    }
+
+    // Ambil soal acak
+    const quiz = TKJ_QUIZ_DB[Math.floor(Math.random() * TKJ_QUIZ_DB.length)];
+    
+    // Buat opsi jawaban
+    const options = quiz.opts.map(opt => ({
+        text: opt,
+        action: () => {
+            if(opt === quiz.a) {
+                // Jawaban Benar
+                STATE.player.energy -= 10;
+                STATE.player.int += 1; // Naikkan INT
+                gainExp(25); // EXP Lumayan
+                
+                showToast("Benar! INT +1, EXP +25");
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                createParticle(STATE.player.x, STATE.player.y, '#3b82f6'); // Partikel Biru (Teknologi)
+                
+                showDialogue("JAWABAN TEPAT! ✅", `Selamat! Jawabanmu benar: **${quiz.a}**.\n\nWawasan TKJ-mu semakin luas.`, [{text:"Mantap", action:closeDialogue}], 'images/kursimahasiswa.png');
+            } else {
+                // Jawaban Salah
+                STATE.player.energy = Math.max(0, STATE.player.energy - 5); // Penalti energi dikit
+                showToast("Salah... (Energi -5)");
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+                
+                showDialogue("JAWABAN SALAH ❌", `Sayang sekali, jawaban yang benar adalah: **${quiz.a}**.\n\nJangan menyerah, pelajari lagi materinya!`, [{text:"Tutup", action:closeDialogue}], 'images/kursimahasiswa.png');
+            }
+        }
+    }));
+    
+    // Acak urutan tombol agar tidak hapalan posisi
+    options.sort(() => Math.random() - 0.5);
+    options.push({text: "Nanti saja", action: closeDialogue});
+
+    showDialogue("KUIS DADAKAN TKJ 💻", `**PERTANYAAN:**\n${quiz.q}`, options, 'images/kursimahasiswa.png');
+}
 
 // --- FUNGSI BARU: SISTEM SELEKSI JURUSAN & BEASISWA (MISSING FIX) ---
 function selectMajor(major) {
@@ -9678,6 +9759,32 @@ function update() {
             }
         }
 
+        // --- NEW: SPAWN SILUET IKAN DI LAUT ---
+        // Muncul di semua musim, siang hari
+        if (Math.random() < 0.05) { // 5% chance per frame
+            // Posisi acak di seluruh map
+            const fx = Math.random() * (ISLAND_W * TILE_SIZE);
+            const fy = Math.random() * (ISLAND_H * TILE_SIZE);
+            
+            // Cek apakah posisi tersebut adalah AIR (Tile ID 0)
+            const tx = Math.floor(fx / TILE_SIZE);
+            const ty = Math.floor(fy / TILE_SIZE);
+            const tIdx = ty * ISLAND_W + tx;
+            
+            // Akses array villageTiles global
+            if (villageTiles[tIdx] === 0) { 
+                STATE.critters.push({
+                    type: 'fish_silhouette',
+                    x: fx, 
+                    y: fy,
+                    vx: (Math.random() - 0.5) * 0.8, // Gerakan pelan & tenang
+                    vy: (Math.random() - 0.5) * 0.8,
+                    life: 600 + Math.random() * 300, // Hidup lama
+                    size: 0.8 + Math.random() * 0.6  // Variasi ukuran
+                });
+            }
+        }
+
         if(STATE.season === 'autumn') {
             if(Math.random() < 0.02) {
                 const cx = STATE.camera.x + Math.random() * GAME_WIDTH;
@@ -9710,6 +9817,28 @@ function update() {
             c.flap += 0.2; 
             if(c.x > (ISLAND_W * TILE_SIZE) + 100) c.life = 0;
         } 
+        // --- NEW: UPDATE GERAKAN IKAN ---
+        else if (c.type === 'fish_silhouette') {
+            c.x += c.vx;
+            c.y += c.vy;
+            
+            // Cek Tile Depan (Agar tidak nabrak daratan)
+            const nextTx = Math.floor((c.x + c.vx * 20) / TILE_SIZE);
+            const nextTy = Math.floor((c.y + c.vy * 20) / TILE_SIZE);
+            const tIdx = nextTy * ISLAND_W + nextTx;
+            
+            // Jika menabrak daratan (bukan air), putar balik perlahan
+            if (villageTiles[tIdx] !== 0) {
+                c.vx *= -1;
+                c.vy *= -1;
+            }
+            
+            // Ubah arah sedikit secara acak agar natural
+            if (Math.random() < 0.01) {
+                c.vx += (Math.random() - 0.5) * 0.2;
+                c.vy += (Math.random() - 0.5) * 0.2;
+            }
+        }
         else if(c.type === 'butterfly') {
             c.x += (Math.random() - 0.5) * 2;
             c.y += (Math.random() - 0.5) * 2;
@@ -11953,9 +12082,9 @@ function interactNPC(npc) {
 
     else if(npc.id === 'blacksmith') {
         showDialogue("KEPALA BENGKEL", "Dunia kerja butuh bukti, bukan janji. Mau konsultasi karir atau beli perlengkapan?", [
-            {text: "⚔️ Beli Perlengkapan (Shop)", action: () => {
-                showDialogue("TOKO BENGKEL", "Selain senjata, kami juga menempa perhiasan dan busana formal. Mau beli apa?", [
-                    {text: "Baju Pengantin (5.000 G) 👘", action: () => buyItem('pakaian_nikah', 5000)},
+            /* UPDATE: Hapus Beli Baju Pengantin dari sini (Pindah ke Istri) */
+            {text: "⚔️ Beli Cincin (Shop)", action: () => {
+                showDialogue("TOKO BENGKEL", "Saya menempa logam menjadi perhiasan kuat. Mau beli apa?", [
                     {text: "Cincin Kayu (1.000 G) 💍", action: () => buyItem('cincin_kayu', 1000)},
                     {text: "Kembali", action: () => interactNPC(npc)}
                 ], npc.imgSrc);
@@ -11963,6 +12092,26 @@ function interactNPC(npc) {
             {text: "Tentang CV", action: () => showDialogue("KEPALA BENGKEL", "Buat CV yang jujur dan menarik. Cantumkan skill nyata dan pengalaman organisasi/magang.", [{text:"Oke", action:closeDialogue}], npc.imgSrc)},
             {text: "Etika Kerja", action: () => showDialogue("KEPALA BENGKEL", "Datang tepat waktu. Hormati atasan dan rekan. Inisiatif tinggi. Itu kunci bertahan di industri.", [{text:"Siap Bos", action:closeDialogue}], npc.imgSrc)},
             {text: "Tutup", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    /* NEW: INTERAKSI MARINE (PENJAHIT) */
+    else if(npc.id === 'marine_tailor') {
+        showDialogue(npc.name, "Halo! Selamat datang di bengkel kami. \nSuami saya mengurus besi yang keras, saya yang melembutkannya dengan kain. Butuh sesuatu?", [
+            {text: "👘 Beli Baju Pengantin (5.000 G)", action: () => {
+                // Konfirmasi Pembelian
+                showDialogue("BUTIK MARINE", "Baju pengantin buatan saya menggunakan sutra terbaik. Sangat anggun untuk hari bahagiamu.", [
+                    {text: "Beli (5.000 G)", action: () => buyItem('pakaian_nikah', 5000)},
+                    {text: "Lihat-lihat dulu", action: () => interactNPC(npc)}
+                ], npc.imgSrc);
+            }},
+            {text: "Tentang Suami (Blacksmith)", action: () => {
+                showDialogue(npc.name, "Suami saya terlihat garang, tapi sebenarnya hatinya lembut kok. \nDia suka sekali kalau dibawakan **Bijih Besi** untuk bekerja atau **Tonic Stamina** saat lelah.", [{text:"Terima kasih infonya Bu", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Sedang menjahit apa?", action: () => {
+                showDialogue(npc.name, "Saya sedang mengerjakan pesanan jubah untuk Guild Petualang. Kainnya harus anti-gores tapi tetap ringan.", [{text:"Keren...", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Dah Bu", action: closeDialogue}
         ], npc.imgSrc);
     }
 
@@ -12231,7 +12380,17 @@ function interactNPC(npc) {
                                         // Hanya dapat reward jika bukan review
                                         STATE.player.int += 2; 
                                         gainExp(100);
-                                        showToast("📚 Kuliah Selesai. Ilmu Bertambah!");
+                                        
+                                        // --- FIX: SIMPAN MATERI KE MEMORI PEMAIN (UNTUK BELAJAR MANDIRI) ---
+                                        if (!STATE.player.learnedSubjects) STATE.player.learnedSubjects = [];
+                                        
+                                        // Cek duplikasi agar tidak menyimpan materi yang sama berkali-kali
+                                        const alreadyLearned = STATE.player.learnedSubjects.some(s => s.t === content.t);
+                                        if (!alreadyLearned) {
+                                            STATE.player.learnedSubjects.push(content);
+                                        }
+
+                                        showToast("📚 Kuliah Selesai. Catatan Disimpan!");
                                     }
                                     closeDialogue();
                                 }}], 
@@ -12741,6 +12900,27 @@ function interactNPC(npc) {
         ], npc.imgSrc);
     }
 
+    /* NEW: INTERAKSI DEWI RORO (PENJAGA CANDI) */
+    else if(npc.id === 'dewi_roro') {
+        showDialogue("DEWI RORO", "Selamat datang di Candi Aethelgard, wahai pengelana. \nSaya Roro, roh penjaga kesucian tempat ini. Apa yang membawamu kemari?", [
+            {text: "Minta Berkah (Full Heal)", action: () => {
+                STATE.player.hp = STATE.player.maxHp;
+                STATE.player.energy = 100;
+                showToast("✨ Diberkati Dewi Roro (Pulih Sepenuhnya)");
+                createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                closeDialogue();
+            }},
+            {text: "Tentang Candi Ini", action: () => {
+                showDialogue("DEWI RORO", "Candi ini dibangun ribuan tahun lalu oleh leluhurmu. Di sini tersimpan energi magis yang menahan segel Dungeon agar tidak meluap ke desa.", [{text:"Terima kasih infonya", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Legenda Roro Jonggrang?", action: () => {
+                showDialogue("DEWI RORO", "Hihihi... Itu kisah dari tanah seberang. Saya hanya memiliki nama yang mirip, namun tugas saya berbeda. Saya menjaga keseimbangan, bukan meminta seribu candi.", [{text:"Ooh begitu...", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Hormat & Pamit", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
     // NEW: INTERAKSI SENIMAN
     else if(npc.id === 'seniman') {
         showDialogue(npc.name, "Jreng... jreng... Hidup itu seperti nada, kadang tinggi, kadang rendah. Nikmati saja iramanya.", [
@@ -13171,6 +13351,28 @@ function interactObject(obj) {
             showToast(obj.text);
         }
     }
+    // --- NEW: INTERAKSI BANGKU KAMPUS (BELAJAR TKJ) ---
+    else if(obj.type === 'table' && STATE.location === 'school_interior') {
+        showDialogue("BANGKU KAMPUS", "Ingin duduk sebentar dan mengasah pengetahuan seputar TKJ (Teknik Komputer & Jaringan)?", [
+            {
+                text: "🧠 Kerjakan Soal TKJ (Energi -10)", 
+                action: () => {
+                    closeDialogue();
+                    startTKJStudy();
+                }
+            },
+            {
+                text: "Duduk santai saja", 
+                action: () => {
+                    showToast("Duduk beristirahat sejenak...");
+                    closeDialogue();
+                }
+            },
+            {text: "Tutup", action: closeDialogue}
+        ], 'images/kursimahasiswa.png');
+        return;
+    }
+
     // --- NEW: INTEGRASI LOGIKA KERJA (MERCHANT SHELF & COUNTER) ---
     // Cek dulu apakah ini objek toko dan pemain adalah pekerja
     else if ((obj.type === 'shelf' || obj.type === 'counter') && STATE.location === 'merchant_interior' && STATE.player.role === 'worker') {
@@ -13783,9 +13985,10 @@ function manualSave() {
         dailyMonsterKills: STATE.player.dailyMonsterKills || 0,
         dailyTalkCount: STATE.player.dailyTalkCount || 0, // Save Talk Count
 
-        // 10. Pesan & Jurnal
+        // 10. Pesan & Jurnal & MATERI KULIAH
         reflections: STATE.player.reflections,
-        messages: STATE.player.messages
+        messages: STATE.player.messages,
+        learnedSubjects: STATE.player.learnedSubjects || [] // FIX: Simpan Array Mata Pelajaran
     });
 }
 
@@ -14413,7 +14616,8 @@ function draw() {
                 
                 if(isBgLoaded) {
                     if (STATE.location === 'village') {
-                        if(t !== 9 && t !== 2 && t !== 12 && t !== 1) continue; 
+                        // UPDATE: Tambahkan t !== 0 agar Tile Air (0) tidak diskip, sehingga kita bisa gambar ombak di atasnya
+                        if(t !== 9 && t !== 2 && t !== 12 && t !== 1 && t !== 0) continue; 
                     } else if (STATE.location === 'house') {
                         // Skip floor (10) and wall (11) if BG is loaded so we see the image
                         if(t === 10 || t === 11) continue; 
@@ -14542,6 +14746,39 @@ function draw() {
                     } else {
                         ctx.fillStyle = '#262626'; // Fallback warna tembok
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // --- NEW: HANDLE ANIMASI OMBAK LAUT (VILLAGE WATER) ---
+                else if (t === 0 && STATE.location === 'village') {
+                    // Jika BG tidak load, gambar warna dasar air
+                    if(!isBgLoaded) {
+                        // UPDATE: Ganti warna air jadi BIRU TERANG agar ikan hitam terlihat jelas
+                        ctx.fillStyle = '#0ea5e9'; // Sebelumnya #0f172a (Terlalu gelap)
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+
+                    // GAMBAR OMBAK BERGERAK (Visual Effect)
+                    // Gunakan pola acak (Modulo) agar tidak semua tile ada ombaknya (Biar tidak terlalu ramai)
+                    // Rumus: (x*angka + y*angka) % kerapatan === 0
+                    if (((x * 17 + y * 23) % 7) === 0) { 
+                        
+                        // Kalkulasi Gerakan Sinusoidal (Naik Turun halus)
+                        const time = Date.now() / 600; // Kecepatan ombak
+                        const waveY = Math.sin(time + x * 0.5) * 2; // Offset Y
+                        
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'; // Putih Transparan
+                        ctx.lineWidth = 1.5;
+                        ctx.lineCap = 'round';
+                        
+                        const wx = x * TILE_SIZE;
+                        const wy = y * TILE_SIZE + 15; // Tengah Tile
+                        
+                        ctx.beginPath();
+                        // Gambar kurva gelombang kecil
+                        ctx.moveTo(wx + 5, wy + waveY);
+                        ctx.quadraticCurveTo(wx + 15, wy + waveY - 4, wx + 25, wy + waveY);
+                        ctx.stroke();
                     }
                 }
 
@@ -14676,8 +14913,8 @@ function draw() {
                     }
                 }
 
-                // Handle Other Tiles
-                else if(t !== 2 && t !== 12 && t !== 4) {
+                // Handle Other Tiles (UPDATE: Exclude t=0/Water from this fallback)
+                else if(t !== 2 && t !== 12 && t !== 4 && t !== 0) {
                     if(!(isBgLoaded && (t === 9 || t === 1))) {
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
@@ -14723,6 +14960,46 @@ function draw() {
                 }
             }
         }
+    }
+
+    // --- NEW: RENDER SILUET IKAN (LAYER BAWAH - UNDERWATER) ---
+    // Digambar setelah Tiles/Background tapi SEBELUM Objek/Player/Dermaga
+    // Agar ikan terlihat berenang "di dalam air" dan bisa lewat di bawah dermaga
+    if (STATE.location === 'village') {
+        STATE.critters.forEach(c => {
+            if (c.type === 'fish_silhouette') {
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                
+                // Rotasi sesuai arah gerak
+                const angle = Math.atan2(c.vy, c.vx);
+                ctx.rotate(angle);
+                
+                // UPDATE: Warna dipertegas (Hitam Pekat 0.8) agar kontras dengan air biru
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'; 
+                
+                // 1. Badan Ikan (Oval)
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 10 * c.size, 4 * c.size, 0, 0, Math.PI*2);
+                ctx.fill();
+                
+                // 2. Ekor Ikan (Segitiga di belakang)
+                ctx.beginPath();
+                ctx.moveTo(-8 * c.size, 0);
+                ctx.lineTo(-14 * c.size, -4 * c.size);
+                ctx.lineTo(-14 * c.size, 4 * c.size);
+                ctx.fill();
+
+                // 3. Sirip Samping (Kecil)
+                ctx.beginPath();
+                ctx.moveTo(2 * c.size, 2 * c.size);
+                ctx.lineTo(-2 * c.size, 6 * c.size);
+                ctx.lineTo(-2 * c.size, 2 * c.size);
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        });
     }
 
     map.objects.forEach(o => {
@@ -14923,7 +15200,12 @@ function draw() {
         }
     }
 
+    // --- UPDATE: RENDER CRITTERS UDARA (BIRD & BUTTERFLY) ---
+    // Ikan sudah dirender di layer bawah, jadi di sini skip ikan
     STATE.critters.forEach(c => {
+        // SKIP IKAN (Sudah digambar di layer bawah)
+        if (c.type === 'fish_silhouette') return;
+
         if(c.type === 'bird') {
             ctx.strokeStyle = '#fff'; 
             if(STATE.time > 1500) ctx.strokeStyle = '#cbd5e1'; 
@@ -14944,6 +15226,7 @@ function draw() {
             ctx.ellipse(c.x - 20, c.y + 40, 4, 2, 0, 0, Math.PI*2);
             ctx.fill();
         } 
+        /* LOGIKA IKAN DIHAPUS DARI SINI (PINDAH KE drawFish DI ATAS) */
         else if(c.type === 'butterfly') {
             ctx.fillStyle = c.color;
             const flapW = Math.abs(Math.sin(Date.now()/100)) * 3;
@@ -15083,6 +15366,20 @@ function draw() {
             
             // Efek Shrink: Mengecil perlahan
             if(p.size > 0.5) p.size *= 0.95;
+            
+            ctx.restore();
+        }
+        // --- NEW: RENDER SPIRIT AURA (PARTIKEL DEWI RORO) ---
+        else if (p.type === 'spirit_aura') {
+            ctx.save();
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 8; // Glow effect
+            ctx.globalAlpha = p.life / 80; // Fade out halus
+            
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+            ctx.fill();
             
             ctx.restore();
         }
@@ -15340,6 +15637,10 @@ function drawObject(ctx, o) {
                 // NEW: FALLBACK MEJA KASUR (Meja Kayu + Mesin Kasir Abu-abu)
                 else if (src.includes('mejakasir')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNiIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI4IiB5PSI2IiB3aWR0aD0iMTYiIGhlaWdodD0iMTAiIGZpbGw9IiM5NDkzOTgiIHN0cm9rZT0iIzMzNDE1NSIvPjxyZWN0IHg9IjEyIiB5PSI4IiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjMWU0MDVmIi8+PC9zdmc+';
+                }
+                // NEW: FALLBACK LEMARI (Wardrobe tall box)
+                else if (src.includes('lemari')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI5NiI+PHJlY3QgeD0iNCIgeT0iMiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjkyIiBmaWxsPSIjOEU1NDJCIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjgiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PHJlY3QgeD0iMzQiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PGNpcmNsZSBjeD0iMjYiIGN5PSI1MCIgcj0iMiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjM4IiBjeT0iNTAiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
                 }
                 // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni)
                 else if (src.includes('rakbuku')) {
@@ -15722,9 +16023,10 @@ function drawPlayer(ctx, p) {
         if (p.isAttacking) {
             ctx.drawImage(sprite, -32, -49, 64, 64); 
         } else {
-            // UPDATE: Tinggi disesuaikan (60 -> 56) dan Posisi Y diturunkan (-45 -> -42)
-            // Agar kaki lebih menapak ke bayangan dan tinggi setara NPC
-            ctx.drawImage(sprite, -20, -42, 40, 56); 
+            // UPDATE: UKURAN PLAYER DISESUAIKAN KE 38x58 (Sesuai Request)
+            // Posisi X digeser -19 (setengah dari 38)
+            // Posisi Y digeser -46 agar kaki tetap menapak pas di bayangan (y+12 dari titik tengah)
+            ctx.drawImage(sprite, -19, -46, 38, 58); 
         }
         
         ctx.restore();
@@ -15875,6 +16177,46 @@ function drawNPC(ctx, n) {
             // C. Glow pada Sprite Karakter
             ctx.shadowColor = '#fef08a'; // Kuning Muda Bercahaya
             ctx.shadowBlur = 25;
+        }
+
+        // --- NEW: EFEK CAHAYA BUNGA & SPIRIT (KHUSUS DEWI RORO) ---
+        if (n.id === 'dewi_roro') {
+            // A. Aura Suci (Pink & Putih Lembut)
+            const cx = x + dw/2;
+            const cy = y + dh/2;
+            const pulse = 1 + Math.sin(Date.now() / 400) * 0.1; // Denyut lebih cepat
+            
+            const grad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 50 * pulse);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 0.5)'); 
+            grad.addColorStop(0.6, 'rgba(244, 114, 182, 0.3)'); // Pink lembut
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 55, 0, Math.PI*2);
+            ctx.fill();
+
+            // B. Spawn Partikel Bunga & Spirit Melayang
+            if(Math.random() < 0.2) { // 20% chance per frame
+                 // Random: Kadang bunga (Note Icon), Kadang Spirit Orb (Lingkaran)
+                 const pType = Math.random() < 0.3 ? 'note' : 'spirit_aura'; 
+                 
+                 STATE.particles.push({
+                    x: cx + (Math.random() * 50 - 25),
+                    y: cy + (Math.random() * 60 - 20),
+                    vx: (Math.random() - 0.5) * 0.3, // Goyang horizontal pelan
+                    vy: -0.5 - Math.random(), // Naik ke atas
+                    life: 80,
+                    color: pType === 'note' ? '#fbcfe8' : '#ffffff', // Bunga Pink atau Spirit Putih
+                    type: pType,
+                    icon: '🌸', // Icon Bunga jika type note
+                    size: pType === 'note' ? 10 : (2 + Math.random() * 3) // Ukuran Orb
+                });
+            }
+
+            // C. Glow Pink pada Karakter
+            ctx.shadowColor = '#f9a8d4'; // Pink Glow
+            ctx.shadowBlur = 20;
         }
 
         // UPDATE: Logika Animasi (Static vs Moving)
