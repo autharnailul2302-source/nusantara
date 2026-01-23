@@ -2530,7 +2530,8 @@ button, .round-btn, .d-btn, .auth-btn {
         <!-- REDESIGNED HUD (3 COLUMNS) -->
         <div class="hud-top" id="main-hud"> <!-- Added ID -->
             <!-- 1. LEFT: PROFILE & BARS -->
-            <div class="hud-profile-section">
+            <!-- UPDATE: Menambahkan ID 'hud-profile-box' untuk tutorial -->
+            <div class="hud-profile-section" id="hud-profile-box">
                 <div class="hud-avatar-wrapper">
                     <div class="hud-avatar-circle">
                         <img id="hud-avatar-img" src="images/boy.png" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjAiIGZpbGw9IiMzYjgyZjYiLz48L3N2Zz4='">
@@ -2556,7 +2557,8 @@ button, .round-btn, .d-btn, .auth-btn {
             </div>
 
             <!-- 2. CENTER: CORE STATS MATRIX -->
-            <div class="hud-stats-grid">
+            <!-- UPDATE: Tambahkan ID 'hud-stats-box' untuk tutorial -->
+            <div class="hud-stats-grid" id="hud-stats-box">
                 <div class="stat-pill ic-str" title="Strength (Jalur Pekerja)">
                     <span>💪 STR</span> <span class="stat-val" id="stat-str">5</span>
                 </div>
@@ -2575,7 +2577,8 @@ button, .round-btn, .d-btn, .auth-btn {
             <div class="hud-meta-section">
                 <div class="money-badge">💰 <span id="money-display">50.000</span></div>
                 
-                <div class="stat-item time-container" onclick="this.querySelector('.time-info-box').style.display = (this.querySelector('.time-info-box').style.display == 'block' ? 'none' : 'block')" style="border:none; background:rgba(15, 23, 42, 0.6); display:flex; flex-direction:column; align-items:flex-end; font-size:10px; cursor: help; padding: 5px 10px; border-radius: 8px;">
+                <!-- UPDATE: Menambahkan ID 'hud-time-container' untuk target tutorial -->
+                <div id="hud-time-container" class="stat-item time-container" onclick="this.querySelector('.time-info-box').style.display = (this.querySelector('.time-info-box').style.display == 'block' ? 'none' : 'block')" style="border:none; background:rgba(15, 23, 42, 0.6); display:flex; flex-direction:column; align-items:flex-end; font-size:10px; cursor: help; padding: 5px 10px; border-radius: 8px;">
                     <div class="time-clock">🕘 <span id="clock-display">06:00</span></div>
                     <div style="color:#cbd5e1;">📅 <span id="full-date-display">Spring Y1</span></div>
                     <div id="weather-display" style="color:#94a3b8; font-size:9px;">Cerah</div>
@@ -6097,7 +6100,8 @@ for(let i=0; i<10; i++) {
             /* REMOVED: Satria (Ksatria) dihapus dari luar, dipindah ke dalam Guild */
             /* UPDATE: PUTRI DIUBAH JADI 'STATIC' AGAR TIDAK FLOATING SESUAI REQUEST */
             /* UPDATE TERBARU: POSISI DINAIKKAN KE Y:12 AGAR TIDAK TERTUTUP ATAP RUMAH MENTOR */
-            {id: 'lover2girl', x: 32, y: 12, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'static', schedule: 'day', w: 40, h: 60},
+            /* REVISI JADWAL PUTRI: SORE (AFTERNOON) DI LUAR, PAGI DI KAMPUS */
+            {id: 'lover2girl', x: 32, y: 12, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'static', schedule: 'afternoon', w: 40, h: 60},
             
             /* MOVED: CINTA MATRE PINDAH KE INTERIOR (GUILD & PERPUS) */
 
@@ -6325,7 +6329,8 @@ for(let i=0; i<10; i++) {
             {id: 'student2', x: 12, y: 5, name: 'Mahasiswa Santai', imgSrc: 'images/mahasiswakanan.png', type: 'static', schedule: 'day', w: 40, h: 60},
             
             // Teman Love Interest (Putri - Scholar) sering di kampus
-            {id: 'lover2girl', x: 11, y: 9, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'lover', schedule: 'day', w: 40, h: 60} 
+            /* REVISI JADWAL PUTRI: PAGI (MORNING) DI KAMPUS, SORE DI LUAR */
+            {id: 'lover2girl', x: 11, y: 9, name: 'Putri (Scholar)', imgSrc: 'images/lover2girl.png', type: 'lover', schedule: 'morning', w: 40, h: 60} 
         ],
         objects: [
             // Papan Tulis Besar di Depan - UPDATE: Diperbesar (w:4, h:1.5) dan posisi disesuaikan (x:6, y:0.5)
@@ -6763,6 +6768,9 @@ const STATE = {
     // QUEST FLAGS
     activeQuest: null, // 'find_draft' etc
     questProgress: {},
+    
+    // NEW: TUTORIAL FOCUS TARGET (LIVE TRACKING)
+    tutorialFocusTarget: null, // { x: tileX, y: tileY }
 
     enemies: [],
     particles: [],
@@ -7772,29 +7780,17 @@ function showTutorialFocus(elementId) {
 
 // --- NEW HELPER: FOKUS KE OBJEK DALAM GAME (CANVAS) ---
 function showInGameFocus(tileX, tileY) {
-    // Hapus highlight UI
+    // 1. Hapus highlight UI lama
     document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
     
     const pointer = document.getElementById('tutorial-pointer');
     if (pointer) {
-        // 1. Hitung Scale Factor saat ini (Canvas Width / Logical Game Width)
-        const scaleFactor = canvas.width / GAME_WIDTH;
-        
-        // 2. Hitung Posisi Dunia Objek (Tengah Tile)
-        const worldX = (tileX * TILE_SIZE) + (TILE_SIZE / 2);
-        const worldY = (tileY * TILE_SIZE) + (TILE_SIZE / 2);
-        
-        // 3. Proyeksikan ke Layar (Dikurangi Kamera)
-        // Koordinat Layar = (Posisi Dunia - Posisi Kamera) * Scale
-        const screenX = (worldX - STATE.camera.x) * scaleFactor;
-        const screenY = (worldY - STATE.camera.y) * scaleFactor;
-        
-        // 4. Posisikan Pointer
-        // Pointer ada di DOM (Fixed), jadi koordinatnya relatif terhadap Viewport
-        pointer.style.left = (screenX - 25) + 'px'; // Center pointer width
-        pointer.style.top = (screenY + 20) + 'px';  // Di bawah objek sedikit
-        
+        // 2. Set State Target agar di-update terus menerus di Game Loop
+        STATE.tutorialFocusTarget = { x: tileX, y: tileY };
         pointer.style.display = 'block';
+        
+        // 3. Panggil update sekali secara manual agar langsung muncul di posisi awal (mencegah flicker)
+        updateTutorialPointerPosition();
     }
 }
 
@@ -7803,17 +7799,43 @@ function clearTutorialFocus() {
     const pointer = document.getElementById('tutorial-pointer');
     if(pointer) pointer.style.display = 'none';
     
-    // Kembalikan tombol aksi ke state normal (hide jika tidak ada objek)
+    // Reset Target Live Tracking
+    STATE.tutorialFocusTarget = null;
+    
+    // Kembalikan tombol aksi ke state normal
     const btn = document.getElementById('btn-action');
-    if(btn) {
-        btn.style.animation = ''; // Hapus animasi tutorial
-        // Cek ulang apakah ada objek dekat untuk menentukan visibility
-        // (Akan dihandle otomatis oleh update loop game, tapi kita bisa hide dulu)
-        // Biarkan update() yang mengurus display 'none'/'flex' selanjutnya
-    }
+    if(btn) btn.style.animation = ''; 
 }
 
-// --- NEW: FUNGSI RESET INPUT (Mencegah Karakter Jalan Sendiri) ---
+// --- NEW FUNCTION: UPDATE POSISI POINTER (DIPANGGIL TIAP FRAME) ---
+function updateTutorialPointerPosition() {
+    if (!STATE.tutorialFocusTarget) return;
+
+    const pointer = document.getElementById('tutorial-pointer');
+    if (!pointer) return;
+
+    // 1. Hitung Scale Factor Real-time
+    const scaleFactor = canvas.width / GAME_WIDTH;
+    
+    // 2. Ambil Target Tile dari State
+    const tileX = STATE.tutorialFocusTarget.x;
+    const tileY = STATE.tutorialFocusTarget.y;
+    
+    // 3. Hitung Posisi Dunia (Tengah Tile)
+    const worldX = (tileX * TILE_SIZE) + (TILE_SIZE / 2);
+    const worldY = (tileY * TILE_SIZE) + (TILE_SIZE / 2);
+    
+    // 4. Proyeksikan ke Layar (Dikurangi Kamera Saat Ini)
+    // FIX: Menggunakan STATE.camera yang selalu update
+    const screenX = (worldX - STATE.camera.x) * scaleFactor;
+    const screenY = (worldY - STATE.camera.y) * scaleFactor;
+    
+    // 5. Update Posisi DOM Element
+    // Offset -25 (tengah icon) dan +20 (di bawah objek)
+    pointer.style.left = (screenX - 25) + 'px'; 
+    pointer.style.top = (screenY + 20) + 'px';
+}
+
 function resetInputs() {
     // Reset Keyboard
     Object.keys(keys).forEach(key => keys[key] = false);
@@ -7835,54 +7857,57 @@ function startWakeUpSequence() {
                     
                     // --- START VISUAL TUTORIAL ---
                     setTimeout(() => {
-                        // UPDATE: TIDAK LAGI MENG-HIGHLIGHT CANVAS (Menghindari bug Z-Index)
-                        // showTutorialFocus('gameCanvas'); 
-                        
-                        showDialogue("TUTORIAL (1/7)", 
-                            "Selamat datang! Mari belajar bergerak:\n\n📱 **HP/Tablet**: Sentuh & Geser jari di mana saja pada layar.\n💻 **PC/Laptop**: Gunakan tombol **WASD** atau **Panah**.", 
+                        // UPDATE: Tentukan TARGET GERAKAN (Tengah Ruangan)
+                        // Koordinat relatif aman di tengah rumah (x:6, y:5)
+                        const targetX = 6;
+                        const targetY = 5;
+
+                        // UPDATE: Total langkah jadi 10
+                        showDialogue("TUTORIAL (1/10)", 
+                            "Selamat datang! Mari belajar bergerak:\n\n📱 **HP/Tablet**: Sentuh & Geser jari (Joystick).\n💻 **PC/Laptop**: Gunakan tombol **WASD** atau **Panah**.\n\n**TUGAS:** Berjalanlah ke titik yang ditunjuk tangan!", 
                             [
                             {
                                 text: "Saya Siap Bergerak >>", 
                                 action: () => {
-                                    // FIX: GANTI TIMER 5 DETIK DENGAN DETEKSI GERAKAN
                                     closeDialogue();
-                                    clearTutorialFocus();
                                     
-                                    // Mulai monitor gerakan
-                                    const startX = STATE.player.x;
-                                    const startY = STATE.player.y;
-                                    let checkMoveInterval = null;
+                                    // 1. Tampilkan Pointer Tangan di Target (Game World)
+                                    // Fungsi ini sudah otomatis menghitung posisi layar & kamera
+                                    showInGameFocus(targetX, targetY);
                                     
-                                    showToast("SILAKAN BERGERAK SEDIKIT... (Menunggu Input)");
+                                    showToast("BERJALANLAH KE ARAH TANGAN 👆");
                                     
-                                    // Cek setiap 200ms apakah pemain sudah bergerak
-                                    checkMoveInterval = setInterval(() => {
-                                        const dist = Math.hypot(STATE.player.x - startX, STATE.player.y - startY);
+                                    // 2. Mulai Monitor Posisi Pemain
+                                    const checkTargetInterval = setInterval(() => {
+                                        // Hitung jarak player (pixel) ke target (tile center)
+                                        const pX = STATE.player.x + (STATE.player.w/2);
+                                        const pY = STATE.player.y + (STATE.player.h/2);
                                         
-                                        // Jika sudah bergerak lebih dari 30 pixel (1 langkah tile)
-                                        if(dist > 30) {
-                                            clearInterval(checkMoveInterval); // Stop checking
-                                            showToast("BAGUS! Gerakan Terdeteksi ✅");
+                                        const tX = (targetX * TILE_SIZE) + (TILE_SIZE/2);
+                                        const tY = (targetY * TILE_SIZE) + (TILE_SIZE/2);
+                                        
+                                        const dist = Math.hypot(pX - tX, pY - tY);
+                                        
+                                        // Jika sudah dekat (toleransi 40px / ~1.3 tile)
+                                        if(dist < 40) {
+                                            clearInterval(checkTargetInterval); // Stop checking
+                                            clearTutorialFocus(); // Hapus pointer
                                             
-                                            // Lanjut ke Step 2
-                                            setTimeout(() => {
-                                                resetInputs(); // Stop player agar tidak jalan terus saat dialog muncul
-                                                continueTutorialStep2();
-                                            }, 500);
-                                        }
-                                    }, 200);
+                                            showToast("BAGUS! Gerakan Terdeteksi ✅");
+                                            if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                            createParticle(pX, pY, '#4ade80');
 
-                                    // Fallback: Jika dalam 8 detik tidak bisa gerak (bingung), otomatis lanjut
-                                    setTimeout(() => {
-                                        if(checkMoveInterval) {
-                                            clearInterval(checkMoveInterval);
-                                            // Cek jika belum lanjut (screen masih play)
-                                            if(STATE.screen === 'play') {
-                                                 showToast("Lewati Latihan Gerak...");
-                                                 continueTutorialStep2();
-                                            }
+                                            // Lanjut ke Step 2 setelah jeda sebentar
+                                            setTimeout(() => {
+                                                resetInputs(); // Stop player agar tidak jalan terus
+                                                continueTutorialStep2();
+                                            }, 800);
                                         }
-                                    }, 8000);
+                                        
+                                        // Safety: Stop jika keluar dari mode play
+                                        if (STATE.screen !== 'play') clearInterval(checkTargetInterval);
+
+                                    }, 200); // Cek setiap 200ms
                                 }
                             }
                         ]);
@@ -7902,14 +7927,15 @@ function continueTutorialStep2() {
     
     showTutorialFocus('btn-action'); 
     
-    showDialogue("TUTORIAL (2/7)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
+    // UPDATE: Total langkah jadi 10
+    showDialogue("TUTORIAL (2/10)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
         {
             text: "Lanjut >>", 
             action: () => {
                 // STEP 3: COMBAT MODE
                 btnAction.innerText = '⚔️';
                 
-                showDialogue("TUTORIAL (3/7)", 
+                showDialogue("TUTORIAL (3/10)", 
                     "⚔️ **MODE TEMPUR**:\nSaat masuk ke Dungeon berbahaya, tombol ini otomatis berubah menjadi **PEDANG**.\n\nTekan cepat untuk menyerang musuh!", 
                     [{
                         text: "Siap Bertarung!",
@@ -7930,14 +7956,15 @@ function continueTutorialStep4() {
     
     showTutorialFocus('bag-btn');
     
-    showDialogue("TUTORIAL (4/7)", 
+    // UPDATE: Total langkah jadi 10
+    showDialogue("TUTORIAL (4/10)", 
         "🎒 **TAS PENYIMPANAN**:\nKlik tombol Tas ini untuk melihat dan menggunakan item yang kamu miliki.", 
         [{text: "Lanjut >>", action: () => {
             
             // STEP 5: MENU JURNAL QUEST
             showTutorialFocus('quest-btn');
 
-            showDialogue("TUTORIAL (5/7)",
+            showDialogue("TUTORIAL (5/10)",
                 "📜 **TOMBOL JURNAL**:\nIni adalah navigasi utamamu!\nCek **Misi Harian** & **Target Hidup** di sini.\n\nSelesaikan misi untuk dapat Hadiah Gold & EXP!",
                 [{text: "Mengerti!", action: () => {
                     continueTutorialStep6();
@@ -7948,45 +7975,101 @@ function continueTutorialStep4() {
 }
 
 function continueTutorialStep6() {
-    // STEP 6: KALENDER (NEW)
+    // STEP 6: KALENDER (Start Chain)
+    tutorialStep_Calendar();
+}
+
+// --- REFACTORED TUTORIAL STEPS (CHAINED) ---
+
+function tutorialStep_Calendar() {
     // Posisi Kalender Rumah Level 1: x=10, y=0 (Pojok Kanan Atas)
     showInGameFocus(10, 0); 
 
-    showDialogue("TUTORIAL (6/9)", 
+    // UPDATE: Total langkah jadi 12
+    showDialogue("TUTORIAL (6/12)", 
         "📅 **KALENDER**:\nLihat benda di dinding itu? Itu Kalender.\n\nGunakan untuk mengecek **Tanggal**, **Musim**, dan **Jadwal Festival** atau **Ulang Tahun NPC**.", 
         [{text: "Wah, Penting!", action: () => {
+            tutorialStep_Stats(); // Lanjut ke Stats
+        }}]
+    );
+}
 
-            // STEP 7: TELEPON (NEW)
-            // Posisi Meja Telepon: x=2, y=6
-            showInGameFocus(2, 6);
+function tutorialStep_Stats() {
+    // STEP 7: HUD STATS
+    // Gunakan showTutorialFocus untuk elemen UI
+    showTutorialFocus('hud-stats-box');
 
-            showDialogue("TUTORIAL (7/9)", 
-                "☎️ **TELEPON RUMAH**:\nGunakan telepon ini untuk membuka **Katalog Belanja**.\n\nKamu bisa membeli **Furnitur** baru atau melakukan **Upgrade Rumah** agar lebih luas dan mewah!", 
-                [{text: "Sip, Lanjut!", action: () => {
+    showDialogue("TUTORIAL (7/12)", 
+        "📊 **STATUS KARAKTER (HUD)**:\nPerhatikan kotak di tengah atas layar ini!\n\n💪 **STR**: Kekuatan Fisik (Pekerja)\n🧠 **INT**: Kecerdasan (Mahasiswa)\n❤️ **REP**: Reputasi Sosial (Keluarga)\n📈 **BIZ**: Skill Bisnis (Wirausaha)\n\nTingkatkan status ini sesuai **Role** yang kamu pilih nanti!", 
+        [{text: "Siap, Paham!", action: () => {
+            tutorialStep_ExpEnergy(); // Lanjut ke EXP & Energy (NEW)
+        }}]
+    );
+}
 
-                    // STEP 8: KASUR (NEW HIGHLIGHT)
-                    // Posisi Kasur: x=1, y=0 (Lebar 3). Titik tengah sekitar x=2, y=1
-                    showInGameFocus(2, 1);
+function tutorialStep_ExpEnergy() {
+    // STEP 8: EXP & ENERGY (NEW)
+    // Sorot area Profil di kiri atas
+    showTutorialFocus('hud-profile-box');
 
-                    showDialogue("TUTORIAL (8/9)", 
-                        "🛏️ **KASUR EMPUK**:\nLelah berpetualang? Gunakan kasur ini untuk **Tidur** (Ganti Hari) dan memulihkan **Energi & HP** sepenuhnya.\n\nJangan lupa tulis Jurnal sebelum tidur!", 
-                        [{text: "Oke, Mengerti!", action: () => {
+    // UPDATE: Penjelasan lebih detail tentang penyebab energi berkurang
+    showDialogue("TUTORIAL (8/12)", 
+        "⚡ **KONDISI FISIK**:\nLihat bar di pojok kiri atas:\n\n🟦 **EXP (Biru)**: Penuh = Level Up (Status Naik)!\n⚡ **ENERGI (Kuning)**: Stamina tubuhmu.\n\n🔻 **BERKURANG SAAT:**\n🚶 Berjalan Jauh (Otomatis)\n⚒️ Bekerja/Belajar/Mancing\n⚔️ Menyerang Musuh\n\n⚠️ **AWAS:** Jika Energi 0 = **PINGSAN** (Denda Uang)!", 
+        [{text: "Oke, Hati-hati!", action: () => {
+            tutorialStep_Telephone(); // Lanjut ke Telepon
+        }}]
+    );
+}
 
-                            // STEP 9: BUKU (CLOSING)
-                            // UPDATE: SOROT MEJA BELAJAR (x:4, y:0) AGAR PEMAIN TAHU LOKASI SAVE
-                            showInGameFocus(4, 0); 
-                            
-                            showDialogue("TUTORIAL (9/9)", 
-                                "Terakhir, ini meja belajarmu:\n\n📔 **BUKU JURNAL**: Gunakan untuk **SAVE GAME** manual dan **Belajar Mandiri** (Menambah INT).\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
-                                [{text: "Ayo Keluar!", action: () => {
-                                    clearTutorialFocus();
-                                    closeDialogue();
-                                }}]
-                            );
-                        }}]
-                    );
-                }}]
-            );
+function tutorialStep_Telephone() {
+    // STEP 9: TELEPON
+    // Posisi Meja Telepon: x=2, y=6
+    showInGameFocus(2, 6);
+
+    showDialogue("TUTORIAL (9/12)", 
+        "☎️ **TELEPON RUMAH**:\nGunakan telepon ini untuk membuka **Katalog Belanja**.\n\nKamu bisa membeli **Furnitur** baru atau melakukan **Upgrade Rumah** agar lebih luas dan mewah!", 
+        [{text: "Sip, Lanjut!", action: () => {
+            tutorialStep_Wardrobe(); // Lanjut ke Lemari
+        }}]
+    );
+}
+
+function tutorialStep_Wardrobe() {
+    // STEP 10: LEMARI PAKAIAN
+    // Posisi Lemari: x=7, y=0 (Lebar 2, Tinggi 3).
+    showInGameFocus(7, 0);
+
+    showDialogue("TUTORIAL (10/12)", 
+        "👗 **LEMARI PAKAIAN**:\nDi sinilah koleksi bajumu tersimpan.\n\nGunakan lemari ini untuk **Ganti Kostum** (Seragam, Baju Pesta, atau Zirah Tempur).\n\nPenampilanmu bisa membuka dialog khusus dengan NPC!", 
+        [{text: "Keren!", action: () => {
+            tutorialStep_Bed(); // Lanjut ke Kasur
+        }}]
+    );
+}
+
+function tutorialStep_Bed() {
+    // STEP 11: KASUR
+    // Posisi Kasur: x=1, y=0 (Lebar 3). Titik tengah sekitar x=2, y=1
+    showInGameFocus(2, 1);
+
+    showDialogue("TUTORIAL (11/12)", 
+        "🛏️ **KASUR EMPUK**:\nLelah berpetualang? Gunakan kasur ini untuk **Tidur** (Ganti Hari) dan memulihkan **Energi & HP** sepenuhnya.\n\nJangan lupa tulis Jurnal sebelum tidur!", 
+        [{text: "Oke, Mengerti!", action: () => {
+            tutorialStep_Diary(); // Lanjut ke Buku
+        }}]
+    );
+}
+
+function tutorialStep_Diary() {
+    // STEP 12: BUKU (CLOSING)
+    // UPDATE: SOROT MEJA BELAJAR (x:4, y:0) AGAR PEMAIN TAHU LOKASI SAVE
+    showInGameFocus(4, 0); 
+    
+    showDialogue("TUTORIAL (12/12)", 
+        "Terakhir, ini meja belajarmu:\n\n📔 **BUKU JURNAL**: Gunakan untuk **SAVE GAME** manual dan **Belajar Mandiri** (Menambah INT).\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
+        [{text: "Ayo Keluar!", action: () => {
+            clearTutorialFocus();
+            closeDialogue();
         }}]
     );
 }
@@ -8066,39 +8149,20 @@ function setRole(role) {
         manualSave(); 
         
         // Dialog Mentor Budi menggantikan Surat Penerimaan instan
+        // UPDATE: TAMBAHKAN INFO JAM BUKA KAMPUS
         showDialogue("MENTOR BUDI", 
-            "Pilihan yang cerdas! Pendidikan adalah fondasi masa depan.\n\nNamun, administrasi harus tertib. **Pergilah ke Kampus** di timur desa untuk mendaftar ulang dan memilih jurusanmu di sana.\n\nSemoga berhasil, Nak!", 
+            "Pilihan yang cerdas! Pendidikan adalah fondasi masa depan.\n\nNamun, administrasi harus tertib. **Pergilah ke Kampus** di timur desa untuk mendaftar ulang dan memilih jurusanmu di sana.\n\nCatat ini: Kampus buka pukul **07:00 - 18:00**. Jangan datang terlalu malam!\n\nSemoga berhasil, Nak!", 
             [{
                 text: "Siap, Laksanakan!", 
                 action: () => {
-                    // Logika Mentor Menghilang (Kembali ke posisi asal di map)
-                    const villMap = maps['village'];
-                    const mentor = villMap.npcs.find(n => n.id === 'mentor');
-                    if (mentor) {
-                        // UPDATE: Pindahkan ke -99 (Hilang dari map desa) agar tidak dobel dengan yang di dalam rumah
-                        mentor.x = -99; 
-                        mentor.y = -99;
-                        mentor.vx = 0; 
-                        mentor.vy = 0;
-                    }
-                    
-                    // FIX: BUKA KUNCI JURNAL (Akhiri Status Prologue)
-                    STATE.isPrologue = false; 
-                    
-                    updateHUDInfo(); // Update UI agar role terlihat
-                    closeDialogue();
+                    // UPDATE: Panggil Tutorial Waktu sebelum Mentor pergi
                     showToast("Misi Baru: Pergi ke Kampus 🎓");
-
-                    // FIX: SIMPAN ULANG SETELAH DIALOG DITUTUP (DATA FINAL)
-                    manualSave();
-                    
-                    // Optional: Otomatis buka Jurnal untuk menunjukkan misi baru
-                    setTimeout(() => showDailyQuestPopup(), 500);
+                    explainTimeHUD();
                 }
             }], 
             'images/mentor.png' 
         );
-        return; // Berhenti di sini, tidak lanjut ke finalizeRoleSetup otomatis
+        return; // Berhenti di sini
     }
 
     // --- FIX: TAMBAHKAN PENGARAHAN KHUSUS UNTUK WORKER ---
@@ -8109,36 +8173,20 @@ function setRole(role) {
         // FIX: PAKSA SIMPAN DATA SEGERA AGAR MUNCUL DI DASHBOARD GURU
         manualSave();
 
+        // UPDATE: TAMBAHKAN INFO JAM BUKA TOKO MERCHANT
         showDialogue("MENTOR BUDI", 
-            "Pilihan tangguh! Jalur Fighter (Pekerja) membutuhkan fisik yang kuat.\n\nLangkah pertamamu: **Pergilah ke Toko Merchant** di selatan desa.\n\nBos Toko sedang mencari pegawai gudang yang rajin. Masuklah ke gedung toko, bicara padanya, dan **Lamar Kerja**!", 
+            "Pilihan tangguh! Jalur Fighter (Pekerja) membutuhkan fisik yang kuat.\n\nLangkah pertamamu: **Pergilah ke Toko Merchant** di selatan desa.\n\nBos Toko sedang mencari pegawai gudang yang rajin. Masuklah ke gedung toko, bicara padanya, dan **Lamar Kerja**!\n\nToko buka pukul **06:00 - 20:00**, tapi ingat shift kerja dimulai jam **08:00** pagi.", 
             [{
                 text: "Siap Kerja Keras!", 
                 action: () => {
-                    // Logika Mentor Menghilang
-                    const villMap = maps['village'];
-                    const mentor = villMap.npcs.find(n => n.id === 'mentor');
-                    if (mentor) {
-                        // UPDATE: Pindahkan ke -99 (Hilang dari map desa)
-                        mentor.x = -99; 
-                        mentor.y = -99; 
-                        mentor.vx = 0; 
-                        mentor.vy = 0;
-                    }
-                    
-                    STATE.isPrologue = false; 
-                    updateHUDInfo();
-                    closeDialogue();
+                    // UPDATE: Panggil Tutorial Waktu
                     showToast("Misi Baru: Lamar Kerja di Merchant 💼");
-
-                    // FIX: SIMPAN ULANG SETELAH DIALOG DITUTUP (DATA FINAL)
-                    manualSave();
-                    
-                    setTimeout(() => showDailyQuestPopup(), 500);
+                    explainTimeHUD();
                 }
             }], 
             'images/mentor.png' 
         );
-        return; // Berhenti agar tidak memanggil finalizeRoleSetup default
+        return; // Berhenti
     }
 
     // --- UPDATE: PENGARAHAN KHUSUS UNTUK WIRAUSAHA (ENTREPRENEUR) ---
@@ -8151,38 +8199,23 @@ function setRole(role) {
 
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Uang
 
+        // UPDATE: TAMBAHKAN INFO JAM BUKA SUPPLIER (MERCHANT)
         showDialogue("MENTOR BUDI", 
-            "Pilihan brilian! Menjadi Wirausaha berarti kamu adalah bos untuk dirimu sendiri.\n\nSebagai modal awal, saya berikan **20.000 Gold**.\n\nDan lihatlah... **Rumahmu kini telah saya renovasi menjadi RUKO (Rumah Toko)** agar kamu bisa mulai berjualan dari rumah!", 
+            "Pilihan brilian! Menjadi Wirausaha berarti kamu adalah bos untuk dirimu sendiri.\n\nSebagai modal awal, saya berikan **20.000 Gold**.\n\nDan lihatlah... **Rumahmu kini telah saya renovasi menjadi RUKO (Rumah Toko)** agar kamu bisa mulai berjualan dari rumah!\n\nJika butuh stok dagangan, Toko Merchant (Supplier) buka pukul **06:00 - 20:00**.", 
             [{
                 text: "Wah, Terima Kasih Mentor!", 
                 action: () => {
-                    // 1. Logika Mentor Menghilang
+                    // UPDATE VISUAL RUMAH SECARA INSTAN
                     const villMap = maps['village'];
-                    const mentor = villMap.npcs.find(n => n.id === 'mentor');
-                    if (mentor) {
-                        mentor.x = -99; mentor.y = -99; mentor.vx = 0; mentor.vy = 0;
-                    }
-                    
-                    // 2. UPDATE VISUAL RUMAH SECARA INSTAN
-                    // Cari objek bangunan rumah player
                     const houseBuilding = villMap.buildings.find(b => b.id === 'player_house');
                     if (houseBuilding) {
-                        // Paksa reset gambar yang sudah di-load agar sistem menggambar ulang dengan src baru ('tokoplayer.png')
-                        houseBuilding.loadedImg = null; 
+                        houseBuilding.loadedImg = null; // Reset gambar agar reload jadi Toko
                     }
-
-                    // 3. Finalisasi State
-                    STATE.isPrologue = false; 
-                    updateHUDInfo();
-                    closeDialogue();
-                    
-                    // Efek Visual Perubahan
                     createParticle(19*TILE_SIZE, 7*TILE_SIZE, '#fbbf24'); // Partikel di posisi rumah
+                    
+                    // UPDATE: Panggil Tutorial Waktu
                     showToast("Rumah berubah menjadi Toko! 🏪");
-
-                    // 4. Simpan
-                    manualSave();
-                    setTimeout(() => showDailyQuestPopup(), 500);
+                    explainTimeHUD();
                 }
             }], 
             'images/mentor.png' 
@@ -8205,25 +8238,15 @@ function setRole(role) {
         // FIX: PAKSA SIMPAN DATA
         manualSave();
 
+        // UPDATE: TAMBAHKAN INFO JAM BUKA BALAI NIKAH
         showDialogue("MENTOR BUDI", 
-            "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nSebagai bekal awal, saya berikan **Cincin Kayu** dan **Baju Pengantin** ini. Gunakan untuk melamar pasanganmu nanti.\n\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). Temui **Bapak Penghulu (Modin)** untuk mendaftarkan niat sucimu.", 
+            "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nSebagai bekal awal, saya berikan **Cincin Kayu** dan **Baju Pengantin** ini. Gunakan untuk melamar pasanganmu nanti.\n\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). Temui **Bapak Penghulu (Modin)** untuk mendaftarkan niat sucimu.\n\nIngat, Balai Pernikahan buka pukul **06:00 - 16:00**.", 
             [{
                 text: "Siap, Otw Halal!", 
                 action: () => {
-                    // Logika Mentor Menghilang
-                    const villMap = maps['village'];
-                    const mentor = villMap.npcs.find(n => n.id === 'mentor');
-                    if (mentor) {
-                        mentor.x = -99; mentor.y = -99; mentor.vx = 0; mentor.vy = 0;
-                    }
-                    
-                    STATE.isPrologue = false; 
-                    updateHUDInfo();
-                    closeDialogue();
+                    // UPDATE: Panggil Tutorial Waktu
                     showToast("Dapat Cincin & Baju Pengantin 👘");
-
-                    manualSave();
-                    setTimeout(() => showDailyQuestPopup(), 500);
+                    explainTimeHUD();
                 }
             }], 
             'images/mentor.png' 
@@ -8235,6 +8258,123 @@ function setRole(role) {
     manualSave();
 
     finalizeRoleSetup();
+}
+
+// --- NEW: TUTORIAL WAKTU OLEH MENTOR ---
+function explainTimeHUD() {
+    // 1. Highlight Elemen Jam di HUD (Menggunakan ID yang baru ditambahkan)
+    showTutorialFocus('hud-time-container');
+
+    // 2. Dialog Penjelasan
+    showDialogue("MENTOR BUDI",
+        "Satu hal terakhir yang **SANGAT PENTING**: WAKTU.\n\nLihat jam di pojok kanan atas itu? (👆)\nDi Pulau Arsa, waktu terus berjalan. **1 Jam Game = ±1 Menit Asli**.",
+        [{
+            text: "Lalu?",
+            action: () => {
+                showDialogue("MENTOR BUDI",
+                    "Perhatikan aturan ini:\n\n1. 🏪 **Jam Operasional**: Toko, Kampus, & Balai Desa punya jam buka/tutup. Jangan bertamu tengah malam!\n\n2. 🌙 **Stamina**: Jika kamu begadang lewat jam 00:00, kamu akan **bangun kesiangan** & **lemas** esok harinya!\n\nManfaatkan waktumu sebaik mungkin.",
+                    [{
+                        text: "Paham, Lanjut!", // UPDATE: Tombol lanjut ke Kalender
+                        action: () => {
+                            explainCalendar(); // Panggil fungsi tutorial Kalender
+                        }
+                    }],
+                    'images/mentor.png'
+                );
+            }
+        }],
+        'images/mentor.png'
+    );
+}
+
+// --- NEW: TUTORIAL KALENDER & MUSIM ---
+function explainCalendar() {
+    // Highlight tetap di area waktu/tanggal
+    showTutorialFocus('hud-time-container');
+
+    showDialogue("MENTOR BUDI",
+        "Selain Jam, perhatikan juga baris di bawahnya: **TANGGAL & MUSIM**.\n\nDi Pulau Arsa, kita memiliki 4 Musim: **Spring** (Semi), **Summer** (Panas), **Autumn** (Gugur), dan **Winter** (Dingin).",
+        [{
+            text: "Apa bedanya?",
+            action: () => {
+                showDialogue("MENTOR BUDI",
+                    "Setiap musim memiliki **Ikan, Tanaman Liar, dan Cuaca** yang unik.\n\nDan yang paling penting: Cek **Kalender di Dinding Rumahmu** setiap pagi!\n\nDi sana tercatat jadwal **Festival Desa** dan **Ulang Tahun** warga. Datanglah ke festival untuk mendapatkan hadiah langka!",
+                    [{
+                        text: "Siap, Mengerti!",
+                        action: () => {
+                            // UPDATE: Lanjut ke penjelasan Sosial sebelum selesai
+                            explainSocial(); 
+                        }
+                    }],
+                    'images/mentor.png'
+                );
+            }
+        }],
+        'images/mentor.png'
+    );
+}
+
+// --- NEW: TUTORIAL SOSIALISASI & PENUTUP ---
+function explainSocial() {
+    // Hapus highlight dari HUD agar fokus ke dialog
+    clearTutorialFocus();
+
+    showDialogue("MENTOR BUDI",
+        "Satu hal terakhir yang paling penting: **SOSIALISASI**.\n\nJangan hidup sendiri di sini! Bergaullah dengan penduduk Pulau Arsa. Sapa mereka, beri hadiah, dan dengarkan cerita mereka.",
+        [{
+            text: "Kenapa harus begitu?",
+            action: () => {
+                showDialogue("MENTOR BUDI",
+                    "Karena interaksi sosial akan **mendewasakan dirimu**.\n\nDengan menjaga hubungan baik, kamu akan membuka banyak **Rahasia Pulau** ini yang tidak tertulis di peta.\n\nIngat, kesuksesan sejati bukan hanya soal seberapa banyak Emas yang kamu punya, tapi seberapa banyak Hati yang kamu menangkan.",
+                    [{
+                        text: "Nasihat yang indah...",
+                        action: () => {
+                            showDialogue("MENTOR BUDI",
+                                "Baiklah, bekalmu sudah cukup. Sekarang, giliranmu untuk menulis ceritamu sendiri.\n\nJelajahi, pelajari, dan jadilah legenda.\n\n**SEMOGA BERHASIL!** 👋",
+                                [{
+                                    text: "Siap! Terima Kasih Mentor! (Selesai)",
+                                    action: () => {
+                                        finishPrologueSequence();
+                                    }
+                                }],
+                                'images/mentor.png'
+                            );
+                        }
+                    }],
+                    'images/mentor.png'
+                );
+            }
+        }],
+        'images/mentor.png'
+    );
+}
+
+// --- NEW: FUNGSI FINALISASI PROLOG (CLEANUP) ---
+function finishPrologueSequence() {
+    // 1. Logika Mentor Menghilang
+    const villMap = maps['village'];
+    const mentor = villMap.npcs.find(n => n.id === 'mentor');
+    if (mentor) {
+        // Pindahkan ke -99 (Hilang dari map desa)
+        mentor.x = -99; 
+        mentor.y = -99;
+        mentor.vx = 0; 
+        mentor.vy = 0;
+    }
+    
+    // 2. Buka Kunci Jurnal (Akhiri Status Prologue)
+    STATE.isPrologue = false; 
+    
+    updateHUDInfo();
+    closeDialogue();
+
+    // 3. Simpan Ulang & Tampilkan Quest
+    manualSave();
+    
+    setTimeout(() => {
+        showDailyQuestPopup();
+        showToast("SEMOGA BERHASIL! 👋");
+    }, 500);
 }
 
 // --- NEW: SISTEM UJIAN MASUK KULIAH (EXAM SYSTEM) ---
@@ -9486,6 +9626,12 @@ function update() {
     if (STATE.screen !== 'play') return;
 	
     // Removed btnSkill display logic block here
+
+    // --- NEW: UPDATE LIVE TUTORIAL POINTER ---
+    // Pastikan pointer selalu menempel pada objek meskipun kamera bergerak
+    if (STATE.tutorialFocusTarget) {
+        updateTutorialPointerPosition();
+    }
 
     // --- NEW: GLOBAL LOW ENERGY WARNING CHECK ---
     // Cek jika energi kritis (<= 20) dan belum diperingatkan
