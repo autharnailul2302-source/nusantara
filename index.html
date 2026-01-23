@@ -8321,14 +8321,15 @@ function setRole(role) {
         // FIX: PAKSA SIMPAN DATA
         manualSave();
 
-        // UPDATE: TAMBAHKAN INFO JAM BUKA BALAI NIKAH
+        // UPDATE: TAMBAHKAN INFO QUEST BALAI NIKAH & PAK MODIN
         showDialogue("MENTOR BUDI", 
-            "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nSebagai bekal awal, saya berikan **Cincin Kayu** dan **Baju Pengantin** ini. Gunakan untuk melamar pasanganmu nanti.\n\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). Temui **Bapak Penghulu (Modin)** untuk mendaftarkan niat sucimu.\n\nIngat, Balai Pernikahan buka pukul **06:00 - 16:00**.", 
+            "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nSebagai bekal awal, saya berikan **Cincin Kayu** dan **Baju Pengantin** ini. Gunakan untuk melamar pasanganmu nanti.\n\n**QUEST UTAMA:**\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). \n\nTemui **Bapak Penghulu (Modin)** untuk mendapatkan wejangan nikah dan mendaftarkan diri.\n\nIngat, Balai Pernikahan buka pukul **06:00 - 16:00**.", 
             [{
                 text: "Siap, Otw Halal!", 
                 action: () => {
-                    // UPDATE: Panggil Tutorial Waktu
-                    showToast("Dapat Cincin & Baju Pengantin 👘");
+                    // UPDATE: Notifikasi Quest Baru & Item
+                    showToast("QUEST: Temui Pak Modin di Balai Nikah! 💍");
+                    setTimeout(() => showToast("Dapat: Cincin & Baju Pengantin 👘"), 1500);
                     explainTimeHUD();
                 }
             }], 
