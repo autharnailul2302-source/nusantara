@@ -929,7 +929,7 @@
             top: 0; left: 0; width: 100%; height: 100%;
             background: #000;
             z-index: 300;
-            display: flex;
+            display: none; /* UPDATE: Default Hidden, muncul setelah Audio Choice */
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -937,6 +937,19 @@
             /* UPDATE: Hapus animasi CSS otomatis, kita kontrol via JS setelah loading selesai */
             /* animation: fadeOut 0.5s ease-out 0.5s forwards; */
             transition: opacity 0.5s ease-out;
+        }
+        
+        /* NEW: ANIMASI JUDUL SPLASH */
+        @keyframes splashTitleAnim {
+            0% { transform: scale(1); text-shadow: 0 0 20px var(--secondary); opacity: 0.8; }
+            50% { transform: scale(1.05); text-shadow: 0 0 40px var(--secondary), 0 0 10px var(--accent); opacity: 1; }
+            100% { transform: scale(1); text-shadow: 0 0 20px var(--secondary); opacity: 0.8; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
         }
 
         /* NEW: LOADING BAR STYLES */
@@ -1001,8 +1014,8 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #020617;
-            z-index: 290; /* Under splash but above title */
-            display: none;
+            z-index: 310; /* UPDATE: Z-Index tertinggi agar muncul paling awal di atas Splash */
+            display: flex; /* UPDATE: Default Visible */
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -1013,6 +1026,8 @@
             padding-right: max(20px, env(safe-area-inset-right));
             box-sizing: border-box; 
         }
+        
+        /* ... existing Prologue, Gender, Title, etc styles ... */
 
         /* Prologue Screen */
         #prologue-screen {
@@ -1955,14 +1970,9 @@ button, .round-btn, .d-btn, .auth-btn {
     <h1 style="font-size: 40px; margin-bottom: 10px;">🔄</h1>
     <h2 style="font-family: 'Cinzel'; color: var(--secondary);">Rotasi Perangkat</h2>
     <p style="color: #94a3b8; font-size: 12px; margin-bottom: 20px;">Game ini optimal dimainkan dalam mode Landscape.</p>
+</div> <!-- FIX: Menutup div rotate-warning di sini agar tidak membungkus game container -->
     
-    <!-- NEW: TOMBOL PAKSA MAIN (UNTUK DEBUGGING/CANVAS VIEW) -->
-    <button onclick="document.getElementById('rotate-warning').style.display='none'" style="background: transparent; border: 1px solid #475569; padding: 8px 16px; font-size: 10px; color: #cbd5e1;">
-        ⚠️ ABAIKAN (DEV MODE)
-    </button>
-</div>
-
-<div id="game-container">
+    <div id="game-container">
     <canvas id="gameCanvas"></canvas>
     
     <!-- 1. SPLASH SCREEN -->
@@ -1982,13 +1992,28 @@ button, .round-btn, .d-btn, .auth-btn {
                  onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDcwIDcwIj48Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSIzMCIgZmlsbD0iIzA2YjZkNCIgb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjM1IiB5PSI0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwNmI2ZDQiPlRLSjwvdGV4dD48L3N2Zz4='">
         </div>
 
-        <h1 style="font-size: 18px; text-align: center; line-height: 1.5; font-family: 'Cinzel'; margin-top:0;">POWERED BY<br><span style="font-size: 40px; color: var(--accent); text-shadow: 0 0 20px var(--accent);">GEMINI</span></h1>
+        <!-- UPDATE: JUDUL GAME DI SPLASH SCREEN (MENGGANTIKAN POWERED BY GEMINI) -->
+        <!-- FIX: TAMBAHKAN ANIMASI PADA KELAS H1 -->
+        <h1 style="font-size: 38px; text-align: center; line-height: 1.2; font-family: 'Cinzel'; margin-top:0; color: var(--secondary); text-shadow: 0 0 20px var(--secondary); letter-spacing: 2px; animation: splashTitleAnim 3s infinite ease-in-out;">
+            NUSANTARA ARSA<br>
+            <span style="font-size: 14px; color: #cbd5e1; letter-spacing: 5px; text-shadow: none; font-weight: normal;">RISE OF STUDENT</span>
+        </h1>
         
         <!-- NEW: LOADING BAR HTML -->
         <div id="loading-container">
             <div id="loading-bar"></div>
         </div>
         <div id="loading-text">MEMUAT ASET... 0%</div>
+        
+        <!-- NEW: TOMBOL MULAI (MUNCUL SETELAH LOADING) -->
+        <div id="splash-start-btn" style="display:none; margin-top:20px; cursor:pointer; font-family:'Cinzel'; font-size:16px; color:var(--accent); border: 2px solid var(--accent); padding: 10px 30px; border-radius: 30px; animation: pulse 1s infinite; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+            ▶ KETUK UNTUK MEMULAI
+        </div>
+
+        <!-- NEW: POWERED BY GEMINI KECIL DI BAWAH -->
+        <div style="font-size: 10px; color: #64748b; margin-top: 20px; font-family: 'Exo 2'; opacity: 0.7; letter-spacing: 1px;">
+            POWERED BY <span style="color: var(--accent); font-weight: bold;">GEMINI</span>
+        </div>
     </div>
 
     <!-- NEW: LEADERBOARD OVERLAY (PUBLIC) -->
@@ -3799,13 +3824,10 @@ async function preloadAllGameAssets() {
     await Promise.all(uniqueImages.map(item => loadImage(item)));
 }
 
-// UPDATE: Ganti window.onload dengan Event Listener yang lebih cepat & fleksibel
+// UPDATE: FUNGSI INIT PERTAMA KALI
 function startGameSequence() {
     try {
-        const splash = document.getElementById('splash-screen');
-        const audioPrompt = document.getElementById('audio-prompt'); 
-        
-        // Cek sesi login terakhir
+        // Cek sesi login terakhir untuk prefill (tanpa logic redirect dulu)
         try {
             const lastUser = localStorage.getItem(SESSION_KEY);
             if(lastUser) {
@@ -3816,53 +3838,15 @@ function startGameSequence() {
             }
         } catch(e) { console.warn("Local storage/DOM Access Error:", e); }
 
-        if(typeof AudioService !== 'undefined') {
-            AudioService.init();
-        }
-
-        // --- UPDATE: JALANKAN PRELOADER SEBELUM MENAMPILKAN MENU ---
-        // FIX: Tambahkan Timeout Race Condition yang lebih lama (15 detik) untuk koneksi lambat
-        const assetLoadPromise = preloadAllGameAssets();
-        const timeoutPromise = new Promise(resolve => setTimeout(() => {
-            console.warn("Asset Loading Timeout (15s) - Force Starting Game...");
-            const loadingText = document.getElementById('loading-text');
-            if(loadingText) loadingText.innerText = "KONEKSI LAMBAT... MEMAKSA MASUK...";
-            resolve();
-        }, 15000)); // 15 Detik Timeout (Aman untuk 3G/4G)
-
-        Promise.race([assetLoadPromise, timeoutPromise]).then(() => {
-            // Setelah aset siap (atau timeout):
-            console.log("Assets Ready. Showing Menu.");
-            
-            // UPDATE: LOADING DIPERCEPAT
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    if(splash) {
-                        splash.style.opacity = 0; // Trigger CSS transition fadeOut
-                        setTimeout(() => splash.style.display = 'none', 500); // Hapus elemen setelah animasi CSS selesai
-                    }
-                    if(audioPrompt) {
-                        audioPrompt.style.display = 'flex';
-                        audioPrompt.style.opacity = 0;
-                        audioPrompt.style.animation = "fadeIn 0.5s forwards"; // Tambahkan animasi masuk halus
-                    }
-                }, 200); 
-            });
-            
-            if(typeof resize === 'function') resize();
-
-        }).catch(err => {
-            console.error("Preload Error:", err);
-            // Fallback: Tetap buka game meski error preload
-             if(splash) splash.style.display = 'none';
-             if(audioPrompt) audioPrompt.style.display = 'flex';
-        });
+        // Pastikan Audio Prompt muncul duluan, Splash sembunyi
+        const audioPrompt = document.getElementById('audio-prompt');
+        const splash = document.getElementById('splash-screen');
+        
+        if (audioPrompt) audioPrompt.style.display = 'flex';
+        if (splash) splash.style.display = 'none';
 
     } catch(err) {
         console.error("CRITICAL INIT ERROR:", err);
-        // Fallback jika error, paksa buka
-        if(document.getElementById('splash-screen')) document.getElementById('splash-screen').style.display = 'none';
-        if(document.getElementById('audio-prompt')) document.getElementById('audio-prompt').style.display = 'flex';
     }
 };
 
@@ -3873,16 +3857,105 @@ if (document.readyState === 'loading') {
     startGameSequence();
 }
 
+// UPDATE: HANDLE PILIHAN AUDIO -> LANJUT KE LOADING ASET
 function handleAudioChoice(enable) {
     AudioService.enabled = enable;
+    
+    // 1. Sembunyikan Audio Prompt
     document.getElementById('audio-prompt').style.display = 'none';
     
-    if (enable) {
-        AudioService.playBGM('opening');
+    // 2. Tampilkan Splash Screen (Loading)
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.display = 'flex';
+        splash.style.opacity = 1;
+    }
+
+    // 3. Init Audio Context (Karena sudah ada interaksi user, audio bisa jalan)
+    if(typeof AudioService !== 'undefined') {
+        AudioService.init();
+        if (enable) {
+            AudioService.playBGM('opening');
+        }
     }
     
-    const title = document.getElementById('title-screen');
-    checkSession(title);
+    // 4. Mulai Loading Aset
+    startAssetLoading();
+}
+
+// NEW: FUNGSI LOADING ASET (DIPISAH DARI START SEQUENCE)
+function startAssetLoading() {
+    console.log("Memulai Asset Loading...");
+    const splash = document.getElementById('splash-screen');
+    
+    // FIX: Tambahkan Timeout Race Condition (15 detik) untuk koneksi lambat
+    const assetLoadPromise = preloadAllGameAssets();
+    const timeoutPromise = new Promise(resolve => setTimeout(() => {
+        console.warn("Asset Loading Timeout (15s) - Force Starting Game...");
+        const loadingText = document.getElementById('loading-text');
+        if(loadingText) loadingText.innerText = "KONEKSI LAMBAT... MEMAKSA MASUK...";
+        resolve();
+    }, 15000)); // 15 Detik Timeout
+
+    Promise.race([assetLoadPromise, timeoutPromise]).then(() => {
+        // Setelah aset siap (atau timeout):
+        console.log("Assets Ready. Waiting for user input.");
+        
+        const loadingContainer = document.getElementById('loading-container');
+        const loadingText = document.getElementById('loading-text');
+        const startBtn = document.getElementById('splash-start-btn');
+        
+        // Sembunyikan Loading Bar & Teks
+        if(loadingContainer) loadingContainer.style.display = 'none';
+        if(loadingText) loadingText.style.display = 'none';
+        
+        // Tampilkan Tombol Mulai
+        if(startBtn) {
+            startBtn.style.display = 'block';
+            startBtn.onclick = () => {
+                // Sembunyikan tombol biar gak diklik 2x
+                startBtn.style.display = 'none';
+                
+                // Efek Suara (Jika ada)
+                if(typeof AudioService !== 'undefined' && AudioService.enabled) {
+                    AudioService.playSFX('item');
+                }
+                
+                enterMainMenu();
+            };
+        }
+
+    }).catch(err => {
+        console.error("Preload Error:", err);
+        // Fallback: Tetap buka game meski error preload
+        enterMainMenu();
+    });
+}
+
+// Helper untuk Masuk Menu Utama
+function enterMainMenu() {
+    const splash = document.getElementById('splash-screen');
+    if(typeof resize === 'function') resize();
+
+    // Fade Out Splash -> Masuk Title Screen / Cek Session
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            if(splash) {
+                splash.style.opacity = 0; // Trigger CSS transition fadeOut
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    
+                    // Cek Session setelah loading selesai
+                    const title = document.getElementById('title-screen');
+                    checkSession(title);
+                    
+                }, 500); // Hapus elemen setelah animasi CSS selesai
+            } else {
+                const title = document.getElementById('title-screen');
+                checkSession(title);
+            }
+        }, 200); 
+    });
 }
 
 function togglePassword(fieldId, iconId) {
