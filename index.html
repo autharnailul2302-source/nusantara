@@ -2377,6 +2377,12 @@ button, .round-btn, .d-btn, .auth-btn {
         <p style="font-size:10px; color:#ef4444; margin-top:20px;">*Perhatian: Save data akan di-reset untuk memulai lembaran baru.</p>
     </div>
 
+    <!-- NEW: CUTSCENE OVERLAY (FIX STUCK SETELAH NIKAH) -->
+    <div id="cutscene-layer" style="display:none; opacity:0; position:absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:2000; flex-direction:column; justify-content:center; align-items:center; text-align:center; transition: opacity 2s; pointer-events:none;">
+        <h1 id="cutscene-text" style="font-family:'Cinzel'; color:#fbbf24; font-size:32px; margin-bottom:20px; text-shadow:0 0 20px #b45309;">JUDUL CUTSCENE</h1>
+        <p id="cutscene-sub" style="font-family:'Exo 2'; color:#cbd5e1; font-size:16px; max-width:600px; line-height:1.6; padding:0 20px;">Deskripsi cutscene...</p>
+    </div>
+
     <!-- NEW: ENDING SUCCESS SCREEN -->
     <div id="ending-screen">
         <div id="ending-narration">
@@ -15261,7 +15267,8 @@ function createParticle(x,y,c) {
 }
 
 function draw() {
-    if(STATE.screen !== 'play' && STATE.screen !== 'dialogue' && STATE.screen !== 'modal' && STATE.screen !== 'minigame') return;
+    // FIX: Tambahkan 'cutscene' agar canvas tetap dirender saat animasi pernikahan berjalan
+    if(STATE.screen !== 'play' && STATE.screen !== 'dialogue' && STATE.screen !== 'modal' && STATE.screen !== 'minigame' && STATE.screen !== 'cutscene') return;
 
     ctx.fillStyle = '#0f172a'; 
     ctx.fillRect(0,0,canvas.width, canvas.height); // Gunakan canvas.width/height dinamis
