@@ -3887,43 +3887,53 @@ function handleAudioChoice(enable) {
 function startAssetLoading() {
     console.log("Memulai Asset Loading...");
     const splash = document.getElementById('splash-screen');
+    const loadingText = document.getElementById('loading-text');
+    const loadingBar = document.getElementById('loading-bar');
     
-    // FIX: Tambahkan Timeout Race Condition (15 detik) untuk koneksi lambat
-    const assetLoadPromise = preloadAllGameAssets();
+    // FIX: Tambahkan Timeout Race Condition (60 detik) untuk koneksi lambat
+    // Sebelumnya 15 detik terlalu cepat, membuat bar belum 100% sudah muncul tombol
+    const assetLoadPromise = preloadAllGameAssets().then(() => 'success');
     const timeoutPromise = new Promise(resolve => setTimeout(() => {
-        console.warn("Asset Loading Timeout (15s) - Force Starting Game...");
-        const loadingText = document.getElementById('loading-text');
+        console.warn("Asset Loading Timeout (60s) - Force Starting Game...");
         if(loadingText) loadingText.innerText = "KONEKSI LAMBAT... MEMAKSA MASUK...";
-        resolve();
-    }, 15000)); // 15 Detik Timeout
+        resolve('timeout');
+    }, 60000)); // 60 Detik Timeout
 
-    Promise.race([assetLoadPromise, timeoutPromise]).then(() => {
+    Promise.race([assetLoadPromise, timeoutPromise]).then((result) => {
         // Setelah aset siap (atau timeout):
-        console.log("Assets Ready. Waiting for user input.");
+        console.log("Assets Ready or Timeout. Result:", result);
         
-        const loadingContainer = document.getElementById('loading-container');
-        const loadingText = document.getElementById('loading-text');
-        const startBtn = document.getElementById('splash-start-btn');
-        
-        // Sembunyikan Loading Bar & Teks
-        if(loadingContainer) loadingContainer.style.display = 'none';
-        if(loadingText) loadingText.style.display = 'none';
-        
-        // Tampilkan Tombol Mulai
-        if(startBtn) {
-            startBtn.style.display = 'block';
-            startBtn.onclick = () => {
-                // Sembunyikan tombol biar gak diklik 2x
-                startBtn.style.display = 'none';
-                
-                // Efek Suara (Jika ada)
-                if(typeof AudioService !== 'undefined' && AudioService.enabled) {
-                    AudioService.playSFX('item');
-                }
-                
-                enterMainMenu();
-            };
+        // Jika sukses load normal, pastikan bar visual 100%
+        if (result === 'success') {
+            if(loadingBar) loadingBar.style.width = '100%';
+            if(loadingText) loadingText.innerText = 'ASET SIAP! 100%';
         }
+        
+        // Beri jeda sedikit (500ms) agar pemain sempat melihat 100% sebelum tombol muncul
+        setTimeout(() => {
+            const loadingContainer = document.getElementById('loading-container');
+            const startBtn = document.getElementById('splash-start-btn');
+            
+            // Sembunyikan Loading Bar & Teks
+            if(loadingContainer) loadingContainer.style.display = 'none';
+            if(loadingText) loadingText.style.display = 'none';
+            
+            // Tampilkan Tombol Mulai
+            if(startBtn) {
+                startBtn.style.display = 'block';
+                startBtn.onclick = () => {
+                    // Sembunyikan tombol biar gak diklik 2x
+                    startBtn.style.display = 'none';
+                    
+                    // Efek Suara (Jika ada)
+                    if(typeof AudioService !== 'undefined' && AudioService.enabled) {
+                        AudioService.playSFX('item');
+                    }
+                    
+                    enterMainMenu();
+                };
+            }
+        }, 500);
 
     }).catch(err => {
         console.error("Preload Error:", err);
