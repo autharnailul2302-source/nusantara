@@ -3499,6 +3499,15 @@ function getQuestContent(tabType) {
                     ${check(false)} Pergi ke <strong>Toko Merchant</strong> (Selatan)<br>
                     ${check(false)} Bicara dengan Bos & Lamar Kerja
                 </div>`;
+        } 
+        // UPDATE: TAMBAHAN QUEST JURNAL UNTUK FAMILY
+        else if (role === 'family' && p.activeQuest === 'meet_modin') {
+            onboardingMsg = `
+                <div style="background:rgba(217, 70, 239, 0.2); padding:5px; border-radius:4px; margin-bottom:5px; border-left:2px solid #d946ef;">
+                    <strong>💍 MISI UTAMA: RESTU MODIN</strong><br>
+                    ${check(false)} Pergi ke <strong>Balai Pernikahan</strong> (Selatan)<br>
+                    ${check(false)} Temui Bapak Penghulu (Modin)
+                </div>`;
         }
 
         if (onboardingMsg) html += onboardingMsg;
@@ -8318,6 +8327,9 @@ function setRole(role) {
         if(!STATE.player.inventory['pakaian_nikah']) STATE.player.inventory['pakaian_nikah'] = 0;
         STATE.player.inventory['pakaian_nikah']++;
         
+        // UPDATE: SET ACTIVE QUEST AGAR MUNCUL DI JURNAL
+        STATE.player.activeQuest = 'meet_modin';
+        
         // FIX: PAKSA SIMPAN DATA
         manualSave();
 
@@ -12353,6 +12365,15 @@ function interactNPC(npc) {
     else if(npc.id === 'penghulu') {
         // Cek Role Family
         if (STATE.player.role === 'family') {
+            
+            // UPDATE: CLEAR QUEST JIKA SEDANG AKTIF
+            if(STATE.player.activeQuest === 'meet_modin') {
+                STATE.player.activeQuest = null; // Quest Selesai
+                // Efek visual kecil
+                createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#d946ef');
+                showToast("Quest Selesai: Bertemu Pak Modin ✅");
+            }
+
             // Jika sudah menikah
             if (STATE.player.married) {
                 showDialogue(npc.name, "Alhamdulillah, kamu sudah menyempurnakan separuh agama. \nJaga pasanganmu baik-baik, sakinah mawaddah warahmah ya!", [{text:"Aamiin", action:closeDialogue}], npc.imgSrc);
