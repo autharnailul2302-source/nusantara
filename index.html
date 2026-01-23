@@ -6525,10 +6525,10 @@ for(let i=0; i<10; i++) {
             { id: 'lover1_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Rumah" }
         ],
         npcs: [
-            /* Ayu (Gadis Desa) di dalam rumahnya */
-            {id: 'lover1girl', x: 7, y: 4, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'always', w: 40, h: 60},
+            /* Ayu (Gadis Desa) di dalam rumahnya - UPDATE: JADWAL JADI MALAM (NIGHT) AGAR TIDAK DOUBLE DENGAN YANG DI LUAR */
+            {id: 'lover1girl', x: 7, y: 4, name: 'Ayu (Gadis Desa)', imgSrc: 'images/lover1girl.png', type: 'lover', schedule: 'night', w: 40, h: 60},
             
-            /* NEW: AYA (SAUDARA KEMBAR AYU) */
+            /* NEW: AYA (SAUDARA KEMBAR AYU) - Tetap Always karena dia anak rumahan */
             /* Posisi di sebelah kiri ruangan */
             {id: 'aya_twin', x: 4, y: 4, name: 'Aya (Kembaran)', imgSrc: 'images/aya.png', type: 'static', schedule: 'always', w: 40, h: 60}
         ],
@@ -10465,8 +10465,12 @@ function checkBuildingHours() {
                 // Play SFX Pintu/Alert
                 if(typeof AudioService !== 'undefined') AudioService.playSFX('door');
                 
-                // Tampilkan Notifikasi
-                showToast(`⛔ ${building.name.toUpperCase()} TUTUP! Kamu diminta keluar.`);
+                // Format Jam untuk Info (Misal: 800 -> "08:00")
+                const openStr = Math.floor(building.openTime/100).toString().padStart(2,'0') + ":00";
+                const closeStr = Math.floor(building.closeTime/100).toString().padStart(2,'0') + ":00";
+
+                // Tampilkan Notifikasi dengan Jam Operasional
+                showToast(`⛔ ${building.name.toUpperCase()} TUTUP! (Buka ${openStr} - ${closeStr}). Kamu diminta keluar.`);
 
                 // 4. Teleport Paksa ke Luar (Village)
                 STATE.location = 'village';
@@ -11866,6 +11870,24 @@ function interactNPC(npc) {
                     });
                 }
 
+                /* --- NEW: OPSI PANDUAN HEWAN KHUSUS SATRIA (KSATRIA) --- */
+                if (npc.id === 'lover2boy') {
+                    dialogueOpts.unshift({
+                        text: "🐾 Panduan Hewan & Ternak",
+                        action: () => {
+                            showDialogue(npc.name, "Seorang Ksatria harus memahami alam. Hewan adalah sekutu yang setia jika kau mengerti bahasa mereka. Apa yang ingin kau pelajari?", [
+                                {text: "Cara Menjinakkan/Merawat", action: () => {
+                                    showDialogue(npc.name, "Hewan di desa ini jinak namun butuh perhatian.\n\n1. **Dekati perlahan** (jangan lari).\n2. Tekan **Tombol Interaksi** saat berada di dekatnya.\n3. Jika muncul tanda ❤️ (Hati), berarti mereka bahagia dan mungkin memberikan hasil ternak.", [{text:"Siap laksanakan", action:closeDialogue}], npc.imgSrc);
+                                }},
+                                {text: "Jenis Hewan Nusantara", action: () => {
+                                    showDialogue(npc.name, "Kenali kekayaan fauna di tanah ini:\n\n🐔 **Ayam Kampung**: Lincah dan mandiri, penghasil telur protein tinggi.\n🐐 **Kambing Etawa**: Tangguh menaki bukit, susunya sangat bergizi.\n🐄 **Sapi Bali**: Hewan pekerja keras, lambang kemakmuran.\n🐎 **Kuda Sumba (Sandalwood)**: Kuda pacu legendaris yang gesit dan setia.", [{text:"Wah, wawasan baru!", action:closeDialogue}], npc.imgSrc);
+                                }},
+                                {text: "Kembali", action: () => interactNPC(npc)}
+                            ], npc.imgSrc);
+                        }
+                    });
+                }
+
                 // --- NEW: LOGIKA TOMBOL LAMAR DENGAN CINCIN RAJA ---
                 const hasRing = (STATE.player.inventory['cincin_legend'] || 0) > 0;
                 
@@ -11960,6 +11982,37 @@ function interactNPC(npc) {
                              showDialogue(npc.name, `💡 **TIPS DOKTER:**\n\n"${randomTip}"`, [{text:"Siap Dok, makasih!", action:closeDialogue}], npc.imgSrc);
                         }
                     },
+                    {text: "Cuma lewat", action: closeDialogue}
+                ], npc.imgSrc);
+                return;
+            }
+
+            /* --- NEW: INTERAKSI SATRIA UNTUK SESAMA COWOK (MENTOR/BRO) --- */
+            if (npc.id === 'lover2boy') {
+                 showDialogue(npc.name, "Salam hormat! Posturmu tegap hari ini. Tertarik mempelajari ilmu alam dan kepemimpinan?", [
+                    { 
+                        text: "🐾 Panduan Hewan (Pet Info)", 
+                        action: () => {
+                             showDialogue(npc.name, "Mengurus hewan melatih kesabaran seorang prajurit. Apa yang ingin kau ketahui?", [
+                                {text: "Cara Berinteraksi", action: () => {
+                                    showDialogue(npc.name, "Kuncinya adalah **Ketenangan**. \nDekati hewan tanpa gerakan mendadak, lalu elus mereka (Tombol Aksi). \nHewan yang bahagia akan memberikan berkah (Resource).", [{text:"Paham", action:closeDialogue}], npc.imgSrc);
+                                }},
+                                {text: "Ensiklopedia Hewan Nusantara", action: () => {
+                                    showDialogue(npc.name, "Ini catatan pengamatanku:\n\n🐔 **Ayam Bekisar**: Suaranya merdu, ikon kebanggaan timur Jawa.\n🐐 **Kambing Kacang**: Kecil tapi lincah dan tahan banting.\n🐄 **Sapi Madura**: Memiliki punuk khas, sangat kuat untuk membajak.\n🐎 **Kuda Sumbawa**: Kuda petarung yang pemberani di medan laga.", [{text:"Mantap infonya bro!", action:closeDialogue}], npc.imgSrc);
+                                }},
+                                {text: "Kembali", action: () => interactNPC(npc)}
+                            ], npc.imgSrc);
+                        }
+                    },
+                    { text: "Minta Motivasi 💪", action: () => {
+                         const quotes = [
+                             "Pedang menumpul jika tidak diasah, manusia melemah jika tidak diuji.",
+                             "Jangan takut berjalan lambat, takutlah jika hanya berdiri diam.",
+                             "Seorang Ksatria sejati bukan yang tak pernah jatuh, tapi yang selalu bangkit!",
+                             "Keberanian bukan ketiadaan rasa takut, tapi kemampuan untuk melangkah meski gemetar."
+                         ];
+                         showDialogue(npc.name, `"${quotes[Math.floor(Math.random()*quotes.length)]}"`, [{text:"Terbakar semangat!", action:closeDialogue}], npc.imgSrc);
+                    }},
                     {text: "Cuma lewat", action: closeDialogue}
                 ], npc.imgSrc);
                 return;
