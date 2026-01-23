@@ -12547,9 +12547,17 @@ function interactNPC(npc) {
                                                         STATE.player.hp = STATE.player.maxHp;
                                                         
                                                         // 2. Pindah Lokasi ke Rumah
-                                                        STATE.location = 'house';
-                                                        STATE.player.x = 2 * TILE_SIZE; // Dekat kasur
-                                                        STATE.player.y = 2 * TILE_SIZE;
+                                                        // FIX: Cek Role Wirausaha agar pulang ke Ruko, bukan Rumah Biasa
+                                                        if (STATE.player.role === 'entrepreneur') {
+                                                            STATE.location = 'player_shop_interior';
+                                                            STATE.player.x = 5 * TILE_SIZE; // Posisi aman di Ruko (Dekat Telepon)
+                                                            STATE.player.y = 3 * TILE_SIZE;
+                                                        } else {
+                                                            STATE.location = 'house';
+                                                            STATE.player.x = 3 * TILE_SIZE; // FIX: Geser ke Tile 3 (Kanan Kasur) agar tidak STUCK di dalam kasur (Tile 1-2)
+                                                            STATE.player.y = 2 * TILE_SIZE;
+                                                        }
+                                                        
                                                         STATE.player.direction = 'right';
                                                         
                                                         // 3. Regen Map Rumah (Agar Pasangan Muncul)
