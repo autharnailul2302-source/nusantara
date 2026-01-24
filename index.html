@@ -17,6 +17,10 @@
     <link rel="preload" as="image" href="images/lobby.png">
     <link rel="preload" as="image" href="images/boy.png">
     <link rel="preload" as="image" href="images/girl.png">
+    <!-- NEW: PRELOAD KURCACI -->
+    <link rel="preload" as="image" href="images/kurcacitani.png">
+    <!-- NEW: PRELOAD PERI PANEN -->
+    <link rel="preload" as="image" href="images/peripanen.png">
 
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -2013,7 +2017,8 @@ button, .round-btn, .d-btn, .auth-btn {
         <div id="loading-text">MEMUAT ASET... 0%</div>
         
         <!-- NEW: TOMBOL MULAI (MUNCUL SETELAH LOADING) -->
-        <div id="splash-start-btn" style="display:none; margin-top:20px; cursor:pointer; font-family:'Cinzel'; font-size:16px; color:var(--accent); border: 2px solid var(--accent); padding: 10px 30px; border-radius: 30px; animation: pulse 1s infinite; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+        <!-- FIX: Tambahkan pointer-events:auto dan z-index tinggi agar bisa diklik di mobile -->
+        <div id="splash-start-btn" style="display:none; margin-top:20px; cursor:pointer; font-family:'Cinzel'; font-size:16px; color:var(--accent); border: 2px solid var(--accent); padding: 10px 30px; border-radius: 30px; animation: pulse 1s infinite; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); pointer-events: auto; z-index: 305;">
             ▶ KETUK UNTUK MEMULAI
         </div>
 
@@ -3776,7 +3781,9 @@ async function preloadAllGameAssets() {
         'images/ikankecil.png', 'images/ikansedang.png', 'images/ikanbesar.png', 'images/ikanlegendary.png',
         'images/buku.png', 'images/buku-tesis-teknologi.png', 'images/buku-tesis-sejarah.png',
         'images/draftskripsi-teknologi.png', 'images/draftskripsi-sejarah.png',
-        'images/sertifikat-manajer.png', 'images/ijazah-teknologi.png', 'images/ijazah-sejarah.png'
+        'images/sertifikat-manajer.png', 'images/ijazah-teknologi.png', 'images/ijazah-sejarah.png',
+        // NEW: ASSET KURCACI TANI & PERI PANEN
+        'images/kurcacitani.png', 'images/peripanen.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -5894,6 +5901,14 @@ fillMap(villageTiles, ISLAND_W, 1, 40, 24, 10, 10);
 // SPAWN HOUSE DOOR
 villageTiles[10 * ISLAND_W + 18] = 8; // House Door at 18,10
 
+// --- NEW: LAHAN PERTANIAN DI BELAKANG RUMAH ---
+// Rumah Player ada di x:19, y:7. Kita buat lahan di atasnya (y:3 s/d y:6).
+// Menggunakan Tile ID 5 (Tanah/Earth)
+fillMap(villageTiles, ISLAND_W, 5, 17, 3, 8, 4); // Area Tanah 8x4 petak
+
+// Buat jalan setapak kecil menuju kebun dari samping rumah
+fillMap(villageTiles, ISLAND_W, 3, 16, 7, 3, 1); // Jalan sambung
+
 // SAKURA TREES
 const sakuraLocations = [
     {x: 36, y: 13}, {x: 45, y: 13}, {x: 13, y: 26}, 
@@ -6254,6 +6269,14 @@ for(let i=0; i<10; i++) {
             /* Kita taruh di x:29 agar di sebelah kanan patung */
             {id: 'dewi_arsa', x: 29, y: 30, name: 'Dewi Arsa', imgSrc: 'images/dewiarsa.png', type: 'static', schedule: 'custom_fullmoon', w: 40, h: 60},
 
+            /* NEW: KURCACI TANI (EVENT PANEN RAYA - MUSIM PANAS) */
+            /* Muncul di hutan belakang sekolah (x:38, y:6) */
+            {id: 'kurcaci_tani', x: 38, y: 6, name: 'Kurcaci Tani', imgSrc: 'images/kurcacitani.png', type: 'static', schedule: 'custom_harvest_festival', w: 32, h: 32},
+
+            /* NEW: PERI PANEN (EVENT PESTA ANGGUR - MUSIM GUGUR) */
+            /* Muncul di tempat yang sama dengan Kurcaci Tani (x:38, y:6) */
+            {id: 'peripanen', x: 38, y: 6, name: 'Peri Panen', imgSrc: 'images/peripanen.png', type: 'static', schedule: 'custom_grape_harvest', w: 32, h: 32},
+
             /* NEW: NPC ANAK-ANAK (BERMAIN DI DEKAT KAMPUS) */
             /* Menggunakan aset boy/girl biasa tapi nanti dirender lebih kecil */
             {id: 'child_boy_1', x: 36, y: 12, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
@@ -6299,6 +6322,12 @@ for(let i=0; i<10; i++) {
             // --- NEW: KOTAK SURAT (MAILBOX) UNTUK PESAN GURU ---
             // UPDATE: Posisi digeser ke sebelah kanan pintu rumah (x:23)
             {x: 23, y: 11, w: 1, h: 1, type: 'mailbox', icon: '📬', img: 'images/pos.png'}, 
+
+            // --- NEW: DEKORASI LAHAN PERTANIAN (BELAKANG RUMAH) ---
+            {x: 20, y: 4, w: 1, h: 1, type: 'sign', icon: '🌾', text: "Lahan Pertanian Milikmu (Siap Tanani)"},
+            {x: 18, y: 3, w: 1, h: 1, type: 'sign', icon: '🎃', text: "Orang-orangan Sawah: Menjaga tanaman dari burung."},
+            // Petak air kecil untuk menyiram (Tile ID 0 manual atau objek sumur)
+            {x: 24, y: 4, w: 1, h: 1, type: 'sign', icon: '💧', text: "Sumur Tua: Sumber air untuk menyiram tanaman."},
 
             // Meja & Kursi Santai (DIPINDAH KE KANAN & KIRI POHON SAKURA di 16,13)
             // UPDATE: Ukuran diperbesar (w:2, h:2) setara setengah bangunan
@@ -7359,6 +7388,8 @@ function initTouchControls() {
             e.target.closest('#gender-screen') || 
             e.target.closest('#game-over-screen') || 
             e.target.closest('#audio-prompt') || 
+            /* FIX: Tambahkan Splash Screen ke pengecualian agar tombol start bisa diklik */
+            e.target.closest('#splash-screen') || 
             e.target.closest('#teacher-dashboard') || 
             e.target.tagName === 'INPUT' ||
             e.target.tagName === 'SELECT' ||
@@ -10003,7 +10034,12 @@ function update() {
 
         if (closestNPC) {
             showActionButton = true;
-            actionIcon = '💬';
+            // UPDATE: Jika NPC adalah Pasangan Nikah, ganti ikon tombol jadi Hati
+            if (STATE.player.married && STATE.player.spouseId === closestNPC.id) {
+                actionIcon = '💖';
+            } else {
+                actionIcon = '💬';
+            }
         }
 
         // Scan Object Nearby (Jika belum ketemu NPC)
@@ -11327,6 +11363,38 @@ function isNPCActive(npc) {
         return isDate && isTime;
     }
 
+    // --- NEW: JADWAL KHUSUS KURCACI TANI (SUMMER 1, 08:00 - 18:00) ---
+    if (npc.schedule === 'custom_harvest_festival') {
+        const totalDays = STATE.day - 1; 
+        const seasonIndex = Math.floor((totalDays % (DAYS_PER_SEASON * 4)) / DAYS_PER_SEASON);
+        const currentSeason = SEASONS[seasonIndex].toLowerCase();
+        const dayInSeason = (totalDays % DAYS_PER_SEASON) + 1;
+
+        // Syarat 1: Tanggal 1 Musim Panas (Summer)
+        const isDate = (currentSeason === 'summer' && dayInSeason === 1);
+        
+        // Syarat 2: Jam 08:00 s/d 18:00
+        const isTime = (STATE.time >= 800 && STATE.time < 1800);
+
+        return isDate && isTime;
+    }
+
+    // --- NEW: JADWAL KHUSUS PERI PANEN (AUTUMN 15, 08:00 - 18:00) ---
+    if (npc.schedule === 'custom_grape_harvest') {
+        const totalDays = STATE.day - 1; 
+        const seasonIndex = Math.floor((totalDays % (DAYS_PER_SEASON * 4)) / DAYS_PER_SEASON);
+        const currentSeason = SEASONS[seasonIndex].toLowerCase();
+        const dayInSeason = (totalDays % DAYS_PER_SEASON) + 1;
+
+        // Syarat 1: Tanggal 15 Musim Gugur (Autumn)
+        const isDate = (currentSeason === 'autumn' && dayInSeason === 15);
+        
+        // Syarat 2: Jam 08:00 s/d 18:00
+        const isTime = (STATE.time >= 800 && STATE.time < 1800);
+
+        return isDate && isTime;
+    }
+
     if (!npc.schedule || npc.schedule === 'always') return true;
 
     const isDayTime = STATE.time >= 600 && STATE.time < 2000;
@@ -11797,6 +11865,82 @@ function getRandomChat(npcId, loveLevel) {
     return pool[Math.floor(Math.random() * pool.length)];
 }
 
+// --- NEW: FUNGSI DRAMA PERCERAIAN (GONG) ---
+function handleDivorceSequence(npc) {
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Suara sedih/kaget
+
+    // Dialog Pembuka yang Dramatis
+    showDialogue(`${npc.name} (Sangat Kecewa)`, 
+        "CUKUP! Aku sudah tidak tahan lagi dengan semua ini! 😭\n\nHubungan kita sudah hancur. Kamu tidak pernah menghargaiku, tidak pernah ada waktu, dan ekonomi kita berantakan.\n\nAku rasa... kita sudah tidak bisa diperbaiki lagi.\n\n**AKU MINTA CERAI!**", 
+        [
+            {
+                text: "JANGAN! Beri aku kesempatan terakhir! 🙏", 
+                action: () => {
+                    // Kesempatan Kecil (30%) untuk rujuk jika hoki
+                    if (Math.random() < 0.3) {
+                         updateRelationship(npc, 15, "Kesempatan Kedua"); // Balik ke 15
+                         showDialogue(npc.name, "Hhh... (Menghela napas panjang)\n\nBaiklah... demi kenangan manis kita dulu.\nIni **KESEMPATAN TERAKHIR**. Jika kamu mengecewakanku lagi, aku benar-benar pergi!", [{text:"Terima kasih sayang! Aku janji!", action:closeDialogue}], npc.imgSrc);
+                    } else {
+                         showDialogue(npc.name, "Tidak. Hatiku sudah mati untukmu.\nJanji-janjimu sudah basi. Aku tetap ingin pergi.", 
+                         [{text: "...", action: () => finalizeDivorce(npc)}], npc.imgSrc);
+                    }
+                }
+            },
+            {
+                text: "Ya sudah, PERGI SANA! (Cerai) 💔", 
+                action: () => finalizeDivorce(npc)
+            }
+        ], 
+        npc.imgSrc
+    );
+}
+
+function finalizeDivorce(npc) {
+    const p = STATE.player;
+    
+    // 1. Reset Status Nikah
+    p.married = false;
+    const exSpouseId = p.spouseId;
+    p.spouseId = null;
+
+    // 2. Hukuman Berat (Gono Gini & Reputasi)
+    const alimony = Math.floor(p.money * 0.5); // Bayar 50% harta
+    p.money -= alimony;
+    p.reputation = 0; // Hancur reputasi di desa
+    
+    // Set hubungan jadi musuh (-50 tapi di sistem min 0, jadi kita set 0 dan blokir interaksi nanti)
+    if(p.relationships[exSpouseId]) p.relationships[exSpouseId] = 0;
+
+    // 3. Hapus NPC Pasangan dari Rumah
+    const houseMap = maps['house'];
+    if(houseMap) {
+        houseMap.npcs = houseMap.npcs.filter(n => n.id !== exSpouseId);
+    }
+    const shopMap = maps['player_shop_interior'];
+    if(shopMap) {
+        shopMap.npcs = shopMap.npcs.filter(n => n.id !== exSpouseId);
+    }
+
+    // 4. Efek Visual & Audio
+    createParticle(p.x, p.y, '#000000'); // Partikel Hitam (Kelam)
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+
+    // 5. Dialog Perpisahan
+    showDialogue(npc.name, 
+        `Selamat tinggal. Aku akan kembali ke rumah orang tuaku.\n\n(Harta dibagi dua: -${alimony.toLocaleString()} G)\n(Reputasi Hancur: Warga bergosip tentangmu)`, 
+        [{
+            text: "(Dia pergi membawa koper...) 🚶‍♀️", 
+            action: () => {
+                closeDialogue();
+                regenerateHouseMap(); // Refresh map
+                showToast("💔 STATUS: DUDA/JANDA");
+                manualSave();
+            }
+        }], 
+        npc.imgSrc
+    );
+}
+
 // --- NEW: FUNGSI UPDATE RELATIONSHIP YANG HILANG ---
 function updateRelationship(npc, amount, label) {
     if(!STATE.player.relationships[npc.id]) STATE.player.relationships[npc.id] = 0;
@@ -11810,7 +11954,7 @@ function updateRelationship(npc, amount, label) {
     
     // Tampilkan Notifikasi dengan Ikon Hati yang sesuai level
     const val = STATE.player.relationships[npc.id];
-    let icon = '🖤'; // Asing
+    let icon = '🖤'; // Asing/Musuh
     if(val >= 20) icon = '🤍'; // Teman
     if(val >= 50) icon = '💛'; // Dekat
     if(val >= 80) icon = '❤️'; // Cinta
@@ -12034,12 +12178,82 @@ function interactNPC(npc) {
         if(isRomanceTarget) {
             // Cek jika sudah menikah
             if(p.married && p.spouseId === npc.id) {
-                // ... (existing married logic) ...
-                let marriedText = "Selamat pagi sayang! Semangat berjuang hari ini ya. ❤️";
-                // ... existing married text logic ...
-                showDialogue(getLoveTitle(npc.name, love), marriedText, [{text:"Siap!", action:closeDialogue}], npc.imgSrc);
+                
+                // --- NEW: CEK AMBANG BATAS CERAI (GONG) ---
+                const spouseLove = p.relationships[npc.id];
+                if (spouseLove <= 0) {
+                    handleDivorceSequence(npc);
+                    return; // Stop interaksi normal
+                }
+                // ------------------------------------------
+
+                // --- UPDATE: INTERAKSI RUMAH TANGGA ---
+                let mood = "Bahagia";
+                let moodEmoji = "🥰";
+                
+                // Tentukan mood berdasarkan level cinta terkini
+                if (spouseLove < 20) { mood = "Sangat Kecewa"; moodEmoji = "💔"; }
+                else if (spouseLove < 50) { mood = "Sedih"; moodEmoji = "😢"; }
+                else if (spouseLove < 80) { mood = "Biasa"; moodEmoji = "🙂"; }
+                
+                // Sapaan acak
+                const greetings = [
+                    "Halo sayang, ada apa?",
+                    "Senang melihatmu di rumah.",
+                    "Hari ini capek ya? Semangat!",
+                    "Aku bersyukur kita bersama."
+                ];
+                const randGreet = greetings[Math.floor(Math.random() * greetings.length)];
+
+                showDialogue(`${npc.name} (${mood} ${moodEmoji})`, randGreet, [
+                    {
+                        text: "🥰 Ungkapkan Cinta (Makin Sayang)", 
+                        action: () => {
+                            // Tambah Cinta
+                            updateRelationship(npc, 5, "Romantis");
+                            createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#ec4899'); // Partikel Pink
+                            if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            
+                            const responses = [
+                                "Aww! Aku makin cinta sama kamu! ❤️",
+                                "Kamu manis banget sih... jadi malu.",
+                                "Makasih sayang, aku juga cinta kamu selamanya!"
+                            ];
+                            showDialogue(npc.name, responses[Math.floor(Math.random()*responses.length)], [{text:"Hehe", action:closeDialogue}], npc.imgSrc);
+                        }
+                    },
+                    {
+                        text: "🎁 Beri Uang Belanja Tambahan (1000G)", 
+                        action: () => {
+                            if(p.money >= 1000) {
+                                p.money -= 1000;
+                                updateRelationship(npc, 10, "Nafkah Ekstra"); // Tambah banyak
+                                showToast("Istri/Suami Senang Sekali! 💰");
+                                showDialogue(npc.name, "Wahhh! Makasih banyak sayang! Nanti aku masak makanan kesukaanmu deh! 😘", [{text:"Sama-sama", action:closeDialogue}], npc.imgSrc);
+                            } else {
+                                showToast("Uangmu tidak cukup!");
+                            }
+                        }
+                    },
+                    {
+                        text: "😠 Marahi / Cuek (Cinta Berkurang)", 
+                        action: () => {
+                            // Kurangi Cinta
+                            updateRelationship(npc, -5, "Pertengkaran");
+                            
+                            const sadResponses = [
+                                "Kok kamu tega ngomong gitu? Jahat! 😭",
+                                "Aku capek kalau kamu begini terus...",
+                                "Tega... aku mau nangis di pojokan aja."
+                            ];
+                            
+                            showDialogue(npc.name, sadResponses[Math.floor(Math.random()*sadResponses.length)], [{text:"Biarin (Tutup)", action:closeDialogue}], npc.imgSrc);
+                        }
+                    },
+                    {text: "Istirahatlah (Tutup)", action: closeDialogue}
+                ], npc.imgSrc);
             } else {
-                // --- UPDATE: MAIN MENU INTERAKSI ---
+                // --- UPDATE: MAIN MENU INTERAKSI (BELUM NIKAH) ---
                 
                 const randomGreeting = getRandomChat(npc.id, love);
                 
@@ -13460,6 +13674,60 @@ function interactNPC(npc) {
         ], npc.imgSrc);
     }
 
+    /* NEW: INTERAKSI KURCACI TANI (EVENT PANEN RAYA) */
+    else if(npc.id === 'kurcaci_tani') {
+        showDialogue("KURCACI TANI", "Hohoho! Selamat Panen Raya! ☀️\nMusim panas adalah waktu terbaik untuk bersyukur pada alam.", [
+            {text: "Terima Kasih, Kek!", action: () => {
+                // Cek apakah sudah terima hadiah tahun ini (menggunakan tahun game)
+                const currentYear = Math.ceil(STATE.day / 120);
+                
+                if (STATE.player.lastHarvestGiftYear !== currentYear) {
+                    STATE.player.lastHarvestGiftYear = currentYear;
+                    
+                    addItem('gandum', 5);
+                    showToast("Dapat 5 Gandum! 🌾");
+                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#facc15');
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    
+                    showDialogue("KURCACI TANI", "Ini benih gandum berkah untukmu. Gunakan dengan bijak!", [{text:"Siap!", action:closeDialogue}], npc.imgSrc);
+                    
+                    manualSave(); // Simpan flag
+                } else {
+                    showDialogue("KURCACI TANI", "Nikmati festivalnya, anak muda! Jangan lupa makan yang banyak.", [{text:"Dah", action:closeDialogue}], npc.imgSrc);
+                }
+            }},
+            {text: "Dah", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    /* NEW: INTERAKSI PERI PANEN (EVENT PESTA ANGGUR - AUTUMN) */
+    else if(npc.id === 'peripanen') {
+        showDialogue("PERI PANEN", "Salam, anak bumi! 🍇\nMusim Gugur telah tiba, saatnya kita merayakan manisnya buah anggur.", [
+            {text: "Minta Berkah Anggur", action: () => {
+                // Cek apakah sudah terima hadiah tahun ini
+                const currentYear = Math.ceil(STATE.day / 120);
+                
+                // Gunakan flag berbeda dari kurcaci agar bisa klaim keduanya di tahun yang sama
+                if (STATE.player.lastGrapeGiftYear !== currentYear) {
+                    STATE.player.lastGrapeGiftYear = currentYear;
+                    
+                    // Hadiah: Tonic Stamina (Sari Anggur)
+                    addItem('tonic_stamina', 2);
+                    showToast("Dapat 2 Sari Anggur (Tonic)! 🍷");
+                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#a855f7'); // Partikel Ungu
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    
+                    showDialogue("PERI PANEN", "Terimalah Sari Anggur Murni ini.\nMinumlah saat kau lelah, ia akan memulihkan tenagamu seketika.", [{text:"Terima kasih Peri!", action:closeDialogue}], npc.imgSrc);
+                    
+                    manualSave(); 
+                } else {
+                    showDialogue("PERI PANEN", "Anggur terbaik butuh waktu untuk matang.\nKembalilah tahun depan, anak manis.", [{text:"Sampai jumpa", action:closeDialogue}], npc.imgSrc);
+                }
+            }},
+            {text: "Dah Peri", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
     /* NEW: INTERAKSI DEWI RORO (PENJAGA CANDI) */
     else if(npc.id === 'dewi_roro') {
         showDialogue("DEWI RORO", "Selamat datang di Candi Aethelgard, wahai pengelana. \nSaya Roro, roh penjaga kesucian tempat ini. Apa yang membawamu kemari?", [
@@ -14663,6 +14931,8 @@ function manualSave() {
         lastWeeklyClaim: STATE.player.lastWeeklyClaim,
         lastMonthlyClaim: STATE.player.lastMonthlyClaim,
         claimedLifeTrial: STATE.player.claimedLifeTrial,
+        lastHarvestGiftYear: STATE.player.lastHarvestGiftYear, // NEW: Simpan Status Hadiah Kurcaci
+        lastGrapeGiftYear: STATE.player.lastGrapeGiftYear, // NEW: Simpan Status Hadiah Peri Panen
         hasSeenDungeonTutorial: STATE.player.hasSeenDungeonTutorial,
         hasSeenFishingTutorial: STATE.player.hasSeenFishingTutorial, // NEW: Save Fishing Tutorial
         
@@ -14847,6 +15117,9 @@ function handleSleep() {
     // FIX: Tambahkan cek flag isDayChanging
     if(STATE.screen === 'cutscene' || STATE.isDayChanging) return;
 
+    // --- NEW: CAPTURE WAKTU TIDUR UNTUK LOGIKA PULANG TELAT ---
+    const lastSleepTime = STATE.time;
+
     closeDialogue();
     STATE.screen = 'cutscene'; // FIX: Stop update loop saat tidur
     STATE.isDayChanging = true; // Kunci proses
@@ -14927,7 +15200,7 @@ function handleSleep() {
                 STATE.screen = 'play'; // FIX: Resume game setelah bangun
                 STATE.isDayChanging = false; // Buka kunci
 
-                // --- NEW: LOGIKA NAFKAH HARIAN (JIKA MENIKAH & DI RUMAH) ---
+                // --- NEW: LOGIKA NAFKAH HARIAN & DRAMA NIKAH MUDA ---
                 if (STATE.player.married && STATE.location === 'house') {
                     // Cari data NPC Pasangan
                     const spouseId = STATE.player.spouseId;
@@ -14936,39 +15209,151 @@ function handleSleep() {
                     if (spouse) {
                         setTimeout(() => {
                             const dailyCost = 2500;
+                            // CEK TELAT: Pulang setelah jam 18:00 (1800) atau Dini Hari (< 600)
+                            const isLate = lastSleepTime >= 1800 || lastSleepTime < 600;
                             
+                            // 1. TERAPKAN PENALTI DULUAN (SIMULASI DI MEMORI)
+                            // Agar kita bisa cek apakah hubungan jadi 0 gara-gara kejadian semalam
+                            let currentRel = STATE.player.relationships[spouseId] || 0;
+                            let penaltyApplied = 0;
+
+                            if (isLate) penaltyApplied -= 5;
+                            if (STATE.player.money < dailyCost) penaltyApplied -= 5;
+
+                            // Update nilai asli di state
+                            if (penaltyApplied !== 0) {
+                                updateRelationship(spouse, penaltyApplied, "Masalah Rumah Tangga");
+                                currentRel = STATE.player.relationships[spouseId]; // Ambil nilai baru
+                            }
+
+                            // 2. CEK APAKAH INI GONG PERCERAIAN? (Love <= 0)
+                            if (currentRel <= 0) {
+                                handleDivorceSequence(spouse);
+                                manualSave();
+                                return; // Stop flow uang belanja
+                            }
+
+                            // 3. JIKA MASIH AMAN (>0), LANJUT FLOW NORMAL (Uang Belanja / Drama)
+                            
+                            // --- FITUR BARU: RISIKO NIKAH MUDA ---
+                            // Semakin rendah INT (Kedewasaan) & Uang, semakin tinggi peluang Drama
+                            let dramaChance = 0.15; // Base 15%
+                            if (STATE.player.int < 30) dramaChance += 0.25; // +25% jika belum dewasa (INT rendah)
+                            if (STATE.player.money < 20000) dramaChance += 0.20; // +20% jika ekonomi sulit
+                            
+                            // Roll Drama (Hanya terjadi jika tidak telat)
+                            const isDrama = Math.random() < dramaChance;
+
                             // Cek Saldo
                             if (STATE.player.money >= dailyCost) {
                                 // Mampu Bayar
                                 STATE.player.money -= dailyCost;
                                 
-                                // Efek Visual
-                                createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
-                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                                
-                                showDialogue(spouse.name, 
-                                    `Selamat pagi sayang! ❤️\n\nSeperti biasa, aku ambil **2.500 Gold** untuk belanja pasar dan kebutuhan rumah hari ini ya.\n\nSarapan sudah siap di meja. Semangat kerjanya!`, 
-                                    [{
-                                        text: `Ikhlas (Sisa: ${STATE.player.money.toLocaleString()} G)`, 
-                                        action: () => {
-                                            updateRelationship(spouse, 1); // Tambah cinta sedikit
-                                            closeDialogue();
+                                if (isLate) {
+                                    // --- PASANGAN MARAH KARENA TELAT ---
+                                    updateRelationship(spouse, -5, "Pulang Telat");
+                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Suara kecewa
+                                    
+                                    showDialogue(spouse.name, 
+                                        `Kamu pulang jam berapa kemarin?! 😡\n\nKita kan sudah sepakat **wajib pulang sebelum jam 6 sore**!\nAku nungguin kamu sampai ketiduran.\n\nAku kecewa. (Cinta -5)\n*Dia mengambil 2.500 Gold dengan kasar untuk belanja.*`, 
+                                        [{
+                                            text: `Maaf sayang... (Sisa: ${STATE.player.money.toLocaleString()} G)`, 
+                                            action: closeDialogue
+                                        }], 
+                                        spouse.imgSrc
+                                    );
+                                } 
+                                else if (isDrama) {
+                                    // --- REALITA NIKAH MUDA (DRAMA) ---
+                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Suara kaget/sedih
+                                    
+                                    const dramas = [
+                                        {
+                                            title: "MENTAL BELUM SIAP",
+                                            text: "Jujur... aku iri liat story teman-temanku. Mereka lagi asik nongkrong dan traveling, sedangkan aku di sini terjebak ngurus rumah.\n\nKadang aku nyesel kita buru-buru nikah... Aku merasa masa mudaku hilang! 😭",
+                                            effect: () => {
+                                                updateRelationship(spouse, -5, "Penyesalan");
+                                                STATE.player.energy = Math.max(0, STATE.player.energy - 30); // Stress bikin lemas
+                                            },
+                                            btn: "Maafkan aku... (Cinta -5, Energi -30)"
+                                        },
+                                        {
+                                            title: "EMOSI LABIL",
+                                            text: "KAMU TUH GAK PEKA BANGET SIH! 😡\n\nAku capek! Aku maunya dimengerti! Jangan diem aja dong!\n\n(Dia marah-marah tanpa alasan jelas. Emosinya sangat tidak stabil hari ini).",
+                                            effect: () => {
+                                                updateRelationship(spouse, -8, "Emosi Labil");
+                                            },
+                                            btn: "Sabar... Sabar... (Cinta -8)"
+                                        },
+                                        {
+                                            title: "GUNCANGAN EKONOMI",
+                                            text: "Uang 2.500 ini cuma cukup buat makan! Belum bayar listrik, belum skincare, belum kuota...\n\nKita tuh miskin banget sih! Aku malu sama tetangga yang mobilnya baru! Kamu harus kerja lebih keras dong!",
+                                            effect: () => {
+                                                updateRelationship(spouse, -5, "Tuntutan Hidup");
+                                                STATE.player.reputation = Math.max(0, STATE.player.reputation - 5);
+                                            },
+                                            btn: "Aku akan berusaha... (Reputasi -5)"
+                                        },
+                                        {
+                                            title: "CEMBURU BUTA",
+                                            text: "Tadi aku liat kamu senyum-senyum sama orang lain di desa.\n\nNgaku! Kamu pasti bosen kan sama aku?! Kamu mau selingkuh ya?!\n\n(Ketidakamanan diri alias Insecure khas remaja yang menikah dini)",
+                                            effect: () => {
+                                                updateRelationship(spouse, -10, "Insecure");
+                                            },
+                                            btn: "Enggak sayang, sumpah! (Cinta -10)"
                                         }
-                                    }], 
-                                    spouse.imgSrc
-                                );
+                                    ];
+
+                                    const drama = dramas[Math.floor(Math.random() * dramas.length)];
+                                    drama.effect();
+
+                                    showDialogue(`${spouse.name} (Drama)`, 
+                                        `**[REALITA NIKAH MUDA: ${drama.title}]**\n\n"${drama.text}"\n\n*Uang belanja 2.500 G diambil dengan ketus.*`, 
+                                        [{
+                                            text: drama.btn, 
+                                            action: closeDialogue
+                                        }], 
+                                        spouse.imgSrc
+                                    );
+
+                                } else {
+                                    // --- PASANGAN BAHAGIA (NORMAL) ---
+                                    // Efek Visual
+                                    createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+                                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                    
+                                    showDialogue(spouse.name, 
+                                        `Selamat pagi sayang! ❤️\n\nTerima kasih sudah pulang tepat waktu kemarin.\nSeperti biasa, aku ambil **2.500 Gold** untuk belanja pasar ya.\n\nSarapan sudah siap!`, 
+                                        [{
+                                            text: `Ikhlas (Sisa: ${STATE.player.money.toLocaleString()} G)`, 
+                                            action: () => {
+                                                updateRelationship(spouse, 1); // Tambah cinta sedikit
+                                                closeDialogue();
+                                            }
+                                        }], 
+                                        spouse.imgSrc
+                                    );
+                                }
                             } else {
                                 // Tidak Mampu Bayar (Hutang/Minus)
                                 STATE.player.money -= dailyCost; // Saldo jadi minus
                                 
-                                // Hukuman: Reputasi & Cinta Turun
+                                // Hukuman Dasar
                                 STATE.player.reputation = Math.max(0, STATE.player.reputation - 5);
-                                if(STATE.player.relationships[spouseId]) STATE.player.relationships[spouseId] -= 5;
+                                updateRelationship(spouse, -5, "Ekonomi Sulit");
                                 
                                 if(typeof AudioService !== 'undefined') AudioService.playSFX('hit'); // Suara sedih/hit
 
+                                let msg = `Selamat pagi... sayang? 😟\n\nUang belanja di laci habis... Tukang sayur sudah menagih.\nAku terpaksa ngutang dulu.`;
+                                
+                                if (isLate) {
+                                    // Hukuman Ganda jika Telat + Miskin
+                                    updateRelationship(spouse, -5, "Combo Telat");
+                                    msg = `Sudah pulang telat, uang belanja juga nggak ada?! 😭\n\nKamu niat berumah tangga nggak sih?! Aku malu sama tetangga!`;
+                                }
+
                                 showDialogue(spouse.name, 
-                                    `Selamat pagi... sayang? 😟\n\nUang belanja di laci habis... Tukang sayur sudah menagih.\nAku terpaksa ngutang dulu ke warung sebelah.\n\nTolong lebih giat bekerja ya, aku malu sama tetangga kalau kita hutang terus.\n\n(Saldo Minus! Reputasi -5, Cinta -5)`, 
+                                    msg + `\n\n(Saldo Minus! Reputasi & Cinta Berkurang)`, 
                                     [{
                                         text: `Maafkan aku... (Sisa: ${STATE.player.money.toLocaleString()} G)`, 
                                         action: closeDialogue
@@ -16965,6 +17350,23 @@ function drawNPC(ctx, n) {
             // C. Glow Pink pada Karakter
             ctx.shadowColor = '#f9a8d4'; // Pink Glow
             ctx.shadowBlur = 20;
+        }
+
+        // --- NEW: RENDER IKON HATI DI ATAS KEPALA PASANGAN (JIKA MENIKAH) ---
+        if (STATE.player.married && STATE.player.spouseId === n.id) {
+            ctx.save();
+            const floatY = Math.sin(Date.now() / 400) * 3; // Animasi naik turun halus
+            
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(255,255,255,0.8)';
+            ctx.shadowBlur = 5;
+            
+            // Gambar Hati di atas kepala (y - 20 dari posisi kaki - tinggi sprite)
+            // Tinggi sprite rata-rata ~50px
+            ctx.fillText('💖', x + dw/2, y - dh + 10 + floatY);
+            
+            ctx.restore();
         }
 
         // UPDATE: Logika Animasi (Static vs Moving)
