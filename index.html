@@ -21,6 +21,10 @@
     <link rel="preload" as="image" href="images/kurcacitani.png">
     <!-- NEW: PRELOAD PERI PANEN -->
     <link rel="preload" as="image" href="images/peripanen.png">
+    <!-- NEW: PRELOAD ORANG SAWAH -->
+    <link rel="preload" as="image" href="images/orangsawah.png">
+    <!-- NEW: PRELOAD LAHAN LIAR -->
+    <link rel="preload" as="image" href="images/lahan-liar.png">
 
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -273,21 +277,9 @@
         .time-clock { font-size: 16px; font-weight: bold; font-family: 'Exo 2'; color: white; }
 
         /* 4. COMBAT HUD (Floating HP Bar - Hidden by Default) */
+        /* UPDATE: DIHAPUS KARENA SUDAH PINDAH KE HUD UTAMA */
         #combat-hud {
-            position: absolute;
-            bottom: 220px; /* Di atas kontrol */
-            left: 50%; transform: translateX(-50%);
-            width: 200px;
-            display: none; /* JS will toggle this */
-            z-index: 45;
-            flex-direction: column;
-            align-items: center;
-            animation: fadeIn 0.3s;
-        }
-        .hp-bar-big {
-            width: 100%; height: 15px;
-            background: #1f2937; border: 2px solid #7f1d1d;
-            border-radius: 10px; position: relative; overflow: hidden;
+            display: none !important; 
         }
 
         /* INDIKATOR TUTUP/BUKA PADA BANGUNAN */
@@ -2585,6 +2577,12 @@ button, .round-btn, .d-btn, .auth-btn {
                 <div class="hud-info-bars">
                     <div class="hud-level-text">LV <span id="level-display">1</span> - <span id="hud-name">Player</span></div>
                     
+                    <!-- NEW: HP Bar di HUD Utama -->
+                    <div class="bar-container" title="Health Point">
+                        <div class="bar-fill hp-fill" id="hud-hp-bar" style="width: 100%;"></div>
+                        <div class="bar-text">❤️ <span id="hud-hp-text">100</span></div>
+                    </div>
+
                     <!-- EXP Bar -->
                     <div class="bar-container" title="Experience Point">
                         <div class="bar-fill exp-fill" id="exp-bar" style="width: 0%;"></div>
@@ -2650,13 +2648,8 @@ button, .round-btn, .d-btn, .auth-btn {
         <div id="hud-toggle-btn" onclick="toggleHUD()" title="Sembunyikan Stats">▲</div>
 
         <!-- 4. FLOATING COMBAT HUD (HP BAR ONLY IN DUNGEON) -->
-        <div id="combat-hud">
-            <div style="color:var(--danger); font-weight:bold; font-size:12px; margin-bottom:2px; text-shadow:0 0 2px black;">HP PLAYER</div>
-            <div class="hp-bar-big">
-                <div class="bar-fill hp-fill" id="hp-bar" style="width: 100%;"></div>
-                <div class="bar-text" style="font-size:10px;">❤️ <span id="hp-text">100</span></div>
-            </div>
-        </div>
+        <!-- UPDATE: ELEMENT INI DIHAPUS KARENA SUDAH ADA DI HUD ATAS -->
+        <!-- <div id="combat-hud"> ... </div> -->
 
         <div id="toast">Notifikasi</div>
 
@@ -2811,6 +2804,17 @@ const grassFallbacks = {
     if(key === 'grass2') grassAssets[key].src = 'images/rumput2.png';
     if(key === 'flower') grassAssets[key].src = 'images/bunga.png';
 });
+
+// --- NEW: FARM ASSETS (LAHAN PERTANIAN) ---
+const farmAssets = {
+    lahanLiar: new Image()
+};
+farmAssets.lahanLiar.src = 'images/lahan-liar.png';
+// Fallback visual tanah kotor (SVG Pattern) jika gambar gagal load
+farmAssets.lahanLiar.onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjOGI0NTEzIi8+PHBhdGggZD0iTTUgNSBMMjUgMjUgTTEwIDI1IEwyMCA1IiBzdHJva2U9IiM1ZDQwMzciIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC41Ii8+PC9zdmc+';
+};
 
 // NEW: LOAD SEASONAL BACKGROUNDS
 const bgSeasons = {
@@ -3736,6 +3740,7 @@ async function preloadAllGameAssets() {
     collectGlobal(dungeonAssets);
     collectGlobal(wallAssets);
     collectGlobal(grassAssets);
+    collectGlobal(farmAssets); // Add Farm Assets to Preloader
 
     // 2. Kumpulkan semua gambar dari Peta (Bangunan, NPC, Objek)
     for (const [mapName, mapData] of Object.entries(maps)) {
@@ -3783,7 +3788,9 @@ async function preloadAllGameAssets() {
         'images/draftskripsi-teknologi.png', 'images/draftskripsi-sejarah.png',
         'images/sertifikat-manajer.png', 'images/ijazah-teknologi.png', 'images/ijazah-sejarah.png',
         // NEW: ASSET KURCACI TANI & PERI PANEN
-        'images/kurcacitani.png', 'images/peripanen.png'
+        'images/kurcacitani.png', 'images/peripanen.png',
+        // NEW: ASSET ORANG SAWAH
+        'images/orangsawah.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -6324,10 +6331,16 @@ for(let i=0; i<10; i++) {
             {x: 23, y: 11, w: 1, h: 1, type: 'mailbox', icon: '📬', img: 'images/pos.png'}, 
 
             // --- NEW: DEKORASI LAHAN PERTANIAN (BELAKANG RUMAH) ---
-            {x: 20, y: 4, w: 1, h: 1, type: 'sign', icon: '🌾', text: "Lahan Pertanian Milikmu (Siap Tanani)"},
-            {x: 18, y: 3, w: 1, h: 1, type: 'sign', icon: '🎃', text: "Orang-orangan Sawah: Menjaga tanaman dari burung."},
+            // UPDATE: Papan Tanda digeser ke kanan dan atas (x:26, y:5) agar tidak tertutup pohon
+            // UPDATE: Menggunakan gambar khusus 'papantani.png'
+            // UPDATE: Diperbesar jadi 2x2
+            {x: 27, y: 5, w: 2, h: 2, type: 'sign', icon: '🌾', text: "Lahan ini terbengkalai. Kamu harus mempekerjakan Kurcaci Tani dan Peri Panen untuk membersihkan lahan ini dan mulai bertani.", img: 'images/papantani.png'},
+            // UPDATE: Orang-orangan Sawah dipindah ke pojok kiri lahan (x:17, y:4) dekat Papan Desa
+            {x: 17, y: 4, w: 2, h: 2, type: 'sign', icon: '🎃', text: "Orang-orangan Sawah: Menjaga tanaman dari burung.", img: 'images/orangsawah.png'},
             // Petak air kecil untuk menyiram (Tile ID 0 manual atau objek sumur)
-            {x: 24, y: 4, w: 1, h: 1, type: 'sign', icon: '💧', text: "Sumur Tua: Sumber air untuk menyiram tanaman."},
+            // UPDATE: Posisi Sumur dipindah ke kiri (x:23, y:6) menggantikan posisi kosong dekat rumah
+            // UPDATE: Sumur diperbesar jadi 2x2
+            {x: 23, y: 6, w: 2, h: 2, type: 'sign', icon: '💧', text: "Sumur Tua: Sumber air untuk menyiram tanaman.", img: 'images/sumur.png'},
 
             // Meja & Kursi Santai (DIPINDAH KE KANAN & KIRI POHON SAKURA di 16,13)
             // UPDATE: Ukuran diperbesar (w:2, h:2) setara setengah bangunan
@@ -6347,7 +6360,11 @@ for(let i=0; i<10; i++) {
         npcs: [
             /* UPDATE: NAMA DIUBAH JADI 'MERCHANT' (SESUAI REQUEST) */
             /* UPDATE: GAMBAR DIGANTI KE job.png UNTUK BOSS TOKO */
-            {id: 'boss_merchant', x: 7, y: 3, name: 'Merchant', imgSrc: 'images/job.png', type: 'service', schedule: 'always', w: 40, h: 60}
+            {id: 'boss_merchant', x: 7, y: 3, name: 'Merchant', imgSrc: 'images/job.png', type: 'service', schedule: 'always', w: 40, h: 60},
+
+            /* NEW: ISTRI BOS (PEDAGANG KELILING) PINDAH KE DALAM SAAT MALAM */
+            /* Muncul hanya saat 'night' (18:00 ke atas) */
+            {id: 'trader_wife_inside', x: 10, y: 4, name: 'Istri Bos', imgSrc: 'images/merchant.png', type: 'static', schedule: 'night', w: 40, h: 60}
         ],
         objects: [
             /* UPDATE: Meja Kasir dengan gambar images/mejakasir.png */
@@ -9485,21 +9502,28 @@ function updateHUDInfo() {
     const enPct = Math.max(0, Math.min(100, (p.energy / 100) * 100)); // Energy max is static 100 usually
     const expPct = Math.max(0, Math.min(100, (p.exp / p.maxExp) * 100));
 
-    document.getElementById('hp-bar').style.width = hpPct + "%";
+    // UPDATE: TARGET ELEMENT HUD BARU
+    const hudHpBar = document.getElementById('hud-hp-bar');
+    if(hudHpBar) hudHpBar.style.width = hpPct + "%";
+    
     document.getElementById('energy-bar').style.width = enPct + "%";
     document.getElementById('exp-bar').style.width = expPct + "%";
 
     // Text inside bars
-    document.getElementById('hp-text').innerText = Math.floor(p.hp);
+    const hudHpText = document.getElementById('hud-hp-text');
+    if(hudHpText) hudHpText.innerText = Math.floor(p.hp);
+    
     document.getElementById('energy-text').innerText = Math.floor(p.energy);
     
-    // Toggle Combat HUD based on Location
+    // UPDATE: HAPUS LOGIKA COMBAT HUD LAMA
+    /*
     const combatHud = document.getElementById('combat-hud');
     if(STATE.location === 'dungeon') {
         combatHud.style.display = 'flex';
     } else {
         combatHud.style.display = 'none';
     }
+    */
     
     // ALWAYS UPDATE BAG ICON
     updateBagIcon();
@@ -11166,7 +11190,9 @@ function checkObjectCollision(x, y) {
         // UPDATE: Menambahkan 'papanguild' DAN 'mejamakanguild' agar hitbox-nya juga hanya setengah bawah
         // FIX: Tambahkan 'bed' agar area kepala kasur bisa dilewati
         /* REVISI: Tambahkan 'catalog' (Meja Telepon) agar bisa jalan di belakangnya */
-        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon')))) && (obj.h || 1) > 0) {
+        /* UPDATE: Tambahkan 'sumur' dan 'papantani' agar bisa jalan di belakangnya */
+        /* UPDATE: Tambahkan 'orangsawah' agar bisa jalan di belakangnya */
+        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah')))) && (obj.h || 1) > 0) {
             yOffset = originalH * 0.4; // Turunkan hitbox 40% dari atas
             oh = originalH * 0.6;      // Sisa tinggi hitbox 60%
         }
@@ -12271,7 +12297,7 @@ function interactNPC(npc) {
                 const dialogueOpts = [
                     {text: "Beri Hadiah 🎁", action: () => openGiftMenu(npc)},
                     
-                    // UPDATE: Opsi Ngobrol Santai (DENGAN LOGIKA MATRE BARU)
+                    // UPDATE: Opsi Ngobrol Santai (DENGAN LOGIKA MATRE BERTINGKAT)
                     {text: "Ngobrol Santai", action: () => {
                          // NEW: LOGIKA MATRE BERTINGKAT
                          // Jika Matre DAN Love Level >= 20 (Sudah Kenal/Mid), baru minta bayaran
@@ -12303,9 +12329,51 @@ function interactNPC(npc) {
                          } else showToast("Terlalu lelah... (Butuh 2 Energi)");
                     }},
 
-                    // UPDATE: Tombol Minigame Gombal
+                    // UPDATE: Tombol Minigame Gombal (DENGAN PROTEKSI PERNIKAHAN & LOGIKA PELAKOR MATRE)
                     {text: "Gombal Maut (Pilih Rayuan) 💘", action: () => {
-                         // FIX: Mengubah '>' menjadi '>=' 
+                         // --- NEW: CEK STATUS PERNIKAHAN (ANTI-SELINGKUH) ---
+                         if (STATE.player.married) {
+                             // 1. LOGIKA KHUSUS MATRE (PELAKOR MODE)
+                             if (npc.id.includes('matre')) {
+                                 // Tidak mengurangi hubungan, justru menggoda
+                                 // Suara Chat/Giggle
+                                 if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); 
+
+                                 let pelakorMsg = "";
+                                 if (npc.id === 'lover_matre_girl') { // Siska
+                                     pelakorMsg = "Wah, cincin di jarimu bagus juga... Istrimu pasti bahagia ya punya suami mapan.\n\nSayang sekali kita telat ketemu. Tapi... kalau kamu bosan di rumah, aku selalu siap kok nemenin kamu belanja atau makan enak. \n\nAsal kamu yang bayar, rahasia aman! Kita jadi 'teman spesial' aja gimana? Hihihi. 😉";
+                                 } else { // Rendi
+                                     pelakorMsg = "Wih, ternyata sudah sold out. Padahal aku kira kita ada chemistry.\n\nTapi santai aja, aku orangnya asik kok. Kalau suamimu sibuk kerja dan kamu butuh hiburan, telepon aja aku. Kita bisa jalan-jalan berkelas bareng... tentunya pakai budget kamu dong. Deal? 😎";
+                                 }
+
+                                 showDialogue(npc.name + " (Menggoda)", pelakorMsg, [{text: "Duh, bahaya nih...", action: closeDialogue}], npc.imgSrc);
+                                 return;
+                             }
+
+                             // 2. LOGIKA UMUM (NPC BAIK AKAN MARAH)
+                             // Ambil nama pasangan untuk dialog
+                             let spouseName = "Pasanganmu";
+                             const sid = STATE.player.spouseId;
+                             if(sid === 'lover1girl') spouseName = "Ayu";
+                             else if(sid === 'lover2girl') spouseName = "Putri";
+                             else if(sid === 'lover1boy') spouseName = "Dr. Budi";
+                             else if(sid === 'lover2boy') spouseName = "Satria";
+
+                             // Hukuman: Kurangi Relasi dengan NPC ini
+                             updateRelationship(npc, -5, "Ditolak Keras"); 
+                             
+                             // Efek Suara Marah/Pukul
+                             if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+
+                             showDialogue(npc.name + " (Marah)", 
+                                `HEH! Apa-apaan kamu?! 😡\n\nLihat cincin di jarimu itu! Kamu kan sudah menikah dengan **${spouseName}**.\n\nJangan ganjen ya! Pulang sana, ingat orang di rumah yang setia nungguin kamu!\n\n(Dia menolak rayuanmu mentah-mentah)`, 
+                                [{text: "Maaf, aku khilaf...", action: closeDialogue}], 
+                                npc.imgSrc
+                             );
+                             return;
+                         }
+
+                         // Jika Belum Menikah, Lanjut Normal
                          if(STATE.player.energy >= 3) {
                              STATE.player.energy -= 3;
                              startGombalGame(npc); 
@@ -12366,9 +12434,15 @@ function interactNPC(npc) {
                         dialogueOpts.push({
                             text: "💍 LAMAR (Berikan Cincin Raja)", 
                             action: () => {
+                                // NEW: CEK APAKAH SUDAH MENIKAH (Mencegah Poligami)
+                                if (STATE.player.married) {
+                                    showToast("Kamu sudah menikah! Setia dong! 🚫");
+                                    return;
+                                }
+
                                 // NEW: CEK APAKAH INI CINTA MATRE?
                                 if(npc.id.includes('matre')) {
-                                    // REJECTION SCENE
+                                    // REJECTION SCENE (Matre tetap menolak nikah walau Single)
                                     let rejectText = "Hah? Nikah? Sama kamu? \nAduh maaf ya, kita kan cuma teman senang-senang aja. Lagian hartamu belum cukup buat gaya hidupku. \nCincinnya bagus sih, tapi... NO THANKS! Bye! 💔";
                                     if(npc.id === 'lover_matre_boy') rejectText = "Waduh, kamu baper ya? Maaf cantik, aku belum siap berkomitmen dengan ekonomi pas-pasan. Kita TTM-an aja ya. Cincinnya simpan aja buat beli beras.";
                                     
@@ -13436,6 +13510,44 @@ function interactNPC(npc) {
     // NEW: Interaksi khusus untuk Fake Interest/Rival
     else if(npc.id === 'fake_boy' || npc.id === 'fake_girl') {
         const rivalName = npc.name.split('(')[1].replace(')', ''); // Ambil nama panggilan
+
+        // --- NEW: LOGIKA JIKA PLAYER SUDAH MENIKAH (JADI SAHABAT) ---
+        if (STATE.player.married) {
+            // Cek siapa pasangan player untuk konteks dialog (opsional, tapi bagus untuk detail)
+            // Tapi intinya Rival senang karena player sudah "Sold Out"
+            
+            let friendlyText = "";
+            let friendlyOpts = [];
+
+            if (npc.id === 'fake_boy') { // DONI (Rival Cowok)
+                friendlyText = "Yo Bro! Gimana kehidupan nikah? Enak kan ada yang ngurusin? Hahaha.\n\nJujur gue lega lu udah nikah. Sekarang gue bisa fokus ngejar cinta gue sendiri tanpa takut bersaing sama lu.\n\nSelamat ya! Gue doain lu langgeng sampai kakek-nenek.";
+                friendlyOpts = [
+                    {text: "Thanks Bro! Kapan nyusul?", action: () => {
+                        showDialogue(npc.name, "Hahaha, santai lah. Gue masih mau menikmati masa muda dan ngumpulin modal dulu. \nNanti kalau gue nikah, lu orang pertama yang gue undang!", [{text:"Siap!", action:closeDialogue}], npc.imgSrc);
+                    }},
+                    {text: "Minta Tips Rumah Tangga?", action: () => {
+                        showDialogue(npc.name, "Waduh, salah orang lu bro. Gue kan masih jomblo! \nTapi kuncinya sih satu: Sering-sering aja ajak jalan istri lu. Cewek itu butuh perhatian.", [{text:"Bener juga", action:closeDialogue}], npc.imgSrc);
+                    }},
+                    {text: "Dah Bro", action: closeDialogue}
+                ];
+            } else { // BELLA (Rival Cewek)
+                friendlyText = "Haiii! Ciee pengantin baru, auranya beda banget deh, makin glowing! ✨\n\nSelamat ya atas pernikahanmu. Dulu aku sempet sebel sama kamu karena takut cowok idamanku diambil, tapi sekarang aku sadar kamu temen yang baik.\n\nLanggeng terus ya sama pasanganmu!";
+                friendlyOpts = [
+                    {text: "Makasih Bella! Kamu juga semangat ya", action: () => {
+                        showDialogue(npc.name, "Pasti dong! Sekarang sainganku berkurang satu, peluangku dapet cowok idaman makin besar hihihi. \nKapan-kapan kita belanja bareng yuk!", [{text:"Boleh tuh", action:closeDialogue}], npc.imgSrc);
+                    }},
+                    {text: "Tukar Gosip", action: () => {
+                        showDialogue(npc.name, "Tau nggak? Si Pedagang Keliling itu ternyata naksir anak Blacksmith lho! \nDesa ini kecil tapi dramanya banyak ya. Seru banget!", [{text:"Walah...", action:closeDialogue}], npc.imgSrc);
+                    }},
+                    {text: "Dah Bella", action: closeDialogue}
+                ];
+            }
+
+            showDialogue(`${npc.name} (Sahabat)`, friendlyText, friendlyOpts, npc.imgSrc);
+            return;
+        }
+
+        // --- LOGIKA LAMA: JIKA BELUM MENIKAH (MASIH RIVAL) ---
         
         // Dialog beda tergantung lokasi/waktu
         let taunt = "Apa lu liat-liat? Minggir!";
@@ -13875,6 +13987,47 @@ function interactNPC(npc) {
                 showDialogue("PENJAGA GERBANG", randQuote, [{text:"Siap Pak!", action:closeDialogue}], npc.imgSrc);
             }},
             {text: "Tutup", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI PEDAGANG KELILING (JUAL BIBIT & PUPUK) ---
+    else if(npc.id === 'trader_outside') {
+        showDialogue(npc.name, "Permisi! Saya membawa perlengkapan tani terbaik.\nLahan di belakang rumahmu sayang kalau dibiarkan kosong lho.", [
+            {text: "🌱 Beli Bibit & Pupuk", action: () => {
+                showDialogue("TOKO BIBIT KELILING", "Silakan pilih bibit unggul (Panen 2-3 Hari):", [
+                    {text: "Bibit Padi (500 G) 🌾", action: () => buyItem('bibit_padi', 500)},
+                    {text: "Bibit Jagung (300 G) 🌽", action: () => buyItem('bibit_jagung', 300)},
+                    {text: "Bibit Tomat (250 G) 🍅", action: () => buyItem('bibit_tomat', 250)},
+                    {text: "Pupuk Organik (100 G) 💩", action: () => buyItem('pupuk', 100)},
+                    {text: "Kembali", action: () => interactNPC(npc)}
+                ], npc.imgSrc);
+            }},
+            {text: "Cara Bertani", action: () => {
+                showDialogue(npc.name, "Mudah kok! Pergi ke lahan di belakang rumahmu:\n1. Gunakan Cangkul (jika ada).\n2. Tanam Bibit.\n3. Siram tiap pagi.\n4. Panen saat matang dan jual ke Merchant!", [{text:"Siap!", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Beli Alat Tani?", action: () => {
+                showDialogue(npc.name, "Untuk Cangkul dan Penyiram, silakan beli di **Toko Merchant** (Gedung Selatan). Saya hanya jual bibitnya.", [{text:"Oke", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Tutup", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI ISTRI BOS DI DALAM TOKO (MALAM HARI) ---
+    else if(npc.id === 'trader_wife_inside') {
+        showDialogue(npc.name, "Hufft... Akhirnya bisa ngadem di toko. Jualan keliling panas banget lho! \nSuamiku (Bos Merchant) kadang galak, tapi dia pekerja keras.", [
+            {text: "Masih jualan Bu?", action: () => {
+                showDialogue(npc.name, "Tentu saja! Namanya juga pedagang. \nMau beli bibit buat ditanam besok pagi?", [
+                    {text: "Bibit Padi (500 G) 🌾", action: () => buyItem('bibit_padi', 500)},
+                    {text: "Bibit Jagung (300 G) 🌽", action: () => buyItem('bibit_jagung', 300)},
+                    {text: "Bibit Tomat (250 G) 🍅", action: () => buyItem('bibit_tomat', 250)},
+                    {text: "Pupuk Organik (100 G) 💩", action: () => buyItem('pupuk', 100)},
+                    {text: "Kembali", action: () => interactNPC(npc)}
+                ], npc.imgSrc);
+            }},
+            {text: "Tentang Suami", action: () => {
+                showDialogue(npc.name, "Dia itu pelit ngasih diskon, tapi kalau soal kualitas barang, dia nggak main-main. \nKami merintis toko ini dari nol lho.", [{text:"Hebat Bu", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Istirahatlah Bu", action: closeDialogue}
         ], npc.imgSrc);
     }
 
@@ -15745,8 +15898,8 @@ function draw() {
                 
                 if(isBgLoaded) {
                     if (STATE.location === 'village') {
-                        // UPDATE: Tambahkan t !== 0 agar Tile Air (0) tidak diskip, sehingga kita bisa gambar ombak di atasnya
-                        if(t !== 9 && t !== 2 && t !== 12 && t !== 1 && t !== 0) continue; 
+                        // UPDATE: Tambahkan t !== 5 agar Lahan Pertanian (ID 5) tetap digambar di atas background
+                        if(t !== 9 && t !== 2 && t !== 12 && t !== 1 && t !== 0 && t !== 5) continue; 
                     } else if (STATE.location === 'house') {
                         // Skip floor (10) and wall (11) if BG is loaded so we see the image
                         if(t === 10 || t === 11) continue; 
@@ -16070,11 +16223,27 @@ function draw() {
                     }
                 }
 
-                if(t===5 && !isBgLoaded) { 
-                    ctx.fillStyle = STATE.season === 'winter' ? '#94a3b8' : '#b45309'; 
-                    ctx.fillRect(x*TILE_SIZE+8, y*TILE_SIZE+12, 14, 14); 
-                    ctx.fillStyle = STATE.season === 'winter' ? '#cbd5e1' : '#d97706'; 
-                    ctx.fillRect(x*TILE_SIZE+8, y*TILE_SIZE+8, 14, 14);
+                // FIX: Menghapus syarat !isBgLoaded agar lahan pertanian selalu digambar
+                if(t===5) { 
+                    // UPDATE: MENGGUNAKAN GAMBAR LAHAN LIAR (images/lahan-liar.png)
+                    if (farmAssets.lahanLiar.complete && farmAssets.lahanLiar.naturalWidth !== 0) {
+                        ctx.drawImage(farmAssets.lahanLiar, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        
+                        // Efek Salju di atas lahan saat Winter
+                        if(STATE.season === 'winter') {
+                             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                             ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    } else {
+                        // Fallback ke Kotak Coklat Lama (Jika gambar belum load)
+                        ctx.fillStyle = STATE.season === 'winter' ? 'rgba(148, 163, 184, 0.8)' : 'rgba(146, 64, 14, 0.6)'; 
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        
+                        // Gambar gundukan tanah (detail)
+                        ctx.fillStyle = STATE.season === 'winter' ? '#cbd5e1' : '#d97706'; 
+                        // Pola gundukan tanah
+                        ctx.fillRect(x*TILE_SIZE+5, y*TILE_SIZE+5, TILE_SIZE-10, TILE_SIZE-10);
+                    }
                 }
                 
                 if(t===9) { 
@@ -16767,6 +16936,10 @@ function drawObject(ctx, o) {
                 else if (src.includes('mejakasir')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNiIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI4IiB5PSI2IiB3aWR0aD0iMTYiIGhlaWdodD0iMTAiIGZpbGw9IiM5NDkzOTgiIHN0cm9rZT0iIzMzNDE1NSIvPjxyZWN0IHg9IjEyIiB5PSI4IiB3aWR0aD0iOCIgaGVpZ2h0PSIyIiBmaWxsPSIjMWU0MDVmIi8+PC9zdmc+';
                 }
+                // NEW: FALLBACK ORANG SAWAH (Stick Figure Sederhana)
+                else if (src.includes('orangsawah')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PGxpbmUgeDE9IjE2IiB5MT0iNCIgeDI9IjE2IiB5Mj0iMzIiIHN0cm9rZT0iIzhCNEMzOSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjgiIHkxPSIxMiIgeDI9IjI0IiB5Mj0iMTIiIHN0cm9rZT0iIzhCNEMzOSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMTYiIGN5PSI4IiByPSI0IiBmaWxsPSIjZmZjMTA3Ii8+PC9zdmc+';
+                }
                 // NEW: FALLBACK LEMARI (Wardrobe tall box)
                 else if (src.includes('lemari')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI5NiI+PHJlY3QgeD0iNCIgeT0iMiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjkyIiBmaWxsPSIjOEU1NDJCIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjgiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PHJlY3QgeD0iMzQiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PGNpcmNsZSBjeD0iMjYiIGN5PSI1MCIgcj0iMiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjM4IiBjeT0iNTAiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
@@ -17203,31 +17376,66 @@ function drawPlayer(ctx, p) {
         ctx.restore();
     }
 
-    // --- NEW: HP BAR DI ATAS KEPALA (Diposisikan Lebih Tinggi) ---
-    // Sprite Player tingginya sekitar 60px. Titik y player ada di kaki/bawah.
-    // Kita gambar HP bar di y - 50 agar aman dari kepala/wajah.
-    const barW = 30;
-    const barH = 4;
-    const barX = p.x + 10 - barW/2;
-    const barY = p.y - 50; 
+    // --- NEW: HP BAR DI ATAS KEPALA (PREMIUM STYLE) ---
+    // UPDATE: SEKARANG MUNCUL DI SEMUA LOKASI (TERMASUK DUNGEON)
+    // Menghapus syarat 'if (STATE.location !== 'dungeon')' agar bar melayang selalu muncul
+    {
+        // Posisi sedikit lebih tinggi dari kepala sprite (y-55)
+        const barW = 36;
+        const barH = 5;
+        const barX = p.x + 10 - barW/2;
+        const barY = p.y - 55; 
 
-    // Background Bar (Hitam)
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(barX, barY, barW, barH);
-    
-    // HP Fill (Hijau/Merah)
-    const hpPct = Math.max(0, p.hp / p.maxHp);
-    ctx.fillStyle = hpPct > 0.5 ? '#4ade80' : '#ef4444'; 
-    ctx.fillRect(barX, barY, barW * hpPct, barH);
+        const hpPct = Math.max(0, p.hp / p.maxHp);
+        
+        // Warna Dinamis (Hijau -> Kuning -> Merah)
+        let colTop, colBot;
+        if (hpPct > 0.5) { colTop = '#4ade80'; colBot = '#15803d'; } // Hijau Sehat
+        else if (hpPct > 0.25) { colTop = '#facc15'; colBot = '#a16207'; } // Kuning Waspada
+        else { colTop = '#ef4444'; colBot = '#7f1d1d'; } // Merah Bahaya
 
-    // --- UPDATE: MARKER SEGITIGA (Lebih Tinggi Lagi) ---
-    // Marker digeser ke y-65 agar berada DI ATAS HP Bar
+        ctx.save();
+        
+        // 1. Shadow Background (Hitam semi-transparan untuk outline)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        // Gambar background sedikit lebih besar dari bar (+1px border effect)
+        ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+        
+        // 2. Bar Kosong (Abu gelap)
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(barX, barY, barW, barH);
+
+        if (hpPct > 0) {
+            // 3. Gradient Fill
+            const grad = ctx.createLinearGradient(barX, barY, barX, barY + barH);
+            grad.addColorStop(0, colTop);
+            grad.addColorStop(1, colBot);
+            
+            ctx.fillStyle = grad;
+            const fillW = Math.max(0, barW * hpPct);
+            ctx.fillRect(barX, barY, fillW, barH);
+            
+            // 4. Efek Shine (Kilap di separuh atas)
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.fillRect(barX, barY, fillW, barH/2);
+        }
+        
+        // 5. Border Halus
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX - 0.5, barY - 0.5, barW + 1, barH + 1);
+
+        ctx.restore();
+    }
+
+    // --- UPDATE: MARKER SEGITIGA (Lebih Tinggi Lagi menyesuaikan Bar baru) ---
+    // Marker digeser ke y-68 agar aman di atas HP Bar
     const floatY = Math.sin(Date.now() / 150) * 5;
     ctx.fillStyle = '#fbbf24'; 
     ctx.beginPath();
-    ctx.moveTo(p.x + 10, p.y - 65 + floatY); // Ujung Bawah
-    ctx.lineTo(p.x + 5, p.y - 75 + floatY);  // Kiri Atas
-    ctx.lineTo(p.x + 15, p.y - 75 + floatY); // Kanan Atas
+    ctx.moveTo(p.x + 10, p.y - 68 + floatY); // Ujung Bawah
+    ctx.lineTo(p.x + 5, p.y - 78 + floatY);  // Kiri Atas
+    ctx.lineTo(p.x + 15, p.y - 78 + floatY); // Kanan Atas
     ctx.fill();
     
     // Shadow/Glow Marker
@@ -17544,6 +17752,12 @@ function renderInventory() {
         'zirah_legend': { name: 'Zirah Abadi', icon: '🛡️', desc: 'Armor Legendaris (Pasif: Def++).' },
         'cincin_legend': { name: 'Cincin Raja', icon: '💍', desc: 'Cincin Legendaris (Pasif: Gold++).' },
         
+        // NEW: ITEM BIBIT PERTANIAN
+        'bibit_padi': { name: 'Bibit Padi', icon: '🌾', desc: 'Tanam di lahan. Panen jadi Gabah/Beras.' },
+        'bibit_jagung': { name: 'Bibit Jagung', icon: '🌽', desc: 'Bibit jagung manis unggulan.' },
+        'bibit_tomat': { name: 'Bibit Tomat', icon: '🍅', desc: 'Cepat tumbuh dan segar.' },
+        'pupuk': { name: 'Pupuk', icon: '💩', desc: 'Mempercepat pertumbuhan tanaman.' },
+
         // NEW: ITEM CINCIN KAYU (ROLE FAMILY)
         'cincin_kayu': { name: 'Cincin Kayu', icon: '💍', desc: 'Cincin sederhana untuk melamar pasangan.' },
         // NEW: ITEM PAKAIAN NIKAH (ROLE FAMILY)
