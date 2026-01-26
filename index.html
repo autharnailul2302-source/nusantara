@@ -1965,6 +1965,39 @@ button, .round-btn, .d-btn, .auth-btn {
             box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
         }
 
+        /* --- NEW: DAMAGE FEEDBACK EFFECTS --- */
+        #damage-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 60%, rgba(239, 68, 68, 0.6) 100%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            transition: opacity 0.1s;
+            mix-blend-mode: overlay;
+        }
+
+        .damage-active {
+            animation: damageFlash 0.3s ease-out;
+        }
+
+        @keyframes damageFlash {
+            0% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0; transform: scale(1); }
+        }
+
+        /* Kelas Getar Layar */
+        .shake-screen {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(6px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
     </style>
 </head>
 <body>
@@ -1978,6 +2011,9 @@ button, .round-btn, .d-btn, .auth-btn {
     <div id="game-container">
     <canvas id="gameCanvas"></canvas>
     
+    <!-- NEW: DAMAGE OVERLAY ELEMENT -->
+    <div id="damage-overlay"></div>
+
     <!-- 1. SPLASH SCREEN -->
     <div id="splash-screen">
         <!-- NEW: LOGO INSTANSI HEADER -->
@@ -2814,6 +2850,44 @@ farmAssets.lahanLiar.src = 'images/lahan-liar.png';
 farmAssets.lahanLiar.onerror = function() {
     this.onerror = null;
     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjOGI0NTEzIi8+PHBhdGggZD0iTTUgNSBMMjUgMjUgTTEwIDI1IEwyMCA1IiBzdHJva2U9IiM1ZDQwMzciIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC41Ii8+PC9zdmc+';
+};
+
+// --- NEW: CANDI ASSETS (LANTAI KHUSUS) ---
+const candiAssets = {
+    floor: new Image(),
+    redFloor: new Image() // NEW: Lantai Merah Candi
+};
+candiAssets.floor.src = 'images/lantaicandi.png';
+candiAssets.redFloor.src = 'images/lantaimerahcandi.png';
+
+// Fallback visual jika gambar gagal load (Warna Batu Tua)
+candiAssets.floor.onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjNDQ0MDNjIi8+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSJub25lIiBzdHJva2U9IiM1NzUzNGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
+};
+// NEW: Fallback visual lantai merah
+candiAssets.redFloor.onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjOTkxYjFiIi8+PHBhdGggZD0iTTAgMCBMMzIgMzIgTTE2IDAgTDMyIDE2IE0wIDEwIEwyMiAzMiIgc3Ryb2tlPSIjN2YxZDFkIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNSIvPjwvc3ZnPg==';
+};
+
+// --- NEW: RUINS ASSETS (LANTAI & TEMBOK RERUNTUHAN) ---
+const ruinsAssets = {
+    floor: new Image(),
+    wall: new Image() // NEW: Aset Tembok
+};
+ruinsAssets.floor.src = 'images/lantai-reruntuhan.png';
+ruinsAssets.wall.src = 'images/tembok-reruntuhan.png'; // NEW: Set Source Tembok
+
+// Fallback visual batu pecah/kuno jika gambar gagal load
+ruinsAssets.floor.onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjN2M3YzdmIi8+PHBhdGggZD0iTTAgMCBMMzIgMzIgTTE2IDAgTDMyIDE2IE0wIDEwIEwyMiAzMiIgc3Ryb2tlPSIjNTA1MDU1IiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNSIvPjwvc3ZnPg==';
+};
+// NEW: Fallback visual tembok reruntuhan
+ruinsAssets.wall.onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjNDQ0MDNjIi8+PHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjN2M3YzdmIi8+PHJlY3QgeD0iMTgiIHk9IjE4IiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiM3YzdjN2YiLz48cGF0aCBkPSJNMCAzMiBMMzIgMCIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMyIvPjwvc3ZnPg==';
 };
 
 // NEW: LOAD SEASONAL BACKGROUNDS
@@ -3741,6 +3815,8 @@ async function preloadAllGameAssets() {
     collectGlobal(wallAssets);
     collectGlobal(grassAssets);
     collectGlobal(farmAssets); // Add Farm Assets to Preloader
+    collectGlobal(ruinsAssets); // NEW: Add Ruins Assets
+    collectGlobal(candiAssets); // NEW: Add Candi Assets
 
     // 2. Kumpulkan semua gambar dari Peta (Bangunan, NPC, Objek)
     for (const [mapName, mapData] of Object.entries(maps)) {
@@ -3790,7 +3866,22 @@ async function preloadAllGameAssets() {
         // NEW: ASSET KURCACI TANI & PERI PANEN
         'images/kurcacitani.png', 'images/peripanen.png',
         // NEW: ASSET ORANG SAWAH
-        'images/orangsawah.png'
+        'images/orangsawah.png',
+        // NEW: ASSET RERUNTUHAN (FIX AGAR TIDAK KOSONG)
+        'images/tembok-reruntuhan.png', 
+        'images/lantai-reruntuhan.png',
+        // NEW: ASSET LANTAI CANDI
+        'images/lantaicandi.png',
+        'images/lantaimerahcandi.png', // NEW
+        // NEW: ASSET ARCA & GUCI CANDI
+        'images/arcacandi.png',
+        'images/gucicandi.png',
+        // NEW: ASSET LILIN ABADI
+        'images/lilinabadi.png',
+        // NEW: ASSET PRASASTI CANDI
+        'images/prasasticandi.png',
+        // NEW: ASSET MEJA ALTAR CANDI
+        'images/mejaaltar.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -5884,11 +5975,26 @@ fillMap(villageTiles, ISLAND_W, 1, 5, 5, 50, 30);
 fillMap(villageTiles, ISLAND_W, 3, 28, 5, 4, 32); 
 fillMap(villageTiles, ISLAND_W, 3, 5, 20, 50, 4); 
 
-// Hutan (Kiri)
+// --- UPDATE: TILE RERUNTUHAN DIPINDAH KE DEPAN CANDI (KANAN ATAS) ---
+// Hutan (Kiri) - LAMA (DIKOMENTARI/DIHAPUS)
+/*
 for(let i=0; i<4; i++) {
     fillMap(villageTiles, ISLAND_W, 5, 8, 8 + (i*5), 4, 3);
     villageTiles[(8 + (i*5) + 2) * ISLAND_W + 10] = 6; 
 }
+*/
+
+// Area Reruntuhan Baru (Antara Candi dan Dungeon)
+// Lokasi: Sekitar x:46-54, y:11-17
+// UPDATE: Menggunakan ID 7 (Lantai Reruntuhan) bukan 5 (Tanah)
+fillMap(villageTiles, ISLAND_W, 7, 46, 11, 9, 7); 
+
+// Tambahkan Puing-puing Magis (Tile Ungu/Kuno) secara acak di area reruntuhan
+villageTiles[12 * ISLAND_W + 48] = 6; 
+villageTiles[14 * ISLAND_W + 52] = 6; 
+villageTiles[13 * ISLAND_W + 47] = 6;
+villageTiles[15 * ISLAND_W + 50] = 6;
+villageTiles[12 * ISLAND_W + 53] = 6;
 
 // Area Akademi (x:38, y:10)
 fillMap(villageTiles, ISLAND_W, 2, 35, 6, 15, 3); 
@@ -6081,15 +6187,18 @@ for(let y=0; y<CANDI_H; y++) { candiTiles[y*CANDI_W+0] = 2; candiTiles[y*CANDI_W
 // Pathway / Karpet Merah/Ungu (Magic Floor ID 6) leading to Altar
 for(let y=3; y<CANDI_H-1; y++) {
     candiTiles[y*CANDI_W + 7] = 6;
-    candiTiles[y*CANDI_W + 8] = 6;
+    candiTiles[y*CANDI_W + 8] = 6; // UPDATE: Dikembalikan jadi 2 kolom (Lebih Lebar)
 }
-candiTiles[(CANDI_H-1)*CANDI_W + 7] = 8; // Door Tile (Tengah Bawah)
+// Door Tile (Tengah Bawah) - Disesuaikan agar simetris dengan karpet
+candiTiles[(CANDI_H-1)*CANDI_W + 7] = 8; 
+candiTiles[(CANDI_H-1)*CANDI_W + 8] = 8; 
 
 // --- UPDATE: MAP RERUNTUHAN YANG LEBIH DETAIL ---
 const RUINS_W = 22;
 const RUINS_H = 16;
 // Campuran Tanah (5) dan Lantai Batu Dungeon (4) untuk kesan reruntuhan
-const ruinsTiles = new Array(RUINS_W * RUINS_H).fill(5); 
+// UPDATE: Base tile menggunakan ID 7 (Lantai Reruntuhan)
+const ruinsTiles = new Array(RUINS_W * RUINS_H).fill(7); 
 
 // Buat pola reruntuhan (Lantai batu pecah-pecah di tengah)
 for(let y=2; y<RUINS_H-2; y++) {
@@ -6306,8 +6415,8 @@ for(let i=0; i<10; i++) {
             {id: 'fake_girl', x: 40, y: 31, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'afternoon', genderReq: 'girl', w: 40, h: 60},
 
             /* NEW: MONSTER PENCURI SKRIPSI (Hanya muncul saat Quest Aktif) */
-            /* Lokasi: Reruntuhan Hutan Barat (Kiri Peta) */
-            {id: 'monster_skripsi', x: 8, y: 10, name: 'Pencuri Naskah', imgSrc: 'images/monster-thief.png', type: 'static', schedule: 'always', questReq: 'find_draft', w: 45, h: 45},
+            /* Lokasi: Depan Candi Kuno (Timur Laut Peta) - UPDATE: DIPINDAHKAN DARI HUTAN */
+            {id: 'monster_skripsi', x: 50, y: 13, name: 'Pencuri Naskah', imgSrc: 'images/monster-thief.png', type: 'static', schedule: 'always', questReq: 'find_draft', w: 45, h: 45},
 
             /* MOVED: Penjaga Dungeon dipindah agak ke depan (y:21) agar sejajar entrance */
             {id: 'penjagadungeon', x: 46, y: 21, name: 'Penjaga', imgSrc: 'images/penjagadungeon.png', type: 'service', schedule: 'always', w: 40, h: 60}, 
@@ -6752,23 +6861,32 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             /* NEW: DEWI RORO (PENJAGA CANDI) */
-            /* Posisi di depan Arca Utama (x:7, y:3.5) agar terlihat melayang di depan patung */
-            {id: 'dewi_roro', x: 7, y: 3.5, name: 'Dewi Roro', imgSrc: 'images/roro.png', type: 'static', schedule: 'always', w: 40, h: 60}
+            /* Posisi disesuaikan (x:7.5, y:6.5) agar berdiri pas di depan Altar yang turun */
+            /* UPDATE: SCHEDULE 'night' agar hanya muncul malam sampai pagi (20:00 - 06:00) */
+            {id: 'dewi_roro', x: 7.5, y: 6.5, name: 'Dewi Roro', imgSrc: 'images/roro.png', type: 'static', schedule: 'night', w: 40, h: 60}
         ], 
         objects: [
             // ARCA UTAMA (Di Tengah Atas)
-            // Menggunakan gambar statue.png
-            {x: 7, y: 2, w: 2, h: 2, type: 'sign', icon: '🗿', text: "Arca Utama: Memancarkan aura ketenangan masa lalu.", img: 'images/statue.png'},
+            // FIX: Ukuran diubah jadi 4x5 (Lebih Tinggi) agar tidak gepeng
+            // Posisi tetap di y:1, tapi karena tingginya 5, dia akan memakan area y:1 s/d y:5
+            {x: 6, y: 1, w: 4, h: 5, type: 'sign', icon: '🗿', text: "Arca Utama: Memancarkan aura ketenangan masa lalu.", img: 'images/arcacandi.png'},
             
             // ARTIFAK KUNO (Kiri & Kanan)
-            {x: 2, y: 4, type: 'shelf', icon: '🏺', text: "Guci Abu: Peninggalan dinasti kuno."},
-            {x: 13, y: 4, type: 'shelf', icon: '📜', text: "Prasasti Batu: Tertulis dalam bahasa Sansekerta."},
+            // UPDATE: Guci Abu sekarang menggunakan gambar 'images/gucicandi.png'
+            // UPDATE TERBARU: Diperbesar jadi 2x2 dan bisa dilewati belakangnya
+            {x: 2, y: 4, w: 2, h: 2, type: 'shelf', icon: '🏺', text: "Guci Abu: Peninggalan dinasti kuno.", img: 'images/gucicandi.png'},
+            // UPDATE: Prasasti Batu sekarang menggunakan gambar 'images/prasasticandi.png'
+            // UPDATE TERBARU: Diperbesar jadi 2x2 dan bisa dilewati belakangnya
+            {x: 13, y: 4, w: 2, h: 2, type: 'shelf', icon: '📜', text: "Prasasti Batu: Tertulis dalam bahasa Sansekerta.", img: 'images/prasasticandi.png'},
             
-            {x: 2, y: 8, type: 'shelf', icon: '🕯️', text: "Lilin Abadi: Apinya tidak pernah padam."},
-            {x: 13, y: 8, type: 'shelf', icon: '🕯️', text: "Lilin Abadi: Menerangi kegelapan candi."},
+            // UPDATE: Lilin Abadi menggunakan gambar 'images/lilinabadi.png'
+            {x: 2, y: 8, type: 'shelf', icon: '🕯️', text: "Lilin Abadi: Apinya tidak pernah padam.", img: 'images/lilinabadi.png'},
+            {x: 13, y: 8, type: 'shelf', icon: '🕯️', text: "Lilin Abadi: Menerangi kegelapan candi.", img: 'images/lilinabadi.png'},
             
-            // Meja Persembahan (Kuno) - Pakai gambar meja modin (altar)
-            {x: 7, y: 5, w: 2, h: 1, type: 'table', icon: '💐', text: "Altar Persembahan", img: 'images/mejamodin.png'},
+            // Meja Persembahan (Kuno) - UPDATE: Menggunakan images/mejaaltar.png
+            // UPDATE: Posisi diturunkan ke y:7 karena patung memanjang sampai y:6
+            // UPDATE TERBARU: Diperbesar jadi 2x2 (h:2) agar bisa dilewati belakangnya
+            {x: 7, y: 7, w: 2, h: 2, type: 'table', icon: '💐', text: "Altar Persembahan", img: 'images/mejaaltar.png'},
 
             {x: 7, y: 15, type: 'door_out', icon: '🚪'}
         ]
@@ -6900,6 +7018,9 @@ const STATE = {
         comboCount: 0,      // Hitungan combo saat ini (1, 2, 3)
         comboWindow: 0,     // Waktu toleransi untuk lanjut ke combo berikutnya
         
+        // NEW: DAMAGE FEEDBACK STATE
+        hurtTimer: 0,       // Timer untuk animasi berkedip merah
+
         // NEW: SPRINT STATE
         isSprinting: false,
 
@@ -11037,6 +11158,7 @@ function processTeleport(b) {
 
     // --- DUNGEON ---
     else if(b.id === 'dungeon_gate') {
+        STATE.dungeonLevel = 1; // FIX: Reset ke Level 1 setiap kali masuk dari gerbang utama
         STATE.location = 'dungeon';
         STATE.player.x = TILE_SIZE * 5; 
         STATE.player.y = TILE_SIZE * 5;
@@ -11192,7 +11314,10 @@ function checkObjectCollision(x, y) {
         /* REVISI: Tambahkan 'catalog' (Meja Telepon) agar bisa jalan di belakangnya */
         /* UPDATE: Tambahkan 'sumur' dan 'papantani' agar bisa jalan di belakangnya */
         /* UPDATE: Tambahkan 'orangsawah' agar bisa jalan di belakangnya */
-        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah')))) && (obj.h || 1) > 0) {
+        /* UPDATE TERBARU: Menambahkan 'arcacandi' agar belakang patung bisa dilewati */
+        /* UPDATE TERBARU: Menambahkan 'prasasticandi' agar belakang prasasti bisa dilewati */
+        /* UPDATE TERBARU: Menambahkan 'gucicandi' agar belakang guci bisa dilewati */
+        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi')))) && (obj.h || 1) > 0) {
             yOffset = originalH * 0.4; // Turunkan hitbox 40% dari atas
             oh = originalH * 0.6;      // Sisa tinggi hitbox 60%
         }
@@ -11603,8 +11728,9 @@ function handleAction() {
         // NEW: EXIT DARI RUINS BATTLE (KABUR)
         else if(entranceBuilding.id === 'ruins_exit') {
             STATE.location = 'village';
-            STATE.player.x = 10 * TILE_SIZE; // Kembali ke area hutan
-            STATE.player.y = 10 * TILE_SIZE;
+            // UPDATE: KEMBALI KE DEPAN CANDI (BUKAN HUTAN)
+            STATE.player.x = 50 * TILE_SIZE; 
+            STATE.player.y = 15 * TILE_SIZE;
             // Clear enemies
             STATE.enemies = [];
             showToast("Kabur dari pertarungan!");
@@ -13588,11 +13714,11 @@ function interactNPC(npc) {
         else if (year >= 3 && !hasDraft && STATE.player.activeQuest !== 'find_draft') {
             showDialogue(npc.name, "HUWAAAA! Gawat! Gawat sekali! 😭 \nDraft Skripsi-ku yang sudah 90% jadi HILANG!", [
                 {text: "Kenapa bisa hilang kak?", action: () => {
-                    showDialogue(npc.name, "Tadi aku sedang riset di **Reruntuhan Hutan Barat** (Kiri Desa). Tiba-tiba ada monster mencuri tasku! \n\nKalau kamu berani ke sana dan mengambilkannya kembali, aku akan berikan salinan Draft-nya untukmu. Itu bisa jadi bahan proposalmu nanti!", 
+                    showDialogue(npc.name, "Tadi aku sedang riset di **Area Candi Kuno** (Timur Laut). Tiba-tiba ada monster mencuri tasku! \n\nKalau kamu berani ke sana dan mengambilkannya kembali, aku akan berikan salinan Draft-nya untukmu. Itu bisa jadi bahan proposalmu nanti!", 
                     [
                         {text: "Aku akan ambilkan! (Terima Quest)", action: () => {
                             STATE.player.activeQuest = 'find_draft';
-                            showToast("QUEST DITERIMA: Cari Monster di Hutan Barat!");
+                            showToast("QUEST DITERIMA: Cari Monster di Depan Candi!");
                             closeDialogue();
                         }},
                         {text: "Takut monster...", action: closeDialogue}
@@ -13602,7 +13728,7 @@ function interactNPC(npc) {
         }
         // Kondisi 3: Quest Aktif, Belum Dapat
         else if (STATE.player.activeQuest === 'find_draft' && !hasDraft) {
-            showDialogue(npc.name, "Tolong cepat! Monster itu lari ke **Hutan Barat (Kiri Desa)**. \nCari monster yang membawa tas buku!", [{text:"Segera ke sana!", action:closeDialogue}], npc.imgSrc);
+            showDialogue(npc.name, "Tolong cepat! Monster itu lari ke **Depan Candi Kuno**. \nCari monster yang membawa tas buku!", [{text:"Segera ke sana!", action:closeDialogue}], npc.imgSrc);
         }
         // Kondisi 4: Sudah Punya Draft (Selesai)
         else if (hasDraft) {
@@ -14335,6 +14461,21 @@ function getMissionBoardText() {
 }
 
 function interactObject(obj) {
+    // --- NEW: HANDLING KHUSUS ARTIFAK CANDI (Agar Guci, Prasasti, Altar, Lilin bisa diinteraksi) ---
+    if (STATE.location === 'candi_interior' && (obj.type === 'sign' || obj.type === 'shelf' || obj.type === 'table')) {
+        let title = "ARTIFAK KUNO";
+        // Ambil judul dari teks (sebelum titik dua)
+        if (obj.text && obj.text.includes(":")) {
+            title = obj.text.split(":")[0].toUpperCase();
+        } else if (obj.text && obj.text.includes("Altar")) {
+            title = "ALTAR SUCI";
+        }
+        
+        showDialogue(title, obj.text || "...", [{text:"Tutup", action:closeDialogue}], obj.img);
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        return;
+    }
+
     // FIX: Mengubah 'else if' menjadi 'if' karena ini adalah kondisi pertama
     if(obj.type === 'sign') {
         // --- UPDATE: LOGIKA DINAMIS UNTUK PAPAN MISI ---
@@ -15898,8 +16039,8 @@ function draw() {
                 
                 if(isBgLoaded) {
                     if (STATE.location === 'village') {
-                        // UPDATE: Tambahkan t !== 5 agar Lahan Pertanian (ID 5) tetap digambar di atas background
-                        if(t !== 9 && t !== 2 && t !== 12 && t !== 1 && t !== 0 && t !== 5) continue; 
+                        // UPDATE: Tambahkan t !== 7 agar Tile Reruntuhan (ID 7) digambar di atas background
+                        if(t !== 9 && t !== 2 && t !== 12 && t !== 1 && t !== 0 && t !== 5 && t !== 7) continue; 
                     } else if (STATE.location === 'house') {
                         // Skip floor (10) and wall (11) if BG is loaded so we see the image
                         if(t === 10 || t === 11) continue; 
@@ -15912,6 +16053,7 @@ function draw() {
                 if(t===4) c = '#3f3f46'; // Dungeon Floor Base Color
                 if(t===5) c = '#92400e'; 
                 if(t===6) c = '#4c1d95'; 
+                if(t===7) c = '#57534e'; // NEW: Ruins Base Color
                 if(t===9) c = '#000'; 
                 if(t===10) c = STATE.player.houseLevel===2 ? '#fcd34d' : '#78350f'; 
                 if(t===11) c = '#f1f5f9'; 
@@ -15927,12 +16069,43 @@ function draw() {
                 ctx.fillStyle = c;
                 
                 // Handle Dungeon/Candi Floor (ID 4)
-                // UPDATE: Menggunakan tekstur lantai dungeon untuk Candi juga agar terlihat kuno/batu
-                if (t === 4 && (STATE.location === 'dungeon' || STATE.location === 'candi_interior')) {
-                    if(dungeonAssets.floor.complete && dungeonAssets.floor.naturalWidth !== 0) {
-                        ctx.drawImage(dungeonAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                // UPDATE: Memisahkan logika Candi Interior agar menggunakan 'lantaicandi.png'
+                if (t === 4) {
+                    if (STATE.location === 'candi_interior') {
+                        // RENDER LANTAI CANDI KHUSUS
+                        if(candiAssets.floor.complete && candiAssets.floor.naturalWidth !== 0) {
+                            ctx.drawImage(candiAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            // Fallback warna batu candi
+                            ctx.fillStyle = '#44403c'; 
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    } 
+                    else if (STATE.location === 'dungeon' || STATE.location === 'ruins_battle') {
+                        // RENDER LANTAI DUNGEON BIASA
+                        if(dungeonAssets.floor.complete && dungeonAssets.floor.naturalWidth !== 0) {
+                            ctx.drawImage(dungeonAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            ctx.fillStyle = '#3f3f46'; // Fallback warna lantai jika gambar belum load
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
+                    }
+                }
+
+                // NEW: HANDLE MAGIC FLOOR / RED CARPET (ID 6)
+                else if (t === 6) {
+                    if (STATE.location === 'candi_interior') {
+                        // RENDER LANTAI MERAH CANDI
+                        if(candiAssets.redFloor.complete && candiAssets.redFloor.naturalWidth !== 0) {
+                            ctx.drawImage(candiAssets.redFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            // Fallback warna merah marun
+                            ctx.fillStyle = '#991b1b'; 
+                            ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        }
                     } else {
-                        ctx.fillStyle = '#3f3f46'; // Fallback Stone Color
+                        // Default Magic Floor (Ungu - Desa dll)
+                        ctx.fillStyle = '#4c1d95';
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
@@ -16041,8 +16214,7 @@ function draw() {
                     }
 
                     // GAMBAR OMBAK BERGERAK (Visual Effect)
-                    // Gunakan pola acak (Modulo) agar tidak semua tile ada ombaknya (Biar tidak terlalu ramai)
-                    // Rumus: (x*angka + y*angka) % kerapatan === 0
+                    // ... existing wave logic ...
                     if (((x * 17 + y * 23) % 7) === 0) { 
                         
                         // Kalkulasi Gerakan Sinusoidal (Naik Turun halus)
@@ -16061,6 +16233,26 @@ function draw() {
                         ctx.moveTo(wx + 5, wy + waveY);
                         ctx.quadraticCurveTo(wx + 15, wy + waveY - 4, wx + 25, wy + waveY);
                         ctx.stroke();
+                    }
+                }
+
+                // --- NEW: Handle Ruins Wall (ID 2 in Ruins Battle) ---
+                else if (t === 2 && STATE.location === 'ruins_battle') {
+                    // FIX: Gambar background warna dulu agar tidak bolong/hitam jika gambar gagal load
+                    ctx.fillStyle = '#57534e'; // Warna batu abu-abu (lebih terang dari background)
+                    ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                    if (ruinsAssets.wall.complete && ruinsAssets.wall.naturalWidth !== 0) {
+                        ctx.drawImage(ruinsAssets.wall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback texture visual tembok jika gambar belum muncul
+                        ctx.fillStyle = '#292524'; // Detail gelap (batu-batu)
+                        ctx.fillRect(x*TILE_SIZE+5, y*TILE_SIZE+5, 10, 10);
+                        ctx.fillRect(x*TILE_SIZE+15, y*TILE_SIZE+15, 10, 10);
+                        // Border biar kelihatan tembok
+                        ctx.strokeStyle = '#a8a29e';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
 
@@ -16243,6 +16435,34 @@ function draw() {
                         ctx.fillStyle = STATE.season === 'winter' ? '#cbd5e1' : '#d97706'; 
                         // Pola gundukan tanah
                         ctx.fillRect(x*TILE_SIZE+5, y*TILE_SIZE+5, TILE_SIZE-10, TILE_SIZE-10);
+                    }
+                }
+
+                // NEW: DRAW RUINS FLOOR (ID 7)
+                if(t===7) {
+                    // FIX: LAYERED RENDERING (LANTAI DI ATAS TEMBOK)
+                    // Sesuai request: Lantai tetap gambar lama, tapi lubang di tengah diisi tembok.
+                    
+                    // 1. LAYER BAWAH: Gambar Tembok (Untuk mengisi bagian yang bolong/transparan)
+                    if (ruinsAssets.wall.complete && ruinsAssets.wall.naturalWidth !== 0) {
+                        ctx.drawImage(ruinsAssets.wall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback warna batu jika gambar tembok belum load
+                        ctx.fillStyle = '#57534e'; 
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+
+                    // 2. LAYER ATAS: Gambar Lantai Reruntuhan (Overlay Utama)
+                    if (ruinsAssets.floor.complete && ruinsAssets.floor.naturalWidth !== 0) {
+                        ctx.drawImage(ruinsAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback detail jika gambar lantai gagal
+                        ctx.strokeStyle = '#44403c';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(x*TILE_SIZE, y*TILE_SIZE);
+                        ctx.lineTo(x*TILE_SIZE+10, y*TILE_SIZE+10);
+                        ctx.stroke();
                     }
                 }
                 
@@ -17318,6 +17538,27 @@ function drawPlayer(ctx, p) {
         ctx.save();
         ctx.translate(p.x + p.w/2, p.y + p.h/2);
         
+        // --- NEW: DAMAGE BLINK EFFECT (HURT ANIMATION) ---
+        // Jika sedang sakit (hurtTimer > 0), buat efek berkedip merah
+        if (p.hurtTimer > 0) {
+            p.hurtTimer--; // Kurangi timer setiap frame
+            
+            // Efek guncangan pada sprite
+            const shakeSprite = (Math.random() - 0.5) * 4;
+            ctx.translate(shakeSprite, 0);
+
+            // Efek Tint Merah (Composite Operation)
+            // Kita gambar sprite normal dulu, lalu tumpuk warna merah di atasnya
+            // Menggunakan globalAlpha untuk kedip
+            if (Math.floor(Date.now() / 50) % 2 === 0) {
+                ctx.globalAlpha = 0.7; // Sedikit transparan
+                // Note: Efek merah murni agak berat di performa canvas standard, 
+                // jadi kita pakai filter sederhana atau opacity + shake sudah cukup terasa.
+                // Jika browser support filter:
+                ctx.filter = 'sepia(1) hue-rotate(-50deg) saturate(5)'; // Merah pekat
+            }
+        }
+
         if(!isMoving && !p.isAttacking) {
             // UPDATE: Efek bernapas diperhalus (0.03 -> 0.015) agar tidak terlihat naik-turun drastis
             const breathe = 1 + Math.sin(Date.now() / 300) * 0.015; 
@@ -17337,15 +17578,11 @@ function drawPlayer(ctx, p) {
         
         ctx.restore();
     } else {
-        // FIX: Fallback ke kotak sederhana jika gambar gagal, karena draw3DBox tidak ada
+        // ... fallback rendering ...
         ctx.fillStyle = p.color || '#fbbf24';
+        if (p.hurtTimer > 0) ctx.fillStyle = '#ef4444'; // Merah jika sakit (fallback)
         ctx.fillRect(p.x, p.y, 20, 20);
-        
-        // Mata sederhana untuk orientasi
-        ctx.fillStyle = '#000';
-        if(p.direction === 'right') ctx.fillRect(p.x+12, p.y+5, 4, 4);
-        else if(p.direction === 'left') ctx.fillRect(p.x+4, p.y+5, 4, 4);
-        else ctx.fillRect(p.x+8, p.y+5, 4, 4); // Depan/Belakang
+        // ...
     }
 
     // --- UPDATE: VISUAL INDIKATOR STAMINA RENDAH (KERINGAT KECIL DI KEPALA) ---
@@ -17468,11 +17705,19 @@ function drawNPC(ctx, n) {
     const dh = n.h || 48;
 
     // 2. Gambar Bayangan (Dinamis mengikuti ukuran)
+    // Bayangan tetap di tanah (y asli) meskipun NPC melayang
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.beginPath();
-    // Bayangan di kaki
     ctx.ellipse(x + dw/2, y + dh - 5, dw/3, 4, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    // --- NEW: LOGIKA MELAYANG (FLOATING) KHUSUS DEWI RORO ---
+    let visualY = y;
+    if (n.id === 'dewi_roro') {
+        // Animasi Sinusoidal: Naik turun 10px, periode 1 detik
+        const floatOffset = Math.sin(Date.now() / 500) * 10 - 15; // -15 biar agak tinggi dari tanah
+        visualY = y + floatOffset;
+    }
 
     // 3. Load & Gambar Sprite NPC
     if (!n.loadedImg) {
@@ -17487,7 +17732,7 @@ function drawNPC(ctx, n) {
         if (n.id === 'dewi_arsa') {
             // A. Aura Lingkaran Bercahaya (Gradient)
             const cx = x + dw/2;
-            const cy = y + dh/2;
+            const cy = visualY + dh/2; // Gunakan visualY
             const pulse = 1 + Math.sin(Date.now() / 600) * 0.15; // Denyut cahaya pelan
             
             // Gradient: Putih Terang -> Kuning Pucat -> Transparan
@@ -17507,7 +17752,7 @@ function drawNPC(ctx, n) {
                  ctx.fillStyle = '#fff';
                  // Random posisi di sekitar NPC
                  const sx = x + (Math.random() * dw * 1.5) - (dw * 0.25);
-                 const sy = y + (Math.random() * dh * 1.2) - (dh * 0.1);
+                 const sy = visualY + (Math.random() * dh * 1.2) - (dh * 0.1);
                  
                  // Gambar bintang kecil (Cross shape)
                  const size = Math.random() * 3;
@@ -17524,7 +17769,7 @@ function drawNPC(ctx, n) {
         if (n.id === 'dewi_roro') {
             // A. Aura Suci (Pink & Putih Lembut)
             const cx = x + dw/2;
-            const cy = y + dh/2;
+            const cy = visualY + dh/2; // Aura mengikuti posisi melayang
             const pulse = 1 + Math.sin(Date.now() / 400) * 0.1; // Denyut lebih cepat
             
             const grad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 50 * pulse);
@@ -17572,7 +17817,7 @@ function drawNPC(ctx, n) {
             
             // Gambar Hati di atas kepala (y - 20 dari posisi kaki - tinggi sprite)
             // Tinggi sprite rata-rata ~50px
-            ctx.fillText('💖', x + dw/2, y - dh + 10 + floatY);
+            ctx.fillText('💖', x + dw/2, visualY - dh + 10 + floatY);
             
             ctx.restore();
         }
@@ -17586,7 +17831,8 @@ function drawNPC(ctx, n) {
             // Set Pivot ke Kaki Tengah agar tumbuh ke atas (menapak tanah)
             // Posisi Y dikurangi 5 (Offset Shadow)
             // FIX: Gunakan Math.round() untuk menghindari posisi desimal (patah-patah)
-            ctx.translate(Math.round(x + dw/2), Math.round(y + dh - 5)); 
+            // UPDATE: Menggunakan visualY untuk efek melayang
+            ctx.translate(Math.round(x + dw/2), Math.round(visualY + dh - 5)); 
             ctx.scale(1, breathe);
             
             // Cek Arah Gerak untuk Flip Horizontal
@@ -17938,8 +18184,8 @@ function handleEnemyDrop(en) {
         showDialogue("BERHASIL!", "Kamu menemukan **Draft Skripsi** yang dicuri! \nKembalikan ke Senior Kutubuku di Perpustakaan.", [
             {text: "Ok, Kembali ke Desa", action: () => {
                 STATE.location = 'village';
-                STATE.player.x = 9 * TILE_SIZE; // Balik ke area hutan
-                STATE.player.y = 12 * TILE_SIZE;
+                STATE.player.x = 50 * TILE_SIZE; // Balik ke depan Candi
+                STATE.player.y = 15 * TILE_SIZE;
                 closeDialogue();
                 if(typeof AudioService !== 'undefined') AudioService.playBGM('village');
             }}
@@ -18047,10 +18293,10 @@ function addItem(id, qty) {
 // UPDATE ENEMY UNTUK CEK INVINCIBLE & DAMAGE REDUCTION
 function updateEnemies() {
     STATE.enemies.forEach((en, i) => {
+        // ... existing movement logic ...
         en.x += en.knockback.x; en.y += en.knockback.y;
         en.knockback.x *= 0.8; en.knockback.y *= 0.8;
         
-        // Calculate Movement Angle
         if(Math.abs(en.knockback.x) < 0.5) {
             const ang = Math.atan2(STATE.player.y - en.y, STATE.player.x - en.x);
             en.angle = ang;
@@ -18068,7 +18314,44 @@ function updateEnemies() {
                 if(STATE.player.inventory['zirah_legend']) dmg = 0.2; // Diskon damage 60% jika punya zirah
 
                 STATE.player.hp -= dmg;
-                if(Math.random()<0.1) createParticle(STATE.player.x, STATE.player.y, '#ef4444');
+                
+                // --- NEW: TRIGGER DAMAGE EFFECTS ---
+                // Hanya trigger efek visual setiap beberapa frame agar tidak epilepsi (interval 30 frame / 0.5 detik)
+                if (!STATE.player.damageCooldown || STATE.player.damageCooldown <= 0) {
+                    
+                    // 1. Set Timer Animasi Player (Sprite Merah)
+                    STATE.player.hurtTimer = 15; // 15 Frame (~0.25 detik)
+                    
+                    // 2. Trigger Overlay Merah (CSS Animation)
+                    const dmgOverlay = document.getElementById('damage-overlay');
+                    if (dmgOverlay) {
+                        dmgOverlay.classList.remove('damage-active');
+                        void dmgOverlay.offsetWidth; // Trigger Reflow
+                        dmgOverlay.classList.add('damage-active');
+                    }
+
+                    // 3. Trigger Screen Shake (CSS Animation pada Container)
+                    const gameContainer = document.getElementById('game-container');
+                    if (gameContainer) {
+                        gameContainer.classList.remove('shake-screen');
+                        void gameContainer.offsetWidth; // Trigger Reflow
+                        gameContainer.classList.add('shake-screen');
+                    }
+
+                    // 4. Efek Suara
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+                    
+                    // 5. Partikel Darah
+                    createParticle(STATE.player.x, STATE.player.y, '#ef4444');
+                    createParticle(STATE.player.x, STATE.player.y, '#b91c1c');
+
+                    // Cooldown visual agar tidak spamming
+                    STATE.player.damageCooldown = 40; 
+                }
+
+                if(STATE.player.damageCooldown > 0) STATE.player.damageCooldown--;
+
+                // if(Math.random()<0.1) createParticle(STATE.player.x, STATE.player.y, '#ef4444'); // Removed, replaced by deterministic particle above
                 if(STATE.player.hp <= 0) gameOver();
             } else {
                 // Jika Kebal, Musuh Mental
