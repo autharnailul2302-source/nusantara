@@ -8523,8 +8523,22 @@ function setRole(role) {
                 action: () => {
                     // UPDATE: Notifikasi Quest Baru & Item
                     showToast("QUEST: Temui Pak Modin di Balai Nikah! 💍");
-                    setTimeout(() => showToast("Dapat: Cincin & Baju Pengantin 👘"), 1500);
-                    explainTimeHUD();
+                    
+                    // --- NEW: POPUP ITEM BAJU PENGANTIN (SAAT ROLE DIPILIH) ---
+                    setTimeout(() => {
+                        showDialogue("ITEM SPESIAL! 👘", 
+                            "Cieee... Kamu mendapatkan **BAJU PENGANTIN**!\n\nBusana suci untuk hari bahagiamu.\n(Cek Lemari Pakaian di rumah untuk mencoba/memakainya)", 
+                            [{
+                                text: "Terima Kasih Mentor!", 
+                                action: () => {
+                                    // Lanjut ke Tutorial Waktu setelah tutup popup
+                                    explainTimeHUD();
+                                }
+                            }], 
+                            'images/lemari.png'
+                        );
+                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    }, 800);
                 }
             }], 
             'images/mentor.png' 
@@ -14178,6 +14192,19 @@ function buyItem(item, cost) {
         showToast(`Beli ${item} sukses!`);
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Beli Item
         closeDialogue();
+
+        // --- NEW: POPUP SPESIAL SAAT BELI BAJU PENGANTIN ---
+        if (item === 'pakaian_nikah') {
+            setTimeout(() => {
+                showDialogue("ITEM SPESIAL! 👘", 
+                    "Selamat! Kamu berhasil membeli **BAJU PENGANTIN**.\n\nBusana anggun dari sutra terbaik.\n(Cek Lemari Pakaian di rumah untuk memakainya)", 
+                    [{text: "Cantik Sekali!", action: closeDialogue}], 
+                    'images/lemari.png'
+                );
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+            }, 1000);
+        }
+
     } else showToast("Uang kurang!");
 }
 
@@ -15149,6 +15176,18 @@ function gainExp(amount) {
 
         showToast(`LEVEL UP! LV ${STATE.player.level} (All Stats+1, ${bonusText}) 🆙`);
         createParticle(STATE.player.x, STATE.player.y, '#6366f1');
+        
+        // --- NEW: POPUP UNLOCK KOSTUM SPESIAL (LEVEL 10) ---
+        if (STATE.player.level === 10) {
+            setTimeout(() => {
+                showDialogue("HADIAH LEVEL 10! ✨", 
+                    "Selamat! Kamu telah mencapai Level 10.\n\nSebagai penghargaan, **KOSTUM SPESIAL** kini telah terbuka di Lemari Pakaianmu!\n\n(Cek Lemari di Rumah untuk memakainya)", 
+                    [{text: "Keren! Terima Kasih!", action: closeDialogue}], 
+                    'images/lemari.png'
+                );
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+            }, 1000);
+        }
         
         // Play SFX Level Up (Reuse Item SFX or add new one)
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
@@ -18236,6 +18275,20 @@ function handleEnemyDrop(en) {
             }
 
             addItem(rareDrop, 1);
+            
+            // --- NEW: POPUP SAAT DAPAT ZIRAH ABADI ---
+            if (rareDrop === 'zirah_legend') {
+                setTimeout(() => {
+                    showDialogue("LEGENDARY ITEM! 🛡️", 
+                        "LUAR BIASA! Kamu mendapatkan **ZIRAH ABADI** dari Boss!\n\nIni adalah pakaian pertahanan terkuat. \n(Efek Pasif: Damage musuh berkurang drastis)\n\n**Cek Lemari Pakaian** di rumahmu untuk segera menggunakannya!", 
+                        [{text: "Mantap! Terima Kasih!", action: closeDialogue}], 
+                        'images/lemari.png'
+                    );
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                }, 1500); // Muncul 1.5 detik setelah monster mati
+            }
+            // ------------------------------------------
+
             if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
         } else {
             dropText = " (Boss Defeated)";
