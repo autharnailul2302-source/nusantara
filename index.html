@@ -2967,6 +2967,28 @@ wallAssets.houseWall.src = 'images/tiletembokrumahplayer.png';
 wallAssets.houseWallBottom.src = 'images/titletembokbawahplayer.png'; 
 wallAssets.blacksmithWall.src = 'images/tiletembokblacksmith.png'; // Set Source Baru
 
+// --- NEW: CLINIC ASSETS (LANTAI KLINIK) ---
+const clinicAssets = {
+    floor: new Image()
+};
+clinicAssets.floor.src = 'images/lantaiklinik.png';
+// Fallback visual lantai putih bersih jika gambar gagal load
+clinicAssets.floor.onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjZjFmNWY5Ii8+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSJub25lIiBzdHJva2U9IiNlMmU4ZjAiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg=='; 
+};
+
+// --- NEW: MENTOR ASSETS (LANTAI RUMAH MENTOR) ---
+const mentorAssets = {
+    floor: new Image()
+};
+mentorAssets.floor.src = 'images/lantaimentor.png';
+// Fallback visual lantai kayu klasik/elegan jika gambar gagal load
+mentorAssets.floor.onerror = function() {
+    this.onerror = null;
+    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjNmM0YTNmIi8+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSJub25lIiBzdHJva2U9IiM1ZDQwMzciIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==';
+};
+
 let bgLoadedCount = 0;
 const onBgLoad = () => {
     bgLoadedCount++;
@@ -3817,27 +3839,36 @@ async function preloadAllGameAssets() {
     collectGlobal(farmAssets); // Add Farm Assets to Preloader
     collectGlobal(ruinsAssets); // NEW: Add Ruins Assets
     collectGlobal(candiAssets); // NEW: Add Candi Assets
+    collectGlobal(clinicAssets); // NEW: Add Clinic Assets
+    collectGlobal(mentorAssets); // NEW: Add Mentor Assets
 
     // 2. Kumpulkan semua gambar dari Peta (Bangunan, NPC, Objek)
-    for (const [mapName, mapData] of Object.entries(maps)) {
-        // Buildings
-        if (mapData.buildings) {
-            mapData.buildings.forEach(b => {
-                if (b.img) imagesToLoad.push({ src: b.img, element: b });
-            });
+    // FIX: Bungkus dalam Try-Catch dan Cek 'maps' agar tidak error jika map belum siap
+    try {
+        if (typeof maps !== 'undefined') {
+            for (const [mapName, mapData] of Object.entries(maps)) {
+                // Buildings
+                if (mapData.buildings) {
+                    mapData.buildings.forEach(b => {
+                        if (b.img) imagesToLoad.push({ src: b.img, element: b });
+                    });
+                }
+                // NPCs
+                if (mapData.npcs) {
+                    mapData.npcs.forEach(n => {
+                        if (n.imgSrc) imagesToLoad.push({ src: n.imgSrc, element: n });
+                    });
+                }
+                // Objects
+                if (mapData.objects) {
+                    mapData.objects.forEach(o => {
+                        if (o.img) imagesToLoad.push({ src: o.img, element: o });
+                    });
+                }
+            }
         }
-        // NPCs
-        if (mapData.npcs) {
-            mapData.npcs.forEach(n => {
-                if (n.imgSrc) imagesToLoad.push({ src: n.imgSrc, element: n });
-            });
-        }
-        // Objects
-        if (mapData.objects) {
-            mapData.objects.forEach(o => {
-                if (o.img) imagesToLoad.push({ src: o.img, element: o });
-            });
-        }
+    } catch (e) {
+        console.warn("Aset Peta dilewati (Maps belum siap):", e);
     }
 
     // 3. Tambahkan Aset Player (Gender & Kostum) & UI Penting SECARA MANUAL
@@ -3897,7 +3928,17 @@ async function preloadAllGameAssets() {
         // NEW: ASSET RAK PIALA IKAN
         'images/rakpialaikan.png',
         // NEW: ASSET MEJA MAKAN IKAN
-        'images/mejamakanikan.png'
+        'images/mejamakanikan.png',
+        // NEW: ASSET KLINIK BARU
+        'images/mejadokter.png',
+        'images/lemariobat.png',
+        'images/arsiprekammedis.png',
+        // NEW: ASSET KEBUN AYU
+        'images/kebunayu.png',
+        // NEW: ASSET KAIA & ANAK KECIL (TAMBAHAN MANUAL AGAR TIDAK HILANG)
+        'images/kaia.png',
+        'images/anakkecil1.png',
+        'images/anakkecil2.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -4080,8 +4121,24 @@ function startAssetLoading() {
 
     }).catch(err => {
         console.error("Preload Error:", err);
-        // Fallback: Tetap buka game meski error preload
-        enterMainMenu();
+        // FIX: Jangan langsung masuk menu jika error, tapi berikan tombol manual
+        if(loadingText) loadingText.innerText = "GAGAL MEMUAT BEBERAPA ASET.";
+        
+        // Tampilkan tombol mulai paksa
+        setTimeout(() => {
+            const loadingContainer = document.getElementById('loading-container');
+            const startBtn = document.getElementById('splash-start-btn');
+            
+            if(loadingContainer) loadingContainer.style.display = 'none';
+            if(startBtn) {
+                startBtn.innerText = "⚠️ PAKSA MULAI";
+                startBtn.style.display = 'block';
+                startBtn.onclick = () => {
+                    startBtn.style.display = 'none';
+                    enterMainMenu();
+                };
+            }
+        }, 500);
     });
 }
 
@@ -6018,6 +6075,10 @@ fillMap(villageTiles, ISLAND_W, 2, 34, 9, 3, 8);
 fillMap(villageTiles, ISLAND_W, 2, 45, 9, 3, 8);
 fillMap(villageTiles, ISLAND_W, 2, 35, 7, 2, 2); 
 fillMap(villageTiles, ISLAND_W, 1, 37, 9, 8, 8); // Bersihkan area akademi
+
+// --- UPDATE: BERSIHKAN AREA BELAKANG KAMPUS UNTUK KAIA (Hapus Pohon) ---
+fillMap(villageTiles, ISLAND_W, 1, 38, 7, 6, 2); // Area X:38-43, Y:7-8 jadi Rumput agar Kaia terlihat
+
 fillMap(villageTiles, ISLAND_W, 3, 36, 12, 8, 1); // Jalan setapak
 
 villageTiles[12 * ISLAND_W + 40] = 6; 
@@ -6150,8 +6211,8 @@ smithTiles[(SMITH_H-1)*SMITH_W + 7] = 8; // Door Tile
 const MENTOR_W = 14;
 const MENTOR_H = 12;
 const mentorTiles = new Array(MENTOR_W * MENTOR_H).fill(10); // 10 = Wood Floor
-// Walls (ID 11 = Tembok Putih/Bersih)
-for(let x=0; x<MENTOR_W; x++) { mentorTiles[0*MENTOR_W+x] = 11; mentorTiles[(MENTOR_H-1)*MENTOR_W+x] = 11; }
+// Walls (UPDATE: ID 13 untuk Atas/Bawah, ID 11 untuk Samping - Samakan dengan Rumah Player)
+for(let x=0; x<MENTOR_W; x++) { mentorTiles[0*MENTOR_W+x] = 13; mentorTiles[(MENTOR_H-1)*MENTOR_W+x] = 13; }
 for(let y=0; y<MENTOR_H; y++) { mentorTiles[y*MENTOR_W+0] = 11; mentorTiles[y*MENTOR_W+(MENTOR_W-1)] = 11; }
 mentorTiles[(MENTOR_H-1)*MENTOR_W + 7] = 8; // Door Tile
 
@@ -6410,13 +6471,18 @@ for(let i=0; i<10; i++) {
             {id: 'peripanen', x: 38, y: 6, name: 'Peri Panen', imgSrc: 'images/peripanen.png', type: 'static', schedule: 'custom_grape_harvest', w: 32, h: 32},
 
             /* NEW: NPC ANAK-ANAK (BERMAIN DI DEKAT KAMPUS) */
-            /* Menggunakan aset boy/girl biasa tapi nanti dirender lebih kecil */
-            {id: 'child_boy_1', x: 36, y: 12, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
-            {id: 'child_girl_1', x: 37, y: 13, name: 'Gadis Kecil', imgSrc: 'images/anakkecil2.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
+            /* UPDATE: Bocah Nakal dipindah ke Dermaga (Bawah Laut Pinggir) */
+            /* Koordinat Dermaga sekitar x:43-50, y:34-39 */
+            {id: 'child_boy_1', x: 46, y: 37, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
+            
+            /* UPDATE: Gadis Kecil dipindah ke Halaman Rumah Mentor (Area Kosong) */
+            /* Koordinat x:30, y:18 (Dekat pintu masuk Rumah Mentor) */
+            {id: 'child_girl_1', x: 30, y: 18, name: 'Gadis Kecil', imgSrc: 'images/anakkecil2.png', type: 'wander', vx:0, vy:0, schedule: 'day', w: 32, h: 48},
 
             /* NEW: KAIA (SENIOR PSIKOLOGI - GUIDE ADAPTASI) */
-            /* Posisi: Duduk santai di dekat pohon sakura area kampus (x:34, y:12) */
-            {id: 'senior_kaia', x: 34, y: 12, name: 'Kaia (Senior)', imgSrc: 'images/kaia.png', type: 'static', schedule: 'day', w: 40, h: 60},
+            /* UPDATE: Dipindah ke PAS BELAKANG KAMPUS (Area Rumput Baru) */
+            /* Koordinat x:41, y:8 (Tepat di belakang tengah gedung, tidak ketutup pohon) */
+            {id: 'senior_kaia', x: 41, y: 8, name: 'Kaia (Senior)', imgSrc: 'images/kaia.png', type: 'wander', schedule: 'always', w: 40, h: 60},
 
             /* --- RIVAL CINTA (GENDER SPECIFIC & MOVING) --- */
             
@@ -6451,11 +6517,7 @@ for(let i=0; i<10; i++) {
         objects: [
             /* UPDATE: Papan Misi & Statue dipindah ke buildings */
             
-            // --- NEW: KOTAK SURAT (MAILBOX) UNTUK PESAN GURU ---
-            // UPDATE: Posisi digeser ke sebelah kanan pintu rumah (x:23)
-            {x: 23, y: 11, w: 1, h: 1, type: 'mailbox', icon: '📬', img: 'images/pos.png'}, 
-
-            // --- NEW: DEKORASI LAHAN PERTANIAN (BELAKANG RUMAH) ---
+            /* NEW: DEKORASI LAHAN PERTANIAN (BELAKANG RUMAH) */
             // UPDATE: Papan Tanda digeser ke kanan dan atas (x:26, y:5) agar tidak tertutup pohon
             // UPDATE: Menggunakan gambar khusus 'papantani.png'
             // UPDATE: Diperbesar jadi 2x2
@@ -6466,6 +6528,11 @@ for(let i=0; i<10; i++) {
             // UPDATE: Posisi Sumur dipindah ke kiri (x:23, y:6) menggantikan posisi kosong dekat rumah
             // UPDATE: Sumur diperbesar jadi 2x2
             {x: 23, y: 6, w: 2, h: 2, type: 'sign', icon: '💧', text: "Sumur Tua: Sumber air untuk menyiram tanaman.", img: 'images/sumur.png'},
+            
+            // --- NEW: KEBUN BUNGA AYU (DI PINGGIR RUMAH AYU) ---
+            // Posisi Rumah Ayu: x:14, y:25. Kebun ditaruh di kirinya.
+            // UPDATE: Geser ke bawah sedikit (y:27) agar pas dan belakangnya bisa dilewati
+            {x: 10, y: 27, w: 4, h: 3, type: 'sign', icon: '🌻', text: "Kebun Bunga Ayu: Harum semerbak bunga melati dan mawar.", img: 'images/kebunayu.png'},
 
             // Meja & Kursi Santai (DIPINDAH KE KANAN & KIRI POHON SAKURA di 16,13)
             // UPDATE: Ukuran diperbesar (w:2, h:2) setara setengah bangunan
@@ -6681,13 +6748,15 @@ for(let i=0; i<10; i++) {
             {id: 'mentor', x: 7, y: 4, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'mentor', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
-            /* UPDATE: Rak Buku Diperbesar (2x2) & Posisi disesuaikan agar tidak tumpang tindih */
-            {x: 1, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan", img: 'images/rakbuku.png'},
-            /* UPDATE: Piala digeser sedikit ke kanan */
-            {x: 4, y: 3, type: 'bookshelf', icon: '🏆', text: "Piala: Guru Terbaik Se-Nusantara"},
-            {x: 11, y: 3, type: 'shelf', icon: '🏺', text: "Vas Bunga Antik dari Murid"},
+            /* UPDATE: Rak Buku Mentor diganti imagenya menjadi rakmentor.png */
+            {x: 1, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan", img: 'images/rakmentor.png'},
+            /* UPDATE: Piala digeser sedikit ke kanan & DIBERI GAMBAR BARU */
+            {x: 4, y: 3, type: 'bookshelf', icon: '🏆', text: "Piala: Guru Terbaik Se-Nusantara", img: 'images/pialamentor.png'},
+            /* UPDATE: Vas Bunga Mentor diberi gambar baru */
+            {x: 11, y: 3, type: 'shelf', icon: '🏺', text: "Vas Bunga Antik dari Murid", img: 'images/vasmentor.png'},
             
-            {x: 7, y: 3, type: 'table', icon: '🪑'}, // Meja Kerja Mentor
+            /* UPDATE: Menggunakan images/mejamentor.png dan diperbesar jadi 2x2 */
+            {x: 6, y: 3, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/mejamentor.png', name: "Meja Mentor"}, 
             
             // Dekorasi Rumah
             {x: 2, y: 8, type: 'shelf', icon: '📦', text: "Tumpukan Tugas Siswa"},
@@ -6711,16 +6780,18 @@ for(let i=0; i<10; i++) {
             {id: 'patient_girl', x: 3, y: 5, name: 'Pasien', imgSrc: 'images/pasien.png', type: 'wander', schedule: 'day', w: 40, h: 60} 
         ],
         objects: [
-            /* Meja Dokter */
-            {x: 7, y: 3, type: 'table', icon: '🩺', img: 'images/mejadosen.png'}, 
+            /* Meja Dokter - UPDATE: Menggunakan gambar khusus mejadokter.png */
+            /* UPDATE: UKURAN DIPERBESAR JADI 2x2 DAN POSISI DIGESER AGAR PAS DI TENGAH */
+            {x: 6, y: 3, w: 2, h: 2, type: 'table', icon: '🩺', img: 'images/mejadokter.png'}, 
             
-            /* Lemari Obat & Arsip */
-            {x: 1, y: 3, w: 2, h: 2, type: 'shelf', icon: '💊', text: "Lemari Obat Lengkap", img: 'images/rakbuku.png'},
-            {x: 11, y: 3, w: 2, h: 2, type: 'shelf', icon: '🗄️', text: "Arsip Rekam Medis", img: 'images/rakbuku.png'},
+            /* Lemari Obat & Arsip - UPDATE: Menggunakan gambar khusus lemariobat.png & arsiprekammedis.png */
+            {x: 1, y: 3, w: 2, h: 2, type: 'shelf', icon: '💊', text: "Lemari Obat Lengkap", img: 'images/lemariobat.png'},
+            {x: 11, y: 3, w: 2, h: 2, type: 'shelf', icon: '🗄️', text: "Arsip Rekam Medis", img: 'images/arsiprekammedis.png'},
             
-            /* Bed Pasien (Untuk hiasan / interaksi tidur darurat?) */
-            {x: 2, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bedklinik.png', name: "Bed Pasien 1"},
-            {x: 10, y: 7, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bedklinik.png', name: "Bed Pasien 2"},
+            /* Bed Pasien (UPDATE: Dikecilkan jadi 2x3 agar tidak melayang) */
+            /* Sebelumnya w:3, h:4 (terlalu besar sehingga shadow jatuh jauh di bawah gambar) */
+            {x: 2, y: 7, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bedklinik.png', name: "Bed Pasien 1"},
+            {x: 11, y: 7, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bedklinik.png', name: "Bed Pasien 2"}, // Geser X ke 11 agar simetris
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -11361,7 +11432,9 @@ function checkObjectCollision(x, y) {
         /* UPDATE TERBARU: Menambahkan 'arcacandi' agar belakang patung bisa dilewati */
         /* UPDATE TERBARU: Menambahkan 'prasasticandi' agar belakang prasasti bisa dilewati */
         /* UPDATE TERBARU: Menambahkan 'gucicandi' agar belakang guci bisa dilewati */
-        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi')))) && (obj.h || 1) > 0) {
+        // UPDATE TERBARU: Menambahkan 'kebunayu' agar belakang kebun bisa dilewati
+        // UPDATE TERBARU: Menambahkan 'lemariobat' dan 'arsiprekammedis' agar belakang rak klinik bisa dilewati
+        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi') || obj.img.includes('kebunayu') || obj.img.includes('lemariobat') || obj.img.includes('arsiprekammedis')))) && (obj.h || 1) > 0) {
             yOffset = originalH * 0.4; // Turunkan hitbox 40% dari atas
             oh = originalH * 0.6;      // Sisa tinggi hitbox 60%
         }
@@ -16383,10 +16456,10 @@ function draw() {
                     }
                 }
 
-                /* REVISI: Handle Mentor Floor (ID 10) - Menggunakan images/tilelantaikampus.png */
+                /* REVISI: Handle Mentor Floor (ID 10) - UPDATE: Menggunakan images/lantaimentor.png */
                 else if (t === 10 && STATE.location === 'mentor_interior') {
-                    if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
-                        ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    if (mentorAssets.floor.complete && mentorAssets.floor.naturalWidth !== 0) {
+                        ctx.drawImage(mentorAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
                         // Fallback ke warna dasar jika gambar belum load
                         ctx.fillStyle = '#78350f'; 
@@ -16425,10 +16498,10 @@ function draw() {
                 }
 
                 // NEW: Handle Clinic Floor (ID 10 in Clinic Interior)
-                // Menggunakan lantai perpus/sekolah agar bersih
+                // UPDATE: Menggunakan images/lantaiklinik.png
                 else if (t === 10 && STATE.location === 'clinic_interior') {
-                    if (wallAssets.libraryFloor.complete && wallAssets.libraryFloor.naturalWidth !== 0) {
-                        ctx.drawImage(wallAssets.libraryFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    if (clinicAssets.floor.complete && clinicAssets.floor.naturalWidth !== 0) {
+                        ctx.drawImage(clinicAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
                         // Fallback ke warna putih/abu
                         ctx.fillStyle = '#f8fafc';
@@ -16531,8 +16604,8 @@ function draw() {
                     }
                 }
                 
-                // NEW: Handle House Wall (ID 11 in House) - MENGGUNAKAN TILE TEMBOK RUMAH PLAYER
-                else if (t === 11 && STATE.location === 'house') {
+                // NEW: Handle House Wall (ID 11 in House & Mentor) - UPDATE: Masukkan mentor_interior
+                else if (t === 11 && (STATE.location === 'house' || STATE.location === 'mentor_interior')) {
                     if (wallAssets.houseWall.complete && wallAssets.houseWall.naturalWidth !== 0) {
                         ctx.drawImage(wallAssets.houseWall, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
@@ -16541,8 +16614,8 @@ function draw() {
                     }
                 }
 
-                // NEW: Handle House Wall Bottom (ID 13 in House) - TILE KHUSUS BAWAH
-                else if (t === 13 && STATE.location === 'house') {
+                // NEW: Handle House Wall Bottom (ID 13 in House & Mentor) - UPDATE: Masukkan mentor_interior
+                else if (t === 13 && (STATE.location === 'house' || STATE.location === 'mentor_interior')) {
                     if (wallAssets.houseWallBottom.complete && wallAssets.houseWallBottom.naturalWidth !== 0) {
                         ctx.drawImage(wallAssets.houseWallBottom, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     } else {
@@ -17448,8 +17521,24 @@ function drawObject(ctx, o) {
                 else if (src.includes('mejamakanikan')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTAiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNCIgZmlsbD0iI0EwNTIyRCIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNiIgZmlsbD0iI0EwNTIyRCIvPjxyZWN0IHg9IjI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNiIgZmlsbD0iI0EwNTIyRCIvPjxlbGxpcHNlIGN4PSIxNiIgY3k9IjE2IiByeD0iOCIgcnk9IjMiIGZpbGw9IiNGRkYiLz48cGF0aCBkPSJNMTIgMTYgTDIwIDE2IiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==';
                 }
-                // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni)
-                else if (src.includes('rakbuku')) {
+                // NEW: FALLBACK ARSIP REKAM MEDIS (Laci Besi Abu-abu)
+                else if (src.includes('arsiprekammedis')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iNCIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOTRhM2I4IiBzdHJva2U9IiM0NzU1NjkiIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjYiIHk9IjYiIHdpZHRoPSIyMCIgaGVpZ2h0PSI2IiBmaWxsPSIjYzFjN2Q2IiBzdHJva2U9IiM2NDc0OGIiIHN0cm9rZS13aWR0aD0iMSIvPjxyZWN0IHg9IjYiIHk9IjE0IiB3aWR0aD0iMjAiIGhlaWdodD0iNiIgZmlsbD0iI2MxYzdkNiIgc3Ryb2tlPSIjNjQ3NDhiIiBzdHJva2Utd2lkdGg9IjEiLz48cmVjdCB4PSI2IiB5PSIyMiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjYiIGZpbGw9IiNjMWM3ZDYiIHN0cm9rZT0iIzY0NzQ4YiIgc3Ryb2tlLXdpZHRoPSIxIi8+PGxpbmUgeDE9IjE0IiB5MT0iOSIgeDI9IjE4IiB5Mj0iOSIgc3Ryb2tlPSIjMzM0MTU1IiBzdHJva2Utd2lkdGg9IjIiLz48bGluZSB4MT0iMTQiIHkxPSIxNyIgeDI9IjE4IiB5Mj0iMTciIHN0cm9rZT0iIzMzNDE1NSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjE0IiB5MT0iMjUiIHgyPSIxOCIgeTI9IjI1IiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK KEBUN AYU (Taman Bunga)
+                else if (src.includes('kebunayu')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iOTYiPjxyZWN0IHg9IjQiIHk9IjQiIHdpZHRoPSIxMjAiIGhlaWdodD0iODgiIGZpbGw9IiM1ZDQwMzciIHN0cm9rZT0iIzNjMjQxNSIgc3Ryb2tlLXdpZHRoPSI0Ii8+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMTAiIGZpbGw9IiNlOTFlNjMiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjMwIiByPSIxMCIgZmlsbD0iI2Y1OWUwYiIvPjxjaXJjbGUgY3g9Ijk4IiBjeT0iMzAiIHI9IjEwIiBmaWxsPSIjM2I4MmY2Ii8+PGNpcmNsZSBjeD0iMzAiIGN5PSI2NCIgcj0iMTAiIGZpbGw9IiNmZmViM2IiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSIxMCIgZmlsbD0iI2U5MWU2MyIvPjxjaXJjbGUgY3g9Ijk4IiBjeT0iNjQiIHI9IjEwIiBmaWxsPSIjZjU5ZTBiIi8+PC9zdmc+';
+                }
+                // NEW: FALLBACK PIALA MENTOR (Piala Emas Besar)
+                else if (src.includes('pialamentor')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNOCA2IEwyNCA2IEwyMiAxNiBDMjIgMjAgMTggMjIgMTYgMjIgQzE0IDIyIDEwIDIwIDEwIDE2IEw4IDYgWiIgZmlsbD0iI0ZGRDcwMCIgc3Ryb2tlPSIjQjg4NjBCIiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSIxNCIgeT0iMjIiIHdpZHRoPSI0IiBoZWlnaHQ9IjYiIGZpbGw9IiNCODg2MEIiLz48cmVjdCB4PSI4IiB5PSIyOCIgd2lkdGg9IjE2IiBoZWlnaHQ9IjQiIGZpbGw9IiM4QjQ1MTMiLz48Y2lyY2xlIGN4PSIyNCIgY3k9IjEwIiByPSI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNGRkQ3MDAiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjgiIGN5PSIxMCIgcj0iNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZDNzAwIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTYgMTAgTDE2IDE2IiBzdHJva2U9IiNCODg2MEIiIG9wYWNpdHk9IjAuMyIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK VAS MENTOR (Vas Biru Elegan)
+                else if (src.includes('vasmentor')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTEwIDI0IEwxMCAxMiBDMTAgNiAyMiA2IDIyIDEyIEwyMiAyNCBDMjIgMzAgMTAgMzAgMTAgMjQgWiIgZmlsbD0iIzNiODJmNiIgc3Ryb2tlPSIjMWQ0ZWQ4IiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSBjeD0iMTYiIGN5PSI4IiByeD0iNCIgcnk9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
+                }
+                // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni) - UPDATE: Tambahkan fallback untuk lemariobat dan rakmentor
+                else if (src.includes('rakbuku') || src.includes('lemariobat') || src.includes('rakmentor')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOEU1NDJiIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZWY0NDQ0Ii8+PHJlY3QgeD0iMTAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjM2I4MmY2Ii8+PHJlY3QgeD0iMTUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjMTBiOTgxIi8+PHJlY3QgeD0iMjAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZTkxZTYzIi8+PC9zdmc+';
                 }
                 // Fallback: PAPAN TULIS (Hijau/Hitam dengan Bingkai)
@@ -17460,8 +17549,8 @@ function drawObject(ctx, o) {
                 else if (src.includes('kursi')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTEwIDIwIEwxMCAxMCBMMjIgMTAgTDIyIDIwIEwyMiAyOCBMMjAgMjggTDIwIDIyIEwxMiAyMiBMMTIgMjggTDEwIDI4IFoiIGZpbGw9IiM4YTUwMjUiIHN0cm9rZT0iIzU5MzUxMSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+';
                 }
-                // Fallback: MEJA DOSEN (Meja Guru)
-                else if (src.includes('mejadosen')) {
+                // Fallback: MEJA DOSEN (Meja Guru), MEJA DOKTER, ATAU MEJA MENTOR
+                else if (src.includes('mejadosen') || src.includes('mejadokter') || src.includes('mejamentor')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzVENDAzNyIgc3Ryb2tlPSIjM2UyNzIzIiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjxyZWN0IHg9IjI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjwvc3ZnPg==';
                 }
                 // Fallback: MEJA MODIN (Meja Akad dengan Taplak Putih)
@@ -18003,6 +18092,17 @@ function drawNPC(ctx, n) {
     if (!n.loadedImg) {
         n.loadedImg = new Image();
         n.loadedImg.src = n.imgSrc;
+        
+        // --- NEW: FALLBACK GAMBAR NPC JIKA GAGAL LOAD ---
+        n.loadedImg.onerror = function() {
+            this.onerror = null; // Prevent loop
+            // Fallback spesifik
+            if (n.id.includes('kaia')) this.src = 'images/girl-idle.png'; // Fallback Kaia ke Girl
+            else if (n.id.includes('child')) this.src = 'images/boy-idle.png'; // Fallback Anak ke Boy
+            else if (n.id.includes('lover1girl')) this.src = 'images/girl.png';
+            else this.src = 'images/boy.png'; // Default umum
+            console.warn(`Fallback image loaded for NPC: ${n.name}`);
+        };
     }
 
     if (n.loadedImg.complete && n.loadedImg.naturalWidth !== 0) {
