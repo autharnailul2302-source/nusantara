@@ -3867,6 +3867,8 @@ async function preloadAllGameAssets() {
         'images/kurcacitani.png', 'images/peripanen.png',
         // NEW: ASSET ORANG SAWAH
         'images/orangsawah.png',
+        // NEW: ASSET RAFFLESIA ARNOLDI
+        'images/rafflesia.png',
         // NEW: ASSET RERUNTUHAN (FIX AGAR TIDAK KOSONG)
         'images/tembok-reruntuhan.png', 
         'images/lantai-reruntuhan.png',
@@ -3881,7 +3883,21 @@ async function preloadAllGameAssets() {
         // NEW: ASSET PRASASTI CANDI
         'images/prasasticandi.png',
         // NEW: ASSET MEJA ALTAR CANDI
-        'images/mejaaltar.png'
+        'images/mejaaltar.png',
+        // NEW: ASSET JARING IKAN
+        'images/jaringikan.png',
+        // NEW: ASSET RAK PANCING
+        'images/rakpancing.png',
+        // NEW: ASSET EMBER IKAN
+        'images/emberikan.png',
+        // NEW: ASSET BOXES (BOX ES)
+        'images/boxes.png',
+        // NEW: ASSET KASUR NELAYAN
+        'images/kasurnelayan.png',
+        // NEW: ASSET RAK PIALA IKAN
+        'images/rakpialaikan.png',
+        // NEW: ASSET MEJA MAKAN IKAN
+        'images/mejamakanikan.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -6444,8 +6460,8 @@ for(let i=0; i<10; i++) {
             // UPDATE: Menggunakan gambar khusus 'papantani.png'
             // UPDATE: Diperbesar jadi 2x2
             {x: 27, y: 5, w: 2, h: 2, type: 'sign', icon: '🌾', text: "Lahan ini terbengkalai. Kamu harus mempekerjakan Kurcaci Tani dan Peri Panen untuk membersihkan lahan ini dan mulai bertani.", img: 'images/papantani.png'},
-            // UPDATE: Orang-orangan Sawah dipindah ke pojok kiri lahan (x:17, y:4) dekat Papan Desa
-            {x: 17, y: 4, w: 2, h: 2, type: 'sign', icon: '🎃', text: "Orang-orangan Sawah: Menjaga tanaman dari burung.", img: 'images/orangsawah.png'},
+            // UPDATE: Orang-orangan Sawah dipindah keluar petak (x:15, y:6) agar tidak menutupi tanaman
+            {x: 15, y: 6, w: 2, h: 2, type: 'sign', icon: '🎃', text: "Orang-orangan Sawah: Menjaga tanaman dari burung.", img: 'images/orangsawah.png'},
             // Petak air kecil untuk menyiram (Tile ID 0 manual atau objek sumur)
             // UPDATE: Posisi Sumur dipindah ke kiri (x:23, y:6) menggantikan posisi kosong dekat rumah
             // UPDATE: Sumur diperbesar jadi 2x2
@@ -6456,7 +6472,14 @@ for(let i=0; i<10; i++) {
             {x: 13, y: 13, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursi.png'}, // Kiri Pohon
             {x: 17, y: 13, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursi.png'}, // Kanan Pohon
             
-      
+            // --- NEW: BUNGA LIAR (ITEM PICKUP) ---
+            // Tersebar di beberapa titik desa
+            {x: 8, y: 22, w: 1, h: 1, type: 'wild_flower', icon: '🌸', img: 'images/bunga.png', name: 'Bunga Liar'},
+            {x: 15, y: 18, w: 1, h: 1, type: 'wild_flower', icon: '🌸', img: 'images/bunga.png', name: 'Bunga Liar'},
+            {x: 45, y: 10, w: 1, h: 1, type: 'wild_flower', icon: '🌸', img: 'images/bunga.png', name: 'Bunga Liar'},
+            {x: 35, y: 35, w: 1, h: 1, type: 'wild_flower', icon: '🌸', img: 'images/bunga.png', name: 'Bunga Liar'},
+            {x: 5, y: 25, w: 1, h: 1, type: 'wild_flower', icon: '🌸', img: 'images/bunga.png', name: 'Bunga Liar'},
+            {x: 52, y: 30, w: 1, h: 1, type: 'wild_flower', icon: '🌸', img: 'images/bunga.png', name: 'Bunga Liar'}
         ]
     },
     /* NEW: MERCHANT INTERIOR MAP ADDED */
@@ -6833,21 +6856,21 @@ for(let i=0; i<10; i++) {
         ],
         objects: [
             /* Dekorasi Khas Nelayan */
-            {x: 1, y: 2, w: 3, h: 2, type: 'shelf', icon: '🕸️', text: "Jaring Ikan: Sedang dijemur/diperbaiki."},
-            {x: 10, y: 2, type: 'shelf', icon: '🎣', text: "Rak Pancing: Koleksi joran bambu tua."},
+            {x: 1, y: 2, w: 3, h: 2, type: 'shelf', icon: '🕸️', text: "Jaring Ikan: Sedang dijemur/diperbaiki.", img: 'images/jaringikan.png'},
+            {x: 10, y: 2, type: 'shelf', icon: '🎣', text: "Rak Pancing: Koleksi joran bambu tua.", img: 'images/rakpancing.png'},
             
             /* Hasil Tangkapan */
-            {x: 10, y: 5, type: 'shelf', icon: '🐟', text: "Ember Ikan: Bau amis tapi segar!"},
-            {x: 11, y: 5, type: 'shelf', icon: '🧊', text: "Box Es: Untuk mengawetkan ikan."},
+            {x: 10, y: 5, type: 'shelf', icon: '🐟', text: "Ember Ikan: Bau amis tapi segar!", img: 'images/emberikan.png'},
+            {x: 11, y: 5, type: 'shelf', icon: '🧊', text: "Box Es: Untuk mengawetkan ikan.", img: 'images/boxes.png'},
 
             /* Kasur Sederhana */
-            {x: 1, y: 6, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Nelayan"},
+            {x: 1, y: 6, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/kasurnelayan.png', name: "Kasur Nelayan"},
             
             /* Meja Makan */
-            {x: 6, y: 4, type: 'table', icon: '🪑', img: 'images/kursi.png'},
+            {x: 6, y: 4, type: 'table', icon: '🪑', img: 'images/mejamakanikan.png'},
             
             /* Piala/Penghargaan */
-            {x: 5, y: 1, type: 'shelf', icon: '🏆', text: "Piala: Juara Mancing Ikan Mas 2023"},
+            {x: 5, y: 1, type: 'shelf', icon: '🏆', text: "Piala: Juara Mancing Ikan Mas 2023", img: 'images/rakpialaikan.png'},
 
             {x: 6, y: 9, type: 'door_out', icon: '🚪'}
         ]
@@ -7910,6 +7933,10 @@ async function initGame() {
             STATE.player.inventory = saved.inventory || {};
             STATE.player.furniture = saved.furniture || [];
             STATE.player.houseLevel = saved.houseLevel || 1;
+            STATE.player.furniture = saved.furniture || [];
+            // NEW: Load Status Kurcaci (Apakah sudah dipekerjakan)
+            STATE.player.hiredDwarf = saved.hiredDwarf || false;
+
             STATE.player.relationships = saved.relationships || {};
             STATE.player.married = saved.married || false;
             STATE.player.spouseId = saved.spouseId || null;
@@ -10117,6 +10144,9 @@ function update() {
         }
 
         randomizeWeather();
+        
+        // --- NEW: RESPAWN BUNGA LIAR SETIAP HARI ---
+        spawnWildFlowers();
 
         // --- NEW: POPUP QUEST HARIAN SAAT GANTI HARI ---
         showDailyQuestPopup();
@@ -11938,6 +11968,55 @@ function spawnFloatingText(x, y, text, color, size) {
         size: size || 10,
         life: 40 // Durasi text melayang
     });
+}
+
+// --- NEW FUNCTION: SPAWN BUNGA LIAR SECARA ACAK ---
+function spawnWildFlowers() {
+    const map = maps['village'];
+    if (!map || !map.objects) return;
+
+    // Hitung jumlah bunga saat ini
+    const currentFlowers = map.objects.filter(o => o.type === 'wild_flower').length;
+    const maxFlowers = 15; // Maksimal bunga di map
+    
+    // Hanya spawn jika kurang dari batas
+    if (currentFlowers < maxFlowers) {
+        // Spawn 2-4 bunga baru setiap hari
+        const spawnCount = Math.floor(Math.random() * 3) + 2; 
+        
+        for(let i=0; i < spawnCount; i++) {
+            // Random posisi (hindari pinggir map)
+            const rx = Math.floor(Math.random() * (map.w - 10)) + 5;
+            const ry = Math.floor(Math.random() * (map.h - 10)) + 5;
+            
+            const idx = ry * map.w + rx;
+            
+            // Cek Tile: Hanya tumbuh di Rumput (1) dan tidak ada bangunan/objek lain
+            // Sederhananya cek tile ID dulu
+            if (map.tiles[idx] === 1) { 
+                 // Cek collision sederhana dengan objek lain (agar tidak numpuk)
+                 const isOccupied = map.objects.some(o => Math.abs(o.x - rx) < 2 && Math.abs(o.y - ry) < 2);
+                 const isBuilding = map.buildings.some(b => 
+                    rx >= b.x && rx < b.x + b.w && 
+                    ry >= b.y && ry < b.y + b.h
+                 );
+
+                 if (!isOccupied && !isBuilding) {
+                     map.objects.push({
+                        x: rx, 
+                        y: ry, 
+                        w: 1, 
+                        h: 1, 
+                        type: 'wild_flower', 
+                        icon: '🌸', 
+                        img: 'images/bunga.png', 
+                        name: 'Bunga Liar'
+                    });
+                 }
+            }
+        }
+        // console.log(`Spawned wild flowers. Total: ${map.objects.filter(o => o.type === 'wild_flower').length}`);
+    }
 }
 
 // Removed handleSkill() function entirely
@@ -13928,6 +14007,12 @@ function interactNPC(npc) {
 
     /* NEW: INTERAKSI KURCACI TANI (EVENT PANEN RAYA) */
     else if(npc.id === 'kurcaci_tani') {
+        // Cek jika sudah dipekerjakan
+        if (STATE.player.hiredDwarf) {
+             showDialogue("KURCACI TANI", "Hohoho! Tenang saja Bos, lahan pertanianmu aman di tanganku. \nSetiap pagi aku akan menyiram tanamanmu secara otomatis!", [{text:"Kerja Bagus Kek!", action:closeDialogue}], npc.imgSrc);
+             return;
+        }
+
         showDialogue("KURCACI TANI", "Hohoho! Selamat Panen Raya! ☀️\nMusim panas adalah waktu terbaik untuk bersyukur pada alam.", [
             {text: "Terima Kasih, Kek!", action: () => {
                 // Cek apakah sudah terima hadiah tahun ini (menggunakan tahun game)
@@ -13948,6 +14033,50 @@ function interactNPC(npc) {
                     showDialogue("KURCACI TANI", "Nikmati festivalnya, anak muda! Jangan lupa makan yang banyak.", [{text:"Dah", action:closeDialogue}], npc.imgSrc);
                 }
             }},
+            
+            // --- NEW: OPSI MEMPEKERJAKAN KURCACI ---
+            {text: "🤝 Pekerjakan (Otomatisasi Tani)", action: () => {
+                showDialogue("KURCACI TANI", 
+                    "Kau ingin aku mengurus ladangmu? Hohoho, aku butuh tempat tinggal yang layak dan bayaran setimpal!\n\n**SYARAT KONTRAK KERJA:**\n1. 🏠 **Rumah Kurcaci** (Beli di Katalog Furnitur).\n2. 💰 **Uang Muka 200.000 G**.\n3. 🐟 **Ikan Legendaris** (Makanan favoritku).", 
+                    [
+                        {text: "Sepakat! (Penuhi Syarat)", action: () => {
+                            // Cek Syarat
+                            const hasHouse = STATE.player.furniture.includes('rumah_kurcaci');
+                            const hasMoney = STATE.player.money >= 200000;
+                            const hasFish = (STATE.player.inventory['ikan_legendary'] || 0) > 0;
+                            
+                            if (hasHouse && hasMoney && hasFish) {
+                                // Potong Biaya
+                                STATE.player.money -= 200000;
+                                STATE.player.inventory['ikan_legendary']--;
+                                if(STATE.player.inventory['ikan_legendary']<=0) delete STATE.player.inventory['ikan_legendary'];
+                                
+                                // Set Flag
+                                STATE.player.hiredDwarf = true;
+                                
+                                // Efek Sukses
+                                createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#10b981'); // Hijau
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                showToast("KURCACI DIPEKERJAKAN! 🤝");
+                                
+                                showDialogue("KURCACI TANI", "Hohoho! Mantap! Ikan ini terlihat lezat.\n\nMulai besok, aku akan tinggal di Rumah Kurcaci itu dan mengurus ladangmu setiap pagi. Kau bisa santai!", [{text:"Terima kasih Kek!", action:closeDialogue}], npc.imgSrc);
+                                manualSave();
+                            } else {
+                                // Tampilkan apa yang kurang
+                                let missing = [];
+                                if(!hasHouse) missing.push("Rumah Kurcaci");
+                                if(!hasMoney) missing.push("Uang 200k");
+                                if(!hasFish) missing.push("Ikan Legendaris");
+                                
+                                showDialogue("SYARAT KURANG", `Maaf anak muda, syaratmu belum lengkap.\n\n**KURANG:**\n- ${missing.join('\n- ')}`, [{text:"Aku lengkapi dulu", action:closeDialogue}], npc.imgSrc);
+                            }
+                        }},
+                        {text: "Mahal banget...", action: closeDialogue}
+                    ], 
+                    npc.imgSrc
+                );
+            }},
+            
             {text: "Dah", action: closeDialogue}
         ], npc.imgSrc);
     }
@@ -13991,6 +14120,56 @@ function interactNPC(npc) {
                 if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
                 closeDialogue();
             }},
+            
+            // --- NEW: MISI RAFFLESIA ARNOLDI ---
+            {text: "🌺 Misi Bunga Abadi (Rafflesia)", action: () => {
+                // Cek apakah sudah punya
+                if (STATE.player.inventory['bunga_rafflesia']) {
+                     showDialogue("DEWI RORO", "Kau sudah memiliki **Bunga Rafflesia Arnoldi**. \nBunga itu adalah simbol keabadian pulau ini. Jagalah baik-baik.", [{text:"Baik Dewi", action:closeDialogue}], npc.imgSrc);
+                     return;
+                }
+
+                // Cek Syarat: 7 Bunga Liar + 1 Permata
+                const flowers = STATE.player.inventory['bunga'] || 0;
+                const gems = STATE.player.inventory['permata'] || 0;
+                const reqFlowers = 7;
+                const reqGems = 1;
+
+                showDialogue("MISI DEWI RORO", 
+                    `Aku bisa memanggil **Bunga Rafflesia Arnoldi** yang legendaris, namun aku butuh energi alam untuk mewujudkannya.\n\n**SYARAT PERSEMBAHAN:**\n🌸 **Bunga Liar**: ${flowers}/${reqFlowers}\n💎 **Permata**: ${gems}/${reqGems}\n\n(Bunga Liar tumbuh di desa setiap pagi. Permata didapat dari Monster/Toko).`, 
+                    [
+                        {text: "Serahkan Persembahan", action: () => {
+                            if (flowers >= reqFlowers && gems >= reqGems) {
+                                // Kurangi Item
+                                STATE.player.inventory['bunga'] -= reqFlowers;
+                                STATE.player.inventory['permata'] -= reqGems;
+                                if(STATE.player.inventory['bunga']<=0) delete STATE.player.inventory['bunga'];
+                                if(STATE.player.inventory['permata']<=0) delete STATE.player.inventory['permata'];
+
+                                // Tambah Rafflesia
+                                addItem('bunga_rafflesia', 1);
+                                
+                                // Efek Visual & Audio Spesial
+                                createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#ef4444'); // Merah
+                                createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24'); // Emas
+                                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+
+                                // Dialog Sukses
+                                showDialogue("DEWI RORO", "Terimalah pusaka alam ini... **Rafflesia Arnoldi**.\nBaunya memang menyengat, tapi kelopaknya menyimpan sejarah ribuan tahun.", 
+                                    [{text: "Terima Kasih Dewi! (Dapat Rafflesia)", action: closeDialogue}], 
+                                    'images/rafflesia.png' // Tampilkan gambar bunga
+                                );
+                                manualSave();
+                            } else {
+                                showToast("Syarat belum terpenuhi!");
+                            }
+                        }},
+                        {text: "Aku cari dulu...", action: closeDialogue}
+                    ], 
+                    npc.imgSrc
+                );
+            }},
+
             {text: "Tentang Candi Ini", action: () => {
                 showDialogue("DEWI RORO", "Candi ini dibangun ribuan tahun lalu oleh leluhurmu. Di sini tersimpan energi magis yang menahan segel Dungeon agar tidak meluap ke desa.", [{text:"Terima kasih infonya", action:closeDialogue}], npc.imgSrc);
             }},
@@ -14484,7 +14663,7 @@ function getMissionBoardText() {
         txt += `${chk(STATE.dungeonLevel >= 2)} Eksplorasi Dungeon Lt.2\n`;
     }
 
-    return txt;
+        return txt;
 }
 
 function interactObject(obj) {
@@ -14500,6 +14679,33 @@ function interactObject(obj) {
         
         showDialogue(title, obj.text || "...", [{text:"Tutup", action:closeDialogue}], obj.img);
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        return;
+    }
+
+    // --- NEW: INTERAKSI BUNGA LIAR (PETIK) ---
+    if(obj.type === 'wild_flower') {
+        showDialogue("BUNGA LIAR", "Sekuntum bunga cantik tumbuh di sini. Harumnya segar.", [
+            {text: "Petik 🌸", action: () => {
+                // Tambah Item
+                addItem('bunga', 1);
+                showToast("Memetik Bunga Liar (+1 Bunga)");
+                
+                // Efek Audio & Visual
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                createParticle(obj.x * TILE_SIZE, obj.y * TILE_SIZE, '#f472b6'); // Pink particles
+                
+                // Hapus Objek dari Map
+                const map = maps[STATE.location];
+                const idx = map.objects.indexOf(obj);
+                if(idx > -1) {
+                    map.objects.splice(idx, 1);
+                }
+                
+                // Tutup Dialog
+                closeDialogue();
+            }},
+            {text: "Biarkan Tumbuh", action: closeDialogue}
+        ], 'images/bunga.png'); // Tampilkan gambar bunga di dialog
         return;
     }
 
@@ -14830,6 +15036,8 @@ function interactObject(obj) {
         showDialogue("KATALOG BELANJA", "Beli Furnitur & Upgrade:", [
             {text: "Karpet Merah (50k)", action: () => buyFurniture('carpet_red', 50000)},
             {text: "TV Layar Datar (150k)", action: () => buyFurniture('tv_flat', 150000)},
+            // --- NEW: RUMAH KURCACI DI KATALOG ---
+            {text: "🏠 Rumah Kurcaci (150k)", action: () => buyFurniture('rumah_kurcaci', 150000)},
             {text: `UPGRADE RUMAH (LV ${STATE.player.houseLevel+1})`, action: () => upgradeHouse()},
             {text: "Tutup", action: closeDialogue}
         ], null);
@@ -15243,6 +15451,8 @@ function manualSave() {
         inventory: STATE.player.inventory, // PENTING: Tas
         houseLevel: STATE.player.houseLevel,
         furniture: STATE.player.furniture,
+        // NEW: SIMPAN STATUS KURCACI
+        hiredDwarf: STATE.player.hiredDwarf,
 
         // 6. Hubungan Sosial
         relationships: STATE.player.relationships, // PENTING: Hati NPC
@@ -15532,6 +15742,9 @@ function handleSleep() {
                 
                 STATE.screen = 'play'; // FIX: Resume game setelah bangun
                 STATE.isDayChanging = false; // Buka kunci
+
+                // --- NEW: RESPAWN BUNGA LIAR SETIAP PAGI ---
+                spawnWildFlowers();
 
                 // --- NEW: LOGIKA NAFKAH HARIAN & DRAMA NIKAH MUDA ---
                 if (STATE.player.married && STATE.location === 'house') {
@@ -17207,6 +17420,34 @@ function drawObject(ctx, o) {
                 else if (src.includes('vasmerah')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTEwIDI0IEwxMCAxMiBDMTAgNiAyMiA2IDIyIDEyIEwyMiAyNCBDMjIgMzAgMTAgMzAgMTAgMjQgWiIgZmlsbD0iI2VmNDQ0NCIgc3Ryb2tlPSIjYjkxYzFjIiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSBjeD0iMTYiIGN5PSI4IiByeD0iNCIgcnk9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
                 }
+                // NEW: FALLBACK JARING IKAN
+                else if (src.includes('jaringikan')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSI2NCI+PHBhdGggZD0iTTAgMCBMOTYgNjQgTTk2IDAgTTAgNjQgTTQ8IDAgTDQ4IDY0IE0wIDMyIEw5NiAzMiBNMjQgMCBMMjQgNjQgTTcyIDAgTDcyIDY0IE0wIDE2IEw5NiAxNiBNMCA0OCBMOTYgNDgiIHN0cm9rZT0iI2EzYTNhMyIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9zdmc+';
+                }
+                // NEW: FALLBACK RAK PANCING
+                else if (src.includes('rakpancing')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOEU1NDJiIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxsaW5lIHgxPSI2IiB5MT0iMjgiIHgyPSIyNiIgeTI9IjQiIHN0cm9rZT0iIzU1NSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjEwIiB5MT0iMjgiIHgyPSIyOCIgeTI9IjEwIiBzdHJva2U9IiM1NTUiIHN0cm9rZS13aWR0aD0iMiIvPjxsaW5lIHgxPSIyIiB5MT0iMjgiIHgyPSIyMiIgeTI9IjgiIHN0cm9rZT0iIzU1NSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+';
+                }
+                // NEW: FALLBACK EMBER IKAN
+                else if (src.includes('emberikan')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTYgMTAgTDggMjggTDI0IDI4IEwyNiAxMCBaIiBmaWxsPSIjOTBBNEFFIiBzdHJva2U9IiM1NTUiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik02IDEwIFExNiAyIDI2IDEwIiBzdHJva2U9IiM1NTUiIHN0cm9rZS13aWR0aD0iMiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0xMCA4IEw4IDQgTDEyIDQgWiIgZmlsbD0iIzY0QjVGNiIvPjxwYXRoIGQ9Ik0yMiA4IEwyMCA0IEwyNCA0IFoiIGZpbGw9IiM2NEI1RjYiLz48L3N2Zz4=';
+                }
+                // NEW: FALLBACK BOXES (Kotak Biru/Coolbox)
+                else if (src.includes('boxes')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iOCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjIyIiBmaWxsPSIjNjRiNWY2IiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMiIvPjxsaW5lIHgxPSIyIiB5MT0iMTQiIHgyPSIzMCIgeTI9IjE0IiBzdHJva2U9IiMzMzQxNTUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK KASUR NELAYAN
+                else if (src.includes('kasurnelayan')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI5NiI+PHJlY3QgeD0iNCIgeT0iMTAiIHdpZHRoPSI1NiIgaGVpZ2h0PSI4MCIgZmlsbD0iIzVENEAzNyIgcng9IjQiLz48cmVjdCB4PSI4IiB5PSIyNSIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjYwIiBmaWxsPSIjZjRmNmY4IiByeD0iMiIvPjxyZWN0IHg9IjgiIHk9IjEyIiB3aWR0aD0iNDgiIGhlaWdodD0iMTIiIGZpbGw9IiNjYmQ1ZTEiIHJ4PSI0Ii8+PC9zdmc+';
+                }
+                // NEW: FALLBACK RAK PIALA IKAN
+                else if (src.includes('rakpialaikan')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNNiA2IEwyNiA2IEwyNCAxNiBDMjQgMjAgMjAgMjIgMTYgMjIgQzEyIDIyIDggMjAgOCAxNiBMNiA2IFoiIGZpbGw9IiNGRkQ3MDAiIHN0cm9rZT0iI0I4ODYwQiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHJlY3QgeD0iMTQiIHk9IjIyIiB3aWR0aD0iNCIgaGVpZ2h0PSI2IiBmaWxsPSIjQjg4NjBCIi8+PHJlY3QgeD0iMTAiIHk9IjI4IiB3aWR0aD0iMTIiIGhlaWdodD0iNCIgZmlsbD0iIzhCNDUxMyIvPjxjaXJjbGUgY3g9IjI2IiBjeT0iMTAiIHI9IjMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGRDcwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iNiIgY3k9IjEwIiByPSIzIiBmaWxsPSJub25lIiBzdHJva2U9IiNGRkQ3MDAiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK MEJA MAKAN IKAN
+                else if (src.includes('mejamakanikan')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTAiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNCIgZmlsbD0iI0EwNTIyRCIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNiIgZmlsbD0iI0EwNTIyRCIvPjxyZWN0IHg9IjI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNiIgZmlsbD0iI0EwNTIyRCIvPjxlbGxpcHNlIGN4PSIxNiIgY3k9IjE2IiByeD0iOCIgcnk9IjMiIGZpbGw9IiNGRkYiLz48cGF0aCBkPSJNMTIgMTYgTDIwIDE2IiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==';
+                }
                 // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni)
                 else if (src.includes('rakbuku')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI4IiBmaWxsPSIjOEU1NDJiIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZWY0NDQ0Ii8+PHJlY3QgeD0iMTAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjM2I4MmY2Ii8+PHJlY3QgeD0iMTUiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjMTBiOTgxIi8+PHJlY3QgeD0iMjAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjIwIiBmaWxsPSIjZTkxZTYzIi8+PC9zdmc+';
@@ -18013,6 +18254,14 @@ function renderInventory() {
         
         // --- NEW: ITEM SERTIFIKAT PEKERJA ---
         'sertifikat_manajer': { name: 'Sertifikat Profesi', icon: '👔', desc: 'Sertifikat Kompetensi Manajer Profesional (BNSP).', img: 'images/sertifikat-manajer.png' },
+
+        // --- NEW: BUNGA RAFFLESIA ARNOLDI (LEGENDARY) ---
+        'bunga_rafflesia': { 
+            name: 'Rafflesia Arnoldi', 
+            icon: '🌺', 
+            desc: 'Pusaka Alam Legendaris. Bunga raksasa pemberian Dewi Roro.', 
+            img: 'images/rafflesia.png' 
+        },
 
         // --- UPDATE: IKAN-IKAN BARU ---
         'ikan_kecil': { name: 'Ikan Kecil', img: 'images/ikankecil.png', type: 'consumable', action: 'eat_fish_small', desc: 'Makan: +10 Energi. Ikan mungil biasa.' },
