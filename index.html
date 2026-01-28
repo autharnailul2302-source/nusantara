@@ -661,10 +661,41 @@
             animation: pulseYellow 2s infinite;
         }
 
+        /* --- NEW: SKILL BUTTON STYLE (ULTIMATE) --- */
+        #btn-skill {
+            position: relative;
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ef4444, #7f1d1d); /* Red Fiery */
+            border: 2px solid #fca5a5;
+            color: white;
+            display: none; /* Hidden by default */
+            justify-content: center; align-items: center;
+            font-size: 32px;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            cursor: pointer;
+            z-index: 60;
+            transition: transform 0.1s;
+            pointer-events: auto;
+            flex-shrink: 0;
+            /* Animation for readiness */
+            animation: pulseRed 2s infinite;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        #btn-skill:active { transform: scale(0.9); filter: brightness(1.2); }
+        #btn-skill.cooldown { filter: grayscale(1); cursor: not-allowed; animation: none; border-color: #555; background: #333; box-shadow: none; color: #999; }
+
         @keyframes pulseYellow {
             0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.4); }
             70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); }
             100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
+        }
+
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
         #btn-sprint:active {
@@ -2703,6 +2734,9 @@ button, .round-btn, .d-btn, .auth-btn {
             <div class="d-pad" id="joystick" style="display:none;"></div> 
             
             <div class="action-btns">
+                <!-- NEW: TOMBOL SKILL (ULTIMATE) -->
+                <div id="btn-skill" title="Ultimate Skill (10 Stamina)">🔥</div>
+
                 <!-- NEW: TOMBOL SPRINT (LARI) -->
                 <div id="btn-sprint" title="Tahan untuk Lari">⚡</div>
 
@@ -3938,7 +3972,11 @@ async function preloadAllGameAssets() {
         // NEW: ASSET KAIA & ANAK KECIL (TAMBAHAN MANUAL AGAR TIDAK HILANG)
         'images/kaia.png',
         'images/anakkecil1.png',
-        'images/anakkecil2.png'
+        'images/anakkecil2.png',
+        // NEW: ASSET TUMPUKAN KERTAS
+        'images/tumpukankertas.png',
+        // NEW: ASSET FOTO MENTOR
+        'images/fotomentor.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -6527,7 +6565,7 @@ for(let i=0; i<10; i++) {
             // Petak air kecil untuk menyiram (Tile ID 0 manual atau objek sumur)
             // UPDATE: Posisi Sumur dipindah ke kiri (x:23, y:6) menggantikan posisi kosong dekat rumah
             // UPDATE: Sumur diperbesar jadi 2x2
-            {x: 23, y: 6, w: 2, h: 2, type: 'sign', icon: '💧', text: "Sumur Tua: Sumber air untuk menyiram tanaman.", img: 'images/sumur.png'},
+            {x: 23, y: 8, w: 2, h: 2, type: 'sign', icon: '💧', text: "Sumur Tua: Sumber air untuk menyiram tanaman.", img: 'images/sumur.png'},
             
             // --- NEW: KEBUN BUNGA AYU (DI PINGGIR RUMAH AYU) ---
             // Posisi Rumah Ayu: x:14, y:25. Kebun ditaruh di kirinya.
@@ -6635,8 +6673,9 @@ for(let i=0; i<10; i++) {
         ],
         npcs: [
             /* UPDATE: GAMBAR GUILD MASTER DIUBAH KE masterguild.png */
-            /* UPDATE: Posisi digeser ke 7.5 agar pas di tengah meja 2 petak */
-            {id: 'guild_master', x: 7.5, y: 3, name: 'Guild Master', imgSrc: 'images/masterguild.png', type: 'service', schedule: 'always', w: 40, h: 60},
+            /* UPDATE: Posisi disesuaikan ke x:7 (Tengah meja 3 petak yang dimulai dari x:6) */
+            /* y: 2.2 agar terlihat berdiri di belakang meja */
+            {id: 'guild_master', x: 7, y: 2.2, name: 'Guild Master', imgSrc: 'images/masterguild.png', type: 'service', schedule: 'always', w: 40, h: 60},
             
             /* UPDATE: SATRIA (KSATRIA) DIPINDAH KE DALAM SINI (Menggantikan Petualang Veteran) */
             {id: 'lover2boy', x: 4, y: 8, name: 'Satria (Ksatria)', imgSrc: 'images/lover2boy.png', type: 'lover', schedule: 'always', w: 40, h: 60},
@@ -6645,15 +6684,17 @@ for(let i=0; i<10; i++) {
             {id: 'lover_matre_boy', x: 12, y: 8, name: 'Rendi (Anak Sultan)', imgSrc: 'images/lover_matre_boy.png', type: 'wander', schedule: 'day', genderReq: 'girl', w: 40, h: 60}
         ],
         objects: [
-            /* UPDATE: MEJA MASTER GUILD (Image Baru & Ukuran Diperbesar w:2) */
-            {x: 7, y: 2, w: 2, h: 1, type: 'table', icon: '🛡️', img: 'images/mejamasterguild.png'},
+            /* UPDATE: MEJA MASTER GUILD (DIPERBESAR JADI 3x2) */
+            /* Digeser ke x:6 agar posisinya center di ruangan lebar 16 (6,7,8) */
+            {x: 6, y: 2, w: 3, h: 2, type: 'table', icon: '🛡️', img: 'images/mejamasterguild.png', text: "Meja Guild Master: Tempat strategi dan misi rahasia."},
             
-            /* UPDATE: Papan Guild Diperbesar (w:3, h:2) dan bisa dilewati belakangnya */
-            {x: 1, y: 5, w: 3, h: 2, type: 'sign', icon: '📜', text: "Papan Misi Rank S (Terkunci)", img: 'images/papanguild.png'},
+            /* UPDATE: Papan Guild Diperbesar (w:3, h:2) */
+            /* UPDATE: Menambahkan ID 'guild_board' agar bisa diinteraksi sebagai Bounty Board */
+            {id: 'guild_board', x: 1, y: 5, w: 3, h: 2, type: 'sign', icon: '📜', text: "Papan Bounty Guild", img: 'images/papanguild.png'},
             
-            /* UPDATE: MEJA MAKAN GUILD (Dikecilkan w:2, h:2 & Walkable Behind) */
-            /* Posisi digeser ke x:13 agar lebih pas di kanan */
-            {x: 13, y: 5, w: 2, h: 2, type: 'sign', icon: '🍽️', text: "Meja Perjamuan: Hidangan daging panggang & jus buah segar penambah stamina. (100% Non-Alkohol)", img: 'images/mejamakanguild.png'},
+            /* REVERT: MEJA MAKAN GUILD (Dikembalikan ke ukuran w:2, h:2 agar proporsional) */
+            /* Posisi di kanan */
+            {x: 13, y: 5, w: 2, h: 2, type: 'sign', icon: '🍽️', text: "Meja Perjamuan", img: 'images/mejamakanguild.png'},
             
             /* UPDATE: Menambahkan Vas Bunga Putih di Guild (Dekorasi) */
             {x: 1, y: 10, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Putih: Menambah kesan elegan di markas para petarung.", img: 'images/vasputih.png'},
@@ -6748,19 +6789,24 @@ for(let i=0; i<10; i++) {
             {id: 'mentor', x: 7, y: 4, name: 'Mentor Budi', imgSrc: 'images/mentor.png', type: 'mentor', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
-            /* UPDATE: Rak Buku Mentor diganti imagenya menjadi rakmentor.png */
-            {x: 1, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan", img: 'images/rakmentor.png'},
-            /* UPDATE: Piala digeser sedikit ke kanan & DIBERI GAMBAR BARU */
-            {x: 4, y: 3, type: 'bookshelf', icon: '🏆', text: "Piala: Guru Terbaik Se-Nusantara", img: 'images/pialamentor.png'},
-            /* UPDATE: Vas Bunga Mentor diberi gambar baru */
-            {x: 11, y: 3, type: 'shelf', icon: '🏺', text: "Vas Bunga Antik dari Murid", img: 'images/vasmentor.png'},
+            /* UPDATE: Rak Buku Mentor Diperbesar jadi 3x3 */
+            {x: 1, y: 3, w: 3, h: 3, type: 'bookshelf', icon: '📚', text: "Ensiklopedia Pendidikan", img: 'images/rakmentor.png'},
             
-            /* UPDATE: Menggunakan images/mejamentor.png dan diperbesar jadi 2x2 */
+            /* UPDATE: Piala Diperbesar jadi 2x2 */
+            {x: 4, y: 3, w: 2, h: 2, type: 'bookshelf', icon: '🏆', text: "Piala: Guru Terbaik Se-Nusantara", img: 'images/pialamentor.png'},
+            
+            /* UPDATE: Vas Bunga Mentor Diperbesar jadi 2x2 */
+            {x: 11, y: 3, w: 2, h: 2, type: 'shelf', icon: '🏺', text: "Vas Bunga Antik dari Murid", img: 'images/vasmentor.png'},
+            
+            /* UPDATE: Meja Mentor tetap 2x2 */
             {x: 6, y: 3, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/mejamentor.png', name: "Meja Mentor"}, 
             
             // Dekorasi Rumah
-            {x: 2, y: 8, type: 'shelf', icon: '📦', text: "Tumpukan Tugas Siswa"},
-            {x: 11, y: 8, type: 'shelf', icon: '🖼️', text: "Foto Angkatan Pertama"},
+            /* UPDATE: GANTI IKON MENJADI GAMBAR TUMPUKAN KERTAS */
+            {x: 2, y: 8, type: 'shelf', icon: '📦', text: "Tumpukan Tugas Siswa", img: 'images/tumpukankertas.png'},
+            
+            /* UPDATE: GANTI IKON MENJADI GAMBAR FOTO MENTOR */
+            {x: 11, y: 8, type: 'shelf', icon: '🖼️', text: "Foto Angkatan Pertama", img: 'images/fotomentor.png'},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -6937,11 +6983,11 @@ for(let i=0; i<10; i++) {
             /* Kasur Sederhana */
             {x: 1, y: 6, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/kasurnelayan.png', name: "Kasur Nelayan"},
             
-            /* Meja Makan */
-            {x: 6, y: 4, type: 'table', icon: '🪑', img: 'images/mejamakanikan.png'},
+            /* Meja Makan - UPDATE: Diperbesar jadi 2x2 */
+            {x: 6, y: 4, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/mejamakanikan.png'},
             
-            /* Piala/Penghargaan */
-            {x: 5, y: 1, type: 'shelf', icon: '🏆', text: "Piala: Juara Mancing Ikan Mas 2023", img: 'images/rakpialaikan.png'},
+            /* Piala/Penghargaan - UPDATE: Diperbesar jadi 2x2 */
+            {x: 5, y: 1, w: 2, h: 2, type: 'shelf', icon: '🏆', text: "Piala: Juara Mancing Ikan Mas 2023", img: 'images/rakpialaikan.png'},
 
             {x: 6, y: 9, type: 'door_out', icon: '🚪'}
         ]
@@ -7068,8 +7114,8 @@ const STATE = {
         gender: 'boy',
         spriteIdle: null,
         spriteWalk: null,
-        // UPDATE: Speed dinaikkan sedikit (4 -> 5) agar lebih lincah di mobile
-        speed: 5,
+        // UPDATE: Speed dinaikkan (5 -> 7) agar gerakan terasa lebih cepat dan responsif
+        speed: 7,
         direction: 'down',
         hp: 100, maxHp: 100,
         energy: 100,
@@ -7781,6 +7827,20 @@ if(btnSprint) {
     btnSprint.addEventListener('mousedown', (e) => { e.stopPropagation(); STATE.player.isSprinting = true; });
     btnSprint.addEventListener('mouseup', (e) => { e.stopPropagation(); STATE.player.isSprinting = false; });
     btnSprint.addEventListener('mouseleave', () => { STATE.player.isSprinting = false; });
+}
+
+// --- NEW: SKILL BUTTON LISTENER (ULTIMATE) ---
+const btnSkill = document.getElementById('btn-skill');
+if (btnSkill) {
+    btnSkill.addEventListener('touchstart', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        handleSkill();
+    }, {passive: false});
+    
+    btnSkill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleSkill();
+    });
 }
 
 btnAction.addEventListener('touchstart', (e)=>{
@@ -10019,6 +10079,78 @@ function returnToTitle() {
 
 let lastCollisionTime = 0; 
 
+// --- NEW FUNCTION: HANDLE SKILL (ULTIMATE) ---
+function handleSkill() {
+    const p = STATE.player;
+    
+    // Cek Cooldown
+    if (p.skillCooldown > 0) {
+        showToast("Skill sedang Cooldown!");
+        return;
+    }
+    
+    // Cek Energi
+    if (p.energy < 10) {
+        showToast("Energi tidak cukup! (Butuh 10)");
+        return;
+    }
+
+    // Activate Skill
+    p.energy -= 10;
+    p.skillCooldown = 180; // 3 Detik Cooldown (60 FPS)
+    
+    // Logic: AoE Damage
+    const range = 120; // Radius ledakan
+    const damage = p.str * 4 + 20; // Damage Besar (Base + STR)
+
+    // Visual Effect: Shockwave Ring
+    for (let i = 0; i < 36; i++) {
+        const angle = (i * 10) * (Math.PI / 180);
+        STATE.particles.push({
+            x: p.x + 10, 
+            y: p.y + 10,
+            vx: Math.cos(angle) * 8, // Menyebar cepat
+            vy: Math.sin(angle) * 8,
+            life: 30,
+            color: '#ef4444', // Merah Api
+            size: 5 + Math.random() * 5,
+            type: 'dust' // Reuse dust logic for circle particles
+        });
+    }
+    
+    // Screen Shake Effect
+    STATE.shakeTimer = 20;
+    
+    // SFX
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+
+    // Damage Calculation
+    let hitCount = 0;
+    STATE.enemies.forEach(en => {
+        const dist = Math.hypot(p.x - en.x, p.y - en.y);
+        if (dist < range) {
+            hitCount++;
+            en.hp -= damage;
+            
+            // Massive Knockback (Terlempar jauh)
+            en.knockback = { 
+                x: (en.x - p.x) * 2, 
+                y: (en.y - p.y) * 2 
+            };
+            
+            spawnFloatingText(en.x, en.y - 30, "🔥 " + damage, "#ef4444", 20);
+            createParticle(en.x, en.y, '#fbbf24'); // Sparks
+        }
+    });
+
+    if (hitCount > 0) {
+        showToast(`ULTIMATE! Hit ${hitCount} Musuh!`);
+        spawnFloatingText(p.x, p.y - 40, "BOOM!", "#fbbf24", 24);
+    } else {
+        showToast("Skill meleset... (Tidak ada target)");
+    }
+}
+
 function update() {
     if (STATE.screen !== 'play') return;
 	
@@ -10028,6 +10160,52 @@ function update() {
     // Pastikan pointer selalu menempel pada objek meskipun kamera bergerak
     if (STATE.tutorialFocusTarget) {
         updateTutorialPointerPosition();
+    }
+
+    // --- NEW: LOGIKA SEMBUNYIKAN TOMBOL SPRINT DI DUNGEON ---
+    const btnSprint = document.getElementById('btn-sprint');
+    const btnSkill = document.getElementById('btn-skill'); // Reference skill button
+
+    if (btnSprint) {
+        // Cek apakah lokasi adalah Dungeon atau Arena Battle
+        const isCombatZone = (STATE.location === 'dungeon' || STATE.location === 'ruins_battle');
+        
+        if (isCombatZone) {
+            // Jika di zona tempur: Sembunyikan Sprint, Tampilkan Skill
+            if (btnSprint.style.display !== 'none') {
+                btnSprint.style.display = 'none';
+                STATE.player.isSprinting = false; // Paksa berhenti lari
+            }
+            
+            // Tampilkan Skill Button
+            if (btnSkill) {
+                btnSkill.style.display = 'flex';
+                // Update Visual Cooldown
+                if (STATE.player.skillCooldown > 0) {
+                    btnSkill.classList.add('cooldown');
+                    // Tampilkan sisa detik
+                    const cdSec = Math.ceil(STATE.player.skillCooldown / 60);
+                    btnSkill.innerText = cdSec; 
+                    btnSkill.title = `Cooldown: ${cdSec}s`; // UPDATE: Dynamic Tooltip
+                } else {
+                    btnSkill.classList.remove('cooldown');
+                    btnSkill.innerText = '🔥';
+                    btnSkill.title = "Ultimate Skill (10 Stamina)"; // UPDATE: Tooltip Ready
+                }
+            }
+
+        } else {
+            // Jika di zona aman: Tampilkan Sprint, Sembunyikan Skill
+            if (btnSprint.style.display === 'none') {
+                btnSprint.style.display = 'flex';
+            }
+            if (btnSkill) btnSkill.style.display = 'none';
+        }
+    }
+
+    // --- NEW: DECREMENT SKILL COOLDOWN ---
+    if (STATE.player.skillCooldown > 0) {
+        STATE.player.skillCooldown--;
     }
 
     // --- NEW: GLOBAL LOW ENERGY WARNING CHECK ---
@@ -10304,24 +10482,22 @@ function update() {
 
         // Scan Object Nearby (Jika belum ketemu NPC)
         if (!showActionButton) {
-            for(let obj of map.objects) {
-                // --- UPDATE: LOGIKA DETEKSI OBJEK "SENTUH" (BERSENTUHAN) ---
-                // Menggunakan Intersection Box (Player Box vs Object Box + Buffer)
-                // Ini memastikan tombol muncul dari SISI MANAPUN selama dekat/nempel.
-                
-                const buffer = 5; // Jarak toleransi sentuh (pixel)
-                
-                const pLeft = STATE.player.x - buffer;
-                const pRight = STATE.player.x + STATE.player.w + buffer;
-                const pTop = STATE.player.y - buffer;
-                const pBottom = STATE.player.y + STATE.player.h + buffer;
+            // --- FIX: DEFINISI VARIABEL BOUNDING BOX PLAYER ---
+            const buffer = 10;
+            const pLeft = STATE.player.x - buffer;
+            const pRight = STATE.player.x + STATE.player.w + buffer;
+            const pTop = STATE.player.y - buffer;
+            const pBottom = STATE.player.y + STATE.player.h + buffer;
 
+            for(let obj of map.objects) {
+                // --- FIX: DEFINISI VARIABEL BOUNDING BOX OBJECT ---
                 const oLeft = obj.x * TILE_SIZE;
                 const oRight = (obj.x + (obj.w || 1)) * TILE_SIZE;
                 const oTop = obj.y * TILE_SIZE;
                 const oBottom = (obj.y + (obj.h || 1)) * TILE_SIZE;
 
-                // Cek apakah kotak pemain (diperluas buffer) bersinggungan dengan kotak objek
+                // --- UPDATE: LOGIKA DETEKSI OBJEK "SENTUH" (BERSENTUHAN) ---
+                // ... existing object detection logic ...
                 const isTouching = (pLeft < oRight && pRight > oLeft && 
                                     pTop < oBottom && pBottom > oTop);
 
@@ -10332,9 +10508,57 @@ function update() {
                     else if(obj.type === 'fishing_spot') actionIcon = '🎣';
                     else if(obj.type === 'sign') actionIcon = '🪧';
                     else if(obj.type === 'bookshelf') actionIcon = '📖'; 
-                    else if(obj.type === 'bed') actionIcon = '🛏️'; // NEW: Icon Kasur
+                    else if(obj.type === 'bed') actionIcon = '🛏️'; 
                     else actionIcon = '🖐️'; 
                     break;
+                }
+            }
+        }
+
+        // --- NEW: CEK TILE LAHAN PERTANIAN (JIKA TIDAK ADA OBJEK/NPC) ---
+        if (!showActionButton && STATE.location === 'village') {
+            const pTx = Math.floor((STATE.player.x + 10) / TILE_SIZE);
+            const pTy = Math.floor((STATE.player.y + 15) / TILE_SIZE);
+            const tIdx = pTy * ISLAND_W + pTx;
+            
+            // Tile ID 5 adalah Tanah Lahan
+            if (map.tiles[tIdx] === 5) {
+                showActionButton = true;
+                
+                // CEK SYARAT: HARUS SUDAH DAPAT KURCACI TANI
+                if (STATE.player.hiredDwarf) {
+                    // Jika sudah punya kurcaci, cek kondisi tanah spesifik
+                    const farmKey = `${pTx}_${pTy}`;
+                    
+                    // Pastikan object farming ada
+                    if (!STATE.player.farming) STATE.player.farming = {};
+                    const crop = STATE.player.farming[farmKey];
+                    
+                    if (crop && crop.type) {
+                        // Ada tanaman
+                        if (crop.stage >= 3) {
+                            actionIcon = '🌾'; // Siap Panen
+                            btnAction.title = "Panen Tanaman";
+                        } else if (!crop.watered) {
+                            actionIcon = '💧'; // Perlu Disiram
+                            btnAction.title = "Siram Tanaman";
+                        } else {
+                            actionIcon = '👀'; // Sudah disiram/tumbuh
+                            btnAction.title = "Lihat Tanaman";
+                        }
+                    } else if (crop && crop.tilled) {
+                        // Tanah sudah dicangkul, siap tanam
+                        actionIcon = '🌱'; 
+                        btnAction.title = "Tanam Bibit";
+                    } else {
+                        // Tanah biasa, perlu dicangkul
+                        actionIcon = '⛏️'; 
+                        btnAction.title = "Cangkul Lahan";
+                    }
+                } else {
+                    // BELUM PUNYA KURCACI -> DISILANG
+                    actionIcon = '🚫';
+                    btnAction.title = "Lahan Belum Bisa Digunakan";
                 }
             }
         }
@@ -10344,6 +10568,41 @@ function update() {
     if (showActionButton) {
         btnAction.style.display = 'flex';
         btnAction.innerText = actionIcon;
+        
+        // --- NEW: DYNAMIC ACTION TOOLTIP (PENJELASAN FUNGSI TOMBOL) ---
+        if (actionIcon === '⚔️') btnAction.title = "Serang Musuh (Attack)";
+        else if (actionIcon === '⛏️') btnAction.title = "Cangkul Lahan"; // NEW
+        else if (actionIcon === '🚫') btnAction.title = "Lahan Terkunci"; // NEW
+        else if (actionIcon === '🎣') btnAction.title = "Tarik Pancingan";
+        else if (actionIcon === '🚪') btnAction.title = "Masuk/Keluar";
+        else if (actionIcon === '📜') btnAction.title = "Baca Papan Info";
+        else if (actionIcon === '🏆') btnAction.title = "Lihat Peringkat";
+        else if (actionIcon === '💬') btnAction.title = "Bicara dengan NPC";
+        else if (actionIcon === '💖') btnAction.title = "Interaksi Pasangan";
+        else if (actionIcon === '📬') btnAction.title = "Cek Kotak Surat";
+        else if (actionIcon === '🪧') btnAction.title = "Baca Tanda";
+        else if (actionIcon === '📖') btnAction.title = "Baca Buku/Arsip";
+        else if (actionIcon === '🛏️') btnAction.title = "Tidur/Istirahat";
+        else if (actionIcon === '📦') btnAction.title = "Ambil/Sortir Barang";
+        else if (actionIcon === '🪙') btnAction.title = "Manajemen Kasir";
+        else if (actionIcon === '☎️') btnAction.title = "Belanja Katalog";
+        else if (actionIcon === '👗') btnAction.title = "Ganti Pakaian";
+        else if (actionIcon === '📅') btnAction.title = "Cek Kalender";
+        else if (actionIcon === '📓') btnAction.title = "Save/Jurnal";
+        else if (actionIcon === '💊') btnAction.title = "Ambil Obat";
+        else if (actionIcon === '🗄️') btnAction.title = "Cek Arsip";
+        else if (actionIcon === '🏺') btnAction.title = "Lihat Koleksi";
+        else if (actionIcon === '🛡️') btnAction.title = "Lihat Equipment";
+        else if (actionIcon === '🍽️') btnAction.title = "Lihat Makanan";
+        else if (actionIcon === '🍳') btnAction.title = "Masak";
+        else if (actionIcon === '🥘') btnAction.title = "Masak Sup";
+        else if (actionIcon === '🕸️') btnAction.title = "Cek Jaring";
+        else if (actionIcon === '🧊') btnAction.title = "Cek Ikan";
+        else if (actionIcon === '🗿') btnAction.title = "Berdoa";
+        else if (actionIcon === '💐') btnAction.title = "Persembahan";
+        else if (actionIcon === '🕯️') btnAction.title = "Periksa Lilin";
+        else btnAction.title = "Interaksi";
+        
         // Animasi pop-in kecil jika baru muncul
         if (btnAction.dataset.visible !== "true") {
             btnAction.style.animation = "popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
@@ -11286,7 +11545,31 @@ function processTeleport(b) {
         if (!STATE.player.hasSeenDungeonTutorial) {
             STATE.player.hasSeenDungeonTutorial = true;
             setTimeout(() => {
-                showDialogue("TUTORIAL COMBAT", "⚠️ **ZONA BERBAHAYA!**\nTombol aksi berubah jadi **PEDANG** ⚔️.\nTekan cepat 3x untuk **COMBO**!", [{text: "Siap Bertarung!", action: () => { closeDialogue(); manualSave(); }}], 'images/penjagadungeon.png');
+                // Step 1: Basic Attack
+                showTutorialFocus('btn-action'); // Highlight tombol pedang
+                showDialogue("TUTORIAL COMBAT (1/2)", 
+                    "⚠️ **ZONA BERBAHAYA!**\nTombol aksi berubah jadi **PEDANG** ⚔️.\n\nTekan cepat 3x untuk **COMBO SERANGAN**!", 
+                    [{
+                        text: "Lanjut ke Skill >>", 
+                        action: () => { 
+                            // Step 2: Ultimate Skill
+                            showTutorialFocus('btn-skill'); // Highlight tombol skill
+                            showDialogue("TUTORIAL SKILL (2/2)", 
+                                "🔥 **ULTIMATE SKILL**:\nTombol Api ini untuk **LEDAKAN AREA**!\n\nEfek: Damage Besar + Musuh Terlempar.\nSyarat: **10 Energi**.\nCooldown: 3 Detik.\n\nGunakan saat dikepung banyak musuh!", 
+                                [{
+                                    text: "Siap Bertarung!", 
+                                    action: () => { 
+                                        clearTutorialFocus(); // Hapus highlight
+                                        closeDialogue(); 
+                                        manualSave(); 
+                                    }
+                                }], 
+                                'images/penjagadungeon.png'
+                            );
+                        }
+                    }], 
+                    'images/penjagadungeon.png'
+                );
             }, 1000);
         }
     }
@@ -11434,7 +11717,10 @@ function checkObjectCollision(x, y) {
         /* UPDATE TERBARU: Menambahkan 'gucicandi' agar belakang guci bisa dilewati */
         // UPDATE TERBARU: Menambahkan 'kebunayu' agar belakang kebun bisa dilewati
         // UPDATE TERBARU: Menambahkan 'lemariobat' dan 'arsiprekammedis' agar belakang rak klinik bisa dilewati
-        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi') || obj.img.includes('kebunayu') || obj.img.includes('lemariobat') || obj.img.includes('arsiprekammedis')))) && (obj.h || 1) > 0) {
+        // UPDATE TERBARU: Menambahkan 'jaringikan' dan 'mejamakanikan' agar belakangnya bisa dilewati
+        // UPDATE TERBARU: Menambahkan 'rakmentor', 'pialamentor', 'vasmentor' agar belakangnya bisa dilewati
+        // UPDATE TERBARU: Menambahkan 'mejamasterguild' agar belakangnya bisa dilewati
+        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi') || obj.img.includes('kebunayu') || obj.img.includes('lemariobat') || obj.img.includes('arsiprekammedis') || obj.img.includes('jaringikan') || obj.img.includes('mejamakanikan') || obj.img.includes('rakmentor') || obj.img.includes('pialamentor') || obj.img.includes('vasmentor') || obj.img.includes('mejamasterguild')))) && (obj.h || 1) > 0) {
             yOffset = originalH * 0.4; // Turunkan hitbox 40% dari atas
             oh = originalH * 0.6;      // Sisa tinggi hitbox 60%
         }
@@ -11711,6 +11997,48 @@ function checkEntranceProximity() {
 
 function handleAction() {
     const entranceBuilding = checkEntranceProximity();
+    
+    // --- CEK APAKAH TOMBOL ADALAH TOMBOL BLOKIR FARMING (🚫) ---
+    const btnAction = document.getElementById('btn-action');
+    if (btnAction.innerText === '🚫') {
+        showDialogue("LAHAN TERBENGKALAI", 
+            "Tanah ini keras dan dipenuhi akar liar.\nKamu tidak bisa mengolahnya sendirian.\n\n**SYARAT MEMBUKA LAHAN:**\nKamu harus mendapatkan bantuan dari ahli pertanian legendaris: **KURCACI TANI**.\n\n(Cari dia saat Festival Panen Raya di Musim Panas)", 
+            [{text: "Saya akan mencarinya!", action: closeDialogue}], 
+            'images/lahan-liar.png'
+        );
+        return;
+    }
+
+    // --- CEK INTERAKSI FARMING LANGSUNG VIA TOMBOL AKSI ---
+    if (STATE.location === 'village' && (btnAction.innerText === '⛏️' || btnAction.innerText === '🌱' || btnAction.innerText === '💧' || btnAction.innerText === '🌾' || btnAction.innerText === '👀')) {
+        const pTx = Math.floor((STATE.player.x + 10) / TILE_SIZE);
+        const pTy = Math.floor((STATE.player.y + 15) / TILE_SIZE);
+        
+        // Panggil fungsi farming handler manual
+        // Kita gunakan logika inventory item use_hoe atau plant seed secara otomatis untuk UX yang lebih cepat
+        
+        const farmKey = `${pTx}_${pTy}`;
+        const crop = STATE.player.farming[farmKey];
+
+        // 1. CANGKUL (⛏️)
+        if (btnAction.innerText === '⛏️') {
+            useInventoryItem('cangkul', 'use_hoe'); // Auto trigger cangkul
+            return;
+        }
+        
+        // 2. TANAM (🌱) -> Buka Menu Bibit
+        if (btnAction.innerText === '🌱') {
+            handleFarmingInteraction(pTx, pTy); // Buka dialog pilih bibit
+            return;
+        }
+
+        // 3. PANEN / SIRAM / LIHAT (🌾 / 💧 / 👀)
+        if (crop) {
+            handleFarmingInteraction(pTx, pTy);
+            return;
+        }
+    }
+
     if(entranceBuilding) {
         
         // --- LOGIC REFACTORED TO USE processTeleport ---
@@ -14739,6 +15067,122 @@ function getMissionBoardText() {
         return txt;
 }
 
+// --- NEW FUNCTION: GUILD BOUNTY SYSTEM ---
+function handleGuildMissions() {
+    const p = STATE.player;
+    
+    // Inisialisasi atau Reset Harian (Jika hari berganti, reset status klaim)
+    if (!p.guildMissionClaims || p.guildMissionClaims.day !== STATE.day) {
+        p.guildMissionClaims = { 
+            day: STATE.day, 
+            hunt: false, 
+            collect_iron: false, 
+            collect_scroll: false 
+        };
+    }
+    
+    const claims = p.guildMissionClaims;
+    const killCount = p.dailyMonsterKills || 0;
+    
+    // Cek Stok Item di Tas
+    const hasIron = (p.inventory['besi'] || 0) >= 2;
+    const hasScroll = (p.inventory['scroll_exp'] || 0) >= 1;
+
+    // --- MISI 1: PEMBURU MONSTER (Daily Kills) ---
+    // Target: 3 Kill. Reward: 500 G
+    let m1Text = "⚔️ **Misi Pemburu**: Basmi 3 Monster";
+    let m1Action = null;
+    
+    if (claims.hunt) {
+        m1Text += " (✅ SELESAI)";
+        m1Action = () => showToast("Misi ini sudah diambil hari ini.");
+    } else if (killCount >= 3) {
+        m1Text += " (🎁 SIAP KLAIM!)";
+        m1Action = () => claimGuildMission('hunt', 500, null, 0);
+    } else {
+        m1Text += ` (❌ Progress: ${killCount}/3)`;
+        m1Action = () => showToast("Kalahkan monster di Dungeon!");
+    }
+
+    // --- MISI 2: PENGUMPUL BESI (Item Request) ---
+    // Target: 2 Bijih Besi. Reward: 800 G
+    let m2Text = "⛏️ **Misi Logam**: Setor 2 Bijih Besi";
+    let m2Action = null;
+
+    if (claims.collect_iron) {
+        m2Text += " (✅ SELESAI)";
+        m2Action = () => showToast("Sudah disetor.");
+    } else if (hasIron) {
+        m2Text += " (🎁 SIAP SETOR!)";
+        m2Action = () => claimGuildMission('collect_iron', 800, 'besi', 2);
+    } else {
+        m2Text += " (❌ Belum Cukup)";
+        m2Action = () => showToast("Cari Bijih Besi (Drop Monster/Boss)");
+    }
+
+    // --- MISI 3: PENCARI ILMU (Rare Item Request) ---
+    // Target: 1 Gulungan Kuno. Reward: 1500 G
+    let m3Text = "📜 **Misi Artefak**: Setor 1 Gulungan Kuno";
+    let m3Action = null;
+
+    if (claims.collect_scroll) {
+        m3Text += " (✅ SELESAI)";
+        m3Action = () => showToast("Sudah disetor.");
+    } else if (hasScroll) {
+        m3Text += " (🎁 SIAP SETOR!)";
+        m3Action = () => claimGuildMission('collect_scroll', 1500, 'scroll_exp', 1);
+    } else {
+        m3Text += " (❌ Belum Punya)";
+        m3Action = () => showToast("Cari Gulungan Kuno (Drop Rare di Dungeon)");
+    }
+
+    // Tampilkan Dialog
+    const opts = [
+        { text: m1Text, action: m1Action },
+        { text: m2Text, action: m2Action },
+        { text: m3Text, action: m3Action },
+        { text: "Tutup", action: closeDialogue }
+    ];
+
+    showDialogue("GUILD BOUNTY BOARD", 
+        "Daftar Buronan & Permintaan Logistik Hari Ini.\n(Reset setiap jam 24:00)", 
+        opts, 
+        'images/papanguild.png'
+    );
+}
+
+function claimGuildMission(missionKey, rewardGold, itemReq, itemQty) {
+    const p = STATE.player;
+
+    // Jika ada syarat item, kurangi dari inventory
+    if (itemReq) {
+        if ((p.inventory[itemReq] || 0) < itemQty) {
+            showToast("Item tidak cukup!");
+            return;
+        }
+        p.inventory[itemReq] -= itemQty;
+        if (p.inventory[itemReq] <= 0) delete p.inventory[itemReq];
+    }
+
+    // Beri Hadiah
+    p.money += rewardGold;
+    gainExp(50); // Bonus EXP
+    
+    // Tandai Selesai
+    p.guildMissionClaims[missionKey] = true;
+
+    // Efek Visual
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+    createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+    showToast(`Misi Sukses! +${rewardGold} G`);
+    
+    // Refresh Menu agar status terupdate
+    handleGuildMissions();
+    
+    // Auto Save
+    manualSave();
+}
+
 function interactObject(obj) {
     // --- NEW: HANDLING KHUSUS ARTIFAK CANDI (Agar Guci, Prasasti, Altar, Lilin bisa diinteraksi) ---
     if (STATE.location === 'candi_interior' && (obj.type === 'sign' || obj.type === 'shelf' || obj.type === 'table')) {
@@ -14790,7 +15234,12 @@ function interactObject(obj) {
             // tapi format teksnya list sederhana (seperti request).
             const dynamicText = getMissionBoardText();
             showDialogue("PAPAN PENGUMUMAN", dynamicText, [{text:"Tutup", action:closeDialogue}], null);
-        } else {
+        } 
+        // --- NEW: PAPAN MISI GUILD (BOUNTY) ---
+        else if (obj.id === 'guild_board') {
+            handleGuildMissions();
+        }
+        else {
             // Sign biasa tetap pakai toast
             showToast(obj.text);
         }
@@ -15697,12 +16146,16 @@ function handleFaint() {
         const penalty = 500;
         STATE.player.money = Math.max(0, STATE.player.money - penalty);
         
-        // Respawn at Clinic
-        STATE.location = 'village';
-        STATE.player.x = 20 * TILE_SIZE; // Depan klinik
-        STATE.player.y = 19 * TILE_SIZE;
+        // Respawn at Clinic (UPDATE: DI DALAM KLINIK - SAMPING KASUR)
+        // Posisi sebelumnya: Village (Luar) -> Depan Pintu (Sering salah masuk)
+        // Posisi Baru: clinic_interior -> Tile (10, 8) (Samping Bed Kanan, Area Kosong)
+        STATE.location = 'clinic_interior';
+        STATE.player.x = 10 * TILE_SIZE; 
+        STATE.player.y = 8 * TILE_SIZE;
+        STATE.player.direction = 'left'; // Menghadap ruangan
 
-        clearSpawnZone('village', 20, 19);
+        // Pastikan area spawn bersih (walaupun (10,8) diset kosong)
+        clearSpawnZone('clinic_interior', 10, 8);
 
         randomizeWeather();
         manualSave();
@@ -15720,6 +16173,11 @@ function handleFaint() {
             const year = Math.floor(totalDays / (DAYS_PER_SEASON * 4)) + 1;
             document.getElementById('full-date-display').innerText = `${currentDayName}, D${(totalDays % DAYS_PER_SEASON) + 1} ${STATE.season.toUpperCase()} Y${year}`;
             document.getElementById('clock-display').innerText = "08:00";
+
+            // Tambahkan Dialog Dokter agar lebih imersif
+            setTimeout(() => {
+                 showDialogue("DR. BUDI", "Kamu pingsan karena kelelahan kemarin. Warga membawamu ke sini.\n\nSaya sudah merawatmu. Istirahatlah yang cukup dan jangan memaksakan diri ya.", [{text:"Terima kasih Dok", action:closeDialogue}], 'images/lover1boy.png');
+            }, 500);
 
             updateHUDInfo();
             STATE.screen = 'play'; 
@@ -16683,9 +17141,9 @@ function draw() {
                             ctx.fillStyle = '#fef3c7'; // Cream wall
                             ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                         }
-                    } else if (t === 10) { // Floor (Pakai Lantai Kayu)
-                        if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
-                            ctx.drawImage(wallAssets.schoolFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else if (t === 10) { // Floor (UPDATE: Pakai Lantai Mentor)
+                        if (mentorAssets.floor.complete && mentorAssets.floor.naturalWidth !== 0) {
+                            ctx.drawImage(mentorAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                         } else {
                             ctx.fillStyle = '#78350f'; 
                             ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -16702,9 +17160,9 @@ function draw() {
                             ctx.fillStyle = '#e2e8f0'; // Slate white
                             ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                         }
-                    } else if (t === 10) { // Floor
-                        if (wallAssets.guildFloor.complete && wallAssets.guildFloor.naturalWidth !== 0) {
-                            ctx.drawImage(wallAssets.guildFloor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE); // Lantai agak kusam
+                    } else if (t === 10) { // Floor (UPDATE: Pakai Lantai Mentor)
+                        if (mentorAssets.floor.complete && mentorAssets.floor.naturalWidth !== 0) {
+                            ctx.drawImage(mentorAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE); 
                         } else {
                             ctx.fillStyle = '#b45309'; 
                             ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -17536,6 +17994,14 @@ function drawObject(ctx, o) {
                 // NEW: FALLBACK VAS MENTOR (Vas Biru Elegan)
                 else if (src.includes('vasmentor')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTEwIDI0IEwxMCAxMiBDMTAgNiAyMiA2IDIyIDEyIEwyMiAyNCBDMjIgMzAgMTAgMzAgMTAgMjQgWiIgZmlsbD0iIzNiODJmNiIgc3Ryb2tlPSIjMWQ0ZWQ4IiBzdHJva2Utd2lkdGg9IjIiLz48ZWxsaXBzZSBjeD0iMTYiIGN5PSI4IiByeD0iNCIgcnk9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
+                }
+                // NEW: FALLBACK TUMPUKAN KERTAS (Tumpukan Dokumen Putih)
+                else if (src.includes('tumpukankertas')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iNCIgeT0iMTIiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyMCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjEiLz48bGluZSB4MT0iOCIgeTE9IjE2IiB4Mj0iMjQiIHkyPSIxNiIgc3Ryb2tlPSIjMDAwIi8+PGxpbmUgeDE9IjgiIHkxPSIyMCIgeDI9IjI0IiB5Mj0iMjAiIHN0cm9rZT0iIzAwMCIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK FOTO MENTOR (Bingkai Foto Kayu)
+                else if (src.includes('fotomentor')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iNCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjI0IiBmaWxsPSIjOEU1NDJCIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjYiIHk9IjgiIHdpZHRoPSIyMCIgaGVpZ2h0PSIxNiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjQiIGZpbGw9IiM5NDkzOTgiLz48L3N2Zz4=';
                 }
                 // Fallback: RAK BUKU (Gambar Rak dengan Buku Warna-warni) - UPDATE: Tambahkan fallback untuk lemariobat dan rakmentor
                 else if (src.includes('rakbuku') || src.includes('lemariobat') || src.includes('rakmentor')) {
@@ -18386,11 +18852,11 @@ function renderInventory() {
         'zirah_legend': { name: 'Zirah Abadi', icon: '🛡️', desc: 'Armor Legendaris (Pasif: Def++).' },
         'cincin_legend': { name: 'Cincin Raja', icon: '💍', desc: 'Cincin Legendaris (Pasif: Gold++).' },
         
-        // NEW: ITEM BIBIT PERTANIAN
-        'bibit_padi': { name: 'Bibit Padi', icon: '🌾', desc: 'Tanam di lahan. Panen jadi Gabah/Beras.' },
-        'bibit_jagung': { name: 'Bibit Jagung', icon: '🌽', desc: 'Bibit jagung manis unggulan.' },
-        'bibit_tomat': { name: 'Bibit Tomat', icon: '🍅', desc: 'Cepat tumbuh dan segar.' },
-        'pupuk': { name: 'Pupuk', icon: '💩', desc: 'Mempercepat pertumbuhan tanaman.' },
+        // NEW: ITEM BIBIT PERTANIAN (UPDATE: DIBUAT CONSUMABLE)
+        'bibit_padi': { name: 'Bibit Padi', icon: '🌾', type: 'consumable', action: 'plant_padi', desc: 'Tanam di lahan. Panen jadi Gabah/Beras.' },
+        'bibit_jagung': { name: 'Bibit Jagung', icon: '🌽', type: 'consumable', action: 'plant_jagung', desc: 'Bibit jagung manis unggulan.' },
+        'bibit_tomat': { name: 'Bibit Tomat', icon: '🍅', type: 'consumable', action: 'plant_tomat', desc: 'Cepat tumbuh dan segar.' },
+        'pupuk': { name: 'Pupuk', icon: '💩', type: 'consumable', action: 'use_pupuk', desc: 'Mempercepat pertumbuhan tanaman.' },
 
         // NEW: ITEM CINCIN KAYU (ROLE FAMILY)
         'cincin_kayu': { name: 'Cincin Kayu', icon: '💍', desc: 'Cincin sederhana untuk melamar pasangan.' },
@@ -18504,36 +18970,92 @@ function useInventoryItem(id, action) {
     }
     // 3. MAKANAN & IKAN (FISH, BREAD, CHOCO)
     else if (action.startsWith('eat_')) {
-        // Cek perut penuh
-        if (STATE.player.energy >= 100) {
-            showToast("Perut kenyang! Tidak bisa makan.");
+        // ... kode makan yang sudah ada ...
+        // (Biarkan kode makan ini seperti semula, jangan dihapus)
+        // ...
+        consumed = true;
+    }
+
+    // --- [TAMBAHAN BARU] LOGIKA MENANAM BIBIT ---
+    else if (action.startsWith('plant_')) {
+        // 1. Cek Lokasi (Harus di Desa/Luar)
+        if (STATE.location !== 'village') {
+            showToast("Hanya bisa menanam di Luar Ruangan!");
             return;
         }
 
-        let amount = 0;
-        let msg = "";
+        // 2. Hitung Posisi Tile di Bawah Kaki Pemain
+        // (x+10, y+15 adalah titik tengah kaki player 20x20)
+        const tx = Math.floor((STATE.player.x + 10) / TILE_SIZE);
+        const ty = Math.floor((STATE.player.y + 15) / TILE_SIZE);
+        
+        // 3. Cek Apakah Berdiri di Atas Lahan Pertanian (Tile ID 5)
+        const map = maps['village'];
+        const tIdx = ty * map.w + tx;
+        if (map.tiles[tIdx] !== 5) {
+            showToast("Harus berdiri di Lahan Pertanian (Tanah Coklat)!");
+            return;
+        }
 
-        // --- UPDATE: Logika Makan Ikan Baru ---
-        if (action === 'eat_fish_small') { amount = 10; msg = "Makan Ikan Kecil"; }
-        else if (action === 'eat_fish_medium') { amount = 25; msg = "Makan Ikan Sedang"; }
-        else if (action === 'eat_fish_large') { amount = 50; msg = "Makan Ikan Besar"; }
-        else if (action === 'eat_fish_legend') { amount = 100; msg = "Makan Ikan Legendaris"; }
+        // 4. Cek Apakah Sudah Ada Tanaman di Sini
+        const farmKey = `${tx}_${ty}`;
         
-        // Legacy Items
-        else if (action === 'eat_fish') { amount = 15; msg = "Makan Ikan Bakar"; }
-        else if (action === 'eat_bread') { amount = 20; msg = "Makan Roti"; }
-        else if (action === 'eat_choco') { amount = 10; msg = "Ngemil Coklat"; }
+        // Safety init
+        if (!STATE.player.farming) STATE.player.farming = {};
+        
+        if (STATE.player.farming[farmKey]) {
+            showToast("Sudah ada tanaman di sini!");
+            return;
+        }
 
-        // Tambah Energi (Max 100)
-        STATE.player.energy = Math.min(100, STATE.player.energy + amount);
+        // 5. PROSES TANAM
+        // Ambil tipe tanaman dari action (contoh: 'plant_padi' -> 'padi')
+        const cropType = action.split('_')[1]; 
         
-        showToast(`🍽️ ${msg}: +${amount} Energi`);
-        spawnFloatingText(STATE.player.x, STATE.player.y - 30, `+${amount}⚡`, '#4ade80', 14);
+        STATE.player.farming[farmKey] = {
+            type: cropType,
+            stage: 1,       // 1 = Benih
+            watered: false  // Belum disiram
+        };
+
+        // Efek Visual & Audio
+        createParticle(tx * TILE_SIZE, ty * TILE_SIZE, '#4ade80'); // Partikel Hijau
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        showToast(`Berhasil menanam ${cropType.toUpperCase()}! 🌱`);
+
+        consumed = true; // Tandai item berhasil dipakai (untuk dikurangi)
         
-        if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // Suara makan
-        createParticle(STATE.player.x, STATE.player.y, '#4ade80');
-        consumed = true;
+        // Opsional: Tutup tas otomatis biar langsung kelihatan hasilnya
+        toggleInventory(); 
     }
+    // --- LOGIKA PUPUK (INSTANT GROW) ---
+    else if (action === 'use_pupuk') {
+        if (STATE.location !== 'village') {
+            showToast("Hanya bisa dipakai di ladang!");
+            return;
+        }
+        
+        const tx = Math.floor((STATE.player.x + 10) / TILE_SIZE);
+        const ty = Math.floor((STATE.player.y + 15) / TILE_SIZE);
+        const farmKey = `${tx}_${ty}`;
+        
+        if (STATE.player.farming && STATE.player.farming[farmKey]) {
+            const crop = STATE.player.farming[farmKey];
+            if (crop.stage < 3) {
+                crop.stage++; // Langsung tumbuh 1 tahap
+                showToast("Tanaman tumbuh instan! ✨");
+                createParticle(tx * TILE_SIZE, ty * TILE_SIZE, '#fbbf24');
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                consumed = true;
+                toggleInventory();
+            } else {
+                showToast("Tanaman sudah siap panen!");
+            }
+        } else {
+            showToast("Tidak ada tanaman di sini.");
+        }
+    }
+    // --- [AKHIR TAMBAHAN] ---
 
     // Kurangi Item jika berhasil dikonsumsi
     if(consumed && STATE.player.inventory[id] > 0) {
