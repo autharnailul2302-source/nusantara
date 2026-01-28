@@ -3969,6 +3969,14 @@ async function preloadAllGameAssets() {
         'images/arsiprekammedis.png',
         // NEW: ASSET KEBUN AYU
         'images/kebunayu.png',
+        // NEW: ASSET KASUR AYU
+        'images/kasurayaayu.png',
+        // NEW: ASSET LEMARI AYU
+        'images/lemariayaayu.png',
+        // NEW: ASSET MEJA AYU
+        'images/mejaayaayu.png',
+        // NEW: ASSET DAPUR AYU
+        'images/dapurayaayu.png',
         // NEW: ASSET KAIA & ANAK KECIL (TAMBAHAN MANUAL AGAR TIDAK HILANG)
         'images/kaia.png',
         'images/anakkecil1.png',
@@ -6938,15 +6946,15 @@ for(let i=0; i<10; i++) {
             {id: 'aya_twin', x: 4, y: 4, name: 'Aya (Kembaran)', imgSrc: 'images/aya.png', type: 'static', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
-            /* Kasur Ayu */
-            {x: 1, y: 2, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Ayu"},
+            /* Kasur Ayu - UPDATE: Menggunakan gambar khusus kasurayaayu.png */
+            {x: 1, y: 2, w: 3, h: 4, type: 'bed', icon: '🛏️', img: 'images/kasurayaayu.png', name: "Kasur Ayu"},
             
-            /* Dapur Sederhana */
-            {x: 11, y: 2, type: 'shelf', icon: '🍳', text: "Dapur: Bau kue labu yang enak."},
-            {x: 12, y: 2, type: 'shelf', icon: '🥘', text: "Panci Sup Sayur."},
-
-            /* Meja Makan Kecil */
-            {x: 11, y: 5, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/kursi.png'}, 
+            /* Dapur Sederhana - UPDATE: Menggunakan gambar khusus dapurayaayu.png */
+            /* Digabung menjadi satu objek besar (2x2) */
+            {x: 11, y: 2, w: 2, h: 2, type: 'shelf', icon: '🍳', img: 'images/dapurayaayu.png', text: "Dapur: Bau kue labu yang enak."},
+            
+            /* Meja Makan Kecil - UPDATE: Menggunakan gambar mejaayaayu.png */
+            {x: 11, y: 5, w: 2, h: 2, type: 'table', icon: '🪑', img: 'images/mejaayaayu.png'}, 
 
             /* Banyak Tanaman/Bunga (Ayu suka bunga) */
             {x: 1, y: 8, type: 'bookshelf', icon: '🌻', text: "Bunga Matahari", img: 'images/vasputih.png'},
@@ -6954,8 +6962,8 @@ for(let i=0; i<10; i++) {
             {x: 10, y: 8, type: 'bookshelf', icon: '🌷', text: "Tulip", img: 'images/vasputih.png'},
             {x: 12, y: 8, type: 'bookshelf', icon: '🌼', text: "Melati", img: 'images/vasputih.png'},
             
-            /* Lemari Pakaian */
-            {x: 4, y: 1, type: 'shelf', icon: '👗', text: "Lemari Pakaian Ayu"},
+            /* Lemari Pakaian - UPDATE: Menggunakan gambar khusus lemariayaayu.png */
+            {x: 4, y: 1, w: 2, h: 3, type: 'shelf', icon: '👗', img: 'images/lemariayaayu.png', text: "Lemari Pakaian Ayu"},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -17200,10 +17208,54 @@ function draw() {
 
                 // FIX: Menghapus syarat !isBgLoaded agar lahan pertanian selalu digambar
                 if(t===5) { 
+                    // NEW: Ambil Data Pertanian (Tilled/Crop)
+                    const farmKey = `${x}_${y}`;
+                    const farmData = STATE.player.farming ? STATE.player.farming[farmKey] : null;
+
                     // UPDATE: MENGGUNAKAN GAMBAR LAHAN LIAR (images/lahan-liar.png)
                     if (farmAssets.lahanLiar.complete && farmAssets.lahanLiar.naturalWidth !== 0) {
                         ctx.drawImage(farmAssets.lahanLiar, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                         
+                        // NEW: VISUAL TANAH GEMBUR (TILLED) - Overlay Gelap + Garis
+                        if (farmData && farmData.tilled) {
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // Overlay Gelap
+                            ctx.fillRect(x*TILE_SIZE + 2, y*TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+                            
+                            // Garis Bajak (Detail)
+                            ctx.fillStyle = 'rgba(60, 30, 10, 0.4)';
+                            ctx.fillRect(x*TILE_SIZE + 4, y*TILE_SIZE + 8, TILE_SIZE - 8, 2);
+                            ctx.fillRect(x*TILE_SIZE + 4, y*TILE_SIZE + 15, TILE_SIZE - 8, 2);
+                            ctx.fillRect(x*TILE_SIZE + 4, y*TILE_SIZE + 22, TILE_SIZE - 8, 2);
+                        }
+
+                        // NEW: VISUAL TANAMAN (CROP) & STATUS AIR
+                        if (farmData && farmData.type) {
+                            // Indikator Tanah Basah (Watered)
+                            if(farmData.watered) {
+                                ctx.fillStyle = 'rgba(56, 189, 248, 0.5)'; // Biru Transparan
+                                ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                            }
+
+                            // Ikon Tanaman Berdasarkan Stage
+                            const stage = farmData.stage || 1;
+                            let icon = '🌱'; // Stage 1 (Bibit)
+                            if (stage === 2) icon = '🌿'; // Stage 2 (Tumbuh)
+                            if (stage >= 3) { // Stage 3 (Siap Panen)
+                                if (farmData.type === 'padi') icon = '🌾';
+                                else if (farmData.type === 'jagung') icon = '🌽';
+                                else if (farmData.type === 'tomat') icon = '🍅';
+                            }
+                            
+                            ctx.font = '20px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            // Shadow biar jelas
+                            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                            ctx.fillText(icon, x*TILE_SIZE + 16, y*TILE_SIZE + 17);
+                            ctx.fillStyle = '#fff';
+                            ctx.fillText(icon, x*TILE_SIZE + 15, y*TILE_SIZE + 15);
+                        }
+
                         // Efek Salju di atas lahan saat Winter
                         if(STATE.season === 'winter') {
                              ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
@@ -18976,6 +19028,60 @@ function useInventoryItem(id, action) {
         consumed = true;
     }
 
+    // --- [TAMBAHAN BARU] LOGIKA MENCANGKUL (HOE) ---
+    else if (action === 'use_hoe') {
+        // 1. Cek Lokasi (Harus di Desa/Luar)
+        if (STATE.location !== 'village') {
+            showToast("Hanya bisa mencangkul di Luar Ruangan!");
+            return;
+        }
+
+        // 2. Cek Energi (Butuh 5)
+        if (STATE.player.energy < 5) {
+            showToast("Energi tidak cukup! (Butuh 5)");
+            return;
+        }
+
+        // 3. Hitung Posisi Tile di Bawah Kaki Pemain
+        const tx = Math.floor((STATE.player.x + 10) / TILE_SIZE);
+        const ty = Math.floor((STATE.player.y + 15) / TILE_SIZE);
+        const map = maps['village'];
+        const tIdx = ty * map.w + tx;
+
+        // 4. Cek Apakah Berdiri di Lahan Pertanian (Tile ID 5)
+        if (map.tiles[tIdx] !== 5) {
+            showToast("Ini bukan lahan pertanian! Cari tanah coklat.");
+            return;
+        }
+
+        // 5. Cek Status Tanah
+        const farmKey = `${tx}_${ty}`;
+        if (!STATE.player.farming) STATE.player.farming = {};
+        
+        const crop = STATE.player.farming[farmKey];
+
+        if (crop && (crop.tilled || crop.type)) {
+            showToast("Tanah sudah gembur atau ada tanaman.");
+        } else {
+            // PROSES CANGKUL BERHASIL
+            STATE.player.energy -= 5;
+            
+            // Set status tanah jadi tilled (gembur)
+            STATE.player.farming[farmKey] = { tilled: true };
+            
+            // Efek Visual & Audio
+            createParticle(tx * TILE_SIZE, ty * TILE_SIZE, '#d97706'); // Partikel Tanah Coklat
+            if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+            showToast("Tanah berhasil digemburkan! ⛏️");
+            
+            // Simpan Progress
+            manualSave();
+        }
+        
+        // Cangkul adalah ALAT, jadi tidak dikonsumsi (consumed = false)
+        return; 
+    }
+
     // --- [TAMBAHAN BARU] LOGIKA MENANAM BIBIT ---
     else if (action.startsWith('plant_')) {
         // 1. Cek Lokasi (Harus di Desa/Luar)
@@ -18997,13 +19103,24 @@ function useInventoryItem(id, action) {
             return;
         }
 
-        // 4. Cek Apakah Sudah Ada Tanaman di Sini
+        // 4. Cek Status Tanah (Harus Tilled & Belum Ada Tanaman)
         const farmKey = `${tx}_${ty}`;
         
         // Safety init
         if (!STATE.player.farming) STATE.player.farming = {};
         
-        if (STATE.player.farming[farmKey]) {
+        // Ambil data tanah saat ini
+        const farmData = STATE.player.farming[farmKey];
+
+        // UPDATE: VALIDASI TANAH GEMBUR
+        // Jika data tanah tidak ada ATAU belum dicangkul (tilled), tolak.
+        if (!farmData || !farmData.tilled) {
+             showToast("Tanah harus dicangkul dulu! (Gunakan Cangkul ⛏️)");
+             return;
+        }
+        
+        // Jika sudah ada tanaman (type terisi), tolak.
+        if (farmData.type) {
             showToast("Sudah ada tanaman di sini!");
             return;
         }
@@ -19012,11 +19129,10 @@ function useInventoryItem(id, action) {
         // Ambil tipe tanaman dari action (contoh: 'plant_padi' -> 'padi')
         const cropType = action.split('_')[1]; 
         
-        STATE.player.farming[farmKey] = {
-            type: cropType,
-            stage: 1,       // 1 = Benih
-            watered: false  // Belum disiram
-        };
+        // Update data tanah yang sudah ada (pertahankan status tilled)
+        farmData.type = cropType;
+        farmData.stage = 1;       // 1 = Benih
+        farmData.watered = false; // Reset siram saat tanam baru
 
         // Efek Visual & Audio
         createParticle(tx * TILE_SIZE, ty * TILE_SIZE, '#4ade80'); // Partikel Hijau
