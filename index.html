@@ -1393,7 +1393,10 @@
             border: 1px solid rgba(255,255,255,0.1);
             border-top: 2px solid var(--accent);
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            width: 380px;
+            
+            /* UPDATE: OPTIMASI LEBAR UNTUK HP (RESPONSIF) */
+            width: 90%; /* Menggunakan persentase */
+            max-width: 380px; /* Batas maksimal */
             
             /* FIX: Agar form bisa di-scroll di Mobile saat keyboard muncul */
             max-height: 85vh; /* Kurangi sedikit agar pas */
@@ -1686,8 +1689,20 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        .dash-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 25px; border: 1px solid #e2e8f0; }
-        .dash-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px; }
+        .dash-card { 
+            background: white; padding: 25px; border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 25px; 
+            border: 1px solid #e2e8f0; 
+            
+            /* UPDATE: OPTIMASI TABEL ADMIN UNTUK HP */
+            overflow-x: auto; /* Scroll samping jika tabel terlalu lebar */
+            -webkit-overflow-scrolling: touch;
+        }
+        .dash-table { 
+            width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 15px; 
+            /* Pastikan tabel tidak terlalu gepeng di HP */
+            min-width: 600px; 
+        }
         .dash-table th { text-align: left; padding: 15px; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 12px; }
         .dash-table td { padding: 15px; border-bottom: 1px solid #e2e8f0; }
         
@@ -2191,6 +2206,8 @@ button, .round-btn, .d-btn, .auth-btn {
             <div class="login-tabs">
                 <button class="tab-btn active" id="tab-siswa" onclick="switchRole('siswa')">SISWA</button>
                 <button class="tab-btn" id="tab-guru" onclick="switchRole('guru')">GURU</button>
+                <!-- NEW: TAB ADMIN -->
+                <button class="tab-btn" id="tab-admin" onclick="switchRole('admin')">ADMIN</button>
             </div>
             
             <div id="auth-header" style="margin-bottom:15px; font-weight:bold; color:#fff; font-size: 16px; letter-spacing: 1px;">LOGIN ACCOUNT</div>
@@ -2227,6 +2244,19 @@ button, .round-btn, .d-btn, .auth-btn {
                 <button type="submit" class="auth-btn">ACCESS DASHBOARD</button>
             </form>
 
+            <!-- NEW: FORM ADMIN -->
+            <form id="form-admin" style="display:none;" onsubmit="event.preventDefault(); handleAuth('admin', this.querySelector('.auth-btn'))">
+                <div style="background:rgba(220, 38, 38, 0.1); border:1px solid #dc2626; padding:10px; margin-bottom:10px; font-size:11px; color:#fca5a5; border-radius:4px;">
+                    ⚠️ Area Terbatas. Hanya untuk Administrator Sistem.
+                </div>
+                <input type="text" id="admin-user" class="form-input" placeholder="Username Admin">
+                <div class="form-input-group">
+                    <input type="password" id="admin-pass" class="form-input" placeholder="Password Admin">
+                    <span class="password-toggle" id="toggle-admin" onclick="togglePassword('admin-pass', 'toggle-admin')">👁️</span>
+                </div>
+                <button type="submit" class="auth-btn" style="background: linear-gradient(90deg, #dc2626, #b91c1c); box-shadow: 0 0 15px rgba(220, 38, 38, 0.4);">LOGIN SYSTEM</button>
+            </form>
+
             <div class="auth-switch" onclick="toggleAuthMode()">Create New Account</div>
             
             <div style="margin-top: 20px; text-align: center;">
@@ -2239,22 +2269,7 @@ button, .round-btn, .d-btn, .auth-btn {
     <div id="teacher-dashboard">
         <div class="dash-container">
             <div class="dash-sidebar">
-                <div class="dash-title">TEACHER<br>COMMAND CENTER</div>
-                <!-- NEW: Status Koneksi di Sidebar -->
-                <div id="dash-connection-status" style="text-align:center; font-size:10px; margin-bottom:10px; padding:8px; background:rgba(255,255,255,0.05); border-radius:6px; font-weight:bold;">
-                    Connecting...
-                </div>
-
-                <!-- NEW: TOMBOL GANTI SUMBER DATA (SOURCE TOGGLE) -->
-                <button id="dash-source-btn" onclick="toggleDashboardSource()" style="width: calc(100% - 40px); margin: 0 20px 10px 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; font-size: 10px; padding: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; font-family: 'Exo 2'; display:flex; align-items:center; justify-content:center; gap:6px;">
-                    🌐 Source: AUTO
-                </button>
-
-                <!-- NEW: TOMBOL MANUAL REFRESH (Untuk Guru) -->
-                <button id="dash-refresh-btn" onclick="refreshDashboardData()" style="width: calc(100% - 40px); margin: 0 20px 20px 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; font-size: 11px; padding: 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; font-family: 'Exo 2'; display:flex; align-items:center; justify-content:center; gap:6px;">
-                    🔄 Refresh Data
-                </button>
-
+                <div class="dash-title" id="dash-main-title">TEACHER<br>COMMAND CENTER</div>
                 <ul class="dash-nav">
                     <li onclick="showDashPage('monitoring')" class="active">📡 Live Monitoring</li>
                     <!-- NEW: DATABASE AKUN MENU -->
@@ -4115,14 +4130,22 @@ async function preloadAllGameAssets() {
 // UPDATE: FUNGSI INIT PERTAMA KALI
 function startGameSequence() {
     try {
-        // Cek sesi login terakhir untuk prefill (tanpa logic redirect dulu)
+        // Cek sesi login terakhir untuk prefill
         try {
-            const lastUser = localStorage.getItem(SESSION_KEY);
+            let lastUser = localStorage.getItem(SESSION_KEY);
             if(lastUser) {
-                const elSiswa = document.getElementById('siswa-email');
-                const elGuru = document.getElementById('guru-email');
-                if(elSiswa) elSiswa.value = lastUser;
-                if(elGuru) elGuru.value = lastUser;
+                // FIX: Jika data berupa JSON (Sesi Admin Lama), HAPUS dan jangan tampilkan agar tidak error
+                if (lastUser.trim().startsWith('{')) {
+                    localStorage.removeItem(SESSION_KEY); // Bersihkan sesi rusak
+                    lastUser = null; 
+                }
+
+                if(lastUser) {
+                    const elSiswa = document.getElementById('siswa-email');
+                    const elGuru = document.getElementById('guru-email');
+                    if(elSiswa) elSiswa.value = lastUser;
+                    if(elGuru) elGuru.value = lastUser;
+                }
             }
         } catch(e) { console.warn("Local storage/DOM Access Error:", e); }
 
@@ -4286,15 +4309,43 @@ function togglePassword(fieldId, iconId) {
 
 function checkSession(titleEl) {
     try {
-        const sessionEmail = localStorage.getItem(SESSION_KEY);
-        if(sessionEmail) {
-            const dbLocal = DataService.getDB();
-            const user = dbLocal[sessionEmail];
-            if(user) {
-                DataService.user = { email: sessionEmail, ...user };
-                if(user.role === 'guru') {
+        const sessionData = localStorage.getItem(SESSION_KEY);
+        if(sessionData) {
+            // FIX: Legacy Support - Jika masih ada user yang menyimpan JSON, handle gracefuly
+            // Tapi idealnya kita sudah bersihkan di startGameSequence
+            if (sessionData.trim().startsWith('{')) {
+                try {
+                    const adminUser = JSON.parse(sessionData);
+                    // Migrasi otomatis ke format baru (String Email)
+                    localStorage.setItem(SESSION_KEY, adminUser.email || "admin@system.local");
+                    DataService.user = adminUser;
                     initTeacherDashboard();
-                } else {
+                    return;
+                } catch(e) { 
+                    localStorage.removeItem(SESSION_KEY); // Corrupt, hapus
+                    return;
+                }
+            }
+
+            // --- LOGIKA STANDAR (Admin/Guru/Siswa sekarang diperlakukan sama) ---
+            const dbLocal = DataService.getDB();
+            const user = dbLocal[sessionData];
+            
+            if(user) {
+                DataService.user = { email: sessionData, ...user };
+                
+                // Cek Role untuk Redirect
+                if (user.role === 'admin') {
+                    // Sembunyikan layar lain
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('title-screen').classList.add('hidden');
+                    initTeacherDashboard();
+                } 
+                else if(user.role === 'guru') {
+                    initTeacherDashboard();
+                } 
+                else {
+                    // Logic Siswa
                     document.getElementById('welcome-name').innerText = user.name || "Siswa";
                     document.getElementById('welcome-class').innerText = user.details || "Umum";
                     if(user.mentor) document.getElementById('welcome-mentor').innerText = "Mentor Active"; 
@@ -4716,19 +4767,62 @@ const DataService = {
         }
     },
 
+    /* NEW: FUNGSI HAPUS AKUN SISWA (ADMIN - PERMANEN) */
+    adminDeleteStudent: async function(studentEmail) {
+        await this.init(true);
+
+        if(this.mode === 'firebase' && db) {
+            try {
+                // Hapus dokumen user sepenuhnya dari koleksi 'users'
+                await db.collection('users').doc(studentEmail).delete();
+                return { success: true, type: 'cloud' };
+            } catch (e) {
+                console.error("Gagal hapus akun cloud:", e);
+                return { success: false, msg: "Gagal menghapus dari Cloud: " + e.message };
+            }
+        } 
+        else {
+            // Hapus dari Local Storage
+            const dbLocal = this.getDB();
+            if(dbLocal[studentEmail]) {
+                delete dbLocal[studentEmail]; // Hapus key email sepenuhnya
+                this.saveDB(dbLocal);
+                return { success: true, type: 'local' };
+            }
+            return { success: false, msg: "User tidak ditemukan di Local Storage." };
+        }
+    },
+
     getAllStudents: async function() {
+        // UPDATE: Logika pengambilan data berdasarkan Role User yang Login
+        // Jika Admin: Ambil SEMUA user (Guru & Siswa)
+        // Jika Guru: Ambil HANYA Siswa
+        const isAdmin = this.user && this.user.role === 'admin';
+
         if(this.mode === 'local') {
             const dbLocal = this.getDB();
-            return Object.values(dbLocal).filter(u => u.role === 'siswa');
+            if (isAdmin) {
+                return Object.values(dbLocal); // Semua data lokal
+            } else {
+                return Object.values(dbLocal).filter(u => u.role === 'siswa');
+            }
         } else {
             try {
-                const snapshot = await db.collection('users').where('role', '==', 'siswa').get();
+                let query = db.collection('users');
+                
+                // Jika bukan admin (berarti guru), filter hanya siswa
+                if (!isAdmin) {
+                    query = query.where('role', '==', 'siswa');
+                }
+
+                const snapshot = await query.get();
                 return snapshot.docs.map(doc => {
                     return { email: doc.id, ...doc.data() };
                 });
             } catch (e) {
-                console.error("Gagal mengambil data siswa:", e);
+                console.error("Gagal mengambil data users:", e);
                 const dbLocal = this.getDB();
+                if (isAdmin) return Object.values(dbLocal);
                 return Object.values(dbLocal).filter(u => u.role === 'siswa');
             }
         }
@@ -5118,34 +5212,47 @@ const DataService = {
         const statusEl = document.getElementById('dash-connection-status');
         if(statusEl) {
             if(useCloud) {
-                statusEl.innerHTML = '🟢 CLOUD ONLINE<br><span style="font-weight:normal; opacity:0.8;">Data Seluruh Siswa (Server)</span>';
+                statusEl.innerHTML = '🟢 CLOUD ONLINE<br><span style="font-weight:normal; opacity:0.8;">Data Server</span>';
                 statusEl.style.color = '#4ade80'; // Hijau
                 statusEl.style.border = '1px solid #22c55e';
             } else {
-                statusEl.innerHTML = '🟠 LOCAL VIEW<br><span style="font-weight:normal; opacity:0.8;">Hanya Data Perangkat Ini</span>';
+                statusEl.innerHTML = '🟠 LOCAL VIEW<br><span style="font-weight:normal; opacity:0.8;">Data Lokal</span>';
                 statusEl.style.color = '#fbbf24'; // Kuning/Orange
                 statusEl.style.border = '1px solid #f59e0b';
             }
         }
 
+        const isAdmin = this.user && this.user.role === 'admin';
+
         if (!useCloud) {
             // Fallback untuk mode offline/lokal: Gunakan Polling Interval
             const interval = setInterval(() => {
                 const dbLocal = this.getDB();
-                const students = Object.values(dbLocal).filter(u => u.role === 'siswa');
+                let users = Object.values(dbLocal);
+                
+                // Filter jika bukan admin
+                if (!isAdmin) {
+                    users = users.filter(u => u.role === 'siswa');
+                }
+
                 // Tambahkan flag source untuk UI
-                students.forEach(s => s._source = 'local');
-                onUpdate(students);
+                users.forEach(s => s._source = 'local');
+                onUpdate(users);
             }, 2000); // Update tiap 2 detik
             return () => clearInterval(interval); // Return fungsi unsubscribe
         } else {
             // Firebase Real-time Listener (onSnapshot)
-            // Ini akan mentrigger callback secara instan setiap ada perubahan data di DB
             try {
-                return db.collection('users').where('role', '==', 'siswa')
-                    .onSnapshot((snapshot) => {
-                        const students = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data(), _source: 'cloud' }));
-                        onUpdate(students);
+                let query = db.collection('users');
+                
+                // Filter query jika bukan admin
+                if (!isAdmin) {
+                    query = query.where('role', '==', 'siswa');
+                }
+
+                return query.onSnapshot((snapshot) => {
+                        const users = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data(), _source: 'cloud' }));
+                        onUpdate(users);
                     }, (error) => {
                         console.error("Monitoring Error:", error);
                         // Jika error permission/koneksi, fallback ke lokal
@@ -5176,18 +5283,31 @@ function switchRole(role) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('tab-' + role).classList.add('active');
     
-    // 2. Ganti Form yang Tampil (Siswa vs Guru)
-    if (role === 'siswa') {
-        document.getElementById('form-siswa').style.display = 'block';
-        document.getElementById('form-guru').style.display = 'none';
-    } else {
-        document.getElementById('form-siswa').style.display = 'none';
-        document.getElementById('form-guru').style.display = 'block';
-    }
+    // 2. Ganti Form yang Tampil (Siswa vs Guru vs Admin)
+    document.getElementById('form-siswa').style.display = 'none';
+    document.getElementById('form-guru').style.display = 'none';
+    document.getElementById('form-admin').style.display = 'none';
     
-    // 3. Pastikan Field Register Tampil/Sembunyi Sesuai Mode Saat Ini
-    const display = authMode === 'register' ? 'block' : 'none';
-    document.getElementById('register-fields-' + role).style.display = display;
+    document.getElementById('form-' + role).style.display = 'block';
+    
+    // 3. Atur Visibilitas Tombol Register (Admin tidak bisa register via UI)
+    const authSwitch = document.querySelector('.auth-switch');
+    if (role === 'admin') {
+        authSwitch.style.display = 'none';
+    } else {
+        authSwitch.style.display = 'block';
+        // Pastikan Field Register Tampil/Sembunyi Sesuai Mode Saat Ini
+        const display = authMode === 'register' ? 'block' : 'none';
+        
+        // Hide all register fields first
+        document.getElementById('register-fields-siswa').style.display = 'none';
+        document.getElementById('register-fields-guru').style.display = 'none';
+        
+        // Show relevant one
+        if(role !== 'admin') {
+            document.getElementById('register-fields-' + role).style.display = display;
+        }
+    }
     
     // 4. Jika sedang mode Register Siswa, muat data Guru Pendamping
     if(role === 'siswa' && authMode === 'register') {
@@ -5284,6 +5404,87 @@ async function handleAuth(role, btnElement) {
     try {
         // FITUR OTOMATIS FULLSCREEN: Trigger saat klik Login juga (backup)
         toggleFullScreen();
+
+        // FIX: Init DataService SEBELUM logic apapun agar db firebase siap
+        await DataService.init(true);
+
+        // --- NEW: HANDLE ADMIN LOGIN (ONLINE SYNC VERSION) ---
+        if (role === 'admin') {
+            const u = document.getElementById('admin-user').value;
+            const p = document.getElementById('admin-pass').value;
+            
+            if(btnElement) {
+                originalText = btnElement.innerText;
+                btnElement.disabled = true;
+                btnElement.innerText = "⏳ Sinkronisasi Cloud...";
+                btnElement.style.opacity = "0.7";
+            }
+
+            // SIMULASI DELAY LOGIN
+            await new Promise(r => setTimeout(r, 800));
+
+            // 1. HARDCODED CREDENTIALS CHECK (Kunci Pintu Depan)
+            if (u === 'Admin1988' && p === 'Sedayu@123') {
+                
+                // 2. Email Khusus untuk Database Cloud
+                const adminEmail = "admin@system.local";
+                let finalAdminData = null;
+                let syncStatus = "OFFLINE";
+
+                // 3. COBA TARIK DATA DARI CLOUD (SYNC DOWN)
+                // Kita gunakan DataService.login untuk cek apakah admin sudah terdaftar di Firebase
+                const cloudResult = await DataService.login(adminEmail, p);
+
+                if (cloudResult.success) {
+                    console.log("✅ Admin ditemukan di Cloud. Menggunakan data server.");
+                    finalAdminData = cloudResult.user;
+                    syncStatus = "ONLINE (Terhubung)";
+                } else {
+                    console.log("⚠️ Admin belum ada di Cloud / Gagal tarik. Membuat data baru...");
+                    
+                    // 4. JIKA BELUM ADA DI CLOUD, BUAT BARU (SYNC UP)
+                    finalAdminData = { 
+                        name: "Super Administrator", 
+                        role: "admin", 
+                        email: adminEmail, 
+                        details: "System Root",
+                        password: p, // Simpan password agar bisa login via DataService nanti
+                        saveData: null,
+                        lastActive: Date.now()
+                    };
+
+                    // Upload ke Firebase jika koneksi tersedia
+                    if (DataService.mode === 'firebase' && typeof db !== 'undefined') {
+                        try {
+                            await db.collection('users').doc(adminEmail).set(finalAdminData, { merge: true });
+                            console.log("✅ Data Admin Berhasil Di-upload ke Cloud.");
+                            syncStatus = "ONLINE (Baru Dibuat)";
+                        } catch(e) {
+                            console.error("Gagal upload admin:", e);
+                            syncStatus = "OFFLINE (Gagal Upload)";
+                        }
+                    }
+                }
+                
+                // 5. SIMPAN KE DATABASE LOKAL BROWSER (Agar sinkron kiri-kanan)
+                const dbLocal = DataService.getDB();
+                dbLocal[adminEmail] = finalAdminData;
+                DataService.saveDB(dbLocal);
+
+                // 6. SET SESI AKTIF
+                localStorage.setItem(SESSION_KEY, adminEmail);
+                DataService.user = finalAdminData;
+                
+                alert(`✅ LOGIN ADMIN BERHASIL!\nStatus: ${syncStatus}\n\nData Admin kini tersinkronisasi.`);
+                document.getElementById('login-screen').style.display = 'none';
+                
+                // Masuk ke Dashboard
+                initTeacherDashboard();
+            } else {
+                alert("❌ AKSES DITOLAK!\nUsername atau Password salah.");
+            }
+            return; // Stop di sini untuk admin
+        }
 
         const email = document.getElementById(role + '-email').value;
         const pass = document.getElementById(role + '-pass').value;
@@ -5391,6 +5592,20 @@ async function handleAuth(role, btnElement) {
 async function initTeacherDashboard() {
     document.getElementById('teacher-dashboard').style.display = 'block';
     
+    const user = DataService.user;
+    const titleEl = document.getElementById('dash-main-title');
+    
+    // CUSTOMIZE DASHBOARD TITLE BASED ON ROLE
+    if (user && user.role === 'admin') {
+        titleEl.innerHTML = "ADMINISTRATOR<br>CONTROL PANEL";
+        titleEl.style.color = "#ef4444"; // Merah
+        titleEl.style.textShadow = "0 0 10px rgba(239, 68, 68, 0.3)";
+    } else {
+        titleEl.innerHTML = "TEACHER<br>COMMAND CENTER";
+        titleEl.style.color = "#fbbf24"; // Emas
+        titleEl.style.textShadow = "none";
+    }
+
     // Tampilkan status connecting agar tidak bingung
     const statusEl = document.getElementById('dash-connection-status');
     if(statusEl) statusEl.innerHTML = 'Connecting to Cloud...';
@@ -5528,61 +5743,111 @@ function showDashPage(page) {
 
 // --- NEW: RENDER DAFTAR AKUN (DATABASE) ---
 function renderAccountsList() {
-    const students = latestStudentData || []; // Gunakan Cache dengan Safety default array kosong
+    const users = latestStudentData || []; // Gunakan Cache (sekarang berisi semua user jika admin)
     const tbody = document.getElementById('accounts-body');
-    if (!tbody) return; // Safety check jika elemen belum ada
+    if (!tbody) return; 
     
     tbody.innerHTML = '';
     
-    if (students.length === 0) {
-        // UPDATE: Pesan lebih informatif mencantumkan Sumber Data
+    // Update Header Tabel khusus Admin
+    const thead = document.querySelector('#page-accounts thead tr');
+    if (thead) {
+        if (DataService.user.role === 'admin') {
+            thead.innerHTML = `
+                <th style="width: 40px;">No</th>
+                <th>Nama Pengguna</th>
+                <th>Email / ID</th>
+                <th>Role & Status</th>
+                <th>Detail Info</th>
+                <th>Aksi</th>
+            `;
+        } else {
+            // Header Guru
+            thead.innerHTML = `
+                <th style="width: 40px;">No</th>
+                <th>Nama Lengkap</th>
+                <th>Email (ID Login)</th>
+                <th>Kelas / Detail</th>
+                <th>Mentor</th>
+                <th>Status Data</th>
+            `;
+        }
+    }
+    
+    if (users.length === 0) {
         const sourceMode = DataService.dashboardSource === 'auto' ? (navigator.onLine ? 'CLOUD' : 'LOCAL') : DataService.dashboardSource.toUpperCase();
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">
-            Belum ada data siswa ditemukan (Mode: ${sourceMode}).<br>
-            <span style="font-size:10px;">Pastikan Siswa dan Guru terhubung di jaringan yang sama (Online/Offline).</span>
+            Belum ada data ditemukan (Mode: ${sourceMode}).
         </td></tr>`;
         return;
     }
 
     try {
-        // Urutkan berdasarkan Nama (A-Z) dengan Safety Check (Anti-Crash jika nama kosong)
-        const sortedStudents = [...students].sort((a, b) => {
-            const nameA = (a.name || "").toUpperCase(); // Fallback string kosong
+        const sortedUsers = [...users].sort((a, b) => {
+            // Sort by Role first (Admin > Guru > Siswa), then Name
+            const roleScore = (r) => r === 'admin' ? 3 : (r === 'guru' ? 2 : 1);
+            const scoreA = roleScore(a.role);
+            const scoreB = roleScore(b.role);
+            
+            if (scoreA !== scoreB) return scoreB - scoreA; // Descending (Admin top)
+            
+            const nameA = (a.name || "").toUpperCase();
             const nameB = (b.name || "").toUpperCase();
             if (nameA < nameB) return -1;
             if (nameA > nameB) return 1;
             return 0;
         });
 
-        sortedStudents.forEach((s, index) => {
-            // Safety Variables untuk mencegah render undefined
-            const safeName = s.name || "(Tanpa Nama)";
-            const safeEmail = s.email || "-";
-            const safeDetails = s.details || "-";
-            const safeMentor = s.mentor || '<span style="color:#cbd5e1">Tidak Ada</span>';
+        sortedUsers.forEach((u, index) => {
+            const safeName = u.name || "(Tanpa Nama)";
+            const safeEmail = u.email || "-";
+            
+            let detailsHtml = "-";
+            let roleHtml = "";
+            let actionHtml = "";
 
-            // Cek status data permainan
-            let statusHtml = '<span class="status-badge" style="background:#e2e8f0; color:#64748b;">Belum Main</span>';
-            if (s.saveData) {
-                const lvl = s.saveData.level || 1;
-                const role = (s.saveData.role && s.saveData.role !== 'none') ? s.saveData.role.toUpperCase() : 'NOVICE';
-                statusHtml = `<span class="status-badge" style="background:#dcfce7; color:#166534;">Aktif (Lv ${lvl})</span>`;
+            // Styling berdasarkan Role
+            if (u.role === 'admin') {
+                roleHtml = `<span style="background:#fee2e2; color:#b91c1c; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px; border:1px solid #fca5a5;">ADMIN</span>`;
+                detailsHtml = `<span style="color:#94a3b8">System Access</span>`;
+            } 
+            else if (u.role === 'guru') {
+                roleHtml = `<span style="background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px; border:1px solid #93c5fd;">MENTOR</span>`;
+                detailsHtml = `NIP: ${u.details || '-'}<br><small>${u.school || ''}</small>`;
+                if (DataService.user.role === 'admin') {
+                    actionHtml = `<button class="auth-btn" style="width:auto; padding:4px 8px; font-size:9px; background:#475569;" onclick="alert('Fitur Edit Guru Segera Hadir')">EDIT</button>`;
+                }
+            } 
+            else { // Siswa
+                // Cek status main
+                let statusMain = '<span class="status-badge" style="background:#e2e8f0; color:#64748b;">Belum Main</span>';
+                if (u.saveData) {
+                    const lvl = u.saveData.level || 1;
+                    const roleInGame = (u.saveData.role && u.saveData.role !== 'none') ? u.saveData.role.toUpperCase() : 'NOVICE';
+                    statusMain = `<span class="status-badge" style="background:#dcfce7; color:#166534;">Lv ${lvl} ${roleInGame}</span>`;
+                }
+
+                roleHtml = `<span style="background:#f0fdf4; color:#15803d; padding:2px 6px; border-radius:4px; font-size:10px; border:1px solid #86efac;">SISWA</span><br>${statusMain}`;
+                detailsHtml = `Kelas: ${u.details || '-'}<br><small>Mentor: ${u.mentor || '-'}</small>`;
+                
+                // Tombol Aksi untuk Admin/Guru
+                actionHtml = `<button class="auth-btn" style="width:auto; padding:4px 8px; font-size:9px; margin:0; background:#475569;" onclick="inspectStudentData('${encodeURIComponent(JSON.stringify(u))}')">🔍 DATA</button>`;
             }
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${index + 1}</td>
                 <td><strong>${safeName}</strong></td>
-                <td style="font-family:monospace; color:#475569;">${safeEmail}</td>
-                <td>${safeDetails}</td>
-                <td style="font-size:11px;">${safeMentor}</td>
-                <td>${statusHtml}</td>
+                <td style="font-family:monospace; color:#475569; font-size:11px;">${safeEmail}</td>
+                <td>${roleHtml}</td>
+                <td style="font-size:11px;">${detailsHtml}</td>
+                <td>${actionHtml}</td>
             `;
             tbody.appendChild(tr);
         });
     } catch (e) {
         console.error("Render Error:", e);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">Terjadi kesalahan saat menampilkan data.<br><small>${e.message}</small></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">Error rendering list.</td></tr>`;
     }
 }
 
@@ -6045,45 +6310,65 @@ function renderResetPage() { // Hapus async
             <td><span class="status-badge" style="background:#f1f5f9; color:#475569;">${role}</span></td>
             <td>${progress}</td>
             <td>
-                <button class="auth-btn" 
-                    style="width:auto; padding:6px 12px; font-size:10px; margin:0; background:linear-gradient(90deg, #ef4444, #b91c1c); border:1px solid #7f1d1d;" 
-                    onclick="confirmResetStudent('${s.email}', '${s.name}')">
-                    🗑️ RESET DATA
-                </button>
+                <div style="display:flex; gap:5px;">
+                    <button class="auth-btn" 
+                        style="width:auto; padding:6px 12px; font-size:10px; margin:0; background:linear-gradient(90deg, #f59e0b, #d97706); border:1px solid #b45309;" 
+                        onclick="confirmResetStudent('${s.email}', '${s.name}')" title="Hapus Progress (Mulai Ulang)">
+                        🔄 RESET
+                    </button>
+                    <button class="auth-btn" 
+                        style="width:auto; padding:6px 12px; font-size:10px; margin:0; background:linear-gradient(90deg, #ef4444, #b91c1c); border:1px solid #7f1d1d;" 
+                        onclick="confirmDeleteStudent('${s.email}', '${s.name}')" title="Hapus Akun Permanen">
+                        🗑️ HAPUS
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-// NEW: KONFIRMASI RESET
+// NEW: KONFIRMASI RESET (DATA)
 async function confirmResetStudent(email, name) {
-    const isConfirmed = confirm(`⚠️ PERINGATAN KERAS ⚠️\n\nAnda akan menghapus SELURUH data permainan siswa atas nama:\n\n"${name}" (${email})\n\nSiswa akan kembali ke awal permainan (Prologue). Tindakan ini TIDAK BISA DIBATALKAN.\n\nLanjutkan?`);
+    const isConfirmed = confirm(`⚠️ RESET PROGRESS? ⚠️\n\nAnda akan menghapus SAVE DATA permainan siswa:\n"${name}"\n\nSiswa akan kembali ke awal permainan (Prologue) tapi AKUN TETAP ADA.\n\nLanjutkan?`);
     
     if(isConfirmed) {
-        // Tampilkan indikator visual sederhana pada kursor
         document.body.style.cursor = 'wait';
-        
         try {
-            // FIX: Panggil fungsi yang sudah diperbaiki dan tunggu hasilnya
             const result = await DataService.adminResetStudent(email);
-            
             if (result.success) {
-                const source = result.type && result.type.includes('cloud') ? 'SERVER CLOUD' : 'DATABASE LOKAL';
-                alert(`✅ SUKSES!\nData siswa ${name} berhasil di-reset di ${source}.\n\n(Data di Dashboard akan diperbarui...)`);
-                
-                // Refresh data dashboard secara paksa agar tampilan update
-                if(typeof refreshDashboardData === 'function') {
-                    refreshDashboardData(); 
-                } else {
-                    renderResetPage();
-                }
+                alert(`✅ RESET SUKSES!\nData progress ${name} telah di-reset.`);
+                if(typeof refreshDashboardData === 'function') refreshDashboardData(); 
+                else renderResetPage();
             } else {
-                // UPDATE: Tampilkan pesan error yang lebih detail (termasuk saran Firebase Rules)
-                alert(`❌ GAGAL RESET!\n\n${result.msg}`);
+                alert(`❌ GAGAL RESET!\n${result.msg}`);
             }
         } catch(e) {
-            alert("Terjadi kesalahan sistem: " + e.message);
+            alert("Error: " + e.message);
+        } finally {
+            document.body.style.cursor = 'default';
+        }
+    }
+}
+
+// NEW: KONFIRMASI DELETE (AKUN)
+async function confirmDeleteStudent(email, name) {
+    const isConfirmed = confirm(`⛔ HAPUS AKUN PERMANEN? ⛔\n\nAnda akan menghapus SELURUH AKUN siswa:\n\n"${name}" (${email})\n\nSiswa TIDAK BISA LOGIN LAGI dan harus daftar ulang. Semua data hilang selamanya.\n\nLanjutkan Hapus Akun?`);
+    
+    if(isConfirmed) {
+        document.body.style.cursor = 'wait';
+        try {
+            const result = await DataService.adminDeleteStudent(email);
+            if (result.success) {
+                alert(`🗑️ AKUN DIHAPUS!\nAkun ${name} telah dihapus permanen dari database.`);
+                // Refresh data dashboard secara paksa
+                if(typeof refreshDashboardData === 'function') refreshDashboardData(); 
+                else renderResetPage();
+            } else {
+                alert(`❌ GAGAL HAPUS!\n${result.msg}`);
+            }
+        } catch(e) {
+            alert("Error Sistem: " + e.message);
         } finally {
             document.body.style.cursor = 'default';
         }
@@ -9099,7 +9384,19 @@ function selectMajor(major) {
     showDialogue("PILIH JALUR MASUK", 
         `Kamu memilih jurusan **${major.toUpperCase()}**.\n\nApakah kamu ingin mencoba Tes Beasiswa?\n(Syarat: Nilai 100/Benar Semua untuk Gratis UKT)`, 
         [
-            {text: "Coba Tes Beasiswa (Gratis)", action: () => startEntranceExam(major)},
+            {text: "Coba Tes Beasiswa (Gratis)", action: () => {
+                // UPDATE: CEK COOLDOWN JIKA GAGAL (1 MINGGU / 7 HARI)
+                if (STATE.player.lastExamFailDay && (STATE.day - STATE.player.lastExamFailDay < 7)) {
+                     const daysLeft = 7 - (STATE.day - STATE.player.lastExamFailDay);
+                     showDialogue("AKSES DITOLAK", 
+                        `Sistem mencatat kamu baru saja gagal tes.\n\nKebijakan kampus mengharuskan jeda 1 MINGGU sebelum ujian ulang.\nSilakan coba lagi dalam **${daysLeft} HARI** atau masuk jalur Reguler.`, 
+                        [{text: "Baiklah", action: closeDialogue}], 
+                        'images/lecture.png'
+                    );
+                    return;
+                }
+                startEntranceExam(major);
+            }},
             {text: "Jalur Reguler (Bayar nanti)", action: () => confirmMajor(major, false)}
         ], 
         'images/lecture.png'
@@ -9231,7 +9528,7 @@ function finishEntranceExam(isTimeout = false) {
 
         options = [
             {text: "Masuk Reguler", action: () => confirmMajor(currentExam.major, false)},
-            {text: "Coba Lagi Besok", action: closeDialogue}
+            {text: "Coba Lagi Minggu Depan", action: closeDialogue}
         ];
     } 
     // KONDISI 2: LULUS SEMPURNA
@@ -9250,11 +9547,11 @@ function finishEntranceExam(isTimeout = false) {
         manualSave();
 
         title = "HASIL UJIAN: GAGAL ❌";
-        msg = `Skor: ${currentExam.score}/${currentExam.questions.length}.\nMaaf, syarat beasiswa adalah nilai sempurna (10/10).\n\n**Kamu tidak bisa mengambil tes ulang hari ini.**\nSilakan coba lagi besok atau masuk lewat Jalur Reguler.`;
+        msg = `Skor: ${currentExam.score}/${currentExam.questions.length}.\nMaaf, syarat beasiswa adalah nilai sempurna (10/10).\n\n**Kamu tidak bisa mengambil tes ulang selama 1 MINGGU.**\nSilakan coba lagi minggu depan atau masuk lewat Jalur Reguler.`;
         
         options = [
             {text: "Masuk Reguler", action: () => confirmMajor(currentExam.major, false)},
-            {text: "Belajar Lagi (Coba Besok)", action: closeDialogue}
+            {text: "Belajar Lagi (Minggu Depan)", action: closeDialogue}
         ];
     }
 
@@ -10611,6 +10908,24 @@ function handleSkill() {
         spawnFloatingText(p.x, p.y - 40, "BOOM!", "#fbbf24", 24);
     } else {
         showToast("Skill meleset... (Tidak ada target)");
+    }
+}
+
+// --- FIX: DEFINISI FUNGSI GAMELOOP (WAJIB ADA) ---
+function gameLoop() {
+    // 1. Update Logika Game
+    update();
+    
+    // 2. Render Grafis ke Canvas
+    draw();
+    
+    // 3. Update Audio System (BGM/SFX)
+    if(typeof AudioService !== 'undefined') AudioService.update();
+
+    // 4. Loop Frame berikutnya (60 FPS)
+    // Cek agar tidak loop saat di Title/Splash/Login untuk menghemat memori
+    if (STATE.screen !== 'title' && STATE.screen !== 'login' && STATE.screen !== 'splash') {
+        window.gameLoopId = requestAnimationFrame(gameLoop);
     }
 }
 
@@ -18434,6 +18749,9 @@ function draw() {
         });
         ctx.restore();
     }
+
+    // --- FIX: PANGGIL MINIMAP SETIAP FRAME ---
+    drawMinimap();
 }
 
 // NEW FUNCTION: DRAW OBJECT (Dipisah dari loop utama draw)
@@ -19985,52 +20303,53 @@ function updateEnemies() {
     }
 }
 
-function shadeColor(color, percent) {
-    var R = parseInt(color.substring(1,3),16);
-    var G = parseInt(color.substring(3,5),16);
-    var B = parseInt(color.substring(5,7),16);
+function gameOver() {
+    // UPDATE: Gunakan gambar monster atau penjaga dungeon untuk dialog Game Over
+    showDialogue("DEFEAT (KALAH)", "Kamu dikalahkan oleh monster ganas...\nPandanganmu menggelap. (Gold berkurang 10%)", [{text:"... (Sadar di Klinik)", action:()=>{
+        STATE.player.hp = 100;
+        STATE.player.energy = 50; // Bangun lemas
+        STATE.player.money = Math.floor(STATE.player.money * 0.9);
+        
+        // FIX: UPDATE LOKASI RESPAWN KE DALAM KLINIK (SAMAKAN DENGAN PINGSAN ENERGI)
+        // Sebelumnya: STATE.location = 'village'; (Ini yang bikin muncul di luar)
+        STATE.location = 'clinic_interior';
+        STATE.player.x = 10 * TILE_SIZE; // Samping Bed Kanan
+        STATE.player.y = 8 * TILE_SIZE; 
+        STATE.player.direction = 'left';
+        
+        // FIX: Lompati hari (karena pingsan butuh pemulihan)
+        STATE.day = parseInt(STATE.day) + 1;
+        STATE.time = 800; // Bangun jam 08:00 Pagi
+        
+        STATE.enemies = []; 
+        closeDialogue();
+        
+        // Update UI Waktu Segera
+        const currentDayName = DAYS_OF_WEEK[(STATE.day - 1) % 7];
+        const totalDays = STATE.day - 1;
+        const year = Math.floor(totalDays / (DAYS_PER_SEASON * 4)) + 1;
+        document.getElementById('full-date-display').innerText = `${currentDayName}, D${(totalDays % DAYS_PER_SEASON) + 1} ${STATE.season.toUpperCase()} Y${year}`;
+        document.getElementById('clock-display').innerText = "08:00";
 
-    R = parseInt(R * (100 + percent) / 100);
-    G = parseInt(G * (100 + percent) / 100);
-    B = parseInt(B * (100 + percent) / 100);
+        showToast("Dirawat Intensif oleh Dr. Budi 🏥");
+        manualSave();
 
-    R = (R<255)?R:255;  
-    G = (G<255)?G:255;  
-    B = (B<255)?B:255;  
+        // FIX: Munculkan Dialog Dokter Budi di Dalam Klinik
+        setTimeout(() => {
+             showDialogue("DR. BUDI", "Astaga! Kamu terluka parah di Dungeon!\n\nUntung Tim Penyelamat Guild menemukanmu tepat waktu dan membawamu ke sini.\n\nLuka-lukamu cukup serius. Saya sarankan jangan memaksakan diri melawan monster level tinggi jika belum siap.", [{text:"Terima kasih Dok", action:closeDialogue}], 'images/lover1boy.png');
+        }, 500);
 
-    var RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
-    var GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
-    var BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
-
-    return "#"+RR+GG+BB;
+    }}], 'images/monster.png');
 }
 
-function gameLoop() {
-    update();
-    draw();
-    drawMinimap(); 
-    AudioService.update(); 
-    // FIX: Simpan ID requestAnimationFrame ke Global Window
-    window.gameLoopId = requestAnimationFrame(gameLoop);
-}
-
+// --- FIX: KEMBALIKAN FUNGSI MINIMAP YANG BENAR (SEBELUMNYA SALAH NAMA showDialogue) ---
 function drawMinimap() {
     const miniCanvas = document.getElementById('minimapCanvas');
     if(!miniCanvas) return;
     const mCtx = miniCanvas.getContext('2d');
-    
-    // UPDATE: Ganti Fill Hitam Pekat dengan ClearRect agar Transparan (Mengikuti CSS Container)
+
+    // Clear Area Minimap
     mCtx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
-    
-    // Opsional: Beri sedikit tint transparan di canvas jika ingin membedakan area daratan vs luar
-    // mCtx.fillStyle = 'rgba(15, 23, 42, 0.2)';
-    // mCtx.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
-    
-    // UPDATE: Hapus blok pengecualian "INDOOR" agar peta dalam ruangan tetap digambar
-    /* if(STATE.location !== 'village' && STATE.location !== 'dungeon') {
-        ... kode lama yang menampilkan teks "INDOOR" dihapus ...
-    } 
-    */
 
     // Ambil data map aktif (bisa desa, dungeon, atau interior rumah/toko)
     const currentMap = maps[STATE.location];
