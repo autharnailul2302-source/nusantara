@@ -1942,20 +1942,56 @@ button, .round-btn, .d-btn, .auth-btn {
             z-index: 9999;
             pointer-events: none;
             display: none;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
-            /* UPDATE: Menggunakan transition hanya untuk opacity/transform, bukan left/top agar tracking mulus */
+            /* UPDATE: Hapus filter drop-shadow di parent, pindah ke icon agar glow lebih bagus */
+            /* filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); */
             transition: opacity 0.3s, transform 0.2s;
             transform-origin: center top;
+            
+            /* NEW: Flexbox untuk menyusun Teks dan Tangan secara vertikal */
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
         }
         
+        /* NEW: STYLE UNTUK LABEL TEKS TUTORIAL */
+        .pointer-label {
+            background: linear-gradient(90deg, #f59e0b, #d97706); /* Orange Emas */
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 5px; /* Jarak ke tangan */
+            white-space: nowrap;
+            animation: pulseLabel 0.8s infinite alternate; /* Animasi Denyut */
+        }
+
         .hand-icon {
             font-size: 50px;
-            animation: bounceFinger 1s infinite ease-in-out;
+            /* UPDATE: Animasi lebih cepat dan heboh */
+            animation: bounceFinger 0.6s infinite ease-in-out alternate;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
         }
 
         @keyframes bounceFinger {
-            0%, 100% { transform: translateY(0) rotate(-10deg); }
-            50% { transform: translateY(-15px) rotate(-10deg); }
+            0% { 
+                transform: translateY(0) scale(1); 
+                filter: drop-shadow(0 0 0 rgba(251, 191, 36, 0)); 
+            }
+            100% { 
+                transform: translateY(-15px) scale(1.2); /* Membesar & Naik */
+                filter: drop-shadow(0 0 20px rgba(251, 191, 36, 1)); /* Glow Emas */
+            }
+        }
+
+        @keyframes pulseLabel {
+            0% { transform: scale(1); opacity: 0.9; }
+            100% { transform: scale(1.1); opacity: 1; }
         }
 
         /* Kelas Highlight untuk menyorot elemen UI saat tutorial */
@@ -2508,6 +2544,8 @@ button, .round-btn, .d-btn, .auth-btn {
 
     <!-- NEW: TUTORIAL POINTER ELEMENT -->
     <div id="tutorial-pointer">
+        <!-- NEW: Label Teks Dinamis -->
+        <div id="pointer-label" class="pointer-label">Jalan Kesini</div>
         <div class="hand-icon">👆</div>
     </div>
 
@@ -5490,38 +5528,62 @@ function showDashPage(page) {
 
 // --- NEW: RENDER DAFTAR AKUN (DATABASE) ---
 function renderAccountsList() {
-    const students = latestStudentData; // Gunakan Cache
+    const students = latestStudentData || []; // Gunakan Cache dengan Safety default array kosong
     const tbody = document.getElementById('accounts-body');
+    if (!tbody) return; // Safety check jika elemen belum ada
+    
     tbody.innerHTML = '';
     
     if (students.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">Belum ada akun siswa terdaftar.</td></tr>';
+        // UPDATE: Pesan lebih informatif mencantumkan Sumber Data
+        const sourceMode = DataService.dashboardSource === 'auto' ? (navigator.onLine ? 'CLOUD' : 'LOCAL') : DataService.dashboardSource.toUpperCase();
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">
+            Belum ada data siswa ditemukan (Mode: ${sourceMode}).<br>
+            <span style="font-size:10px;">Pastikan Siswa dan Guru terhubung di jaringan yang sama (Online/Offline).</span>
+        </td></tr>`;
         return;
     }
 
-    // Urutkan berdasarkan Nama (A-Z)
-    const sortedStudents = [...students].sort((a, b) => a.name.localeCompare(b.name));
+    try {
+        // Urutkan berdasarkan Nama (A-Z) dengan Safety Check (Anti-Crash jika nama kosong)
+        const sortedStudents = [...students].sort((a, b) => {
+            const nameA = (a.name || "").toUpperCase(); // Fallback string kosong
+            const nameB = (b.name || "").toUpperCase();
+            if (nameA < nameB) return -1;
+            if (nameA > nameB) return 1;
+            return 0;
+        });
 
-    sortedStudents.forEach((s, index) => {
-        // Cek status data permainan
-        let statusHtml = '<span class="status-badge" style="background:#e2e8f0; color:#64748b;">Belum Main</span>';
-        if (s.saveData) {
-            const lvl = s.saveData.level || 1;
-            const role = s.saveData.role !== 'none' ? s.saveData.role.toUpperCase() : 'NOVICE';
-            statusHtml = `<span class="status-badge" style="background:#dcfce7; color:#166534;">Aktif (Lv ${lvl})</span>`;
-        }
+        sortedStudents.forEach((s, index) => {
+            // Safety Variables untuk mencegah render undefined
+            const safeName = s.name || "(Tanpa Nama)";
+            const safeEmail = s.email || "-";
+            const safeDetails = s.details || "-";
+            const safeMentor = s.mentor || '<span style="color:#cbd5e1">Tidak Ada</span>';
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td><strong>${s.name}</strong></td>
-            <td style="font-family:monospace; color:#475569;">${s.email}</td>
-            <td>${s.details || '-'}</td>
-            <td style="font-size:11px;">${s.mentor || '<span style="color:#cbd5e1">Tidak Ada</span>'}</td>
-            <td>${statusHtml}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+            // Cek status data permainan
+            let statusHtml = '<span class="status-badge" style="background:#e2e8f0; color:#64748b;">Belum Main</span>';
+            if (s.saveData) {
+                const lvl = s.saveData.level || 1;
+                const role = (s.saveData.role && s.saveData.role !== 'none') ? s.saveData.role.toUpperCase() : 'NOVICE';
+                statusHtml = `<span class="status-badge" style="background:#dcfce7; color:#166534;">Aktif (Lv ${lvl})</span>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${safeName}</strong></td>
+                <td style="font-family:monospace; color:#475569;">${safeEmail}</td>
+                <td>${safeDetails}</td>
+                <td style="font-size:11px;">${safeMentor}</td>
+                <td>${statusHtml}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.error("Render Error:", e);
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#ef4444;">Terjadi kesalahan saat menampilkan data.<br><small>${e.message}</small></td></tr>`;
+    }
 }
 
 // --- NEW: RENDER DASHBOARD RANKING (PODIUM + LIST) ---
@@ -6268,7 +6330,8 @@ clinicTiles[(CLINIC_H-1)*CLINIC_W + 7] = 8; // Door Tile
 // NEW: BLACKSMITH INTERIOR MAP (14x12)
 const SMITH_W = 14;
 const SMITH_H = 12;
-const smithTiles = new Array(SMITH_W * SMITH_H).fill(4); // 4 = Dungeon/Stone Floor (Kesan Bengkel)
+// UPDATE: Ubah lantai dasar dari 4 (Batu) ke 10 (Kayu/Lantai) agar bisa dicustom
+const smithTiles = new Array(SMITH_W * SMITH_H).fill(10); 
 // Walls (ID 2 = Tembok Batu Gelap)
 for(let x=0; x<SMITH_W; x++) { smithTiles[0*SMITH_W+x] = 2; smithTiles[(SMITH_H-1)*SMITH_W+x] = 2; }
 for(let y=0; y<SMITH_H; y++) { smithTiles[y*SMITH_W+0] = 2; smithTiles[y*SMITH_W+(SMITH_W-1)] = 2; }
@@ -6412,7 +6475,8 @@ for(let i=0; i<10; i++) {
             { id: 'mentor', x: 28, y: 15, w: 6, h: 5, img: 'images/rumahmentor.png', entrance: {x: 31, y: 19, map: 'mentor_interior'}, name: "Rumah Mentor", openTime: 800, closeTime: 2200 },
             
             /* REVISI: HAPUS roleSpecific: 'worker' DARI BLACKSMITH AGAR BUKA UNTUK UMUM */
-            { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 31, map: 'blacksmith_interior'}, name: "Blacksmith", openTime: 800, closeTime: 1800 },
+            /* UPDATE: Jam Tutup diperpanjang sampai 21:00 (Jam 9 Malam) */
+            { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 31, map: 'blacksmith_interior'}, name: "Blacksmith", openTime: 800, closeTime: 2100 },
             
             /* UPDATE: MENGUBAH RUMAH LOVE MENJADI RUMAH AYU */
             { id: 'lover1_home', x: 14, y: 25, w: 6, h: 5, img: 'images/rumahlove.png', entrance: {x: 17, y: 29, map: 'lover1_interior'}, name: "Rumah Ayu", openTime: 700, closeTime: 2100 },
@@ -7251,7 +7315,10 @@ const STATE = {
     bossSpawned: false, // NEW: Status apakah Boss sudah muncul
     
     // NEW: Flag Peringatan Energi
-    lowEnergyWarned: false 
+    lowEnergyWarned: false,
+
+    // NEW: Flag Status Tutorial Dalam Rumah (Mencegah Keluar Pintu)
+    tutorialIndoorComplete: false
 };
 
 const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -8226,7 +8293,7 @@ async function initGame() {
 }
 
 // --- NEW: TUTORIAL HELPER FUNCTIONS ---
-function showTutorialFocus(elementId) {
+function showTutorialFocus(elementId, labelText = null) {
     // 1. Hapus highlight lama
     document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
     
@@ -8235,10 +8302,21 @@ function showTutorialFocus(elementId) {
 
     const target = document.getElementById(elementId);
     const pointer = document.getElementById('tutorial-pointer');
+    const label = document.getElementById('pointer-label');
     
     if (target && pointer) {
         // 2. Tambah efek highlight ke target
         target.classList.add('tutorial-highlight');
+        
+        // UPDATE: Set Teks Label (atau sembunyikan jika null)
+        if (label) {
+            if (labelText) {
+                label.innerText = labelText;
+                label.style.display = 'block';
+            } else {
+                label.style.display = 'none';
+            }
+        }
         
         // 3. Pindahkan Tangan Penunjuk
         const rect = target.getBoundingClientRect();
@@ -8250,23 +8328,37 @@ function showTutorialFocus(elementId) {
         pointer.style.transform = "scale(1)";
         
         // Atur posisi tangan (sedikit di bawah elemen)
-        pointer.style.left = (centerX - 25) + 'px'; // -25 karena width icon ~50px
-        pointer.style.top = (centerY + 40) + 'px';  // Di bawah elemen
+        // UPDATE: Offset disesuaikan karena ada teks label di atas tangan
+        pointer.style.left = (centerX - 35) + 'px'; // Center horizontal (width ~70px)
+        pointer.style.top = (centerY + 30) + 'px';  // Di bawah elemen
         
-        pointer.style.display = 'block';
+        pointer.style.display = 'flex'; // Ganti block jadi flex
     }
 }
 
 // --- NEW HELPER: FOKUS KE OBJEK DALAM GAME (CANVAS) ---
-function showInGameFocus(tileX, tileY) {
+function showInGameFocus(tileX, tileY, labelText = null) {
     // 1. Hapus highlight UI lama
     document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
     
     const pointer = document.getElementById('tutorial-pointer');
+    const label = document.getElementById('pointer-label');
+    
     if (pointer) {
         // 2. Set State Target agar di-update terus menerus di Game Loop
         STATE.tutorialFocusTarget = { x: tileX, y: tileY };
-        pointer.style.display = 'block';
+        
+        // UPDATE: Set Teks Label
+        if (label) {
+            if (labelText) {
+                label.innerText = labelText;
+                label.style.display = 'block';
+            } else {
+                label.style.display = 'none';
+            }
+        }
+        
+        pointer.style.display = 'flex'; // Ganti block jadi flex
         
         // 3. Panggil update sekali secara manual agar langsung muncul di posisi awal (mencegah flicker)
         updateTutorialPointerPosition();
@@ -8312,12 +8404,15 @@ function updateTutorialPointerPosition() {
     // 5. Update Posisi DOM Element
     // UPDATE: Penyesuaian Offset dan Scale agar pas dengan Zoom Out
     
-    // Offset horizontal (tengah icon)
-    const xOffset = -25; 
+    // Offset horizontal (tengah pointer structure)
+    // Structure width sekitar 80px (label + padding), jadi offset -40px
+    const xOffset = -40; 
     
     // Offset vertikal dinamis (menyesuaikan scale)
     // Semakin kecil scale (zoom out), jarak offset harus disesuaikan agar tidak terlalu jauh
-    const yOffset = 10 * scaleFactor; 
+    // Posisi di ATAS tile (karena telunjuk ke bawah/atas) atau DI BAWAH?
+    // Icon 👆 menunjuk ke ATAS. Jadi pointer harus ditaruh DI BAWAH target.
+    const yOffset = 15 * scaleFactor; 
     
     pointer.style.left = (screenX + xOffset) + 'px'; 
     pointer.style.top = (screenY + yOffset) + 'px';
@@ -8342,6 +8437,9 @@ function resetInputs() {
 }
 
 function startWakeUpSequence() {
+    // FIX: Kunci pintu saat tutorial dimulai
+    STATE.tutorialIndoorComplete = false; 
+
     showToast("🔊 *TOK TOK TOK*");
     if(typeof AudioService !== 'undefined') AudioService.playSFX('knock'); // Play SFX Ketukan
     setTimeout(() => {
@@ -8369,7 +8467,8 @@ function startWakeUpSequence() {
                                     
                                     // 1. Tampilkan Pointer Tangan di Target (Game World)
                                     // Fungsi ini sudah otomatis menghitung posisi layar & kamera
-                                    showInGameFocus(targetX, targetY);
+                                    // UPDATE: Tambahkan Teks Label "JALAN KESINI"
+                                    showInGameFocus(targetX, targetY, "JALAN KESINI 🏃");
                                     
                                     showToast("BERJALANLAH KE ARAH TANGAN 👆");
                                     
@@ -8421,7 +8520,8 @@ function continueTutorialStep2() {
     btnAction.style.display = 'flex';
     btnAction.innerText = '🔴';
     
-    showTutorialFocus('btn-action'); 
+    // UPDATE: Tambahkan teks "TEKAN INI"
+    showTutorialFocus('btn-action', "TEKAN INI"); 
     
     // UPDATE: Total langkah jadi 10
     showDialogue("TUTORIAL (2/10)", "Tombol Merah ini adalah **Tombol Interaksi**. Gunakan untuk Bicara dengan NPC, Masuk Rumah, atau Mengambil Item.", [
@@ -8450,7 +8550,7 @@ function continueTutorialStep4() {
     const btnAction = document.getElementById('btn-action');
     btnAction.style.display = 'none'; 
     
-    showTutorialFocus('bag-btn');
+    showTutorialFocus('bag-btn', "BUKA TAS");
     
     // UPDATE: Total langkah jadi 10
     showDialogue("TUTORIAL (4/10)", 
@@ -8458,7 +8558,7 @@ function continueTutorialStep4() {
         [{text: "Lanjut >>", action: () => {
             
             // STEP 5: MENU JURNAL QUEST
-            showTutorialFocus('quest-btn');
+            showTutorialFocus('quest-btn', "CEK MISI");
 
             showDialogue("TUTORIAL (5/10)",
                 "📜 **TOMBOL JURNAL**:\nIni adalah navigasi utamamu!\nCek **Misi Harian** & **Target Hidup** di sini.\n\nSelesaikan misi untuk dapat Hadiah Gold & EXP!",
@@ -8479,7 +8579,7 @@ function continueTutorialStep6() {
 
 function tutorialStep_Calendar() {
     // Posisi Kalender Rumah Level 1: x=10, y=0 (Pojok Kanan Atas)
-    showInGameFocus(10, 0); 
+    showInGameFocus(10, 0, "KALENDER"); 
 
     // UPDATE: Total langkah jadi 12
     showDialogue("TUTORIAL (6/12)", 
@@ -8493,7 +8593,7 @@ function tutorialStep_Calendar() {
 function tutorialStep_Stats() {
     // STEP 7: HUD STATS
     // Gunakan showTutorialFocus untuk elemen UI
-    showTutorialFocus('hud-stats-box');
+    showTutorialFocus('hud-stats-box', "STATUS");
 
     showDialogue("TUTORIAL (7/12)", 
         "📊 **STATUS KARAKTER (HUD)**:\nPerhatikan kotak di tengah atas layar ini!\n\n💪 **STR**: Kekuatan Fisik (Pekerja)\n🧠 **INT**: Kecerdasan (Mahasiswa)\n❤️ **REP**: Reputasi Sosial (Keluarga)\n📈 **BIZ**: Skill Bisnis (Wirausaha)\n\nTingkatkan status ini sesuai **Role** yang kamu pilih nanti!", 
@@ -8506,7 +8606,7 @@ function tutorialStep_Stats() {
 function tutorialStep_ExpEnergy() {
     // STEP 8: EXP & ENERGY (NEW)
     // Sorot area Profil di kiri atas
-    showTutorialFocus('hud-profile-box');
+    showTutorialFocus('hud-profile-box', "STAMINA");
 
     // UPDATE: Penjelasan lebih detail tentang penyebab energi berkurang
     showDialogue("TUTORIAL (8/12)", 
@@ -8520,7 +8620,7 @@ function tutorialStep_ExpEnergy() {
 function tutorialStep_Telephone() {
     // STEP 9: TELEPON
     // Posisi Meja Telepon: x=2, y=6
-    showInGameFocus(2, 6);
+    showInGameFocus(2, 6, "BELANJA");
 
     showDialogue("TUTORIAL (9/12)", 
         "☎️ **TELEPON RUMAH**:\nGunakan telepon ini untuk membuka **Katalog Belanja**.\n\nKamu bisa membeli **Furnitur** baru atau melakukan **Upgrade Rumah** agar lebih luas dan mewah!", 
@@ -8533,7 +8633,7 @@ function tutorialStep_Telephone() {
 function tutorialStep_Wardrobe() {
     // STEP 10: LEMARI PAKAIAN
     // Posisi Lemari: x=7, y=0 (Lebar 2, Tinggi 3).
-    showInGameFocus(7, 0);
+    showInGameFocus(7, 0, "BAJU");
 
     showDialogue("TUTORIAL (10/12)", 
         "👗 **LEMARI PAKAIAN**:\nDi sinilah koleksi bajumu tersimpan.\n\nGunakan lemari ini untuk **Ganti Kostum** (Seragam, Baju Pesta, atau Zirah Tempur).\n\nPenampilanmu bisa membuka dialog khusus dengan NPC!", 
@@ -8546,7 +8646,7 @@ function tutorialStep_Wardrobe() {
 function tutorialStep_Bed() {
     // STEP 11: KASUR
     // Posisi Kasur: x=1, y=0 (Lebar 3). Titik tengah sekitar x=2, y=1
-    showInGameFocus(2, 1);
+    showInGameFocus(2, 1, "TIDUR");
 
     showDialogue("TUTORIAL (11/12)", 
         "🛏️ **KASUR EMPUK**:\nLelah berpetualang? Gunakan kasur ini untuk **Tidur** (Ganti Hari) dan memulihkan **Energi & HP** sepenuhnya.\n\nJangan lupa tulis Jurnal sebelum tidur!", 
@@ -8559,13 +8659,17 @@ function tutorialStep_Bed() {
 function tutorialStep_Diary() {
     // STEP 12: BUKU (CLOSING)
     // UPDATE: SOROT MEJA BELAJAR (x:4, y:0) AGAR PEMAIN TAHU LOKASI SAVE
-    showInGameFocus(4, 0); 
+    showInGameFocus(4, 0, "SAVE/JURNAL"); 
     
     showDialogue("TUTORIAL (12/12)", 
         "Terakhir, ini meja belajarmu:\n\n📔 **BUKU JURNAL**: Gunakan untuk **SAVE GAME** manual dan **Belajar Mandiri** (Menambah INT).\n\nSekarang, temui **Mentor Budi** di luar rumah!", 
         [{text: "Ayo Keluar!", action: () => {
             clearTutorialFocus();
             closeDialogue();
+            
+            // FIX: Buka Kunci Pintu setelah tutorial selesai
+            STATE.tutorialIndoorComplete = true; 
+            showToast("Pintu Rumah Terbuka 🔓");
         }}]
     );
 }
@@ -8896,7 +9000,9 @@ let currentExam = {
     major: null,
     score: 0,
     qIndex: 0,
-    questions: []
+    questions: [],
+    timer: 0,      // NEW: Timer
+    interval: null // NEW: Interval ID
 };
 
 // Database Soal (UPDATE: DITAMBAH JADI 10 SOAL LENGKAP PER JURUSAN)
@@ -9031,15 +9137,47 @@ function startEntranceExam(major) {
     currentExam.major = major;
     currentExam.score = 0;
     currentExam.qIndex = 0;
-    // UPDATE: Ambil 10 soal acak dari DB untuk ujian beasiswa (Sebelumnya 3)
+    
+    // UPDATE: Ambil 10 soal acak dari DB untuk ujian beasiswa
+    if (!EXAM_DB[major]) {
+        console.error("Exam DB missing for", major);
+        return;
+    }
     currentExam.questions = [...EXAM_DB[major]].sort(() => Math.random() - 0.5).slice(0, 10);
     
+    // NEW: Set Timer (90 Detik untuk 10 Soal)
+    currentExam.timer = 90; 
+
+    // NEW: Mulai Interval Timer
+    if (currentExam.interval) clearInterval(currentExam.interval);
+    
+    currentExam.interval = setInterval(() => {
+        currentExam.timer--;
+        
+        // Update Judul Dialog secara Real-time agar pemain melihat waktu berjalan
+        const titleEl = document.getElementById('dialogue-title');
+        if (titleEl && titleEl.innerText.includes("UJIAN BEASISWA")) {
+             titleEl.innerText = `UJIAN BEASISWA (${currentExam.qIndex+1}/${currentExam.questions.length}) - ⏱️ ${currentExam.timer}s`;
+             
+             // Warnai merah jika waktu < 10 detik
+             if (currentExam.timer < 10) titleEl.style.color = '#ef4444';
+             else titleEl.style.color = '#fbbf24';
+        }
+
+        // Cek Waktu Habis
+        if (currentExam.timer <= 0) {
+            clearInterval(currentExam.interval);
+            finishEntranceExam(true); // true = Timeout Triggered
+        }
+    }, 1000);
+
     nextExamQuestion();
 }
 
 function nextExamQuestion() {
+    // Cek apakah soal sudah habis
     if(currentExam.qIndex >= currentExam.questions.length) {
-        finishEntranceExam();
+        finishEntranceExam(); // Normal Finish
         return;
     }
     
@@ -9051,7 +9189,13 @@ function nextExamQuestion() {
     // Acak urutan jawaban
     opts.sort(() => Math.random() - 0.5);
     
-    showDialogue(`UJIAN BEASISWA (${currentExam.qIndex+1}/${currentExam.questions.length})`, q.q, opts, 'images/lecture.png');
+    // Tampilkan Dialog dengan Timer di Judul Awal
+    showDialogue(
+        `UJIAN BEASISWA (${currentExam.qIndex+1}/${currentExam.questions.length}) - ⏱️ ${currentExam.timer}s`, 
+        q.q, 
+        opts, 
+        'images/lecture.png'
+    );
 }
 
 function answerExam(isCorrect) {
@@ -9061,24 +9205,60 @@ function answerExam(isCorrect) {
     if(typeof AudioService !== 'undefined') AudioService.playSFX(isCorrect ? 'item' : 'hit');
 
     currentExam.qIndex++;
-    // Jeda sedikit agar tidak kaget
+    // Jeda sedikit agar tidak kaget, lalu lanjut
     setTimeout(nextExamQuestion, 500);
 }
 
-function finishEntranceExam() {
+function finishEntranceExam(isTimeout = false) {
+    // Stop Timer
+    if (currentExam.interval) clearInterval(currentExam.interval);
+
     // Syarat Beasiswa: Harus Benar Semua (Score == Jumlah Soal)
     const isPerfect = currentExam.score === currentExam.questions.length;
     
-    if(isPerfect) {
-        showDialogue("HASIL UJIAN: LULUS!", `Luar biasa! Skor: ${currentExam.score}/10.\nJawabanmu sempurna.\nKamu berhak mendapatkan **BEASISWA PENUH**.`, [
-            {text: "Ambil Beasiswa", action: () => confirmMajor(currentExam.major, true)}
-        ], 'images/lecture.png');
-    } else {
-        showDialogue("HASIL UJIAN: GAGAL", `Skor: ${currentExam.score}/${currentExam.questions.length}.\nMaaf, syarat beasiswa adalah nilai sempurna (10/10).\nSilakan masuk melalui Jalur Reguler.`, [
+    let title = "";
+    let msg = "";
+    let options = [];
+
+    // KONDISI 1: WAKTU HABIS
+    if (isTimeout) {
+        title = "WAKTU HABIS! ⏰";
+        msg = `Maaf, waktu 90 detik telah berakhir.\nSkor Akhir: ${currentExam.score}/${currentExam.questions.length}.\n\nAnda dianggap **GAGAL** karena tidak menyelesaikan ujian tepat waktu.`;
+        
+        // Hukuman Cooldown
+        STATE.player.lastExamFailDay = STATE.day;
+        manualSave();
+
+        options = [
             {text: "Masuk Reguler", action: () => confirmMajor(currentExam.major, false)},
-            {text: "Batal (Belajar lagi)", action: closeDialogue}
-        ], 'images/lecture.png');
+            {text: "Coba Lagi Besok", action: closeDialogue}
+        ];
+    } 
+    // KONDISI 2: LULUS SEMPURNA
+    else if (isPerfect) {
+        title = "HASIL UJIAN: LULUS! 🏆";
+        msg = `Luar biasa! Skor: ${currentExam.score}/10.\nSisa Waktu: ${currentExam.timer} detik.\n\nJawabanmu sempurna. Kamu berhak mendapatkan **BEASISWA PENUH**.`;
+        
+        options = [
+            {text: "Ambil Beasiswa", action: () => confirmMajor(currentExam.major, true)}
+        ];
+    } 
+    // KONDISI 3: SELESAI TAPI TIDAK SEMPURNA
+    else {
+        // NEW: Catat hari kegagalan dan simpan
+        STATE.player.lastExamFailDay = STATE.day;
+        manualSave();
+
+        title = "HASIL UJIAN: GAGAL ❌";
+        msg = `Skor: ${currentExam.score}/${currentExam.questions.length}.\nMaaf, syarat beasiswa adalah nilai sempurna (10/10).\n\n**Kamu tidak bisa mengambil tes ulang hari ini.**\nSilakan coba lagi besok atau masuk lewat Jalur Reguler.`;
+        
+        options = [
+            {text: "Masuk Reguler", action: () => confirmMajor(currentExam.major, false)},
+            {text: "Belajar Lagi (Coba Besok)", action: closeDialogue}
+        ];
     }
+
+    showDialogue(title, msg, options, 'images/lecture.png');
 }
 
 // --- NEW: DATABASE SOAL SIDANG SKRIPSI (LEVEL SULIT/ADVANCED) ---
@@ -11617,6 +11797,19 @@ function processTeleport(b) {
         }
     } 
     else if(b.id === 'house_exit' || b.id === 'pshop_exit') {
+        // --- NEW: BLOKIR PINTU SAAT TUTORIAL ---
+        if (STATE.isPrologue && !STATE.tutorialIndoorComplete) {
+            // Mainkan suara error/hit
+            if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+            
+            showDialogue("TUTORIAL BELUM SELESAI", 
+                "⛔ Eitss... Jangan keluar dulu!\n\nSelesaikan langkah-langkah tutorial di dalam rumah agar kamu paham cara bermain.\n\nIkuti petunjuk tangan 👆.", 
+                [{text:"Baiklah", action:closeDialogue}], 
+                'images/mentor.png'
+            );
+            return;
+        }
+
         STATE.location = 'village';
         STATE.player.x = 21 * TILE_SIZE; 
         STATE.player.y = 12 * TILE_SIZE; 
@@ -13837,7 +14030,8 @@ function interactNPC(npc) {
             /* UPDATE: Hapus Beli Baju Pengantin dari sini (Pindah ke Istri) */
             {text: "⚔️ Beli Cincin (Shop)", action: () => {
                 showDialogue("TOKO BENGKEL", "Saya menempa logam menjadi perhiasan kuat. Mau beli apa?", [
-                    {text: "Cincin Kayu (1.000 G) 💍", action: () => buyItem('cincin_kayu', 1000)},
+                    /* UPDATE: Harga Cincin Kayu jadi 50.000 */
+                    {text: "Cincin Kayu (50.000 G) 💍", action: () => buyItem('cincin_kayu', 50000)},
                     {text: "Kembali", action: () => interactNPC(npc)}
                 ], npc.imgSrc);
             }},
@@ -13850,10 +14044,11 @@ function interactNPC(npc) {
     /* NEW: INTERAKSI MARINE (PENJAHIT) */
     else if(npc.id === 'marine_tailor') {
         showDialogue(npc.name, "Halo! Selamat datang di bengkel kami. \nSuami saya mengurus besi yang keras, saya yang melembutkannya dengan kain. Butuh sesuatu?", [
-            {text: "👘 Beli Baju Pengantin (5.000 G)", action: () => {
+            /* UPDATE: Harga Baju Pengantin jadi 150.000 */
+            {text: "👘 Beli Baju Pengantin (150.000 G)", action: () => {
                 // Konfirmasi Pembelian
                 showDialogue("BUTIK MARINE", "Baju pengantin buatan saya menggunakan sutra terbaik. Sangat anggun untuk hari bahagiamu.", [
-                    {text: "Beli (5.000 G)", action: () => buyItem('pakaian_nikah', 5000)},
+                    {text: "Beli (150.000 G)", action: () => buyItem('pakaian_nikah', 150000)},
                     {text: "Lihat-lihat dulu", action: () => interactNPC(npc)}
                 ], npc.imgSrc);
             }},
@@ -17255,6 +17450,18 @@ function draw() {
                     } else {
                         // Fallback ke warna putih/abu
                         ctx.fillStyle = '#f8fafc';
+                        ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
+                // NEW: Handle Blacksmith Floor (ID 10 in Blacksmith Interior)
+                // UPDATE: Menggunakan Lantai Mentor (Kayu) agar sama dengan tetangga
+                else if (t === 10 && STATE.location === 'blacksmith_interior') {
+                    if (mentorAssets.floor.complete && mentorAssets.floor.naturalWidth !== 0) {
+                        ctx.drawImage(mentorAssets.floor, x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    } else {
+                        // Fallback ke warna kayu
+                        ctx.fillStyle = '#78350f';
                         ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     }
                 }
