@@ -1827,7 +1827,8 @@ button, .round-btn, .d-btn, .auth-btn {
     left: 20px;
     width: 120px;
     height: 90px; /* Aspect Ratio mendekati map */
-    background: rgba(15, 23, 42, 0.85);
+    /* UPDATE: Background dibuat lebih transparan (0.85 -> 0.65) agar tidak terlalu gelap */
+    background: rgba(15, 23, 42, 0.65);
     border: 2px solid var(--secondary);
     border-radius: 8px;
     overflow: hidden;
@@ -1837,6 +1838,8 @@ button, .round-btn, .d-btn, .auth-btn {
     justify-content: center;
     align-items: center;
     z-index: 40;
+    /* UPDATE: Tambahkan backdrop-filter blur agar tetap terbaca meski transparan */
+    backdrop-filter: blur(2px);
 }
 
 #minimapCanvas {
@@ -1940,7 +1943,9 @@ button, .round-btn, .d-btn, .auth-btn {
             pointer-events: none;
             display: none;
             filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* UPDATE: Menggunakan transition hanya untuk opacity/transform, bukan left/top agar tracking mulus */
+            transition: opacity 0.3s, transform 0.2s;
+            transform-origin: center top;
         }
         
         .hand-icon {
@@ -2081,9 +2086,9 @@ button, .round-btn, .d-btn, .auth-btn {
             ▶ KETUK UNTUK MEMULAI
         </div>
 
-        <!-- NEW: POWERED BY GEMINI KECIL DI BAWAH -->
+        <!-- NEW: COPYRIGHT FOOTER -->
         <div style="font-size: 10px; color: #64748b; margin-top: 20px; font-family: 'Exo 2'; opacity: 0.7; letter-spacing: 1px;">
-            POWERED BY <span style="color: var(--accent); font-weight: bold;">GEMINI</span>
+            &copy; 2026 . NAILUL AUTHAR - TKJ SMK NEGERI 1 BRONDONG
         </div>
     </div>
 
@@ -3346,8 +3351,8 @@ function checkDailyCompletion() {
     } 
     else if(role === 'student') {
         // Syarat: Di Kampus ATAU Belajar (Energi < 70) ATAU di Perpus
-        // UPDATE: Logika lokasi diperbaiki ke 'school_interior' agar mendeteksi saat di dalam kelas
-        const isAtSchool = STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior';
+        // FIX: Menggunakan p.lastAttendanceDay agar status hadir tersimpan seharian (tidak hilang saat keluar)
+        const isAtSchool = p.lastAttendanceDay === STATE.day;
         const isStudying = p.energy < 70;
         const isLibrary = STATE.location === 'library_interior';
         
@@ -3708,7 +3713,8 @@ function getQuestContent(tabType) {
                 html += `🚫 <span style="color:#64748b; text-decoration:line-through;">Hadir Kuliah</span> <span style="color:#fbbf24; font-size:10px;">(Libur Akhir Pekan)</span><br>`;
             } else {
                 // Tampilan Hari Biasa
-                html += `${check(STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior')} Hadir Kuliah (08:00 - 14:00)<br>`;
+                // FIX: Menggunakan p.lastAttendanceDay agar checklist permanen hari itu
+                html += `${check(p.lastAttendanceDay === STATE.day)} Hadir Kuliah (08:00 - 14:00)<br>`;
             }
             
             html += `${check(p.energy < 70)} Belajar Mandiri (Buku)<br>`;
@@ -3984,7 +3990,21 @@ async function preloadAllGameAssets() {
         // NEW: ASSET TUMPUKAN KERTAS
         'images/tumpukankertas.png',
         // NEW: ASSET FOTO MENTOR
-        'images/fotomentor.png'
+        'images/fotomentor.png',
+        // NEW: ASSET ALTAR PERNIKAHAN
+        'images/altar.png',
+        // NEW: ASSET TUNGKU
+        'images/tungku.png',
+        // NEW: ASSET PARON
+        'images/paron.png',
+        // NEW: ASSET RAK SENJATA
+        'images/raksenjata.png',
+        // NEW: ASSET MEJA JAHIT
+        'images/mejajahit.png',
+        // NEW: ASSET BIJIH BESI
+        'images/bijihbesi.png',
+        // NEW: ASSET KAYU BAKAR
+        'images/kayubakar.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -6049,13 +6069,14 @@ function resize() {
     const isMobile = window.innerWidth < 1000;
     const isTablet = window.innerWidth >= 1000 && window.innerWidth < 1300;
     
-    /* REVERT: MENGEMBALIKAN SCALE KE UKURAN SEMULA (LEBIH ZOOM IN) */
-    let scale = 3.0; // Default Desktop (Dikembalikan dari 2.0 ke 3.0)
+    /* UPDATE: ZOOM OUT KAMERA SESUAI REQUEST (AREA PANDANG LEBIH LUAS) */
+    // Nilai scale dikecilkan: Semakin kecil nilainya, semakin "Jauh" kameranya (Zoom Out)
+    let scale = 2.2; // Desktop (Zoom Out agar lebih luas, sebelumnya 3.0)
     
     if (isMobile) {
-        scale = 2.0; // Mobile (Dikembalikan dari 1.25 ke 2.0)
+        scale = 1.5; // Mobile (Zoom Out agar tidak terlalu dekat, sebelumnya 2.0)
     } else if (isTablet) {
-        scale = 2.5; // Tablet (Dikembalikan dari 1.6 ke 2.5)
+        scale = 1.8; // Tablet (Zoom Out, sebelumnya 2.5)
     }
     
     // Hitung dimensi logika game berdasarkan ukuran layar & scale
@@ -6448,8 +6469,8 @@ for(let i=0; i<10; i++) {
 
             /* REMOVED: job/mercenary npc */
             /* MOVED: Trader menggantikan posisi job (x:25, y:27) */
-            /* UPDATE: GANTI NAMA JADI 'PEDAGANG KELILING' AGAR TIDAK TERTUKAR DENGAN MERCHANT DI DALAM */
-            {id: 'trader_outside', x: 25, y: 27, name: 'Pedagang Keliling', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day', w: 40, h: 60},
+            /* UPDATE: DIGESER KE BAWAH DAN KANAN (x:31, y:29) AGAR TIDAK MENGHALANGI PINTU MERCHANT */
+            {id: 'trader_outside', x: 31, y: 29, name: 'Pedagang Keliling', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day', w: 40, h: 60},
             
             /* UPDATE: KEPALA BENGKEL PINDAH KE DALAM, DIGANTI ANAKNYA DI LUAR */
             /* UPDATE: Ukuran Lina disamakan dengan Player (w:40, h:60) */
@@ -6771,16 +6792,24 @@ for(let i=0; i<10; i++) {
             {id: 'marine_tailor', x: 3, y: 5, name: 'Marine (Penjahit)', imgSrc: 'images/marine.png', type: 'service', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
-            {x: 2, y: 3, type: 'sign', icon: '🔥', text: "Tungku Peleburan (Panas!)"}, // Furnace
-            {x: 11, y: 3, type: 'sign', icon: '⚔️', text: "Rak Senjata: Pedang, Kapak, dan Zirah."}, // Weapon Rack
-            {x: 7, y: 6, type: 'sign', icon: '⚒️', text: "Paron (Anvil) untuk menempa besi."}, // Anvil
+            /* UPDATE: TUNGKU DENGAN GAMBAR (Diperbesar jadi 2x2) */
+            {x: 2, y: 3, w: 2, h: 2, type: 'sign', icon: '🔥', text: "Tungku Peleburan (Panas!)", img: 'images/tungku.png'},
+            
+            /* UPDATE: RAK SENJATA DENGAN GAMBAR (Diperbesar jadi 2x2) */
+            {x: 11, y: 3, w: 2, h: 2, type: 'sign', icon: '⚔️', text: "Rak Senjata: Pedang, Kapak, dan Zirah.", img: 'images/raksenjata.png'}, 
+            
+            /* UPDATE: PARON DENGAN GAMBAR */
+            {x: 7, y: 6, type: 'sign', icon: '⚒️', text: "Paron (Anvil) untuk menempa besi.", img: 'images/paron.png'},
             
             // Dekorasi material
-            {x: 2, y: 8, type: 'shelf', icon: '🪨', text: "Tumpukan Bijih Besi"},
-            {x: 11, y: 8, type: 'shelf', icon: '🪵', text: "Tumpukan Kayu Bakar"},
+            /* UPDATE: BIJIH BESI DENGAN GAMBAR */
+            {x: 2, y: 8, type: 'shelf', icon: '🪨', text: "Tumpukan Bijih Besi", img: 'images/bijihbesi.png'},
             
-            /* NEW: MEJA JAHIT MARINE (Dekat posisinya) */
-            {x: 2, y: 5, type: 'table', icon: '🧵', text: "Meja Jahit: Penuh dengan kain sutra dan benang emas."},
+            /* UPDATE: KAYU BAKAR DENGAN GAMBAR */
+            {x: 11, y: 8, type: 'shelf', icon: '🪵', text: "Tumpukan Kayu Bakar", img: 'images/kayubakar.png'},
+            
+            /* UPDATE: MEJA JAHIT MARINE (Dengan Gambar) */
+            {x: 2, y: 5, w: 2, h: 2, type: 'table', icon: '🧵', text: "Meja Jahit: Penuh dengan kain sutra dan benang emas.", img: 'images/mejajahit.png'},
 
             {x: 7, y: 11, type: 'door_out', icon: '🚪'}
         ]
@@ -6863,6 +6892,10 @@ for(let i=0; i<10; i++) {
             {id: 'penghulu', x: 6.5, y: 2, name: 'Bapak Penghulu', imgSrc: 'images/modin.png', type: 'service', schedule: 'always', w: 40, h: 60}
         ],
         objects: [
+            /* NEW: ALTAR/PELAMINAN (DIBELAKANG MEJA MODIN) */
+            /* Posisi y:1 agar berada di belakang meja (y:3) dan penghulu (y:2) */
+            {x: 5.5, y: 1, w: 3, h: 2, type: 'sign', icon: '⛩️', text: "Altar Suci: Tempat janji setia diucapkan di hadapan Tuhan.", img: 'images/altar.png'},
+
             /* Altar/Meja Akad di Tengah Depan */
             /* UPDATE: Mengubah gambar meja menjadi mejamodin.png */
             /* REVISI: Ukuran diperbesar jadi 3x2 (Sebelumnya 2x1) dan digeser sedikit agar tetap di tengah */
@@ -8197,6 +8230,9 @@ function showTutorialFocus(elementId) {
     // 1. Hapus highlight lama
     document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
     
+    // Pastikan tidak ada target in-game yang aktif agar tidak konflik
+    STATE.tutorialFocusTarget = null;
+
     const target = document.getElementById(elementId);
     const pointer = document.getElementById('tutorial-pointer');
     
@@ -8209,6 +8245,9 @@ function showTutorialFocus(elementId) {
         // Hitung posisi tengah elemen
         const centerX = rect.left + (rect.width / 2);
         const centerY = rect.top + (rect.height / 2);
+        
+        // Reset transform scale ke normal (1) untuk elemen UI
+        pointer.style.transform = "scale(1)";
         
         // Atur posisi tangan (sedikit di bawah elemen)
         pointer.style.left = (centerX - 25) + 'px'; // -25 karena width icon ~50px
@@ -8271,9 +8310,26 @@ function updateTutorialPointerPosition() {
     const screenY = (worldY - STATE.camera.y) * scaleFactor;
     
     // 5. Update Posisi DOM Element
-    // Offset -25 (tengah icon) dan +20 (di bawah objek)
-    pointer.style.left = (screenX - 25) + 'px'; 
-    pointer.style.top = (screenY + 20) + 'px';
+    // UPDATE: Penyesuaian Offset dan Scale agar pas dengan Zoom Out
+    
+    // Offset horizontal (tengah icon)
+    const xOffset = -25; 
+    
+    // Offset vertikal dinamis (menyesuaikan scale)
+    // Semakin kecil scale (zoom out), jarak offset harus disesuaikan agar tidak terlalu jauh
+    const yOffset = 10 * scaleFactor; 
+    
+    pointer.style.left = (screenX + xOffset) + 'px'; 
+    pointer.style.top = (screenY + yOffset) + 'px';
+
+    // UPDATE: Skala Ukuran Pointer
+    // Agar pointer tidak terlihat raksasa saat kamera zoom out jauh
+    // Base scale 1.0, dikalikan faktor zoom dengan clamping
+    let dynamicScale = scaleFactor * 0.45; 
+    // Batasi minimal 0.7 dan maksimal 1.1
+    dynamicScale = Math.max(0.7, Math.min(1.1, dynamicScale));
+    
+    pointer.style.transform = `scale(${dynamicScale})`;
 }
 
 function resetInputs() {
@@ -8843,10 +8899,9 @@ let currentExam = {
     questions: []
 };
 
-// Database Soal (UPDATE: DITAMBAH JADI 10 SOAL)
+// Database Soal (UPDATE: DITAMBAH JADI 10 SOAL LENGKAP PER JURUSAN)
 const EXAM_DB = {
     'teknologi': [
-        // ... existing questions ...
         {q: "Otak utama komputer yang memproses semua instruksi adalah?", a: "CPU", opts: ["CPU", "GPU", "Harddisk"]},
         {q: "Apa kepanjangan dari RAM?", a: "Random Access Memory", opts: ["Read Access Memory", "Random Access Memory", "Run All Memory"]},
         {q: "Sistem bilangan yang hanya menggunakan angka 0 dan 1 disebut?", a: "Biner", opts: ["Desimal", "Biner", "Heksadesimal"]},
@@ -8859,8 +8914,16 @@ const EXAM_DB = {
         {q: "Proses mematikan dan menghidupkan ulang komputer disebut?", a: "Restart", opts: ["Shutdown", "Sleep", "Restart"]}
     ],
     'sejarah': [
-        // ... existing questions ...
-        {q: "Peristiwa penculikan Soekarno-Hatta oleh golongan muda ke luar kota disebut?", a: "Rengasdengklok", opts: ["Bandung Lautan Api", "Rengasdengklok", "G30S"]}
+        {q: "Peristiwa penculikan Soekarno-Hatta oleh golongan muda ke luar kota disebut?", a: "Rengasdengklok", opts: ["Bandung Lautan Api", "Rengasdengklok", "G30S"]},
+        {q: "Organisasi pergerakan nasional pertama yang berdiri tahun 1908 adalah?", a: "Budi Utomo", opts: ["Sarekat Islam", "Budi Utomo", "Indische Partij"]},
+        {q: "Naskah Sumpah Pemuda dibacakan pada tanggal?", a: "28 Oktober 1928", opts: ["17 Agustus 1945", "28 Oktober 1928", "1 Juni 1945"]},
+        {q: "Patih Kerajaan Majapahit yang terkenal dengan Sumpah Palapa adalah?", a: "Gajah Mada", opts: ["Hayam Wuruk", "Gajah Mada", "Ken Arok"]},
+        {q: "Perusahaan dagang Belanda yang memonopoli perdagangan rempah-rempah adalah?", a: "VOC", opts: ["EIC", "VOC", "NATO"]},
+        {q: "Kerajaan Hindu tertua di Indonesia adalah?", a: "Kutai", opts: ["Tarumanegara", "Kutai", "Sriwijaya"]},
+        {q: "Perang Diponegoro berlangsung di pulau?", a: "Jawa", opts: ["Sumatera", "Jawa", "Sulawesi"]},
+        {q: "Jepang pertama kali mendarat di Indonesia pada tahun?", a: "1942", opts: ["1941", "1942", "1945"]},
+        {q: "Ibukota Indonesia pernah dipindahkan ke Yogyakarta pada tahun?", a: "1946", opts: ["1945", "1946", "1949"]},
+        {q: "Siapakah penjahit bendera Merah Putih pertama?", a: "Fatmawati", opts: ["Kartini", "Cut Nyak Dien", "Fatmawati"]}
     ]
 };
 
@@ -8968,8 +9031,8 @@ function startEntranceExam(major) {
     currentExam.major = major;
     currentExam.score = 0;
     currentExam.qIndex = 0;
-    // Ambil 3 soal acak dari DB untuk ujian singkat
-    currentExam.questions = [...EXAM_DB[major]].sort(() => Math.random() - 0.5).slice(0, 3);
+    // UPDATE: Ambil 10 soal acak dari DB untuk ujian beasiswa (Sebelumnya 3)
+    currentExam.questions = [...EXAM_DB[major]].sort(() => Math.random() - 0.5).slice(0, 10);
     
     nextExamQuestion();
 }
@@ -8988,7 +9051,7 @@ function nextExamQuestion() {
     // Acak urutan jawaban
     opts.sort(() => Math.random() - 0.5);
     
-    showDialogue(`UJIAN MASUK (${currentExam.qIndex+1}/${currentExam.questions.length})`, q.q, opts, 'images/lecture.png');
+    showDialogue(`UJIAN BEASISWA (${currentExam.qIndex+1}/${currentExam.questions.length})`, q.q, opts, 'images/lecture.png');
 }
 
 function answerExam(isCorrect) {
@@ -9007,11 +9070,11 @@ function finishEntranceExam() {
     const isPerfect = currentExam.score === currentExam.questions.length;
     
     if(isPerfect) {
-        showDialogue("HASIL UJIAN: LULUS!", "Luar biasa! Jawabanmu sempurna.\nKamu berhak mendapatkan **BEASISWA PENUH**.", [
+        showDialogue("HASIL UJIAN: LULUS!", `Luar biasa! Skor: ${currentExam.score}/10.\nJawabanmu sempurna.\nKamu berhak mendapatkan **BEASISWA PENUH**.`, [
             {text: "Ambil Beasiswa", action: () => confirmMajor(currentExam.major, true)}
         ], 'images/lecture.png');
     } else {
-        showDialogue("HASIL UJIAN: GAGAL", `Skor: ${currentExam.score}/${currentExam.questions.length}.\nMaaf, nilai tidak memenuhi syarat beasiswa.\nSilakan masuk melalui Jalur Reguler.`, [
+        showDialogue("HASIL UJIAN: GAGAL", `Skor: ${currentExam.score}/${currentExam.questions.length}.\nMaaf, syarat beasiswa adalah nilai sempurna (10/10).\nSilakan masuk melalui Jalur Reguler.`, [
             {text: "Masuk Reguler", action: () => confirmMajor(currentExam.major, false)},
             {text: "Batal (Belajar lagi)", action: closeDialogue}
         ], 'images/lecture.png');
@@ -9406,192 +9469,404 @@ function triggerCustomerEvent() {
 
 // --- NEW: DATABASE MATERI KULIAH (EXPANDED TO 48 TOPICS - 2 YEARS FULL) ---
 // Logika: 1 Tahun = 120 Hari. Kuliah Spesial tiap 5 hari. Total = 24 Materi/Tahun.
+// UPDATE: MATERI LENGKAP & LEBIH MENDALAM (TEORI ASLI)
 const COURSE_MATERIALS = {
     'teknologi': [
         // --- TAHUN PERTAMA (BASIC & DEV) ---
-        // SEMESTER 1 (Basic)
-        {t: "Algoritma Dasar", c: "Algoritma adalah urutan langkah logis penyelesaian masalah. Coding tanpa logika bagai membangun rumah tanpa desain."},
-        {t: "Struktur Data", c: "Array dimulai dari indeks 0. Efisiensi memori adalah kunci aplikasi yang cepat."},
-        {t: "Basis Data (SQL)", c: "Data adalah aset paling berharga. 'SELECT * FROM world' adalah cara kita melihat dunia."},
-        {t: "Jaringan Komputer", c: "Protokol TCP/IP memastikan data dikirim utuh. Internet adalah jaring laba-laba raksasa."},
-        {t: "Keamanan Siber", c: "Password '123456' adalah dosa besar. Enkripsi melindungi privasi dari mata-mata."},
-        {t: "Kecerdasan Buatan (AI)", c: "AI belajar dari pola data. Ia bukan sihir, tapi matematika statistik yang canggih."},
-        // SEMESTER 2 (Development)
-        {t: "Pemrograman Web", c: "HTML adalah tulang, CSS adalah kulit, dan JS adalah otot yang menggerakkan web."},
-        {t: "Pemrograman Mobile", c: "Aplikasi di saku anda membutuhkan efisiensi baterai dan responsivitas layar sentuh."},
-        {t: "Cloud Computing", c: "Server tidak lagi di ruang bawah tanah, tapi di 'awan' virtual yang bisa diakses kapan saja."},
-        {t: "Internet of Things (IoT)", c: "Kulkas pintar dan lampu otomatis. Saat benda mati mulai saling berbicara lewat internet."},
-        {t: "Blockchain", c: "Buku besar digital yang terdesentralisasi. Transparan dan sulit dipalsukan."},
-        {t: "Big Data", c: "Volume, Velocity, Variety. Mengolah data raksasa untuk prediksi masa depan."},
-        // SEMESTER 3 (Engineering - Year 1 End/Year 2 Start overlap fix handled by curriculum)
-        {t: "UI/UX Design", c: "Aplikasi canggih percuma jika membingungkan. Desain harus berpusat pada kenyamanan pengguna."},
-        {t: "Software Engineering", c: "SDLC (System Development Life Cycle): Planning, Design, Coding, Testing, Maintenance."},
-        {t: "Operating Systems", c: "Kernel adalah jembatan antara hardware keras dan software lunak."},
-        {t: "Arsitektur Komputer", c: "Bagaimana 0 dan 1 berubah menjadi gambar 4K? Memahami prosesor dan memori."},
-        {t: "Etika Teknologi", c: "Hanya karena kita BISA membuatnya, belum tentu kita BOLEH membuatnya (Contoh: Deepfake)."},
-        {t: "Digital Marketing", c: "SEO dan SEM. Bagaimana membuat karyamu ditemukan di lautan informasi."},
-        // SEMESTER 4 (Advanced)
-        {t: "Game Development", c: "Looping, Physics, Rendering. Game adalah ilusi interaktif yang memuaskan."},
-        {t: "Virtual Reality (VR)", c: "Membawa pengguna masuk ke dunia digital. Masa depan interaksi manusia-komputer."},
-        {t: "E-Commerce", c: "Sistem pembayaran digital, keranjang belanja, dan keamanan transaksi online."},
-        {t: "Manajemen Startup", c: "Ide -> MVP -> Funding -> Scale Up. Jalan terjal membangun perusahaan rintisan."},
-        {t: "Project Management", c: "Agile & Scrum. Cara tim developer bekerja cepat dan adaptif terhadap perubahan."},
-        {t: "Teknologi Masa Depan", c: "Quantum Computing & Bio-Informatics. Batas antara biologi dan mesin semakin tipis."},
+        // SEMESTER 1 (Basic Computer Science)
+        {
+            t: "Algoritma & Pemrograman Dasar", 
+            c: "DEFINISI:\nUrutan langkah logis penyelesaian masalah yang disusun secara sistematis.\n\n3 SYARAT ALGORITMA:\n1. Finiteness: Harus berhenti setelah sejumlah langkah.\n2. Definiteness: Setiap langkah harus jelas/tidak ambigu.\n3. Effectiveness: Langkah harus sederhana dan dapat dikerjakan.\n\nNOTASI:\n- Pseudocode (Kode semu)\n- Flowchart (Diagram alir)"
+        },
+        {
+            t: "Struktur Data (Data Structures)", 
+            c: "KONSEP:\nCara penyimpanan, penyusunan, dan pengaturan data di dalam media penyimpanan komputer.\n\nTIPE DASAR:\n1. Array: Kumpulan data sejenis dengan indeks statis.\n2. Linked List: Rangkaian node yang saling menunjuk (dinamis).\n3. Stack: Tumpukan (LIFO - Last In First Out).\n4. Queue: Antrean (FIFO - First In First Out)."
+        },
+        {
+            t: "Basis Data (Database SQL)", 
+            c: "RDBMS (Relational Database):\nPenyimpanan data dalam bentuk tabel yang saling berelasi.\n\nKUNCI UTAMA:\n- Primary Key (PK): Identitas unik setiap baris data.\n- Foreign Key (FK): Kunci tamu untuk menghubungkan antar tabel.\n\nNORMALISASI:\nProses pengelompokan atribut data untuk menghilangkan redundansi dan anomali data."
+        },
+        {
+            t: "Jaringan Komputer Dasar", 
+            c: "MODEL OSI (7 LAYER):\n1. Physical (Kabel/Sinyal)\n2. Data Link (MAC Address)\n3. Network (IP Address/Routing)\n4. Transport (TCP/UDP)\n5. Session\n6. Presentation\n7. Application (HTTP/FTP)\n\nIP ADDRESS:\nAlamat unik perangkat dalam jaringan. IPv4 (32-bit) dan IPv6 (128-bit)."
+        },
+        {
+            t: "Keamanan Siber (Cyber Security)", 
+            c: "CIA TRIAD:\n1. Confidentiality (Kerahasiaan): Data hanya boleh diakses yang berhak.\n2. Integrity (Keutuhan): Data tidak boleh diubah oleh pihak tak berwenang.\n3. Availability (Ketersediaan): Data harus bisa diakses saat dibutuhkan.\n\nANCAMAN UMUM:\n- Phishing (Pencurian info via manipulasi)\n- Malware (Virus/Ransomware)\n- DDoS (Serangan membanjiri trafik)"
+        },
+        {
+            t: "Kecerdasan Buatan (AI Basics)", 
+            c: "DEFINISI:\nSimulasi kecerdasan manusia dalam mesin yang diprogram untuk berpikir dan meniru tindakannya.\n\nCABANG AI:\n1. Machine Learning: Mesin belajar dari data tanpa diprogram eksplisit.\n2. Neural Networks: Meniru cara kerja neuron otak manusia.\n3. NLP: Pemrosesan bahasa alami (teks/suara).\n4. Computer Vision: Analisis gambar/video."
+        },
+        
+        // SEMESTER 2 (Development Skills)
+        {
+            t: "Pemrograman Web (Frontend & Backend)", 
+            c: "ARSITEKTUR WEB:\n- Client-Side (Frontend): HTML (Struktur), CSS (Gaya), JS (Interaksi).\n- Server-Side (Backend): Node.js, PHP, Python, Database.\n\nHTTP REQUEST METHODS:\n- GET: Mengambil data.\n- POST: Mengirim data baru.\n- PUT: Update data.\n- DELETE: Hapus data."
+        },
+        {
+            t: "Pemrograman Mobile (Android/iOS)", 
+            c: "NATIVE VS HYBRID:\n- Native: Java/Kotlin (Android), Swift (iOS). Performa tinggi, akses hardware penuh.\n- Hybrid/Cross-Platform: Flutter, React Native. Satu kode untuk semua platform.\n\nLIFECYCLE AKTIVITAS:\nCreate -> Start -> Resume -> Pause -> Stop -> Destroy."
+        },
+        {
+            t: "Cloud Computing", 
+            c: "LAYANAN CLOUD:\n1. IaaS (Infrastructure): Sewa server/storage virtual (AWS EC2).\n2. PaaS (Platform): Lingkungan development siap pakai (Heroku).\n3. SaaS (Software): Aplikasi jadi via internet (Google Docs).\n\nMANFAAT:\nSkalabilitas (bisa diperbesar kapan saja) dan Efisiensi Biaya (Pay-as-you-go)."
+        },
+        {
+            t: "Internet of Things (IoT)", 
+            c: "KONSEP:\nJaringan objek fisik yang tertanam dengan sensor, software, dan teknologi lain untuk bertukar data via internet.\n\nKOMPONEN UTAMA:\n1. Sensor/Actuator (Pengambil data/Penggerak).\n2. Connectivity (Wi-Fi, Bluetooth, Zigbee).\n3. Data Processing (Cloud/Edge).\n4. User Interface (Dashboard/App)."
+        },
+        {
+            t: "Teknologi Blockchain", 
+            c: "PRINSIP DASAR:\nBuku besar (ledger) digital yang terdesentralisasi, terdistribusi, dan tidak dapat diubah (immutable).\n\nCARA KERJA:\nTransaksi dicatat dalam 'blok', dienkripsi (hash), dan dirangkai ke blok sebelumnya (chain). Jika satu blok diubah, seluruh rantai rusak (terdeteksi palsu)."
+        },
+        {
+            t: "Big Data Analytics", 
+            c: "KARAKTERISTIK 3V:\n1. Volume: Jumlah data sangat besar.\n2. Velocity: Kecepatan data masuk sangat tinggi (real-time).\n3. Variety: Jenis data beragam (teks, video, log).\n\nTUJUAN:\nMenemukan pola tersembunyi, korelasi pasar, dan preferensi pelanggan untuk keputusan bisnis."
+        },
 
         // --- TAHUN KEDUA (ADVANCED & SPECIALIZATION) ---
-        // SEMESTER 5 (Cloud & DevOps Architecture)
-        {t: "Microservices", c: "Memecah aplikasi monolith raksasa menjadi layanan kecil independen. Seperti pasukan elit yang bergerak terpisah namun satu tujuan."},
-        {t: "Docker & Container", c: "Mengemas aplikasi dalam wadah isolasi. 'It works on my machine' bukan lagi alasan valid."},
-        {t: "Kubernetes (K8s)", c: "Orkestrasi kontainer otomatis. Nakhoda kapal digital yang mengelola ribuan server tanpa lelah."},
-        {t: "CI/CD Pipeline", c: "Continuous Integration/Delivery. Otomatisasi pengiriman kode dari laptop developer ke server produksi."},
-        {t: "DevOps Culture", c: "Menghapus tembok pemisah antara Developer (Pembuat) dan Operations (Pengelola). Kolaborasi adalah kunci."},
-        {t: "Cloud Security", c: "Awan juga bisa disambar petir. Mengamankan data di infrastruktur publik butuh enkripsi berlapis."},
-        // SEMESTER 6 (AI & Data Science Deep Dive)
-        {t: "Deep Learning", c: "Jaringan saraf tiruan (Neural Network) yang meniru otak manusia. Dasar mobil otonom."},
-        {t: "NLP (Bahasa Alami)", c: "Mengajarkan komputer memahami sarkasme dan emosi manusia, bukan sekadar kata kunci."},
-        {t: "Computer Vision", c: "Memberi mata pada mesin. Bagaimana CCTV mengenali wajah penjahat di keramaian."},
-        {t: "Predictive Analytics", c: "Meramal masa depan dengan data masa lalu. Statistik yang menyelamatkan keputusan bisnis."},
-        {t: "Ethical Hacking", c: "Menjadi pencuri untuk menangkap pencuri. Menemukan celah keamanan sebelum dieksploitasi lawan."},
-        {t: "Digital Forensics", c: "CSI Dunia Maya. Melacak jejak digital kejahatan yang sudah dihapus oleh pelaku."},
-        // SEMESTER 7 (Modern Web & Management)
-        {t: "Serverless Computing", c: "Fokus pada kode, lupakan server. Biar penyedia cloud yang pusing mengurus hardware."},
-        {t: "PWA (Progressive Web)", c: "Website yang bisa diinstall dan jalan offline. Menjembatani web dan aplikasi native."},
-        {t: "GraphQL API", c: "Cara modern meminta data. Ambil hanya yang kau butuhkan, tidak lebih, tidak kurang."},
-        {t: "Tech Leadership (CTO)", c: "Koding itu mudah, mengelola manusia itu sulit. Seni memimpin tim teknis."},
-        {t: "Startup Valuation", c: "Bagaimana ide di garasi bisa bernilai Triliunan? Memahami valuasi dan saham."},
-        {t: "Hukum IT (IPR)", c: "Hak Kekayaan Intelektual. Melindungi kode dan algoritmamu dari pencurian."},
-        // SEMESTER 8 (Global Impact & Ethics)
-        {t: "Green Computing", c: "Data center menghabiskan listrik negara. Algoritma efisien = menyelamatkan bumi."},
-        {t: "Bioinformatics", c: "Mengkoding DNA manusia. Saat biologi dan teknologi bersatu menyembuhkan penyakit."},
-        {t: "Smart Cities", c: "Lampu jalan yang hemat energi dan macet yang terurai otomatis. Kota cerdas masa depan."},
-        {t: "Space Technology", c: "Software roket SpaceX. Di luar angkasa, 'blue screen' berarti ledakan fatal."},
-        {t: "Quantum Computing", c: "Komputer yang bisa berada di dua keadaan sekaligus. Pemecah enkripsi masa depan."},
-        {t: "Transhumanism", c: "Chip di otak manusia? Batas etika saat manusia mulai menyatu dengan mesin."},
+        // SEMESTER 3 (Engineering & Ethics)
+        {
+            t: "User Interface (UI) & User Experience (UX)", 
+            c: "UI (Tampilan):\nFokus pada estetika, warna, tipografi, dan tata letak visual.\n\nUX (Pengalaman):\nFokus pada kemudahan penggunaan, alur pengguna (user flow), dan kepuasan interaksi.\n\nPRINSIP DESAIN:\nKonsistensi, Feedback yang jelas, dan Minimalisir beban kognitif pengguna."
+        },
+        {
+            t: "Software Engineering (RPL)", 
+            c: "SDLC (System Development Life Cycle):\n1. Planning (Perencanaan)\n2. Analysis (Analisis Kebutuhan)\n3. Design (Perancangan)\n4. Implementation (Coding)\n5. Testing (Pengujian)\n6. Maintenance (Pemeliharaan)\n\nMODEL:\nWaterfall (Sekuensial) vs Agile (Iteratif/Fleksibel)."
+        },
+        {
+            t: "Sistem Operasi (OS)", 
+            c: "FUNGSI UTAMA OS:\n1. Manajemen Proses (Scheduling CPU).\n2. Manajemen Memori (RAM & Virtual Memory).\n3. Manajemen File (File System).\n4. Manajemen I/O (Input Output).\n\nKERNEL:\nInti dari OS yang menghubungkan software aplikasi dengan hardware komputer."
+        },
+        {
+            t: "Arsitektur & Organisasi Komputer", 
+            c: "UNIT UTAMA (Von Neumann):\n1. CPU (ALU + Control Unit): Otak pemroses.\n2. Memory: Penyimpanan instruksi/data.\n3. I/O Devices: Perangkat masukan/keluaran.\n\nFETCH-DECODE-EXECUTE:\nSiklus CPU mengambil instruksi dari memori, menerjemahkannya, dan menjalankannya."
+        },
+        {
+            t: "Etika Profesi IT", 
+            c: "PRINSIP ETIKA:\n1. Privasi: Menjaga kerahasiaan data pengguna.\n2. Akurasi: Tidak memanipulasi data/fakta.\n3. Properti: Menghargai Hak Kekayaan Intelektual (HAKI).\n4. Akses: Tidak membatasi akses informasi secara diskriminatif.\n\nKASUS:\nPlagiarisme kode, penyebaran malware, penyalahgunaan data user."
+        },
+        {
+            t: "Digital Marketing & SEO", 
+            c: "SEO (Search Engine Optimization):\nOptimasi website agar muncul di halaman pertama pencarian organik (Google).\n\nSEM (Search Engine Marketing):\nPemasaran berbayar (Iklan/Ads) di mesin pencari.\n\nMETRIK PENTING:\n- CTR (Click Through Rate)\n- Conversion Rate\n- Bounce Rate"
+        },
+        
+        // SEMESTER 4 (Advanced Tech)
+        {
+            t: "Pengembangan Game (Game Dev)", 
+            c: "GAME LOOP:\nSiklus tak berujung: Input -> Update Logika -> Render Grafis.\n\nKOMPONEN:\n- Sprite/Mesh (Visual)\n- Collider/Rigidbody (Fisika)\n- Script (Logika)\n- Audio (Suara)\n\nGENRE:\nRPG, FPS, Platformer, Simulation, Strategy."
+        },
+        {
+            t: "Virtual Reality (VR) & AR", 
+            c: "VR (Virtual Reality):\nPengguna masuk sepenuhnya ke dunia digital (Immersive) menggunakan headset.\n\nAR (Augmented Reality):\nMenambahkan objek digital ke dunia nyata (contoh: Filter kamera, Pokemon GO).\n\nMR (Mixed Reality):\nInteraksi objek digital dan fisik secara real-time."
+        },
+        {
+            t: "E-Commerce Systems", 
+            c: "MODEL BISNIS:\n- B2B (Business to Business)\n- B2C (Business to Consumer)\n- C2C (Consumer to Consumer - Marketplace)\n\nKEAMANAN TRANSAKSI:\nEnkripsi SSL/TLS, Payment Gateway, dan Two-Factor Authentication (2FA) untuk mencegah penipuan."
+        },
+        {
+            t: "Manajemen Startup Digital", 
+            c: "TAHAPAN STARTUP:\n1. Ideation: Validasi ide masalah & solusi.\n2. MVP (Minimum Viable Product): Produk dasar untuk tes pasar.\n3. Product-Market Fit: Produk disukai dan dibutuhkan pasar.\n4. Scaling: Ekspansi pertumbuhan pengguna.\n\nLEAN STARTUP:\nBuild - Measure - Learn (Buat - Ukur - Pelajari)."
+        },
+        {
+            t: "Manajemen Proyek (Agile/Scrum)", 
+            c: "AGILE MANIFESTO:\nLebih menghargai individu & interaksi daripada proses & alat. Merespon perubahan daripada mengikuti rencana kaku.\n\nSCRUM FRAMEWORK:\n- Sprint: Siklus kerja pendek (2-4 minggu).\n- Daily Standup: Rapat harian singkat.\n- Roles: Product Owner, Scrum Master, Dev Team."
+        },
+        {
+            t: "Teknologi Masa Depan (Futurism)", 
+            c: "TREN MENDATANG:\n1. Quantum Computing: Komputer super cepat berbasis Qubit.\n2. Biotechnology: Integrasi teknologi dengan biologi (Biohacking).\n3. Autonomous Systems: Robot/Kendaraan mandiri.\n4. Green Tech: Teknologi ramah lingkungan untuk keberlanjutan bumi."
+        },
 
         // --- TAHUN KETIGA (EXPERT & SPECIALIZATION) ---
-        // SEMESTER 9 (Future Tech)
-        {t: "Quantum Cryptography", c: "Enkripsi yang tak terpecahkan oleh komputer klasik. Keamanan data level kuantum."},
-        {t: "Edge Computing", c: "Memproses data di sumbernya, bukan di cloud pusat. Kunci kecepatan IoT dan mobil otonom."},
-        {t: "5G/6G Networks", c: "Infrastruktur hiper-konektivitas. Latensi mendekati nol untuk operasi jarak jauh."},
-        {t: "Digital Twin", c: "Membuat kembaran digital dari objek fisik. Simulasi mesin jet sebelum diterbangkan."},
-        {t: "Augmented Reality (AR)", c: "Menambahkan lapisan digital ke dunia nyata. Bukan hanya game, tapi untuk bedah medis."},
-        {t: "Autonomous Systems", c: "Logika di balik mobil tanpa sopir dan drone mandiri. Etika 'Trolley Problem' dalam kode."},
-        // SEMESTER 10 (Deep Research)
-        {t: "Tech Governance", c: "Bagaimana negara mengatur AI? Regulasi agar teknologi tidak menjadi senjata liar."},
-        {t: "Bio-Hacking", c: "Memodifikasi biologi dengan teknologi. Dari jam tangan pintar hingga implan saraf."},
-        {t: "Green Tech", c: "Teknologi penyerap karbon dan energi terbarukan. Coding untuk kelangsungan bumi."},
-        {t: "Space Engineering", c: "Tantangan software di ruang hampa. Satelit, roket, dan komunikasi antar planet."},
-        {t: "Neuromorphic Chip", c: "Hardware yang meniru cara kerja neuron otak manusia. Efisiensi energi otak dalam silikon."},
-        {t: "Singularity Theory", c: "Titik di mana kecerdasan buatan melampaui manusia. Apakah kita siap menjadi 'orang tua' bagi AI?"},
+        // SEMESTER 5 (Cloud & DevOps Architecture)
+        {
+            t: "Microservices Architecture", 
+            c: "KONSEP:\nMemecah aplikasi besar (Monolith) menjadi layanan-layanan kecil yang independen dan saling berkomunikasi via API.\n\nKELEBIHAN:\n- Independensi Deployment\n- Skalabilitas per fitur\n- Bebas memilih teknologi per service\n\nKEKURANGAN:\nKompleksitas manajemen jaringan dan data."
+        },
+        {
+            t: "Docker & Containerization", 
+            c: "CONTAINER:\nUnit standar perangkat lunak yang mengemas kode dan dependensinya agar aplikasi berjalan cepat dan andal di lingkungan komputasi yang berbeda.\n\nDOCKER:\nPlatform terbuka untuk mengembangkan, mengirim, dan menjalankan aplikasi dalam kontainer. Memisahkan aplikasi dari infrastruktur."
+        },
+        {
+            t: "Kubernetes (K8s)", 
+            c: "ORCHESTRATION:\nSistem open-source untuk mengotomatisasi deployment, scaling, dan manajemen aplikasi terkontainerisasi.\n\nFITUR UTAMA:\n- Self-healing (Restart container mati)\n- Load balancing (Distribusi trafik)\n- Automated rollouts/rollbacks (Update otomatis)"
+        },
+        {
+            t: "CI/CD Pipeline", 
+            c: "CI (Continuous Integration):\nPengembang sering menggabungkan kode ke repositori pusat (Shared Repo). Otomatisasi build dan test.\n\nCD (Continuous Delivery/Deployment):\nOtomatisasi rilis aplikasi ke lingkungan produksi. Memastikan software selalu siap dirilis ke user."
+        },
+        {
+            t: "DevOps Culture", 
+            c: "DEFINISI:\nGabungan filosofi budaya, praktik, dan alat yang meningkatkan kemampuan organisasi untuk mengirimkan aplikasi dengan kecepatan tinggi.\n\nTUJUAN:\nMenghapus silo (tembok pemisah) antara tim Development (Pengembang) dan Operations (Operasional IT) agar kolaborasi lebih efisien."
+        },
+        {
+            t: "Cloud Security Architecture", 
+            c: "SHARED RESPONSIBILITY:\nPenyedia Cloud (AWS/Google) bertanggung jawab atas keamanan 'of the cloud' (infrastruktur fisik).\nPelanggan bertanggung jawab atas keamanan 'in the cloud' (data, akses, konfigurasi).\n\nBEST PRACTICE:\nEnkripsi data at rest & in transit, IAM (Identity Access Management)."
+        },
+        
+        // SEMESTER 6 (AI & Data Science Deep Dive)
+        {
+            t: "Deep Learning & Neural Networks", 
+            c: "NEURAL NETWORK:\nModel komputasi yang terinspirasi dari struktur otak manusia (neuron dan sinapsis).\n\nDEEP LEARNING:\nPembelajaran mesin dengan banyak lapisan (hidden layers) untuk mengekstrak fitur tingkat tinggi dari data mentah. Contoh: Pengenalan wajah, mobil otonom."
+        },
+        {
+            t: "Natural Language Processing (NLP)", 
+            c: "FUNGSI:\nMemampukan komputer untuk memahami, menafsirkan, dan memanipulasi bahasa manusia.\n\nAPLIKASI:\n- Chatbot & Virtual Assistant\n- Terjemahan Bahasa (Google Translate)\n- Analisis Sentimen (Cek respon positif/negatif di sosmed)\n- Peringkasan Teks Otomatis."
+        },
+        {
+            t: "Computer Vision", 
+            c: "DEFINISI:\nBidang AI yang melatih komputer untuk menafsirkan dan memahami dunia visual (gambar/video).\n\nTEKNOLOGI:\n- Image Classification (Kucing vs Anjing)\n- Object Detection (Deteksi mobil di jalan)\n- Facial Recognition (Kunci HP wajah)\n- Medical Imaging (Deteksi tumor dari X-Ray)."
+        },
+        {
+            t: "Predictive Analytics", 
+            c: "METODE:\nMenggunakan data historis, algoritma statistik, dan teknik machine learning untuk mengidentifikasi kemungkinan hasil masa depan.\n\nCONTOH:\n- Prediksi harga saham\n- Prediksi cuaca\n- Rekomendasi produk (Netflix/Spotify)\n- Deteksi potensi kerusakan mesin (Maintenance)."
+        },
+        {
+            t: "Ethical Hacking (Pentesting)", 
+            c: "DEFINISI:\nPeretasan yang dilakukan dengan izin untuk menemukan kelemahan keamanan sistem sebelum dieksploitasi oleh peretas jahat.\n\nTAHAPAN:\n1. Reconnaissance (Pengumpulan info)\n2. Scanning (Pemindaian celah)\n3. Gaining Access (Eksploitasi)\n4. Maintaining Access\n5. Clearing Tracks (Hapus jejak)."
+        },
+        {
+            t: "Digital Forensics", 
+            c: "TUJUAN:\nMengidentifikasi, memelihara, memulihkan, menganalisis, dan menyajikan fakta tentang bukti digital dalam kasus hukum.\n\nPROSES:\n- Seizure (Penyitaan perangkat)\n- Acquisition (Duplikasi data bit-by-bit)\n- Analysis (Mencari bukti tersembunyi/terhapus)\n- Reporting (Laporan hukum)."
+        },
 
-        // --- TAHUN KEEMPAT (FINAL YEAR & GRADUATION) ---
-        // SEMESTER 11 (Pra-Skripsi & Pengabdian)
-        {t: "Metodologi Penelitian", c: "Fondasi karya ilmiah. Hipotesis, variabel, dan validasi data agar skripsimu tidak ditolak."},
-        {t: "Proposal Skripsi", c: "Bab 1 sampai Bab 3. Merancang solusi teknologi untuk masalah nyata di masyarakat."},
-        {t: "Kuliah Kerja Nyata (KKN)", c: "Digitalisasi Desa. Membantu UMKM lokal masuk ke e-commerce dan literasi digital."},
-        {t: "Kerja Praktik (Magang)", c: "Terjun ke industri unicorn. Merasakan tekanan deadline dan code review yang sesungguhnya."},
-        {t: "Start-up Creation", c: "Technopreneurship. Mengubah ide skripsi menjadi produk yang layak jual dan pitching ke investor."},
-        {t: "Sertifikasi Profesi", c: "Bukti kompetensi internasional (CISCO, Google, AWS). Tiket emas melamar kerja."},
-        // SEMESTER 12 (Tugas Akhir & Wisuda)
-        {t: "Seminar Hasil", c: "Mempresentasikan progress aplikasi di depan dosen. Revisi adalah makanan sehari-hari."},
-        {t: "Publikasi Jurnal", c: "Menyumbang ilmu pengetahuan global. Namamu abadi dalam sitasi akademik."},
-        {t: "Etika Profesi IT", c: "Sumpah jabatan engineer. Tidak menyalahgunakan data user demi keuntungan pribadi."},
-        {t: "Sidang Meja Hijau", c: "Pertempuran terakhir. Mempertahankan argumen di depan dewan penguji yang kritis."},
-        {t: "Yudisium", c: "Pengumuman nilai akhir. Saat IPK dikunci dan gelar S.Kom di depan mata."},
-        {t: "WISUDA SARJANA", c: "Toga dikenakan, tali dipindahkan. Selamat datang di dunia nyata, Sang Inovator!"}
+        // SEMESTER 7 (Modern Web & Management)
+        {
+            t: "Serverless Computing", 
+            c: "KONSEP:\nModel eksekusi cloud di mana penyedia cloud mengelola server secara dinamis. Developer hanya fokus menulis kode fungsi (FaaS - Function as a Service).\n\nKEUNTUNGAN:\n- Tidak perlu manajemen server\n- Scaling otomatis dari nol ke ribuan request\n- Bayar hanya saat kode dijalankan."
+        },
+        {
+            t: "Progressive Web Apps (PWA)", 
+            c: "FITUR:\nAplikasi web yang menggunakan fitur browser modern untuk memberikan pengalaman seperti aplikasi native (mobile app).\n\nKELEBIHAN:\n- Bisa diinstall di Home Screen\n- Bisa jalan Offline (Service Workers)\n- Push Notifications\n- Ringan dan cepat."
+        },
+        {
+            t: "GraphQL API", 
+            c: "DEFINISI:\nBahasa query untuk API dan runtime untuk memenuhi query tersebut dengan data yang ada.\n\nBEDA DENGAN REST:\n- REST: Banyak endpoint, data fixed (over-fetching/under-fetching).\n- GraphQL: Satu endpoint, client minta data spesifik yang dibutuhkan saja (efisien)."
+        },
+        {
+            t: "Tech Leadership (CTO Role)", 
+            c: "TANGGUNG JAWAB:\n- Menentukan visi teknologi perusahaan.\n- Memilih stack teknologi yang tepat.\n- Membangun dan memimpin tim engineering.\n- Menjembatani kebutuhan bisnis dengan solusi teknis.\n\nSKILL:\nKomunikasi, Manajemen Krisis, Mentoring."
+        },
+        {
+            t: "Startup Valuation & Funding", 
+            c: "VALUASI:\nNilai ekonomis dari sebuah bisnis startup. Dipengaruhi oleh tim, traksi, ukuran pasar, dan teknologi.\n\nTAHAP PENDANAAN:\n- Bootstrapping (Modal sendiri)\n- Angel Investor\n- Seed Funding\n- Series A, B, C (Venture Capital)\n- IPO (Saham Publik)."
+        },
+        {
+            t: "Hukum IT & HAKI", 
+            c: "UU ITE (Indonesia):\nMengatur informasi dan transaksi elektronik. Pasal karet, pencemaran nama baik, akses ilegal.\n\nHAKI (Hak Kekayaan Intelektual):\n- Hak Cipta (Copyright): Kode program, desain UI.\n- Paten: Penemuan teknologi baru.\n- Merek Dagang: Logo/Brand startup."
+        },
+
+        // SEMESTER 8 (Global Impact & Ethics)
+        {
+            t: "Green Computing", 
+            c: "TUJUAN:\nMengurangi dampak lingkungan dari teknologi komputer. Hemat energi dan kurangi limbah elektronik (e-waste).\n\nSTRATEGI:\n- Virtualisasi server (kurangi hardware fisik)\n- Algoritma efisien (kurangi beban CPU/listrik)\n- Daur ulang perangkat keras\n- Data center bertenaga terbarukan."
+        },
+        {
+            t: "Bioinformatics", 
+            c: "GABUNGAN:\nBiologi molekuler + Ilmu Komputer + Statistik.\n\nFUNGSI:\nMengelola dan menganalisis data biologis kompleks, seperti sekuensing DNA/RNA.\n\nMANFAAT:\nPenemuan obat baru, pemetaan gen manusia, personalisasi pengobatan medis."
+        },
+        {
+            t: "Smart Cities Implementation", 
+            c: "DEFINISI:\nKota yang menggunakan teknologi IoT dan data untuk meningkatkan kualitas layanan publik dan kesejahteraan warga.\n\nCONTOH:\n- Smart Traffic (Lampu merah adaptif)\n- Smart Waste (Tempat sampah lapor penuh)\n- E-Gov (Layanan administrasi online)\n- Smart Energy (Grid listrik efisien)."
+        },
+        {
+            t: "Space Technology Software", 
+            c: "TANTANGAN:\nSoftware di luar angkasa harus sangat andal (zero-failure), tahan radiasi, dan beroperasi real-time dengan latensi tinggi.\n\nCONTOH:\n- Sistem navigasi roket (SpaceX)\n- Kontrol rover Mars (NASA)\n- Komunikasi satelit."
+        },
+        {
+            t: "Quantum Computing Advance", 
+            c: "QUBIT:\nUnit dasar informasi kuantum. Berbeda dengan Bit (0 atau 1), Qubit bisa 0 dan 1 sekaligus (Superposisi).\n\nPOTENSI:\nMemecahkan masalah yang butuh ribuan tahun bagi superkomputer klasik dalam hitungan detik (contoh: simulasi molekul, pemecahan enkripsi RSA)."
+        },
+        {
+            t: "Transhumanism & Future Ethics", 
+            c: "FILOSOFI:\nGerakan yang mendukung penggunaan teknologi untuk meningkatkan kemampuan fisik dan mental manusia (Human 2.0).\n\nISU ETIKA:\n- Kesenjangan sosial (hanya orang kaya yang 'upgrade').\n- Hilangnya esensi kemanusiaan.\n- Chip implan otak (Neuralink)."
+        }
     ],
     'sejarah': [
         // --- TAHUN PERTAMA (NUSANTARA BASIC) ---
         // ZAMAN KUNO
-        {t: "Zaman Prasejarah", c: "Fosil di Sangiran membuktikan Nusantara adalah salah satu pusat peradaban manusia purba."},
-        {t: "Kerajaan Kutai", c: "Prasasti Yupa (Abad ke-4 M) adalah bukti tertulis pertama sejarah Indonesia. Awal mula zaman sejarah."},
-        {t: "Kemaritiman Sriwijaya", c: "Sriwijaya menguasai Selat Malaka. Nenek moyang kita benar-benar seorang pelaut yang ulung."},
-        {t: "Sumpah Palapa", c: "Gajah Mada menolak istirahat sebelum Nusantara bersatu. Tekad baja menyatukan ribuan pulau."},
-        {t: "Masuknya Islam", c: "Pedagang Gujarat dan Wali Songo menyebarkan Islam dengan damai melalui akulturasi budaya."},
-        {t: "Kerajaan Demak", c: "Pusat penyebaran Islam pertama di Jawa dan runtuhnya dominasi Majapahit."},
+        {
+            t: "Zaman Prasejarah Nusantara", 
+            c: "MANUSIA PURBA:\n1. Meganthropus (Manusia Raksasa): Paling tua.\n2. Pithecanthropus (Manusia Kera): Erectus (berjalan tegak).\n3. Homo Sapiens (Manusia Cerdas): Leluhur manusia modern.\n\nKEBUDAYAAN:\n- Paleolitikum (Batu Tua): Nomaden, berburu.\n- Neolitikum (Batu Muda): Menetap, bercocok tanam."
+        },
+        {
+            t: "Kerajaan Kutai Martadipura", 
+            c: "LOKASI:\nSungai Mahakam, Kalimantan Timur. Kerajaan Hindu tertua di Indonesia (Abad 4 M).\n\nBUKTI SEJARAH:\n7 Prasasti Yupa (Tiang batu pengikat hewan kurban) bertuliskan huruf Pallawa bahasa Sanskerta.\n\nRAJA TERKENAL:\n- Kudungga (Pendiri)\n- Aswawarman (Pembentuk Wangsa)\n- Mulawarman (Masa Kejayaan, kurban 20.000 sapi)."
+        },
+        {
+            t: "Kemaritiman Sriwijaya", 
+            c: "LOKASI:\nPalembang, Sumatera Selatan (Abad 7-13 M). Kerajaan Buddha terbesar.\n\nKEJAYAAN:\n- Menguasai Selat Malaka (Jalur perdagangan dunia).\n- Pusat studi agama Buddha (Dikunjungi I-Tsing).\n- Armada laut yang sangat kuat.\n\nPRASASTI:\nKedukan Bukit, Talang Tuo, Kota Kapur."
+        },
+        {
+            t: "Majapahit & Sumpah Palapa", 
+            c: "LOKASI:\nTrowulan, Jawa Timur (1293-1500 M). Kerajaan Hindu-Buddha terbesar pemersatu Nusantara.\n\nTOKOH:\n- Raden Wijaya (Pendiri)\n- Hayam Wuruk (Raja Masa Emas)\n- Gajah Mada (Mahapatih).\n\nSUMPAH PALAPA:\nSumpah Gajah Mada untuk tidak menikmati kemewahan duniawi sebelum menyatukan seluruh pulau Nusantara."
+        },
+        {
+            t: "Masuknya Islam ke Nusantara", 
+            c: "TEORI MASUKNYA:\n1. Teori Gujarat (India)\n2. Teori Mekkah (Arab)\n3. Teori Persia (Iran)\n\nSALURAN PENYEBARAN:\n- Perdagangan (Pedagang Muslim)\n- Perkawinan\n- Pendidikan (Pesantren)\n- Kesenian (Wayang Sunan Kalijaga)\n- Tasawuf."
+        },
+        {
+            t: "Kesultanan Demak", 
+            c: "SEJARAH:\nKerajaan Islam pertama di Jawa (1478 M). Didirikan oleh Raden Patah (putra Majapahit).\n\nPERAN:\n- Pusat penyebaran Islam di Jawa (Wali Songo).\n- Penyerangan ke Portugis di Malaka (oleh Pati Unus / Pangeran Sabrang Lor).\n\nPENINGGALAN:\nMasjid Agung Demak (Soko Tatal)."
+        },
+        
         // ZAMAN KOLONIAL
-        {t: "Kedatangan Portugis", c: "Mencari rempah-rempah (Gold, Glory, Gospel). Awal mula kolonialisme di Maluku."},
-        {t: "VOC (Kompeni)", c: "Perusahaan multinasional pertama di dunia yang menjajah dengan kekuatan modal dan monopoli."},
-        {t: "Perang Diponegoro", c: "Perang Jawa (1825-1830) membuat Belanda bangkrut, memicu sistem Tanam Paksa yang kejam."},
-        {t: "Politik Etis", c: "Balas budi Belanda: Irigasi, Emigrasi, Edukasi. Melahirkan kaum terpelajar Indonesia."},
-        {t: "Kebangkitan Nasional", c: "Budi Utomo 1908. Perjuangan tak lagi fisik kedaerahan, tapi intelektual nasional."},
-        {t: "Sumpah Pemuda", c: "1928 adalah momen sakral. Kita sadar bahwa kita Satu Nusa, Satu Bangsa, dan Satu Bahasa."},
+        {
+            t: "Kolonialisme Portugis & Spanyol", 
+            c: "MOTIVASI 3G:\n1. Gold (Kekayaan/Rempah)\n2. Glory (Kejayaan/Wilayah)\n3. Gospel (Penyebaran Agama)\n\nPERISTIWA:\n- 1511: Portugis (Alfonso de Albuquerque) menaklukkan Malaka.\n- 1512: Sampai di Maluku (Pusat Rempah).\n- Perjanjian Saragosa: Pembagian wilayah Spanyol & Portugis."
+        },
+        {
+            t: "VOC (Vereenigde Oostindische Compagnie)", 
+            c: "DEFINISI:\nKongsi Dagang Hindia Timur Belanda (1602). Perusahaan multinasional pertama di dunia.\n\nHAK OKTROI (Istimewa):\n- Hak monopoli dagang.\n- Hak mencetak uang.\n- Hak memelihara tentara & perang.\n- Hak memerintah (negara dalam negara).\n\nKEBANGKRUTAN (1799):\nKorupsi pegawai, biaya perang, persaingan dagang."
+        },
+        {
+            t: "Perang Diponegoro (Perang Jawa)", 
+            c: "WAKTU:\n1825 - 1830 (5 Tahun).\n\nPENYEBAB:\n- Belanda mematok tanah makam leluhur Pangeran Diponegoro.\n- Penderitaan rakyat akibat pajak.\n\nAKHIR PERANG:\nDiponegoro ditipu saat perundingan di Magelang, ditangkap, dan diasingkan ke Makassar. Perang ini membuat kas Belanda kosong."
+        },
+        {
+            t: "Politik Etis (Balas Budi)", 
+            c: "LATAR BELAKANG:\nKritik Van Deventer atas eksploitasi Belanda terhadap pribumi (Tanam Paksa).\n\nTRILOGI VAN DEVENTER:\n1. Irigasi (Pengairan sawah)\n2. Emigrasi (Pemerataan penduduk)\n3. Edukasi (Pendidikan) -> Paling berdampak, melahirkan golongan terpelajar Indonesia."
+        },
+        {
+            t: "Kebangkitan Nasional (1908)", 
+            c: "BUDI UTOMO:\nOrganisasi modern pertama (20 Mei 1908) oleh Dr. Sutomo & Wahidin Sudirohusodo.\n\nMAKNA:\nPerubahan pola perjuangan dari:\n- Fisik (Senjata) -> Diplomasi/Intelektual\n- Kedaerahan -> Nasional\n- Tergantung pemimpin -> Terorganisir."
+        },
+        {
+            t: "Sumpah Pemuda (1928)", 
+            c: "KONGRES PEMUDA II:\n27-28 Oktober 1928 di Jakarta.\n\nISI SUMPAH:\n1. Bertumpah darah satu: Tanah Indonesia.\n2. Berbangsa satu: Bangsa Indonesia.\n3. Menjunjung bahasa persatuan: Bahasa Indonesia.\n\nLAGU KEBANGSAAN:\nIndonesia Raya pertama kali diperdengarkan oleh W.R. Supratman (biola)."
+        },
+
         // ZAMAN KEMERDEKAAN
-        {t: "Pendudukan Jepang", c: "Saudara Tua yang kejam (Romusha), tapi melatih militer pemuda kita (PETA)."},
-        {t: "BPUPKI & PPKI", c: "Sidang-sidang yang merumuskan dasar negara Pancasila dan UUD 1945."},
-        {t: "Proklamasi 1945", c: "17 Agustus pukul 10:00. Bangsa ini menyatakan kemerdekaannya atas nasib sendiri."},
-        {t: "Pertempuran 10 Nov", c: "Surabaya membara. Bukti bahwa 'Merdeka atau Mati' bukan sekadar slogan."},
-        {t: "Diplomasi Kemerdekaan", c: "Linggarjati, Renville, Roem-Roijen. Perjuangan lewat meja perundingan yang alot."},
-        {t: "KMB & RIS", c: "Belanda akhirnya mengakui kedaulatan, meski sempat memecah kita menjadi negara serikat."},
-        // ZAMAN MODERN
-        {t: "Demokrasi Liberal", c: "Era jatuh bangun kabinet. Kebebasan berpendapat tinggi, tapi stabilitas rendah."},
-        {t: "Dekrit Presiden 1959", c: "Kembali ke UUD 45. Awal Demokrasi Terpimpin Soekarno."},
-        {t: "Peristiwa G30S", c: "Malam kelam 1965 yang mengubah arah politik bangsa secara drastis."},
-        {t: "Orde Baru", c: "Stabilitas ekonomi dan pembangunan fisik (Repelita), namun dengan kontrol ketat."},
-        {t: "Reformasi 1998", c: "Runtuhnya rezim 32 tahun. Awal kebebasan pers dan demokrasi langsung."},
-        {t: "Sejarah Kontemporer", c: "Tantangan masa kini: Menjaga persatuan di tengah arus globalisasi digital."},
+        {
+            t: "Pendudukan Jepang (1942-1945)", 
+            c: "PROPAGANDA 3A:\nJepang Cahaya, Pelindung, Pemimpin Asia.\n\nDAMPAK NEGATIF:\n- Romusha (Kerja Paksa)\n- Kelaparan & Perampasan hasil bumi\n\nDAMPAK POSITIF:\n- Pelatihan Militer (PETA, Heiho)\n- Penggunaan Bahasa Indonesia\n- Pembentukan BPUPKI & PPKI."
+        },
+        {
+            t: "Perumusan Dasar Negara (BPUPKI)", 
+            c: "SIDANG BPUPKI:\nMerumuskan dasar negara Indonesia Merdeka.\n\nLAHIRNYA PANCASILA (1 Juni 1945):\nPidato Ir. Soekarno mengusulkan 5 sila dasar.\n\nPIAGAM JAKARTA (22 Juni):\nRumusan awal Pancasila oleh Panitia Sembilan. Sila 1 kemudian diubah demi persatuan bangsa."
+        },
+        {
+            t: "Proklamasi Kemerdekaan", 
+            c: "PERISTIWA RENGASDENGKLOK:\nGolongan Muda menculik Soekarno-Hatta agar segera memproklamasikan kemerdekaan, lepas dari pengaruh Jepang.\n\nDETIK-DETIK PROKLAMASI:\n- Tanggal: 17 Agustus 1945, pukul 10.00 WIB.\n- Lokasi: Jl. Pegangsaan Timur 56, Jakarta.\n- Bendera: Dijahit Fatmawati.\n- Teks: Diketik Sayuti Melik."
+        },
+        {
+            t: "Pertempuran 10 November", 
+            c: "LOKASI:\nSurabaya. Perang terbuka terbesar pasca kemerdekaan melawan Sekutu (Inggris).\n\nPENYEBAB:\nTewasnya Jenderal Mallaby dan ultimatum Inggris agar rakyat menyerahkan senjata.\n\nTOKOH:\nBung Tomo (Membakar semangat lewat radio). Diperingati sebagai Hari Pahlawan."
+        },
+        {
+            t: "Diplomasi Mempertahankan Kemerdekaan", 
+            c: "PERJUANGAN MEJA PERUNDINGAN:\n1. Linggarjati: Pengakuan de facto Jawa, Sumatera, Madura.\n2. Renville: Wilayah RI makin sempit.\n3. Roem-Roijen: Gencatan senjata.\n4. KMB (Konferensi Meja Bundar): Belanda mengakui kedaulatan Indonesia (RIS)."
+        },
+        {
+            t: "Republik Indonesia Serikat (RIS)", 
+            c: "KONSEP:\nIndonesia berubah menjadi negara serikat/federal hasil KMB (1949). Terdiri dari negara-negara bagian buatan Belanda (Boneka).\n\nKEMBALI KE NKRI (1950):\nRakyat menolak RIS dan menuntut kembali ke Negara Kesatuan Republik Indonesia melalui Mosi Integral Natsir."
+        },
 
-        // --- TAHUN KEDUA (SEJARAH DUNIA & TEMATIK) ---
-        // SEMESTER 5 (Dunia & Pengaruhnya)
-        {t: "Jalur Rempah Global", c: "Nusantara adalah magnet dunia. Cengkeh Ternate pernah lebih mahal dari emas di pasar Eropa."},
-        {t: "Revolusi Industri", c: "Mesin uap mengubah wajah dunia. Awal mula polusi dan produksi massal yang mematikan pengrajin lokal."},
-        {t: "Perang Dunia I", c: "Runtuhnya kekaisaran tua (Ottoman, Austria). Teknologi pembunuh massal pertama diperkenalkan."},
-        {t: "The Great Depression", c: "1930, saat ekonomi dunia runtuh. Bukti bahwa pasar saham global bisa memiskinan negara jajahan."},
-        {t: "Fasisme & Nazisme", c: "Bahaya nasionalisme ekstrem. Pelajaran mahal tentang kemanusiaan dan genosida."},
-        {t: "Perang Dingin", c: "Dunia terbelah dua. Perebutan pengaruh antara AS dan Uni Soviet di negara berkembang (Proxy War)."},
-        // SEMESTER 6 (Diplomasi Internasional)
-        {t: "Konferensi Asia Afrika", c: "Bandung 1955. Saat Indonesia memimpin bangsa-bangsa terjajah Asia-Afrika untuk bangkit melawan kolonialisme."},
-        {t: "Gerakan Non-Blok", c: "Tidak ke Kiri, tidak ke Kanan. Sikap tegas politik Bebas Aktif Indonesia di tengah badai Perang Dingin."},
-        {t: "Sejarah PBB", c: "Organisasi penjaga perdamaian. Peran diplomat Indonesia (Adam Malik) di panggung dunia."},
-        {t: "Sejarah ASEAN", c: "Persahabatan tetangga. Menjaga stabilitas kawasan Asia Tenggara dari campur tangan asing."},
-        {t: "Timor Timur", c: "Sejarah integrasi dan perpisahan (1975-1999). Pelajaran pahit tentang hak penentuan nasib sendiri."},
-        {t: "Konflik Laut China", c: "Sejarah klaim wilayah di Natuna. Kedaulatan maritim di era modern."},
-        // SEMESTER 7 (Sejarah Kebudayaan)
-        {t: "Budaya Maritim", c: "Nenek moyangku orang pelaut. Teknologi perahu Pinisi dan navigasi bintang yang mendunia."},
-        {t: "Sistem Subak Bali", c: "Warisan dunia UNESCO. Demokrasi pengelolaan air yang adil dan lestari sejak abad ke-11."},
-        {t: "Sejarah Batik", c: "Filosofi dalam goresan canting. Dari pakaian raja menjadi identitas bangsa yang diakui dunia."},
-        {t: "Sastra Klasik", c: "I La Galigo (Sulawesi) adalah salah satu karya sastra epik terpanjang di dunia, melebihi Mahabharata."},
-        {t: "Bahasa Indonesia", c: "Keajaiban Sumpah Pemuda. Menyatukan ratusan suku dengan satu bahasa persatuan tanpa menghapus bahasa ibu."},
-        {t: "Sejarah Pers", c: "Tirto Adhi Soerjo. Pers sebagai senjata tajam 'Bumi Putera' melawan ketidakadilan kolonial."},
-        // SEMESTER 8 (Isu Sosial & Kritis)
-        {t: "Gerakan Wanita", c: "Bukan hanya Kartini. Ada Laksamana Malahayati (Aceh) dan Rasuna Said (Padang). Wanita pejuang setara pria."},
-        {t: "Sejarah Pendidikan", c: "Dari Taman Siswa hingga Kampus Merdeka. Evolusi cara kita mencerdaskan kehidupan bangsa."},
-        {t: "Sejarah Korupsi", c: "VOC bangkrut karena korupsi ('Vergaan Onder Corruptie'). Penyakit kronis yang harus kita putus."},
-        {t: "Konflik Sosial", c: "Ambon, Poso, Sampit. Luka sejarah yang harus diingat agar kita lebih menghargai toleransi."},
-        {t: "Historiografi", c: "Sejarah ditulis oleh pemenang? Belajar membaca sumber sejarah secara kritis dan objektif."},
-        {t: "Cagar Budaya", c: "Menjaga Borobudur dari bom waktu pelapukan. Merawat ingatan bangsa adalah tugas generasi muda."},
+        // --- TAHUN KEDUA ---
+        // SEMESTER 3 (Zaman Modern & Isu Global)
+        {
+            t: "Demokrasi Liberal (1950-1959)", 
+            c: "CIRI KHAS:\n- Sistem Parlementer (PM memimpin pemerintahan, Presiden simbol negara).\n- Banyak Partai Politik.\n- Kabinet Jatuh Bangun (7 Kabinet dalam 9 tahun).\n\nDAMPAK:\nKetidakstabilan politik dan pembangunan terhambat, tapi kebebasan pers tinggi."
+        },
+        {
+            t: "Dekrit Presiden 5 Juli 1959", 
+            c: "LATAR BELAKANG:\nKegagalan Konstituante menyusun UUD baru dan ketidakstabilan politik.\n\nISI DEKRIT:\n1. Pembubaran Konstituante.\n2. Kembali ke UUD 1945 (UUDS 1950 tidak berlaku).\n3. Pembentukan MPRS dan DPAS.\n\nMenandai dimulainya Demokrasi Terpimpin."
+        },
+        {
+            t: "Peristiwa G30S/PKI (1965)", 
+            c: "TRAGEDI NASIONAL:\nPenculikan dan pembunuhan 6 Jenderal dan 1 Perwira TNI AD pada malam 30 September 1965.\n\nDAMPAK:\n- Krisis politik dan ekonomi.\n- Pembubaran PKI.\n- Lahirnya Supersemar (Surat Perintah 11 Maret).\n- Peralihan kekuasaan dari Orde Lama ke Orde Baru."
+        },
+        {
+            t: "Masa Orde Baru (1966-1998)", 
+            c: "KEPEMIMPINAN SOEHARTO:\nFokus pada Stabilitas Politik dan Pertumbuhan Ekonomi (Trilogi Pembangunan).\n\nKEBIJAKAN:\n- Repelita (Rencana Pembangunan Lima Tahun).\n- Swasembada Beras.\n- Keluarga Berencana (KB).\n- Dwifungsi ABRI.\n\nAKHIR:\nKrisis Moneter 1997 dan Reformasi 1998."
+        },
+        {
+            t: "Reformasi 1998", 
+            c: "PENYEBAB:\n- Krisis Ekonomi (Rupiah anjlok).\n- KKN (Korupsi, Kolusi, Nepotisme).\n- Tuntutan Demokrasi Mahasiswa.\n\nAGENDA REFORMASI:\n1. Adili Soeharto & kroninya.\n2. Amandemen UUD 1945.\n3. Otonomi Daerah.\n4. Penghapusan Dwifungsi ABRI.\n5. Kebebasan Pers."
+        },
+        {
+            t: "Sejarah Kontemporer & Globalisasi", 
+            c: "TANTANGAN MASA KINI:\n- Revolusi Industri 4.0.\n- Menjaga identitas bangsa di era digital.\n- Toleransi dan Radikalisme.\n- Peran Indonesia di G20 dan kancah global.\n\nSejarah terus berjalan, dan kitalah penulis bab selanjutnya."
+        },
+        
+        // SEMESTER 4 (Sejarah Tematik)
+        {
+            t: "Sejarah Jalur Rempah", 
+            c: "JALUR SUTRA MARITIM:\nJaringan rute perdagangan laut kuno yang menghubungkan Timur (Nusantara/China) dan Barat (Eropa/Timur Tengah).\n\nKOMODITAS:\nCengkeh (Ternate), Pala (Ambon), Lada. Dulu harganya lebih mahal dari emas di Eropa.\n\nDAMPAK:\nNusantara menjadi incaran kolonialisme bangsa Eropa."
+        },
+        {
+            t: "Revolusi Industri Dunia", 
+            c: "TAHAPAN:\n1.0: Mesin Uap (Abad 18) - Mekanisasi.\n2.0: Listrik & Assembly Line (Abad 19) - Produksi Massal.\n3.0: Komputer & Otomasi (Abad 20) - IT.\n4.0: Cyber-Physical (Sekarang) - IoT, AI, Big Data.\n\nDAMPAK SOSIAL:\nUrbanisasi, perubahan struktur kerja, dan kesenjangan ekonomi."
+        },
+        {
+            t: "Perang Dunia I (1914-1918)", 
+            c: "PENYEBAB:\nPembunuhan Pangeran Franz Ferdinand (Austria) dan sistem aliansi negara Eropa.\n\nPIHAK TERLIBAT:\n- Blok Sekutu (Inggris, Perancis, Rusia, AS).\n- Blok Sentral (Jerman, Austria-Hungaria, Ottoman).\n\nAKIBAT:\nRuntuhnya 4 kekaisaran besar dan lahirnya LBB (Liga Bangsa-Bangsa)."
+        },
+        {
+            t: "Perang Dunia II (1939-1945)", 
+            c: "PEMICU:\nInvasi Jerman ke Polandia.\n\nPIHAK:\n- Poros (Jerman, Jepang, Italia).\n- Sekutu (AS, Inggris, Uni Soviet, China).\n\nPERISTIWA KUNCI:\n- Holocaust (Genosida Yahudi).\n- Bom Atom Hiroshima & Nagasaki.\n- Lahirnya PBB (Perserikatan Bangsa-Bangsa)."
+        },
+        {
+            t: "Perang Dingin (Cold War)", 
+            c: "DEFINISI:\nKetegangan geopolitik antara Blok Barat (AS - Kapitalis) dan Blok Timur (Uni Soviet - Komunis) tanpa perang fisik langsung (1947-1991).\n\nBENTUK PERSAINGAN:\n- Perlombaan Senjata Nuklir.\n- Perlombaan Luar Angkasa (Space Race).\n- Proxy War (Perang Korea, Vietnam).\n- Spionase (CIA vs KGB)."
+        },
+        {
+            t: "Konferensi Asia Afrika (KAA 1955)", 
+            c: "LOKASI:\nGedung Merdeka, Bandung.\n\nTUJUAN:\nMempererat solidaritas negara-negara Asia-Afrika melawan kolonialisme dan neokolonialisme.\n\nHASIL:\nDasasila Bandung. Menjadi cikal bakal Gerakan Non-Blok (GNB).\n\nPERAN INDONESIA:\nTuan rumah dan pelopor (PM Ali Sastroamidjojo)."
+        },
+        
+        // SEMESTER 5 (Sejarah Diplomasi & Regional)
+        {
+            t: "Gerakan Non-Blok (GNB)", 
+            c: "PRINSIP:\nTidak memihak Blok Barat maupun Blok Timur dalam Perang Dingin.\n\nPENDIRI:\nSoekarno (Indonesia), Tito (Yugoslavia), Nasser (Mesir), Nehru (Mesir), Nkrumah (Ghana).\n\nTUJUAN:\nMeredakan ketegangan dunia dan memperjuangkan kemerdekaan negara terjajah."
+        },
+        {
+            t: "Sejarah ASEAN", 
+            c: "PENDIRIAN:\n8 Agustus 1967 di Bangkok. Oleh 5 Menlu (Adam Malik - Indonesia).\n\nTUJUAN:\nMempercepat pertumbuhan ekonomi, kemajuan sosial, dan perdamaian regional Asia Tenggara.\n\nPRINSIP:\nNon-intervensi (tidak ikut campur urusan dalam negeri anggota)."
+        },
+        {
+            t: "Sejarah Perserikatan Bangsa-Bangsa (PBB)", 
+            c: "PENDIRIAN:\n24 Oktober 1945 pasca PD II, menggantikan LBB.\n\nORGAN UTAMA:\n- Majelis Umum\n- Dewan Keamanan (5 Anggota Tetap punya Hak Veto)\n- Mahkamah Internasional\n- Sekretariat.\n\nINDONESIA DI PBB:\nPernah keluar (1965) saat konfrontasi Malaysia, lalu masuk kembali (1966)."
+        },
+        {
+            t: "Integrasi Timor Timur", 
+            c: "SEJARAH:\n- 1975: Operasi Seroja, integrasi ke Indonesia (Provinsi ke-27) pasca ditinggal Portugal.\n- 1999: Referendum/Jajak Pendapat di masa Presiden Habibie.\n- Hasil: Mayoritas memilih merdeka -> Lepas menjadi negara Timor Leste."
+        },
+        {
+            t: "Konflik Laut China Selatan", 
+            c: "ISU UTAMA:\nKlaim tumpang tindih wilayah perairan dan kepulauan (Spratly & Paracel) oleh China, Vietnam, Filipina, Malaysia, Brunei.\n\nPOSISI INDONESIA:\nBukan negara pengklaim (non-claimant), namun menjaga kedaulatan ZEE di Natuna Utara berdasarkan UNCLOS 1982."
+        },
+        {
+            t: "Sejarah Palestina & Israel", 
+            c: "AKAR KONFLIK:\nPerebutan wilayah tanah suci pasca runtuhnya Ottoman dan Mandat Inggris (1948). Deklarasi negara Israel memicu perang Arab-Israel.\n\nISU KUNCI:\nStatus Yerusalem, perbatasan, pengungsi, dan permukiman ilegal.\n\nSIKAP RI:\nMendukung kemerdekaan Palestina (Solusi Dua Negara)."
+        },
 
-        // --- TAHUN KETIGA (FILOSOFI & ANALISIS MENDALAM) ---
-        // SEMESTER 9 (Philosophy)
-        {t: "Filsafat Sejarah", c: "Apakah sejarah berulang (Siklus) atau bergerak lurus (Linear)? Memahami pola waktu."},
-        {t: "Sejarah Pemikiran Ekonomi", c: "Dari barter ke Bitcoin. Evolusi cara manusia menilai harga dan nilai tukar."},
-        {t: "Sejarah Pandemi", c: "Black Death hingga Covid-19. Bagaimana wabah membentuk ulang peta politik dan sosial."},
-        {t: "Sejarah Militer", c: "Dari Sun Tzu hingga Perang Cyber. Evolusi strategi mempertahankan kedaulatan."},
-        {t: "Arkeologi Maritim", c: "Harta karun di dasar laut. Membaca sejarah jalur perdagangan dari bangkai kapal."},
-        {t: "Antropologi Sejarah", c: "Evolusi budaya manusia. Mengapa kita hidup berkelompok dan menciptakan mitos?"},
-        // SEMESTER 10 (Global Perspective)
-        {t: "Sejarah Timur Tengah", c: "Sumeria hingga Konflik Modern. Pusat peradaban awal dan dinamika minyak dunia."},
-        {t: "Sejarah Asia Timur", c: "Kebangkitan Naga dan Samurai. Restorasi Meiji dan Revolusi Kebudayaan."},
-        {t: "Sejarah Amerika Latin", c: "Aztec, Inca, Maya. Peradaban yang hilang dan kolonialisme Spanyol."},
-        {t: "Sejarah Afrika", c: "Mansa Musa dan Great Zimbabwe. Benua terkaya yang terlupakan sejarah barat."},
-        {t: "Futurisme Sejarah", c: "Menggunakan pola masa lalu untuk memprediksi masa depan. Sejarah sebagai alat ramal."},
-        {t: "Preservasi Digital", c: "Bagaimana menyimpan sejarah hari ini agar bisa dibaca 1000 tahun lagi? Tantangan 'Dark Age' digital."},
-
-        // --- TAHUN KEEMPAT (FINAL YEAR & GRADUATION) ---
-        // SEMESTER 11 (Pra-Skripsi & Pengabdian)
-        {t: "Metodologi Sejarah Kritis", c: "Heuristik, Kritik, Interpretasi, Historiografi. 4 Pilar validitas kebenaran masa lalu."},
-        {t: "Penulisan Proposal", c: "Menentukan topik yang belum pernah dijamah. Menggali arsip yang tertimbun debu."},
-        {t: "KKN Tematik Budaya", c: "Tinggal bersama masyarakat adat. Mencatat kearifan lokal yang terancam punah."},
-        {t: "Magang Museum/Arsip", c: "Menjadi kurator muda. Merawat keris kuno dan naskah rapuh agar tetap abadi."},
-        {t: "Kajian Manuskrip", c: "Filologi. Membaca aksara kuno di daun lontar untuk mengungkap rahasia leluhur."},
-        {t: "Sejarah Lisan", c: "Mewawancarai veteran perang dan saksi sejarah. Merekam suara yang tak tertulis di buku."},
-        // SEMESTER 12 (Tugas Akhir & Wisuda)
-        {t: "Seminar Sejarah", c: "Memaparkan temuan arsip baru. Berdebat dengan sejarawan senior tentang interpretasi fakta."},
-        {t: "Jurnalistik Sejarah", c: "Menulis sejarah populer untuk majalah/web. Agar sejarah tidak membosankan bagi awam."},
-        {t: "Konservasi Cagar Budaya", c: "Teknik kimia dan fisika untuk memperlambat pelapukan candi dan gedung tua."},
-        {t: "Sidang Skripsi", c: "Pembuktian tesis sejarahmu. Apakah kamu menemukan kebenaran baru atau sekadar mengulang cerita lama?"},
-        {t: "Yudisium", c: "Pengukuhan gelar. Nilai dari ribuan halaman buku yang telah kamu baca selama 4 tahun."},
-        {t: "WISUDA SARJANA", c: "Gelar S.Hum disematkan. Kamu kini adalah Penjaga Ingatan Bangsa. Jangan biarkan kami lupa!"}
+        // SEMESTER 6 (Sejarah Kebudayaan & Sosial)
+        {
+            t: "Sistem Subak Bali (Warisan Dunia)", 
+            c: "DEFINISI:\nSistem pengairan sawah (irigasi) tradisional Bali yang berbasis masyarakat dan filosofi Tri Hita Karana (Tuhan, Manusia, Alam).\n\nNILAI:\nDemokratis, adil, dan egaliter. Petani di hilir tetap mendapat air meski di hulu bisa memonopoli. Diakui UNESCO 2012."
+        },
+        {
+            t: "Sejarah Batik Indonesia", 
+            c: "MAKNA:\nSeni melukis kain dengan lilin (malam). Setiap motif memiliki filosofi (contoh: Parang = kekuasaan/raja).\n\nPENGAKUAN:\nUNESCO menetapkan Batik sebagai Warisan Kemanusiaan untuk Budaya Lisan dan Nonbendawi pada 2 Oktober 2009 (Hari Batik Nasional)."
+        },
+        {
+            t: "Sejarah Bahasa Indonesia", 
+            c: "ASAL USUL:\nBerasal dari Bahasa Melayu Riau (Lingua Franca perdagangan Nusantara).\n\nSUMPAH PEMUDA:\nDiangkat menjadi bahasa persatuan, bukan bahasa Jawa (mayoritas) demi kesetaraan.\n\nPERKEMBANGAN:\nEjaan Van Ophuijsen -> Soewandi -> EYD -> PUEBI."
+        },
+        {
+            t: "Gerakan Emansipasi Wanita", 
+            c: "TOKOH:\n- R.A. Kartini (Jepara): Habis Gelap Terbitlah Terang. Pendidikan wanita.\n- Dewi Sartika (Bandung): Sekolah Istri.\n- Cut Nyak Dien (Aceh): Perjuangan fisik perang.\n- Rasuna Said (Padang): Politik dan Pers.\n\nTUJUAN:\nKesetaraan hak pendidikan dan sosial bagi perempuan."
+        },
+        {
+            t: "Sejarah Pendidikan Nasional", 
+            c: "ERA KOLONIAL:\nSekolah hanya untuk bangsawan/Eropa (ELS, HIS, STOVIA).\n\nTAMAN SISWA (1922):\nKi Hajar Dewantara mendirikan sekolah untuk rakyat jelata. Semboyan: Ing Ngarso Sung Tulodo, Ing Madyo Mangun Karso, Tut Wuri Handayani.\n\nERA MERDEKA:\nPendidikan untuk semua (Wajib Belajar)."
+        },
+        {
+            t: "Pelestarian Cagar Budaya", 
+            c: "DEFINISI:\nWarisan budaya bersifat kebendaan (Benda, Bangunan, Struktur, Situs, Kawasan) yang perlu dilestarikan.\n\nCONTOH:\nCandi Borobudur, Situs Sangiran, Kota Tua Jakarta.\n\nTANTANGAN:\nPencurian artefak, vandalisme, bencana alam, dan pembangunan modern yang merusak situs."
+        }
     ]
 };
 
@@ -11728,7 +12003,8 @@ function checkObjectCollision(x, y) {
         // UPDATE TERBARU: Menambahkan 'jaringikan' dan 'mejamakanikan' agar belakangnya bisa dilewati
         // UPDATE TERBARU: Menambahkan 'rakmentor', 'pialamentor', 'vasmentor' agar belakangnya bisa dilewati
         // UPDATE TERBARU: Menambahkan 'mejamasterguild' agar belakangnya bisa dilewati
-        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi') || obj.img.includes('kebunayu') || obj.img.includes('lemariobat') || obj.img.includes('arsiprekammedis') || obj.img.includes('jaringikan') || obj.img.includes('mejamakanikan') || obj.img.includes('rakmentor') || obj.img.includes('pialamentor') || obj.img.includes('vasmentor') || obj.img.includes('mejamasterguild')))) && (obj.h || 1) > 0) {
+        // UPDATE TERBARU: Menambahkan aset rumah Ayu (dapur, lemari, kasur, meja) agar belakangnya bisa dilewati
+        if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi') || obj.img.includes('kebunayu') || obj.img.includes('lemariobat') || obj.img.includes('arsiprekammedis') || obj.img.includes('jaringikan') || obj.img.includes('mejamakanikan') || obj.img.includes('rakmentor') || obj.img.includes('pialamentor') || obj.img.includes('vasmentor') || obj.img.includes('mejamasterguild') || obj.img.includes('dapurayaayu') || obj.img.includes('lemariayaayu') || obj.img.includes('kasurayaayu') || obj.img.includes('mejaayaayu')))) && (obj.h || 1) > 0) {
             yOffset = originalH * 0.4; // Turunkan hitbox 40% dari atas
             oh = originalH * 0.6;      // Sisa tinggi hitbox 60%
         }
@@ -13842,14 +14118,22 @@ function interactNPC(npc) {
                             }
                             
                             // Fallback jika array kosong
-                            const matIndex = (STATE.day - 1) % (materials.length || 1);
+                            // UPDATE: Gunakan progress akademik (jumlah materi yg sudah dipelajari), BUKAN hari kalender (STATE.day).
+                            // Ini agar jika mendaftar telat (misal hari 100), tetap mulai dari materi pertama.
+                            let progressCount = (STATE.player.learnedSubjects || []).length;
+                            
+                            // Jika Mode Review (sudah absen hari ini), berarti materi baru saja ditambahkan ke array.
+                            // Kita harus mundur 1 index untuk menampilkan materi yang barusan dipelajari.
+                            if (isReview && progressCount > 0) progressCount--;
+
+                            const matIndex = progressCount % (materials.length || 1);
                             const content = materials[matIndex] || {t: "Review Materi Dasar", c: "Membaca ulang catatan untuk memperkuat pemahaman dasar."};
                             
                             const oldTime = Math.floor(STATE.time / 100);
                             // Tampilkan info waktu berbeda jika review
                             const timeInfo = isReview ? "(Mode Review: Kamu sudah mengikuti kelas ini)" : `(Kamu mengikuti kelas dari jam ${oldTime}:00 hingga 14:00)`;
                             
-                            showDialogue(`MATERI KULIAH (HARI ${STATE.day})`, 
+                            showDialogue(`MATERI KULIAH (PERTEMUAN KE-${progressCount + 1})`, 
                                 `**MATA KULIAH: ${content.t}**\n\n"${content.c}"\n\n${timeInfo}`, 
                                 [{text: isReview ? "Tutup" : "Catat & Pulang (INT +2, EXP +100)", action: () => {
                                     if(!isReview) {
@@ -15040,7 +15324,8 @@ function getMissionBoardText() {
             if (isWeekend) {
                 txt += `🚫 Kuliah Libur (Akhir Pekan)\n`;
             } else {
-                const isKuliah = STATE.time >= 800 && STATE.time <= 1400 && STATE.location === 'school_interior'; // Note: simplified logic
+                // FIX: Gunakan p.lastAttendanceDay agar konsisten dengan Jurnal Quest
+                const isKuliah = p.lastAttendanceDay === day; 
                 txt += `${chk(isKuliah)} Hadir Kuliah (Kampus)\n`;
             }
             txt += `${chk(p.energy < 70)} Belajar Mandiri\n`;
@@ -16155,7 +16440,6 @@ function handleFaint() {
         STATE.player.money = Math.max(0, STATE.player.money - penalty);
         
         // Respawn at Clinic (UPDATE: DI DALAM KLINIK - SAMPING KASUR)
-        // Posisi sebelumnya: Village (Luar) -> Depan Pintu (Sering salah masuk)
         // Posisi Baru: clinic_interior -> Tile (10, 8) (Samping Bed Kanan, Area Kosong)
         STATE.location = 'clinic_interior';
         STATE.player.x = 10 * TILE_SIZE; 
@@ -16184,7 +16468,7 @@ function handleFaint() {
 
             // Tambahkan Dialog Dokter agar lebih imersif
             setTimeout(() => {
-                 showDialogue("DR. BUDI", "Kamu pingsan karena kelelahan kemarin. Warga membawamu ke sini.\n\nSaya sudah merawatmu. Istirahatlah yang cukup dan jangan memaksakan diri ya.", [{text:"Terima kasih Dok", action:closeDialogue}], 'images/lover1boy.png');
+                 showDialogue("DR. BUDI", "Wah, kamu sudah sadar? Kemarin kamu pingsan di jalan karena kelelahan.\n\nUntung ada warga yang membawamu ke Klinik. Saya sudah mengobati lukamu dan memberikan vitamin.\n\nLain kali, perhatikan batas energimu ya. Kesehatan itu mahal harganya.", [{text:"Terima kasih Dok", action:closeDialogue}], 'images/lover1boy.png');
             }, 500);
 
             updateHUDInfo();
@@ -17995,6 +18279,30 @@ function drawObject(ctx, o) {
                 else if (src.includes('orangsawah')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PGxpbmUgeDE9IjE2IiB5MT0iNCIgeDI9IjE2IiB5Mj0iMzIiIHN0cm9rZT0iIzhCNEMzOSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjgiIHkxPSIxMiIgeDI9IjI0IiB5Mj0iMTIiIHN0cm9rZT0iIzhCNEMzOSIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMTYiIGN5PSI4IiByPSI0IiBmaWxsPSIjZmZjMTA3Ii8+PC9zdmc+';
                 }
+                // NEW: FALLBACK TUNGKU (Kotak Batu dengan Api)
+                else if (src.includes('tungku')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiBmaWxsPSIjNDQ0MDNjIiBzdHJva2U9IiM1ZDQwMzciIHN0cm9rZS13aWR0aD0iNCIvPjxyZWN0IHg9IjE2IiB5PSIzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjIwIiBmaWxsPSIjMWUxZTFlIi8+PHBhdGggZD0iTTI0IDQ4IEwzMiAzMiBMNDAgNDgiIGZpbGw9IiNlZjQ0NDQiLz48cGF0aCBkPSJNMjggNDggTDM2IDQwIEw0NCA0OCIgZmlsbD0iI2Y1OWUwYiIgb3BhY2l0eT0iMC44Ii8+PC9zdmc+';
+                }
+                // NEW: FALLBACK PARON (Anvil)
+                else if (src.includes('paron')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTIgMTAgTDMwIDEwIEwyOCAxNCBMMjAgMTYgTDIwIDI2IEwyOCAyNiBMMjggMzAgTDQgMzAgTDQgMjYgTDEyIDI2IEwxMiAxNiBMNCAxMiBaIiBmaWxsPSIjNzg5MDljIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK RAK SENJATA
+                else if (src.includes('raksenjata')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiBmaWxsPSJub25lIiBzdHJva2U9IiM1ZDQwMzciIHN0cm9rZS13aWR0aD0iNCIvPjxsaW5lIHgxPSIxMCIgeTE9IjIwIiB4Mj0iNTQiIHkyPSIyMCIgc3Ryb2tlPSIjOTRhM2I4IiBzdHJva2Utd2lkdGg9IjQiLz48bGluZSB4MT0iMTAiIHkxPSI0MCIgeDI9IjU0IiB5Mj0iNDAiIHN0cm9rZT0iIzk0YTNiOCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIwIDE1IEwyMCA0NSBNNDQgMTUgTDQ0IDQ1IiBzdHJva2U9IiM1ZDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK MEJA JAHIT
+                else if (src.includes('mejajahit')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCI+PHJlY3QgeD0iNCIgeT0iMTIiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0MCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3IiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSIxMCIgeT0iOCIgd2lkdGg9IjEyIiBoZWlnaHQ9IjgiIGZpbGw9IiM5NDkzOTgiLz48cGF0aCBkPSJNMzAgMjAgTDUwIDIwIEw0MCA0MCBaIiBmaWxsPSIjZTkxZTYzIiBvcGFjaXR5PSIwLjgiLz48Y2lyY2xlIGN4PSI1MCIgY3k9IjE1IiByPSIzIiBmaWxsPSIjZmZmIi8+PC9zdmc+';
+                }
+                // NEW: FALLBACK BIJIH BESI
+                else if (src.includes('bijihbesi')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHBhdGggZD0iTTE2IDI0IEw4IDE2IEwxNiA4IEwyNCAxNiBaIiBmaWxsPSIjNzU3NTc1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik02IDI0IEwxMCAyOCBMMTggMjggTDIyIDI0IiBmaWxsPSIjNzU3NTc1IiBzdHJva2U9IiM0MjQyNDIiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
+                }
+                // NEW: FALLBACK KAYU BAKAR
+                else if (src.includes('kayubakar')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PGNpcmNsZSBjeD0iMTAiIGN5PSIyMCIgcj0iNiIgZmlsbD0iIzVENDAzNyIgc3Ryb2tlPSIjM2UyNzIzIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIyMiIgY3k9IjIwIiByPSI2IiBmaWxsPSIjNUQ0MDM3IiBzdHJva2U9IiMzZTI3MjMiIHN0cm9rZS13aWR0aD0iMiIvPjxjaXJjbGUgY3g9IjE2IiBjeT0iMTIigcj0iNiIgZmlsbD0iIzVENDAzNyIgc3Ryb2tlPSIjM2UyNzIzIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=';
+                }
                 // NEW: FALLBACK LEMARI (Wardrobe tall box)
                 else if (src.includes('lemari')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI5NiI+PHJlY3QgeD0iNCIgeT0iMiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjkyIiBmaWxsPSIjOEU1NDJCIiBzdHJva2U9IiM1RDQwMzciIHN0cm9rZS13aWR0aD0iMiIvPjxyZWN0IHg9IjgiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PHJlY3QgeD0iMzQiIHk9IjYiIHdpZHRoPSIyMiIgaGVpZ2h0PSI4NCIgZmlsbD0iIzhCNEMzOSIgc3Ryb2tlPSIjNUQ0MDM3Ii8+PGNpcmNsZSBjeD0iMjYiIGN5PSI1MCIgcj0iMiIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjM4IiBjeT0iNTAiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=';
@@ -18074,6 +18382,10 @@ function drawObject(ctx, o) {
                 // Fallback: MEJA MODIN (Meja Akad dengan Taplak Putih)
                 else if (src.includes('mejamodin')) {
                     this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3QgeD0iMiIgeT0iMTIiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxMiIgZmlsbD0iIzVENDAzNyIgc3Ryb2tlPSIjM2UyNzIzIiBzdHJva2Utd2lkdGg9IjIiLz48cmVjdCB4PSI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjxyZWN0IHg9IjI0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzVENDAzNyIvPjxyZWN0IHg9IjgiIHk9IjgiIHdpZHRoPSIxNiIgaGVpZ2h0PSI0IiBmaWxsPSIjRkZGRkZGIiBvcGFjaXR5PSIwLjkiLz48L3N2Zz4=';
+                }
+                // NEW: FALLBACK ALTAR (Gerbang/Dekorasi Bunga)
+                else if (src.includes('altar')) {
+                    this.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSI2NCI+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iNzYiIGhlaWdodD0iNTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0Q0QUYzNyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTEwIDEwIFEgNDggLTIwIDg2IDEwIiBmaWxsPSJub25lIiBzdHJva2U9IiNENEFGMzciIHN0cm9rZS13aWR0aD0iNCIvPjxjaXJjbGUgY3g9IjEwIiBjeT0iMTAiIHI9IjYiIGZpbGw9IiNmMjhiODIiLz48Y2lyY2xlIGN4PSI4NiIgY3k9IjEwIiByPSI2IiBmaWxsPSIjZjI4YjgyIi8+PHJlY3QgeD0iMjAiIHk9IjIwIiB3aWR0aD0iNTYiIGhlaWdodD0iNDQiIGZpbGw9IiNmZmYiIG9wYWNpdHk9IjAuMyIvPjwvc3ZnPg==';
                 }
                 // Fallback Umum (Box Kayu)
                 else {
@@ -19500,8 +19812,12 @@ function drawMinimap() {
     if(!miniCanvas) return;
     const mCtx = miniCanvas.getContext('2d');
     
-    mCtx.fillStyle = '#0f172a';
-    mCtx.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
+    // UPDATE: Ganti Fill Hitam Pekat dengan ClearRect agar Transparan (Mengikuti CSS Container)
+    mCtx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
+    
+    // Opsional: Beri sedikit tint transparan di canvas jika ingin membedakan area daratan vs luar
+    // mCtx.fillStyle = 'rgba(15, 23, 42, 0.2)';
+    // mCtx.fillRect(0, 0, miniCanvas.width, miniCanvas.height);
     
     // UPDATE: Hapus blok pengecualian "INDOOR" agar peta dalam ruangan tetap digambar
     /* if(STATE.location !== 'village' && STATE.location !== 'dungeon') {
@@ -19616,16 +19932,43 @@ function drawMinimap() {
     const px = STATE.player.x * scaleX;
     const py = STATE.player.y * scaleY;
     
-    // Player Dot
-    mCtx.fillStyle = '#fbbf24'; 
-    mCtx.beginPath(); 
-    mCtx.arc(px, py, 3, 0, Math.PI*2); // Radius diperbesar jadi 3
-    mCtx.fill();
+    // UPDATE: Ganti Dot dengan Kepala Player (Avatar dari HUD)
+    const avatarImg = document.getElementById('hud-avatar-img');
+    const headSize = 12; // Ukuran kepala di minimap (pixel)
+
+    if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
+        mCtx.save();
+        
+        // 1. Clipping Mask (Membuat gambar jadi bulat)
+        mCtx.beginPath();
+        mCtx.arc(px, py, headSize/2, 0, Math.PI*2);
+        mCtx.closePath();
+        mCtx.clip();
+        
+        // 2. Gambar Avatar (Tengah di posisi px, py)
+        mCtx.drawImage(avatarImg, px - headSize/2, py - headSize/2, headSize, headSize);
+        
+        mCtx.restore();
+
+        // 3. Border Emas di sekeliling kepala
+        mCtx.strokeStyle = '#fbbf24'; // Warna Emas
+        mCtx.lineWidth = 1.5;
+        mCtx.beginPath();
+        mCtx.arc(px, py, headSize/2, 0, Math.PI*2);
+        mCtx.stroke();
+
+    } else {
+        // Fallback: Player Dot (Jika gambar gagal load)
+        mCtx.fillStyle = '#fbbf24'; 
+        mCtx.beginPath(); 
+        mCtx.arc(px, py, 4, 0, Math.PI*2); 
+        mCtx.fill();
+    }
     
-    // Player Ring (Radar Effect)
+    // Player Ring (Radar Effect) - Diperbesar agar melingkupi kepala
     mCtx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
     mCtx.beginPath();
-    mCtx.arc(px, py, 5, 0, Math.PI*2);
+    mCtx.arc(px, py, headSize/2 + 3, 0, Math.PI*2);
     mCtx.stroke();
 }
 
