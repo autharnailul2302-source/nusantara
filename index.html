@@ -2269,17 +2269,27 @@ button, .round-btn, .d-btn, .auth-btn {
     <div id="teacher-dashboard">
         <div class="dash-container">
             <div class="dash-sidebar">
-                <div class="dash-title" id="dash-main-title">TEACHER<br>COMMAND CENTER</div>
+                <div class="dash-title">
+                    <span id="dash-main-title">COMMAND CENTER</span>
+                    <!-- NEW: Indikator Status Koneksi -->
+                    <div id="dash-connection-status" style="font-size: 9px; margin-top: 5px; padding: 4px; border: 1px solid #334155; border-radius: 4px; color: #94a3b8; font-family: 'Exo 2'; cursor: pointer;" onclick="toggleDashboardSource()">
+                        Checking Connection...
+                    </div>
+                </div>
                 <ul class="dash-nav">
                     <li onclick="showDashPage('monitoring')" class="active">📡 Live Monitoring</li>
-                    <!-- NEW: DATABASE AKUN MENU -->
                     <li onclick="showDashPage('accounts')">👥 Database Akun</li>
-                    <!-- NEW: RANKING MENU -->
                     <li onclick="showDashPage('ranking')">🏆 Class Ranking</li>
                     <li onclick="showDashPage('grading')">📝 Grading System</li>
                     <li onclick="showDashPage('reflections')">📖 Student Journals</li>
                     <li onclick="showDashPage('validation')">✅ Competency</li>
                     <li onclick="showDashPage('reset')" style="color: #f87171;">⚠️ Reset Data</li>
+                    
+                    <!-- NEW: TOMBOL FORCE SYNC -->
+                    <li onclick="refreshDashboardData()" id="dash-refresh-btn" style="color: #38bdf8; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px;">
+                        🔄 Force Sync / Refresh
+                    </li>
+                    
                     <li onclick="logout()" style="color: #ef4444; margin-top: auto;">🚪 Logout System</li>
                 </ul>
             </div>
