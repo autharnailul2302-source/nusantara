@@ -1560,7 +1560,8 @@
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
-            z-index: 50;
+            /* UPDATE: Z-Index dinaikkan drastis agar muncul di atas Inventory/Modal */
+            z-index: 3000; 
             text-shadow: 0 0 5px rgba(0,0,0,0.8);
         }
 
@@ -2094,6 +2095,7 @@ button, .round-btn, .d-btn, .auth-btn {
 </head>
 <body>
 
+	
 <div id="rotate-warning">
     <h1 style="font-size: 40px; margin-bottom: 10px;">🔄</h1>
     <h2 style="font-family: 'Cinzel'; color: var(--secondary);">Rotasi Perangkat</h2>
@@ -2584,9 +2586,20 @@ button, .round-btn, .d-btn, .auth-btn {
         <div class="hand-icon">👆</div>
     </div>
 
-    <!-- NEW: INVENTORY SCREEN OVERLAY -->
+   <!-- NEW: INVENTORY SCREEN OVERLAY -->
     <div id="inventory-screen" style="display: none;">
-        <h2 style="font-family:'Cinzel'; color:var(--secondary); margin-bottom:20px; text-shadow:0 0 10px var(--secondary);">🎒 TAS PENYIMPANAN</h2>
+        <h2 style="font-family:'Cinzel'; color:var(--secondary); margin-bottom:10px; text-shadow:0 0 10px var(--secondary);">🎒 TAS PENYIMPANAN</h2>
+        
+        <!-- NEW: STATUS BAR DI DALAM INVENTORY (Agar pemain tahu efek makan) -->
+        <div id="inv-status-bar" style="display:flex; justify-content:center; gap:15px; margin-bottom:15px; width:100%;">
+            <div style="background:#1e293b; padding:5px 12px; border-radius:15px; color:#f87171; font-size:12px; border:1px solid #ef4444; font-family:'Exo 2'; font-weight:bold;">
+                ❤️ HP: <span id="inv-hp-val">100</span>
+            </div>
+            <div style="background:#1e293b; padding:5px 12px; border-radius:15px; color:#facc15; font-size:12px; border:1px solid #eab308; font-family:'Exo 2'; font-weight:bold;">
+                ⚡ Energi: <span id="inv-energy-val">100</span>
+            </div>
+        </div>
+
         <div id="inventory-grid" class="inv-grid">
             <!-- Item akan dirender di sini oleh JS -->
         </div>
@@ -2595,7 +2608,7 @@ button, .round-btn, .d-btn, .auth-btn {
             <button onclick="toggleInventory()" class="main-menu-btn" style="width:auto; padding:10px 30px;">TUTUP TAS</button>
         </div>
     </div>
-
+	
     <!-- NEW: WORKER MINIGAME OVERLAY (SORTING) -->
     <div id="work-minigame">
         <div class="work-card">
@@ -10952,12 +10965,22 @@ function toggleInventory() {
     
     if (isHidden) {
         screen.style.display = 'flex';
+		updateInventoryStats(); // NEW: Update status saat buka
         renderInventory();
         STATE.screen = 'modal'; // Pause game input
     } else {
         screen.style.display = 'none';
         STATE.screen = 'play'; // Resume game
     }
+}
+
+// --- NEW FUNCTION: UPDATE STATUS DI INVENTORY ---
+function updateInventoryStats() {
+    const p = STATE.player;
+    const hpEl = document.getElementById('inv-hp-val');
+    const enEl = document.getElementById('inv-energy-val');
+    if(hpEl) hpEl.innerText = Math.floor(p.hp) + "/" + p.maxHp;
+    if(enEl) enEl.innerText = Math.floor(p.energy) + "%";
 }
 
 // --- NEW FUNCTION: FORCE SYNC (MANUAL BUTTON) ---
@@ -20463,6 +20486,7 @@ function useInventoryItem(id, action) {
         showToast("⚡ STAMINA PULIH PENUH!");
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
         createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+		 spawnFloatingText(STATE.player.x, STATE.player.y - 40, "MAX ENERGY!", "#fbbf24", 16); // Visual Teks
         consumed = true;
     } 
     // 2. TONIC KEBAL
@@ -20475,6 +20499,7 @@ function useInventoryItem(id, action) {
         STATE.player.shieldTimer = 600; // 10 detik (60fps)
         showToast("🛡️ MODE KEBAL AKTIF (10 Detik)!");
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+		spawnFloatingText(STATE.player.x, STATE.player.y - 40, "SHIELD ON!", "#60a5fa", 16); // Visual Teks
         consumed = true;
     }
    
@@ -20488,12 +20513,16 @@ function useInventoryItem(id, action) {
             'eat_fish_small': 10, 'eat_fish_medium': 25, 'eat_fish_large': 50, 'eat_fish_legend': 100
         }[action] || 10;
         
-        if(STATE.player.energy >= 100) {
-            showToast("Kenyang!");
+       if(STATE.player.energy >= 100) {
+            showToast("Kenyang! (Energi Penuh)");
             return;
         }
         STATE.player.energy = Math.min(100, STATE.player.energy + energyGain);
         showToast(`Nyam! (+${energyGain} Energi)`);
+        
+        // Visual Teks di Game World (Meski tertutup inventori, bagus jika transparansi diubah)
+        spawnFloatingText(STATE.player.x, STATE.player.y - 40, `+${energyGain} ⚡`, "#4ade80", 14);
+		
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
     }
 
