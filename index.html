@@ -2136,7 +2136,8 @@ button, .round-btn, .d-btn, .auth-btn {
         <div id="loading-container">
             <div id="loading-bar"></div>
         </div>
-        <div id="loading-text">MEMUAT ASET... 0%</div>
+        <!-- UPDATE: Teks lebih informatif agar pemain tahu ini bukan download ulang -->
+        <div id="loading-text">MENYIAPKAN DATA... 0%</div>
         
         <!-- NEW: TOMBOL MULAI (MUNCUL SETELAH LOADING) -->
         <!-- FIX: Tambahkan pointer-events:auto dan z-index tinggi agar bisa diklik di mobile -->
@@ -21631,6 +21632,63 @@ function startFestivalEvent(eventData) {
 }
 
 // --- [AKHIR KODE PERTANIAN] ---
+
+// --- NEW: PWA SERVICE WORKER (FITUR SIMPAN ASET OFFLINE) ---
+// Kode ini membuat browser menyimpan gambar secara agresif agar tidak download ulang
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        // Kita gunakan Blob untuk membuat Service Worker tanpa file eksternal (Single File Magic)
+        const swCode = `
+            const CACHE_NAME = 'nusantara-arsa-cache-v1';
+            
+            self.addEventListener('install', event => {
+                self.skipWaiting(); // Langsung aktifkan
+            });
+
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request)
+                        .then(response => {
+                            // 1. Jika ada di Cache, gunakan itu (Hemat Kuota)
+                            if (response) {
+                                return response;
+                            }
+                            // 2. Jika tidak, download dari internet lalu simpan ke Cache
+                            return fetch(event.request).then(
+                                function(networkResponse) {
+                                    // Cek validitas respon
+                                    if(!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                                        return networkResponse;
+                                    }
+                                    
+                                    // Filter: Hanya cache file Gambar dan Audio
+                                    if(event.request.url.match(/\\.(png|jpg|jpeg|svg|mp3)$/)) {
+                                        var responseToCache = networkResponse.clone();
+                                        caches.open(CACHE_NAME)
+                                            .then(function(cache) {
+                                                cache.put(event.request, responseToCache);
+                                            });
+                                    }
+                                    return networkResponse;
+                                }
+                            );
+                        })
+                );
+            });
+        `;
+        
+        // Buat URL virtual untuk script Service Worker
+        const blob = new Blob([swCode], {type: 'text/javascript'});
+        const swUrl = URL.createObjectURL(blob);
+        
+        navigator.serviceWorker.register(swUrl).then(function(registration) {
+            console.log('ServiceWorker PWA registered with scope:', registration.scope);
+        }).catch(function(err) {
+            console.log('ServiceWorker registration failed:', err);
+        });
+    });
+}
+
 </script>
 </body>
 </html>
