@@ -2585,18 +2585,18 @@ button, .round-btn, .d-btn, .auth-btn {
         <div id="pointer-label" class="pointer-label">Jalan Kesini</div>
         <div class="hand-icon">👆</div>
     </div>
-
-   <!-- NEW: INVENTORY SCREEN OVERLAY -->
+    <!-- NEW: INVENTORY SCREEN OVERLAY -->
     <div id="inventory-screen" style="display: none;">
         <h2 style="font-family:'Cinzel'; color:var(--secondary); margin-bottom:10px; text-shadow:0 0 10px var(--secondary);">🎒 TAS PENYIMPANAN</h2>
         
         <!-- NEW: STATUS BAR DI DALAM INVENTORY (Agar pemain tahu efek makan) -->
         <div id="inv-status-bar" style="display:flex; justify-content:center; gap:15px; margin-bottom:15px; width:100%;">
-            <div style="background:#1e293b; padding:5px 12px; border-radius:15px; color:#f87171; font-size:12px; border:1px solid #ef4444; font-family:'Exo 2'; font-weight:bold;">
-                ❤️ HP: <span id="inv-hp-val">100</span>
+            <!-- UPDATE: Padding diperbesar (8px 16px) & Flex align center agar rapi -->
+            <div style="background:#1e293b; padding:8px 16px; border-radius:20px; color:#f87171; font-size:12px; border:1px solid #ef4444; font-family:'Exo 2'; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                <span>❤️</span> <span>HP: <span id="inv-hp-val">100</span></span>
             </div>
-            <div style="background:#1e293b; padding:5px 12px; border-radius:15px; color:#facc15; font-size:12px; border:1px solid #eab308; font-family:'Exo 2'; font-weight:bold;">
-                ⚡ Energi: <span id="inv-energy-val">100</span>
+            <div style="background:#1e293b; padding:8px 16px; border-radius:20px; color:#facc15; font-size:12px; border:1px solid #eab308; font-family:'Exo 2'; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                <span>⚡</span> <span>Energi: <span id="inv-energy-val">100</span></span>
             </div>
         </div>
 
