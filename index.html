@@ -7187,7 +7187,13 @@ for(let i=0; i<10; i++) {
             // UPDATE: Posisi Sumur dipindah ke kiri (x:23, y:6) menggantikan posisi kosong dekat rumah
             // UPDATE: Sumur diperbesar jadi 2x2
             {x: 23, y: 8, w: 2, h: 2, type: 'sign', icon: '💧', text: "Sumur Tua: Sumber air untuk menyiram tanaman.", img: 'images/sumur.png'},
-            // --- [BARU] BONEKA SALJU (HANYA MUNCUL SAAT WINTER) ---
+           // --- FIX: MENGEMBALIKAN KOTAK POS YANG HILANG ---
+            // Posisi: Sebelah kanan pintu rumah (x:23, y:10)
+            {x: 23, y: 10, w: 1, h: 1, type: 'mailbox', icon: '📬', img: 'images/pos.png'},
+
+
+
+		   // --- [BARU] BONEKA SALJU (HANYA MUNCUL SAAT WINTER) ---
 // Posisi: Dekat Rumah Player (x:22, y:9)
 {
     x: 22, y: 9, 
@@ -13267,72 +13273,46 @@ function handleAction() {
 
         // UPDATE: Interaksi Statue Rank (Building) - SINKRONISASI REAL DATA
         if(entranceBuilding.id === 'statue_rank') {
-             // Tampilkan loading dulu karena fetch data bersifat async
-             showDialogue("HALL OF FAME", "Sedang mengambil data peringkat server...", [], 'images/statue.png');
-             
-             // Ambil data siswa
-             DataService.getAllStudents().then(students => {
-                 // 1. Filter hanya data yang valid (punya saveData)
-                 let validStudents = students.filter(s => s.saveData);
-                 
-                 // 2. Sortir berdasarkan Skor Tertinggi (Logic sama dengan Dashboard)
-                 validStudents.sort((a, b) => {
-                     const scoreA = calculateGrade(a.saveData);
-                     const scoreB = calculateGrade(b.saveData);
-                     return scoreB - scoreA;
-                 });
+              // 1. CEK APAKAH HARI INI ADA FESTIVAL?
+             const dayInSeason = ((STATE.day - 1) % DAYS_PER_SEASON) + 1; // 1-30
+             const eventToday = CALENDAR_EVENTS[STATE.season][dayInSeason];
 
-                 // 3. Format Teks Top 3
-                 let rankText = "🏆 PERINGKAT TERTINGGI NUSANTARA ARSA:\n\n";
-                 const top3 = validStudents.slice(0, 3);
-                 
-                 if(top3.length === 0) {
-                     rankText += "Belum ada petualang yang terdaftar.";
-                 } else {
-                     top3.forEach((s, idx) => {
-                         const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : "🥉");
-                         const score = calculateGrade(s.saveData);
-                         // Potong nama jika terlalu panjang
-                         const dName = s.name.length > 12 ? s.name.substring(0,10)+".." : s.name;
-                         const role = s.saveData.role !== 'none' ? s.saveData.role.toUpperCase() : 'NOVICE';
-                         
-                         rankText += `${medal} ${dName} [${role}] - Skor: ${score}\n`;
-                     });
-                 }
-
-                 // 4. Tambahkan Posisi Pemain Sendiri
-                 if(DataService.user) {
-                     const myRank = validStudents.findIndex(s => s.email === DataService.user.email) + 1;
-                     
-                     if (myRank > 3) {
-                         const myScore = calculateGrade(DataService.user.saveData);
-                         rankText += `\n...\n#${myRank} ${DataService.user.name} (Kamu) - Skor: ${myScore}`;
-                     } else if (myRank > 0) {
-                         rankText += `\n(Kamu berada di Puncak Klasemen!)`;
-                     } else {
-                         rankText += `\n(Data kamu belum terdaftar di server)`;
-                     }
-                 }
-
-                 // 5. Update Dialog dengan Data Asli
-                 showDialogue("HALL OF FAME", rankText, [{text:"Saya Pasti Bisa Top 1!", action:closeDialogue}], 'images/statue.png');
-                 
-             }).catch(err => {
-                 console.error("Leaderboard Error:", err);
-                 showDialogue("HALL OF FAME", "Gagal terhubung ke server peringkat.\nCek koneksi internetmu.", [{text:"Tutup", action:closeDialogue}], 'images/statue.png');
-             });
-             
+             // Jika ada Festival (Bukan cuma ultah), tawarkan opsi
+             if (eventToday && eventToday.type === 'festival') {
+                 showDialogue(`🎉 ${eventToday.name.toUpperCase()}`, 
+                    `Hari ini desa sedang merayakan **${eventToday.name}**!\n\nWarga berkumpul di alun-alun. Apakah kamu ingin berpartisipasi?`, 
+                    [
+                        {
+                            text: "✨ IKUTI FESTIVAL! (Event)", 
+                            action: () => {
+                                closeDialogue();
+                                startFestivalEvent(eventToday);
+                            }
+                        },
+                        {
+                            text: "🏆 Lihat Peringkat Server", 
+                            action: () => showLeaderboardFromStatue()
+                        },
+                        {text: "Tutup", action: closeDialogue}
+                    ], 
+                    'images/statue.png'
+                 );
+                 return;
+             }
+			  // Jika tidak ada festival, langsung buka leaderboard
+             showLeaderboardFromStatue();
              return;
         }
 
+        // --- FIX: BAGIAN INI RUSAK DI KODE ANDA, INI PERBAIKANNYA ---
         if (!entranceBuilding.open24h && entranceBuilding.openTime && entranceBuilding.closeTime) {
             const t = STATE.time;
             const open = entranceBuilding.openTime;
             const close = entranceBuilding.closeTime;
             
             if (t < open || t >= close) {
-                const openStr = (open/100).toString().padStart(2,'0') + ":00";
-                const closeStr = (close/100).toString().padStart(2,'0') + ":00";
+                const openStr = Math.floor(open/100).toString().padStart(2,'0') + ":00";
+                const closeStr = Math.floor(close/100).toString().padStart(2,'0') + ":00";
                 
                 showToast(`🔒 TUTUP! Buka jam ${openStr} - ${closeStr}`);
                 return; 
@@ -13349,33 +13329,24 @@ function handleAction() {
             }
         }
         
-        // SISA LOGIKA UNTUK BANGUNAN INTERAKTIF (NON-TELEPORT MURNI)
         if(entranceBuilding.id === 'port') {
             showDialogue("DERMAGA MANCING", "Airnya terlihat tenang. Ingin memancing?", [
                 {text: "Mancing (10 Energy)", action: () => {
-                    closeDialogue(); // FIX: Tutup dialog dulu baru mulai minigame
-                    setTimeout(startFishingMinigame, 100); // Beri jeda sedikit agar mulus
+                    closeDialogue(); 
+                    setTimeout(startFishingMinigame, 100); 
                 }},
                 {text: "Nanti saja", action: closeDialogue}
             ], 'images/pelabuhan.png');
             return;
         } 
-        
-        // NEW: EXIT DARI RUINS BATTLE (KABUR)
         else if(entranceBuilding.id === 'ruins_exit') {
             STATE.location = 'village';
-            // UPDATE: KEMBALI KE DEPAN CANDI (BUKAN HUTAN)
             STATE.player.x = 50 * TILE_SIZE; 
             STATE.player.y = 15 * TILE_SIZE;
-            // Clear enemies
             STATE.enemies = [];
             showToast("Kabur dari pertarungan!");
             return;
         }
-
-        // REMOVED: Logika Klinik Manual (Dihapus karena sekarang Teleport)
-        /* else if(entranceBuilding.id === 'clinic') { ... } */
-
         else {
              showToast("Masuk ke " + entranceBuilding.name + " (Interior Segera Hadir)");
         }
@@ -21366,8 +21337,271 @@ function harvestCrop(tx, ty) {
         manualSave();
     }
 }
-// --- [AKHIR KODE PERTANIAN] ---
 
+// --- NEW: FUNGSI TAMBAHAN FESTIVAL & LEADERBOARD (PASTE DI BAGIAN BAWAH SEBELUM CLOSING SCRIPT) ---
+
+// 1. FUNGSI HANDLER LEADERBOARD DARI PATUNG
+function showLeaderboardFromStatue() {
+     showDialogue("HALL OF FAME", "Sedang mengambil data peringkat server...", [], 'images/statue.png');
+     
+     DataService.getAllStudents().then(students => {
+         let validStudents = students.filter(s => s.saveData);
+         
+         validStudents.sort((a, b) => {
+             const scoreA = calculateGrade(a.saveData);
+             const scoreB = calculateGrade(b.saveData);
+             return scoreB - scoreA;
+         });
+
+         let rankText = "🏆 PERINGKAT TERTINGGI NUSANTARA ARSA:\n\n";
+         const top3 = validStudents.slice(0, 3);
+         
+         if(top3.length === 0) {
+             rankText += "Belum ada petualang yang terdaftar.";
+         } else {
+             top3.forEach((s, idx) => {
+                 const medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : "🥉");
+                 const score = calculateGrade(s.saveData);
+                 const dName = s.name.length > 12 ? s.name.substring(0,10)+".." : s.name;
+                 const role = s.saveData.role !== 'none' ? s.saveData.role.toUpperCase() : 'NOVICE';
+                 rankText += `${medal} ${dName} [${role}] - Skor: ${score}\n`;
+             });
+         }
+
+         if(DataService.user) {
+             const myRank = validStudents.findIndex(s => s.email === DataService.user.email) + 1;
+             if (myRank > 3) {
+                 const myScore = calculateGrade(DataService.user.saveData);
+                 rankText += `\n...\n#${myRank} ${DataService.user.name} (Kamu) - Skor: ${myScore}`;
+             } else if (myRank > 0) {
+                 rankText += `\n(Kamu berada di Puncak Klasemen!)`;
+             } else {
+                 rankText += `\n(Data kamu belum terdaftar di server)`;
+             }
+         }
+
+         showDialogue("HALL OF FAME", rankText, [{text:"Saya Pasti Bisa Top 1!", action:closeDialogue}], 'images/statue.png');
+         
+     }).catch(err => {
+         console.error("Leaderboard Error:", err);
+         showDialogue("HALL OF FAME", "Gagal terhubung ke server peringkat.\nCek koneksi internetmu.", [{text:"Tutup", action:closeDialogue}], 'images/statue.png');
+     });
+}
+
+// 2. LOGIKA EVENT FESTIVAL
+function startFestivalEvent(eventData) {
+    const p = STATE.player;
+    const name = eventData.name;
+    
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); 
+    
+    createParticle(p.x, p.y, '#facc15');
+    createParticle(p.x+10, p.y-10, '#f472b6');
+    createParticle(p.x-10, p.y-10, '#60a5fa');
+
+    // 1. TAHUN BARU
+    if (name.includes("Tahun Baru")) {
+        showDialogue("FESTIVAL TAHUN BARU", 
+            "Kembang api menghiasi langit siang ini! (Imajiner)\nKepala Desa membagikan **Angpao** untuk modal awal tahun.", 
+            [{
+                text: "Terima Angpao (+2000 G)", 
+                action: () => {
+                    p.money += 2000;
+                    showToast("Dapat Angpao 2000G! 🧧");
+                    closeDialogue();
+                }
+            }], 'images/statue.png');
+    }
+    // 2. VALENTINE
+    else if (name.includes("Valentine") || name.includes("Bunga")) {
+        showDialogue("FESTIVAL KASIH SAYANG", 
+            "Hari ini adalah hari terbaik untuk mengungkapkan perasaan.\nBunga Mawar dijual murah khusus hari ini!", 
+            [
+                {
+                    text: "Beli Bunga Spesial (100 G)", 
+                    action: () => {
+                        if (p.money >= 100) {
+                            p.money -= 100;
+                            addItem('bunga', 3);
+                            showToast("Dapat 3 Bunga Mawar! 🌹");
+                            showDialogue("ROMANTIS", "Berikan bunga ini pada orang yang kamu sukai. Efek cintanya 2x lipat hari ini!", [{text:"Siap!", action:closeDialogue}], 'images/bunga.png');
+                        } else showToast("Uang tidak cukup.");
+                    }
+                },
+                {text: "Hanya melihat-lihat", action: closeDialogue}
+            ], 'images/bunga.png');
+    }
+    // 3. PACUAN KUDA
+    else if (name.includes("Pacuan Kuda")) {
+        const horses = ["Si Kancil (Hitam)", "Bintang (Putih)", "Halilintar (Coklat)"];
+        const opts = horses.map(h => ({
+            text: `Taruhan: ${h} (500 G)`,
+            action: () => {
+                if (p.money >= 500) {
+                    p.money -= 500;
+                    const winnerIdx = Math.floor(Math.random() * horses.length);
+                    const winnerName = horses[winnerIdx];
+                    if (h === winnerName) {
+                        const prize = 2000;
+                        p.money += prize;
+                        showDialogue("MENANG BESAR! 🏆", `Kudamu **${h}** finish di posisi pertama!\nHadiah: ${prize} G`, [{text:"Yesss!", action:closeDialogue}], 'images/kuda.png');
+                    } else {
+                        showDialogue("KALAH...", `Pemenangnya adalah **${winnerName}**.\nKudamu finish di posisi terakhir. Uang hangus.`, [{text:"Sial...", action:closeDialogue}], 'images/kuda.png');
+                    }
+                } else showToast("Uang kurang.");
+            }
+        }));
+        opts.push({text: "Nonton saja", action: closeDialogue});
+        showDialogue("PACUAN KUDA DESA", "Ayo dukung kuda jagoanmu! Tiket taruhan 500 G.", opts, 'images/kuda.png');
+    }
+    // 4. LOMBA MEMASAK
+    else if (name.includes("Memasak")) {
+        showDialogue("KITCHEN STADIUM", "Tema tahun ini: **Sup Ikan**. Juri akan menilai bahan dan skill memasakmu.", 
+            [
+                {
+                    text: "Ikut Lomba (Butuh Ikan + INT)", 
+                    action: () => {
+                        if ((p.inventory['ikan_segar'] || 0) > 0) {
+                            p.inventory['ikan_segar']--; 
+                            const score = Math.floor(Math.random() * 50) + p.int;
+                            if (score > 60) {
+                                addItem('tonic_stamina', 3);
+                                showDialogue("JUARA 1! 👨‍🍳", `Rasanya sempurna! Juri menangis terharu.\nHadiah: **3 Tonic Stamina**.`, [{text:"Hore!", action:closeDialogue}], 'images/dapurayaayu.png');
+                            } else if (score > 30) {
+                                addItem('gandum', 2);
+                                showDialogue("JUARA HARAPAN", "Rasanya lumayan, tapi kurang asin.\nHadiah: **2 Gandum**.", [{text:"Lumayan", action:closeDialogue}], 'images/dapurayaayu.png');
+                            } else {
+                                showDialogue("GOSONG...", "Masakanmu gosong. Juri sakit perut. Kamu didiskualifikasi.", [{text:"Maaf...", action:closeDialogue}], 'images/tungku.png');
+                            }
+                        } else {
+                            showToast("Kamu tidak punya Ikan Segar!");
+                        }
+                    }
+                },
+                {text: "Jadi Penonton (Makan Gratis)", action: () => {
+                    p.energy = 100;
+                    showToast("Kenyang makan tester! Energi Full.");
+                    closeDialogue();
+                }}
+            ], 'images/dapurayaayu.png');
+    }
+    // 5. FESTIVAL AYAM
+    else if (name.includes("Ayam")) {
+        const hasPetChicken = p.dailyTalkCount > 0;
+        if (hasPetChicken) {
+            showDialogue("KONTES AYAM", "Ayam milikmu terlihat sehat dan bahagia! Juri terkesan.", [{
+                text: "Terima Hadiah Telur Emas (500G)", 
+                action: () => {
+                    p.money += 500;
+                    showToast("Hadiah Juara: 500 G");
+                    closeDialogue();
+                }
+            }], 'images/ayam.png');
+        } else {
+            showDialogue("KONTES AYAM", "Kamu tidak membawa ayam atau belum merawat ayam hari ini.\nNonton saja ya.", [{text:"Oke", action:closeDialogue}], 'images/ayam.png');
+        }
+    }
+    // 6. LOMBA BERENANG
+    else if (name.includes("Berenang")) {
+        showDialogue("LOMBA RENANG PANTAI", "Siapa yang paling kuat menahan napas dan berenang ke tengah laut?", 
+            [{
+                text: "Ikut Lomba (Butuh 50 Energi)", 
+                action: () => {
+                    if (p.energy >= 50) {
+                        p.energy -= 40;
+                        if (p.str >= 15) {
+                            addItem('permata', 1);
+                            showDialogue("JUARA RENANG! 🏊", "Ototmu luar biasa! Kamu mengalahkan Pak Nelayan.\nHadiah: **1 Berlian**.", [{text:"Segar!", action:closeDialogue}], 'images/pantai-boy.png');
+                        } else {
+                            showDialogue("KALAH...", "Kamu kram di tengah jalan dan harus ditolong tim SAR.\nLatih lagi STR-mu.", [{text:"Malu...", action:closeDialogue}], 'images/pantai-boy.png');
+                        }
+                    } else showToast("Energimu kurang untuk lomba.");
+                }
+            }, {text: "Batal", action: closeDialogue}], 'images/pantai-girl.png');
+    }
+    // 7. HALLOWEEN
+    else if (name.includes("Hantu") || name.includes("Halloween")) {
+        showDialogue("MALAM HANTU 🎃", "Anak-anak berkeliaran pakai kostum. 'Trick or Treat!'", 
+            [
+                {
+                    text: "Beri Permen (Coklat) -> Dapat Hadiah", 
+                    action: () => {
+                        if ((p.inventory['coklat'] || 0) > 0) {
+                            p.inventory['coklat']--;
+                            const rewards = ['besi', 'kain', 'gandum'];
+                            const reward = rewards[Math.floor(Math.random()*rewards.length)];
+                            addItem(reward, 2);
+                            showDialogue("TRICK OR TREAT!", `Anak-anak senang! Mereka memberimu **2 ${reward.toUpperCase()}** sebagai balasan.`, [{text:"Seru!", action:closeDialogue}], 'images/anakkecil1.png');
+                        } else {
+                            showToast("Kamu tidak punya Coklat!");
+                        }
+                    }
+                },
+                {
+                    text: "Minta Permen (Dikasih Sampah)",
+                    action: () => {
+                        showDialogue("ZONK", "Kamu kan sudah gede! Nih dikasih bungkusnya aja.", [{text:"Pelit...", action:closeDialogue}], 'images/monster.png');
+                    }
+                }
+            ], 'images/monster.png');
+    }
+    // 8. MANCING ES
+    else if (name.includes("Mancing")) {
+        showDialogue("TURNAMEN MANCING ES", "Danau membeku, ikan-ikan bersembunyi di dalam. Siapa dapat ikan paling banyak?", 
+            [{
+                text: "Setor Ikan (Dari Tas)", 
+                action: () => {
+                    const fish = (p.inventory['ikan_segar'] || 0) + (p.inventory['ikan_besar'] || 0) + (p.inventory['ikan_legendary'] || 0);
+                    if (fish >= 3) {
+                        addItem('scroll_exp', 1);
+                        showDialogue("PEMANCING HANDAL 🎣", `Kamu membawa ${fish} ikan! Juri takjub.\nHadiah: **Gulungan Kuno (+EXP)**.`, [{text:"Mantap", action:closeDialogue}], 'images/rakpialaikan.png');
+                    } else {
+                        showDialogue("KURANG...", "Minimal bawa 3 ikan untuk ikut penilaian.", [{text:"Aku mancing dulu", action:closeDialogue}], 'images/emberikan.png');
+                    }
+                }
+            }, {text: "Batal", action: closeDialogue}], 'images/rakpancing.png');
+    }
+    // 9. NATAL
+    else if (name.includes("Natal") || name.includes("Bintang")) {
+        showDialogue("MALAM BINTANG 🌟", "Pohon Natal raksasa berdiri di alun-alun. Ada kado di bawahnya untukmu.", 
+            [{
+                text: "Buka Kado Misterius 🎁", 
+                action: () => {
+                    const year = Math.ceil(STATE.day / 120);
+                    if (p.lastXmasYear !== year) {
+                        p.lastXmasYear = year;
+                        const randGift = Math.random() < 0.5 ? 'cincin_kayu' : 'baju_hangat'; 
+                        if (randGift === 'cincin_kayu') {
+                            addItem('cincin_kayu', 1);
+                            showDialogue("SELAMAT NATAL!", "Kamu mendapat **Cincin Kayu**! Bisa dipakai melamar seseorang.", [{text:"Terima kasih Santa!", action:closeDialogue}], 'images/lemari.png');
+                        } else {
+                            addItem('kain', 3);
+                            showDialogue("SELAMAT NATAL!", "Kamu mendapat **3 Kain Sutra**! Hangat sekali.", [{text:"Terima kasih!", action:closeDialogue}], 'images/lemari.png');
+                        }
+                    } else {
+                        showToast("Kamu sudah ambil kado tahun ini!");
+                        closeDialogue();
+                    }
+                }
+            }], 'images/statue.png');
+    }
+    // DEFAULT
+    else {
+        showDialogue(`MERAYAKAN ${name.toUpperCase()}`, 
+            "Kamu menikmati suasana festival yang meriah. Makan enak, musik asik, teman baik.", 
+            [{
+                text: "Nikmati (Energi Penuh)", 
+                action: () => {
+                    p.energy = 100;
+                    p.reputation += 2;
+                    showToast("Energi Pulih & Reputasi +2");
+                    closeDialogue();
+                }
+            }], 'images/statue.png');
+    }
+}
+
+// --- [AKHIR KODE PERTANIAN] ---
 </script>
 </body>
 </html>
