@@ -3126,67 +3126,89 @@ Object.values(bgSeasons).forEach(img => {
     img.onerror = () => console.error("Gagal memuat background musiman");
 });
 
-// --- AUDIO SYSTEM ---
+// --- AUDIO SYSTEM (UPDATED: SEASONAL MUSIC) ---
 const AudioService = {
     enabled: false,
     tracks: {
         opening: new Audio('audio/opening.mp3'),
-        village: new Audio('audio/audiopulau.mp3'),
+        village: new Audio('audio/audiopulau.mp3'), // Musik Default
         sea: new Audio('audio/laut.mp3'), 
         rain: new Audio('audio/hujan.mp3'),
-        bird: new Audio('audio/burung.mp3'), // BARU: Tambahkan audio burung
-        night: new Audio('audio/malam.mp3'), // NEW: Audio Malam (Jangkrik/Ambience)
-        // BARU: Audio Hewan Ternak
+        bird: new Audio('audio/burung.mp3'),
+        night: new Audio('audio/malam.mp3'),
+        
+        // --- NEW: MUSIK MUSIMAN ---
+        spring: new Audio('audio/spring.mp3'),   // Musim Semi
+        summer: new Audio('audio/summer.mp3'),   // Musim Panas
+        autumn: new Audio('audio/fall.mp3'),     // Musim Gugur (Fall)
+        winter: new Audio('audio/winter.mp3'),   // Musim Dingin
+
+        // Audio Hewan & SFX
         kambing: new Audio('audio/kambing.mp3'),
         sapi: new Audio('audio/sapi.mp3'),
         ayam: new Audio('audio/ayam.mp3'),
         kuda: new Audio('audio/kuda.mp3'),
-        door: new Audio('audio/door.mp3'), // NEW: Audio Pintu
-        hit: new Audio('audio/pukul.mp3'), // NEW: Audio Pukul Monster
-        item: new Audio('audio/item.mp3'), // NEW: Audio Item/Gold
-        bg: new Audio('audio/bg.mp3'), // NEW: Audio Menu (Tas, Buku, Kalender)
-        chat: new Audio('audio/chat.mp3'), // NEW: Audio Chat NPC
-        inside: new Audio('audio/inside.mp3'), // NEW: Audio Dalam Ruangan
-        dungeon: new Audio('audio/dungeon.mp3'), // NEW: Audio Dungeon
-        boss: new Audio('audio/boss.mp3'), // NEW: Audio Boss Battle
-        knock: new Audio('audio/knock.mp3'), // NEW: Audio Ketukan Pintu
-        wedding: new Audio('audio/wedding.mp3') // NEW: Audio Pernikahan
+        door: new Audio('audio/door.mp3'),
+        hit: new Audio('audio/pukul.mp3'),
+        item: new Audio('audio/item.mp3'),
+        bg: new Audio('audio/bg.mp3'),
+        chat: new Audio('audio/chat.mp3'),
+        inside: new Audio('audio/inside.mp3'),
+        dungeon: new Audio('audio/dungeon.mp3'),
+        boss: new Audio('audio/boss.mp3'),
+        knock: new Audio('audio/knock.mp3'),
+        wedding: new Audio('audio/wedding.mp3')
     },
     currentTrack: null,
 
     init: function() {
         try {
+            // Set Looping untuk Musik Latar
             if(this.tracks.opening) this.tracks.opening.loop = true;
             if(this.tracks.village) this.tracks.village.loop = true;
-            if(this.tracks.night) this.tracks.night.loop = true; // NEW: Loop suara malam
+            if(this.tracks.night) this.tracks.night.loop = true;
             if(this.tracks.sea) this.tracks.sea.loop = true;
             if(this.tracks.rain) this.tracks.rain.loop = true;
             if(this.tracks.inside) this.tracks.inside.loop = true; 
             if(this.tracks.dungeon) this.tracks.dungeon.loop = true; 
-            if(this.tracks.boss) this.tracks.boss.loop = true; // Loop musik Boss
-            if(this.tracks.wedding) this.tracks.wedding.loop = true; // Loop musik Wedding
+            if(this.tracks.boss) this.tracks.boss.loop = true;
+            if(this.tracks.wedding) this.tracks.wedding.loop = true;
+
+            // --- NEW: SETTING MUSIK MUSIM ---
+            if(this.tracks.spring) this.tracks.spring.loop = true;
+            if(this.tracks.summer) this.tracks.summer.loop = true;
+            if(this.tracks.autumn) this.tracks.autumn.loop = true;
+            if(this.tracks.winter) this.tracks.winter.loop = true;
             
+            // Set Volume Default
             if(this.tracks.opening) this.tracks.opening.volume = 0.5;
             if(this.tracks.village) this.tracks.village.volume = 0.5;
-            if(this.tracks.night) this.tracks.night.volume = 0.7; // NEW: Volume suara malam
+            if(this.tracks.night) this.tracks.night.volume = 0.7;
             if(this.tracks.sea) this.tracks.sea.volume = 0.0; 
             if(this.tracks.rain) this.tracks.rain.volume = 0.4;
             if(this.tracks.bird) this.tracks.bird.volume = 0.3;
+
+            // --- NEW: VOLUME MUSIK MUSIM ---
+            if(this.tracks.spring) this.tracks.spring.volume = 0.5;
+            if(this.tracks.summer) this.tracks.summer.volume = 0.5;
+            if(this.tracks.autumn) this.tracks.autumn.volume = 0.5;
+            if(this.tracks.winter) this.tracks.winter.volume = 0.5;
             
+            // Volume SFX
             if(this.tracks.kambing) this.tracks.kambing.volume = 0.6;
             if(this.tracks.sapi) this.tracks.sapi.volume = 0.6;
             if(this.tracks.ayam) this.tracks.ayam.volume = 0.4;
             if(this.tracks.kuda) this.tracks.kuda.volume = 0.6;
-            if(this.tracks.door) this.tracks.door.volume = 0.8; // Volume Pintu
-            if(this.tracks.hit) this.tracks.hit.volume = 0.7; // Volume Efek Pukul
-            if(this.tracks.item) this.tracks.item.volume = 0.8; // Volume Efek Item
-            if(this.tracks.bg) this.tracks.bg.volume = 0.8; // Volume Efek UI (Bg)
-            if(this.tracks.chat) this.tracks.chat.volume = 0.8; // Volume Efek Chat
-            if(this.tracks.inside) this.tracks.inside.volume = 0.5; // Volume Musik Indoor
-            if(this.tracks.dungeon) this.tracks.dungeon.volume = 0.6; // Volume Musik Dungeon
-            if(this.tracks.boss) this.tracks.boss.volume = 0.8; // Volume Musik Boss (Lebih Keras)
-            if(this.tracks.knock) this.tracks.knock.volume = 1.0; // Volume Ketukan Pintu
-            if(this.tracks.wedding) this.tracks.wedding.volume = 0.8; // Volume Musik Wedding
+            if(this.tracks.door) this.tracks.door.volume = 0.8;
+            if(this.tracks.hit) this.tracks.hit.volume = 0.7;
+            if(this.tracks.item) this.tracks.item.volume = 0.8;
+            if(this.tracks.bg) this.tracks.bg.volume = 0.8;
+            if(this.tracks.chat) this.tracks.chat.volume = 0.8;
+            if(this.tracks.inside) this.tracks.inside.volume = 0.5;
+            if(this.tracks.dungeon) this.tracks.dungeon.volume = 0.6;
+            if(this.tracks.boss) this.tracks.boss.volume = 0.8;
+            if(this.tracks.knock) this.tracks.knock.volume = 1.0;
+            if(this.tracks.wedding) this.tracks.wedding.volume = 0.8;
         } catch(e) {
             console.warn("Audio Init Error (Non-Fatal):", e);
         }
@@ -3196,23 +3218,24 @@ const AudioService = {
         if (!this.enabled) return;
         if (this.currentTrack === trackName) return;
 
+        // Stop track sebelumnya
         if (this.currentTrack && this.tracks[this.currentTrack]) {
             this.tracks[this.currentTrack].pause();
             this.tracks[this.currentTrack].currentTime = 0;
         }
 
+        // Mainkan track baru
         this.currentTrack = trackName;
         if(this.tracks[trackName]) {
             const playPromise = this.tracks[trackName].play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
-                    console.log("Audio play prevented/interrupted:", error);
+                    // console.log("Audio play prevented/interrupted:", error);
                 });
             }
         }
     },
 
-    // NEW: Fungsi khusus untuk Sound Effect (sekali main)
     playSFX: function(trackName) {
         if (!this.enabled) return;
         const track = this.tracks[trackName];
@@ -3243,23 +3266,32 @@ const AudioService = {
         } else if (STATE.screen === 'play') {
             // Logika Musik Berdasarkan Lokasi
             if (STATE.location === 'village') {
-                // UPDATE: Cek Waktu untuk Mengganti Musik Siang/Malam
+                // Cek Waktu Siang/Malam
                 // Jika Jam 18:00 s/d 05:00 pagi, mainkan suara malam (jangkrik)
                 if (STATE.time >= 1800 || STATE.time < 500) {
                     this.playBGM('night');
                 } else {
-                    this.playBGM('village');
+                    // --- NEW: LOGIKA MUSIK MUSIMAN (SIANG HARI) ---
+                    if (STATE.season === 'spring') {
+                        this.playBGM('spring');
+                    } else if (STATE.season === 'summer') {
+                        this.playBGM('summer');
+                    } else if (STATE.season === 'autumn') {
+                        this.playBGM('autumn'); // file: audio/fall.mp3
+                    } else if (STATE.season === 'winter') {
+                        this.playBGM('winter');
+                    } else {
+                        this.playBGM('village'); // Fallback jika musim tidak terdeteksi
+                    }
                 }
             } else if (STATE.location === 'dungeon') {
-                // UPDATE: Cek apakah Boss sudah Spawn
                 if (STATE.bossSpawned) {
                     this.playBGM('boss');
                 } else {
                     this.playBGM('dungeon');
                 }
             } else {
-                // Untuk semua lokasi dalam ruangan (house, merchant, school, dll)
-                // UPDATE: Jika di Balai Pernikahan, mainkan lagu wedding
+                // Interior
                 if (STATE.location === 'wedding_interior') {
                     this.playBGM('wedding');
                 } else {
@@ -3275,7 +3307,7 @@ const AudioService = {
             if (this.tracks.rain && !this.tracks.rain.paused) this.tracks.rain.pause();
         }
 
-        // 3. UPDATE SFX LAUT
+        // 3. UPDATE SFX LAUT (Hanya jika di desa)
         if (STATE.location === 'village' && this.tracks.sea) {
             const margin = 15 * TILE_SIZE; 
             const mapW = ISLAND_W * TILE_SIZE;
@@ -4229,37 +4261,27 @@ function handleAudioChoice(enable) {
     startAssetLoading();
 }
 
-// NEW: FUNGSI LOADING ASET (DIPISAH DARI START SEQUENCE)
+// NEW: FUNGSI LOADING ASET (WAJIB 100%)
 function startAssetLoading() {
     console.log("Memulai Asset Loading...");
-    const splash = document.getElementById('splash-screen');
     const loadingText = document.getElementById('loading-text');
     const loadingBar = document.getElementById('loading-bar');
+    const loadingContainer = document.getElementById('loading-container');
+    const startBtn = document.getElementById('splash-start-btn');
     
-    // FIX: Tambahkan Timeout Race Condition (60 detik) untuk koneksi lambat
-    // Sebelumnya 15 detik terlalu cepat, membuat bar belum 100% sudah muncul tombol
-    const assetLoadPromise = preloadAllGameAssets().then(() => 'success');
-    const timeoutPromise = new Promise(resolve => setTimeout(() => {
-        console.warn("Asset Loading Timeout (60s) - Force Starting Game...");
-        if(loadingText) loadingText.innerText = "KONEKSI LAMBAT... MEMAKSA MASUK...";
-        resolve('timeout');
-    }, 60000)); // 60 Detik Timeout
-
-    Promise.race([assetLoadPromise, timeoutPromise]).then((result) => {
-        // Setelah aset siap (atau timeout):
-        console.log("Assets Ready or Timeout. Result:", result);
+    // UPDATE: HAPUS "Promise.race" dan "setTimeout".
+    // Sekarang kita murni menunggu preloadAllGameAssets selesai sepenuhnya.
+    
+    preloadAllGameAssets().then(() => {
+        // Kode di dalam sini HANYA akan jalan setelah semua aset selesai (Resolusi 100%)
+        console.log("Assets Ready: 100%");
         
-        // Jika sukses load normal, pastikan bar visual 100%
-        if (result === 'success') {
-            if(loadingBar) loadingBar.style.width = '100%';
-            if(loadingText) loadingText.innerText = 'ASET SIAP! 100%';
-        }
+        // Pastikan visual bar penuh
+        if(loadingBar) loadingBar.style.width = '100%';
+        if(loadingText) loadingText.innerText = 'ASET SIAP! 100%';
         
-        // Beri jeda sedikit (500ms) agar pemain sempat melihat 100% sebelum tombol muncul
+        // Beri jeda sedikit (500ms) agar pemain sempat melihat tulisan "100%"
         setTimeout(() => {
-            const loadingContainer = document.getElementById('loading-container');
-            const startBtn = document.getElementById('splash-start-btn');
-            
             // Sembunyikan Loading Bar & Teks
             if(loadingContainer) loadingContainer.style.display = 'none';
             if(loadingText) loadingText.style.display = 'none';
@@ -4267,6 +4289,9 @@ function startAssetLoading() {
             // Tampilkan Tombol Mulai
             if(startBtn) {
                 startBtn.style.display = 'block';
+                // Tambahkan efek animasi masuk
+                startBtn.style.animation = "pulse 1s infinite"; 
+                
                 startBtn.onclick = () => {
                     // Sembunyikan tombol biar gak diklik 2x
                     startBtn.style.display = 'none';
@@ -4283,24 +4308,14 @@ function startAssetLoading() {
 
     }).catch(err => {
         console.error("Preload Error:", err);
-        // FIX: Jangan langsung masuk menu jika error, tapi berikan tombol manual
-        if(loadingText) loadingText.innerText = "GAGAL MEMUAT BEBERAPA ASET.";
+        // Fallback jika terjadi error fatal pada sistem loading (jarang terjadi)
+        if(loadingText) loadingText.innerText = "TERJADI KESALAHAN MEMUAT.";
         
-        // Tampilkan tombol mulai paksa
-        setTimeout(() => {
-            const loadingContainer = document.getElementById('loading-container');
-            const startBtn = document.getElementById('splash-start-btn');
-            
-            if(loadingContainer) loadingContainer.style.display = 'none';
-            if(startBtn) {
-                startBtn.innerText = "⚠️ PAKSA MULAI";
-                startBtn.style.display = 'block';
-                startBtn.onclick = () => {
-                    startBtn.style.display = 'none';
-                    enterMainMenu();
-                };
-            }
-        }, 500);
+        if(startBtn) {
+            startBtn.innerText = "⚠️ REFRESH HALAMAN";
+            startBtn.style.display = 'block';
+            startBtn.onclick = () => location.reload();
+        }
     });
 }
 
@@ -6242,6 +6257,31 @@ async function renderMonitoring() {
     // Biarkan kosong atau hapus agar tidak dipanggil setInterval lama
 }
 
+// --- NEW: FUNGSI AMBIL NAMA MENTOR (DARI EMAIL) ---
+DataService.getMentorName = async function(mentorEmail) {
+    if (!mentorEmail) return "Mentor Budi"; // Default
+
+    // 1. Cek Database Lokal dulu
+    const dbLocal = this.getDB();
+    if (dbLocal[mentorEmail] && dbLocal[mentorEmail].name) {
+        return "Mentor " + dbLocal[mentorEmail].name;
+    }
+
+    // 2. Cek Cloud (Jika Online)
+    if (this.mode === 'firebase' && typeof db !== 'undefined') {
+        try {
+            const doc = await db.collection('users').doc(mentorEmail).get();
+            if (doc.exists && doc.data().name) {
+                return "Mentor " + doc.data().name;
+            }
+        } catch (e) {
+            console.warn("Gagal ambil nama mentor dari cloud:", e);
+        }
+    }
+    
+    return "Mentor Budi"; // Fallback jika gagal
+};
+
 // FIX: UPDATE PROMPT MESSAGE MENJADI LEBIH ROBUST
 async function promptTeacherMessage(email, btnElement) {
     const msg = prompt("Kirim pesan motivasi/teguran ke siswa ini:");
@@ -7826,8 +7866,11 @@ const STATE = {
     lowEnergyWarned: false,
 
     // NEW: Flag Status Tutorial Dalam Rumah (Mencegah Keluar Pintu)
-    tutorialIndoorComplete: false, // <--- TAMBAHKAN KOMA DI SINI
-    ghosts: [] // <--- TAMBAHAN UNTUK DATA PEMAIN LAIN
+    tutorialIndoorComplete: false, 
+    ghosts: [], 
+    
+    // --- [BARU] NAMA MENTOR DINAMIS ---
+    mentorName: "Mentor Budi" 
 };
 
 const SEASONS = ['Spring', 'Summer', 'Autumn', 'Winter'];
@@ -8766,6 +8809,13 @@ async function initGame() {
 			// --- TAMBAHAN BARU: AKTIFKAN MULTIPLAYER ---
             DataService.startGhostListener(); 
             // ------------------------------------------
+
+            // --- [BARU] UPDATE NAMA MENTOR SESUAI GURU PENDAMPING ---
+            if (DataService.user.mentor) {
+                const realMentorName = await DataService.getMentorName(DataService.user.mentor);
+                STATE.mentorName = realMentorName;
+                console.log("Mentor Updated:", STATE.mentorName);
+            }
         }
 
         regenerateHouseMap();
@@ -8798,6 +8848,18 @@ async function initGame() {
         
         gameLoop();
         
+        // --- [BARU] UPDATE NAMA NPC MENTOR DI MAP ---
+        // Kita update nama NPC di peta 'village' dan 'mentor_interior' agar saat diklik namanya benar
+        ['village', 'mentor_interior'].forEach(mapName => {
+            const map = maps[mapName];
+            if(map && map.npcs) {
+                const mentorNPC = map.npcs.find(n => n.id === 'mentor');
+                if(mentorNPC) {
+                    mentorNPC.name = STATE.mentorName;
+                }
+            }
+        });
+
         // FIX: UBAH LOGIKA START WAKE UP SEQUENCE (TOK TOK)
         // Jalankan jika statusnya Prologue, TIDAK PEDULI ada save data atau tidak.
         // Ini memastikan setelah reset (yang otomatis save), prolog tetap jalan.
@@ -8979,6 +9041,7 @@ function startWakeUpSequence() {
     showToast("🔊 *TOK TOK TOK*");
     if(typeof AudioService !== 'undefined') AudioService.playSFX('knock'); // Play SFX Ketukan
     setTimeout(() => {
+        // UPDATE: Ganti "???" dengan nama mentor dinamis jika perlu, atau biarkan misterius
         showDialogue("???", "Halo? Nak? Kamu sudah bangun? Hari ini hari pertamamu!", [
             {
                 text: "(Bangun dari tempat tidur)", 
@@ -9213,30 +9276,30 @@ function tutorialStep_Diary() {
 function runTutorial() {
     const name = DataService.user ? DataService.user.name : "Siswa";
     
-    // FIX: Menambahkan parameter 'images/mentor.png' di setiap showDialogue berantai agar gambar tidak hilang
-    showDialogue("MENTOR BUDI", 
+    // FIX: GUNAKAN STATE.mentorName UNTUK NAMA MENTOR
+    showDialogue(STATE.mentorName, 
         "Ah, akhirnya bangun juga kamu, " + name + ". Nyenyak tidurnya?",
         [{text: "Siap, Pak!", action: () => {
-             showDialogue("MENTOR BUDI", 
+             showDialogue(STATE.mentorName, 
                 "Selamat datang di Nusantara Arsa. Aturan main di sini ketat: Kamu akan menjalani **Masa Trial selama 3 Tahun**.",
                 [{text: "Hanya 3 tahun?", action: () => {
-                    showDialogue("MENTOR BUDI", 
+                    showDialogue(STATE.mentorName, 
                     "Jika kamu berhasil membuktikan diri, kamu bisa melanjutkannya hingga **5 Tahun**. Namun ingat tujuan akhirnya...", 
                     [{text: "Apa itu?", action: () => {
-                        showDialogue("MENTOR BUDI", 
+                        showDialogue(STATE.mentorName, 
                         "Setelah 5 tahun usai, kamu akan dikirim ke **Pulau Javana** untuk menjalani **kehidupan yang sesungguhnya** di dunia nyata. Jadi, belajarlah dengan serius di sini!", 
                         [{text: "Saya Mengerti!", action: () => {
-                            showDialogue("MENTOR BUDI", "Bagus. Sekarang, tentukan langkah awalmu. Pilihan ini akan mengunci takdirmu dan Status Dasarmu.", [
+                            showDialogue(STATE.mentorName, "Bagus. Sekarang, tentukan langkah awalmu. Pilihan ini akan mengunci takdirmu dan Status Dasarmu.", [
                                 {text: "Jelaskan Status Dulu", action: () => {
-                                     showDialogue("MENTOR BUDI", 
+                                     showDialogue(STATE.mentorName, 
                                      "Dengar baik-baik, ini bekal hidupmu:\n💪 STR (Strength): Kekuatan fisik untuk Bekerja Kasar & Bertarung.\n🧠 INT (Intelligence): Kecerdasan untuk Kuliah & Beasiswa.\n📈 BIZ (Business): Skill dagang untuk Wirausaha.\n❤️ REP (Reputation): Pesona sosial untuk Keluarga & Menikah.",
                                      [{text: "Paham, Pilih Jalan Hidup", action: () => openRoleSelection()}], 'images/mentor.png');
                                 }},
                                 {text: "Langsung Pilih", action: () => openRoleSelection()}
-                            ], 'images/mentor.png'); // FIX GAMBAR DISINI
-                        }}], 'images/mentor.png'); // FIX GAMBAR DISINI
-                    }}], 'images/mentor.png'); // FIX GAMBAR DISINI
-                }}], 'images/mentor.png' // FIX GAMBAR DISINI
+                            ], 'images/mentor.png'); 
+                        }}], 'images/mentor.png'); 
+                    }}], 'images/mentor.png'); 
+                }}], 'images/mentor.png' 
             );
         }}],
         'images/mentor.png'
@@ -9256,7 +9319,8 @@ function openRoleSelection() {
 
 // --- NEW: FUNGSI KONFIRMASI ROLE MENIKAH (PERINGATAN MENTOR) ---
 function confirmFamilyRole() {
-    showDialogue("MENTOR BUDI", 
+    // UPDATE: Gunakan STATE.mentorName
+    showDialogue(STATE.mentorName, 
         "✋ Eitss... Tunggu dulu! Apakah kamu yakin dengan pilihan ini?\n\nMenikah itu **TIDAK MUDAH**, Nak. Kamu masih terlalu muda untuk memikul beban rumah tangga.\n\nDi sana ada tanggung jawab finansial dan emosional yang sangat besar. Ini bukan sekadar cinta monyet atau main rumah-rumahan.\n\nApakah kamu benar-benar siap mental dan fisik?", 
         [
             {
@@ -9285,8 +9349,8 @@ function setRole(role) {
         manualSave(); 
         
         // Dialog Mentor Budi menggantikan Surat Penerimaan instan
-        // UPDATE: TAMBAHKAN INFO JAM BUKA KAMPUS
-        showDialogue("MENTOR BUDI", 
+        // UPDATE: TAMBAHKAN INFO JAM BUKA KAMPUS & NAMA DINAMIS
+        showDialogue(STATE.mentorName, 
             "Pilihan yang cerdas! Pendidikan adalah fondasi masa depan.\n\nNamun, administrasi harus tertib. **Pergilah ke Kampus** di timur desa untuk mendaftar ulang dan memilih jurusanmu di sana.\n\nCatat ini: Kampus buka pukul **07:00 - 18:00**. Jangan datang terlalu malam!\n\nSemoga berhasil, Nak!", 
             [{
                 text: "Siap, Laksanakan!", 
@@ -9309,8 +9373,8 @@ function setRole(role) {
         // FIX: PAKSA SIMPAN DATA SEGERA AGAR MUNCUL DI DASHBOARD GURU
         manualSave();
 
-        // UPDATE: TAMBAHKAN INFO JAM BUKA TOKO MERCHANT
-        showDialogue("MENTOR BUDI", 
+        // UPDATE: TAMBAHKAN INFO JAM BUKA TOKO MERCHANT & NAMA DINAMIS
+        showDialogue(STATE.mentorName, 
             "Pilihan tangguh! Jalur Fighter (Pekerja) membutuhkan fisik yang kuat.\n\nLangkah pertamamu: **Pergilah ke Toko Merchant** di selatan desa.\n\nBos Toko sedang mencari pegawai gudang yang rajin. Masuklah ke gedung toko, bicara padanya, dan **Lamar Kerja**!\n\nToko buka pukul **06:00 - 20:00**, tapi ingat shift kerja dimulai jam **08:00** pagi.", 
             [{
                 text: "Siap Kerja Keras!", 
@@ -9335,8 +9399,8 @@ function setRole(role) {
 
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Uang
 
-        // UPDATE: TAMBAHKAN INFO JAM BUKA SUPPLIER (MERCHANT)
-        showDialogue("MENTOR BUDI", 
+        // UPDATE: TAMBAHKAN INFO JAM BUKA SUPPLIER & NAMA DINAMIS
+        showDialogue(STATE.mentorName, 
             "Pilihan brilian! Menjadi Wirausaha berarti kamu adalah bos untuk dirimu sendiri.\n\nSebagai modal awal, saya berikan **20.000 Gold**.\n\nDan lihatlah... **Rumahmu kini telah saya renovasi menjadi RUKO (Rumah Toko)** agar kamu bisa mulai berjualan dari rumah!\n\nJika butuh stok dagangan, Toko Merchant (Supplier) buka pukul **06:00 - 20:00**.", 
             [{
                 text: "Wah, Terima Kasih Mentor!", 
@@ -9377,8 +9441,8 @@ function setRole(role) {
         // FIX: PAKSA SIMPAN DATA
         manualSave();
 
-        // UPDATE: TAMBAHKAN INFO QUEST BALAI NIKAH & PAK MODIN
-        showDialogue("MENTOR BUDI", 
+        // UPDATE: TAMBAHKAN INFO QUEST BALAI NIKAH & PAK MODIN & NAMA DINAMIS
+        showDialogue(STATE.mentorName, 
             "Jalan yang mulia! Membangun keluarga adalah ibadah terpanjang.\n\nSebagai bekal awal, saya berikan **Cincin Kayu** dan **Baju Pengantin** ini. Gunakan untuk melamar pasanganmu nanti.\n\n**QUEST UTAMA:**\nLangkah pertamamu: **Pergilah ke Balai Pernikahan** di selatan desa (dekat sungai). \n\nTemui **Bapak Penghulu (Modin)** untuk mendapatkan wejangan nikah dan mendaftarkan diri.\n\nIngat, Balai Pernikahan buka pukul **06:00 - 16:00**.", 
             [{
                 text: "Siap, Otw Halal!", 
@@ -9420,12 +9484,12 @@ function explainTimeHUD() {
     showTutorialFocus('hud-time-container');
 
     // 2. Dialog Penjelasan
-    showDialogue("MENTOR BUDI",
+    showDialogue(STATE.mentorName,
         "Satu hal terakhir yang **SANGAT PENTING**: WAKTU.\n\nLihat jam di pojok kanan atas itu? (👆)\nDi Pulau Arsa, waktu terus berjalan. **1 Jam Game = ±1 Menit Asli**.",
         [{
             text: "Lalu?",
             action: () => {
-                showDialogue("MENTOR BUDI",
+                showDialogue(STATE.mentorName,
                     "Perhatikan aturan ini:\n\n1. 🏪 **Jam Operasional**: Toko, Kampus, & Balai Desa punya jam buka/tutup. Jangan bertamu tengah malam!\n\n2. 🌙 **Stamina**: Jika kamu begadang lewat jam 00:00, kamu akan **bangun kesiangan** & **lemas** esok harinya!\n\nManfaatkan waktumu sebaik mungkin.",
                     [{
                         text: "Paham, Lanjut!", // UPDATE: Tombol lanjut ke Kalender
@@ -9446,12 +9510,12 @@ function explainCalendar() {
     // Highlight tetap di area waktu/tanggal
     showTutorialFocus('hud-time-container');
 
-    showDialogue("MENTOR BUDI",
+    showDialogue(STATE.mentorName,
         "Selain Jam, perhatikan juga baris di bawahnya: **TANGGAL & MUSIM**.\n\nDi Pulau Arsa, kita memiliki 4 Musim: **Spring** (Semi), **Summer** (Panas), **Autumn** (Gugur), dan **Winter** (Dingin).",
         [{
             text: "Apa bedanya?",
             action: () => {
-                showDialogue("MENTOR BUDI",
+                showDialogue(STATE.mentorName,
                     "Setiap musim memiliki **Ikan, Tanaman Liar, dan Cuaca** yang unik.\n\nDan yang paling penting: Cek **Kalender di Dinding Rumahmu** setiap pagi!\n\nDi sana tercatat jadwal **Festival Desa** dan **Ulang Tahun** warga. Datanglah ke festival untuk mendapatkan hadiah langka!",
                     [{
                         text: "Siap, Mengerti!",
@@ -9473,17 +9537,17 @@ function explainSocial() {
     // Hapus highlight dari HUD agar fokus ke dialog
     clearTutorialFocus();
 
-    showDialogue("MENTOR BUDI",
+    showDialogue(STATE.mentorName,
         "Satu hal terakhir yang paling penting: **SOSIALISASI**.\n\nJangan hidup sendiri di sini! Bergaullah dengan penduduk Pulau Arsa. Sapa mereka, beri hadiah, dan dengarkan cerita mereka.",
         [{
             text: "Kenapa harus begitu?",
             action: () => {
-                showDialogue("MENTOR BUDI",
+                showDialogue(STATE.mentorName,
                     "Karena interaksi sosial akan **mendewasakan dirimu**.\n\nDengan menjaga hubungan baik, kamu akan membuka banyak **Rahasia Pulau** ini yang tidak tertulis di peta.\n\nIngat, kesuksesan sejati bukan hanya soal seberapa banyak Emas yang kamu punya, tapi seberapa banyak Hati yang kamu menangkan.",
                     [{
                         text: "Nasihat yang indah...",
                         action: () => {
-                            showDialogue("MENTOR BUDI",
+                            showDialogue(STATE.mentorName,
                                 "Baiklah, bekalmu sudah cukup. Sekarang, giliranmu untuk menulis ceritamu sendiri.\n\nJelajahi, pelajari, dan jadilah legenda.\n\n**SEMOGA BERHASIL!** 👋",
                                 [{
                                     text: "Siap! Terima Kasih Mentor! (Selesai)",
@@ -10726,7 +10790,7 @@ function finalizeRoleSetup() {
     
     // UPDATE: Karena penjelasan fitur sudah di awal (startWakeUpSequence), 
     // Mentor Budi sekarang hanya memberikan motivasi penutup agar tidak repetitif.
-    showDialogue("MENTOR BUDI", 
+    showDialogue(STATE.mentorName, 
         "Persiapan selesai! Status dasarmu telah ditetapkan.\n\nIngat pesan saya: Rajinlah menulis **Jurnal Refleksi** setiap hari di rumah agar Gurumu bisa menilai perkembanganmu.", 
         [{
             text: "Siap, Terima Kasih Mentor!", 
@@ -14328,7 +14392,8 @@ function interactNPC(npc) {
 
         const name = DataService.user ? DataService.user.name : "Siswa";
 
-        showDialogue("MENTOR BUDI", `Halo, ${name}. Saya di sini untuk membimbingmu agar tidak tersesat di Pulau Arsa. Apa yang ingin kamu ketahui?`, [
+        // GUNAKAN npc.name (yang sudah diupdate di initGame)
+        showDialogue(npc.name, `Halo, ${name}. Saya di sini untuk membimbingmu agar tidak tersesat di Pulau Arsa. Apa yang ingin kamu ketahui?`, [
             {text: "Apa tugasku sekarang? (Role)", action: () => {
                 let advice = "";
                 let specificBuilding = "";
@@ -14351,7 +14416,7 @@ function interactNPC(npc) {
                     return;
                 }
                 
-                showDialogue("MENTOR BUDI", advice, [
+                showDialogue(npc.name, advice, [
                     {text: `Dimana ${specificBuilding}?`, action: () => showToast(`Cek Peta! ${specificBuilding} ada ikon khususnya.`)},
                     {text: "Siap Laksanakan", action: () => interactNPC(npc)}
                 ], npc.imgSrc);
@@ -14359,7 +14424,7 @@ function interactNPC(npc) {
 
             // --- NEW: OPSI DIALOG INFO BEASISWA ---
             {text: "Info Beasiswa & Biaya", action: () => {
-                showDialogue("MENTOR BUDI", 
+                showDialogue(npc.name, 
                     "Pendidikan itu investasi, tapi biayanya berbeda tergantung otakmu!\n\n📜 **JALUR REGULER**:\n- Syarat: Lulus Ujian (Nilai Minimal).\n- Biaya: Bayar Uang Pangkal & **UKT 600.000 / Tahun**.\n\n🏆 **JALUR BEASISWA**:\n- Syarat: **Nilai Ujian Sempurna (100)**.\n- Benefit: **GRATIS UKT** & dapat **Uang Saku 15.000 / Bulan**!\n\nJadi, belajar yang rajin sebelum ujian masuk!", 
                     [{text: "Wah, menggiurkan!", action: () => interactNPC(npc)}], 
                     npc.imgSrc
@@ -14367,11 +14432,11 @@ function interactNPC(npc) {
             }},
 
             {text: "Jelaskan Fungsi Bangunan", action: () => {
-                 showDialogue("MENTOR BUDI", "Setiap bangunan punya fungsi unik:\n🏪 Merchant: Beli/Jual Barang.\n🏫 Kampus: Belajar (INT).\n🏥 Klinik: Pulihkan Kesehatan.\n⚒️ Blacksmith: Info Karir & Upgrade.\n⚔️ Guild: Misi Petualang.\n📚 Perpustakaan: Info Lore & Resep.", [{text:"Terima kasih", action:()=>interactNPC(npc)}], npc.imgSrc);
+                 showDialogue(npc.name, "Setiap bangunan punya fungsi unik:\n🏪 Merchant: Beli/Jual Barang.\n🏫 Kampus: Belajar (INT).\n🏥 Klinik: Pulihkan Kesehatan.\n⚒️ Blacksmith: Info Karir & Upgrade.\n⚔️ Guild: Misi Petualang.\n📚 Perpustakaan: Info Lore & Resep.", [{text:"Terima kasih", action:()=>interactNPC(npc)}], npc.imgSrc);
             }},
             
             {text: "Nasihat Hidup", action: () => {
-                 showDialogue("MENTOR BUDI", "Ingat, Nak. Waktu adalah mata uang paling mahal di sini. Jangan habiskan harimu hanya untuk berjalan-jalan tanpa tujuan. Tentukan target harianmu.", [{text:"Siap Mentor", action:closeDialogue}], npc.imgSrc);
+                 showDialogue(npc.name, "Ingat, Nak. Waktu adalah mata uang paling mahal di sini. Jangan habiskan harimu hanya untuk berjalan-jalan tanpa tujuan. Tentukan target harianmu.", [{text:"Siap Mentor", action:closeDialogue}], npc.imgSrc);
             }},
 
             {text: "Tutup", action: closeDialogue}
