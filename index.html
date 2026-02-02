@@ -4515,7 +4515,7 @@ function checkSession(titleEl) {
     STATE.screen = 'title'; 
 }
 
-// NEW: FUNCTION TOGGLE FULLSCREEN
+// NEW: FUNCTION TOGGLE FULLSCREEN & FORCE LANDSCAPE
 function toggleFullScreen() {
     if (!document.fullscreenElement &&    // Standard
         !document.webkitFullscreenElement && // Safari/Chrome lama
@@ -4524,14 +4524,41 @@ function toggleFullScreen() {
         
         // Minta Fullscreen
         const elem = document.documentElement;
+		
+		 // --- UPDATE: FUNGSI MEMAKSA ORIENTASI LANDSCAPE (ANDROID/CHROME) ---
+    // Ini memungkinkan game berputar otomatis meskipun "Auto-Rotate" di HP dimatikan
+    const forceLandscape = () => {
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape')
+                .then(() => console.log("Orientation locked to Landscape"))
+                .catch((err) => {
+                    // Beberapa browser/OS (terutama iOS Safari) mungkin menolak ini
+                    console.warn("Orientation lock failed/not supported:", err);
+                });
+        }
+    };
+	
+        if (!document.fullscreenElement &&    // Standard
+        !document.webkitFullscreenElement && // Safari/Chrome lama
+        !document.mozFullScreenElement && // Firefox lama
+        !document.msFullscreenElement) {  // IE/Edge lama
+        
+        // Minta Fullscreen Dulu (Wajib agar bisa lock orientation)
         if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(err => console.log(err)); // Catch error jika ditolak
+            elem.requestFullscreen().then(forceLandscape).catch(err => console.log(err)); 
         } else if (elem.webkitRequestFullscreen) { /* Safari */
             elem.webkitRequestFullscreen();
+            setTimeout(forceLandscape, 500); // Coba lock setelah delay di Safari
         } else if (elem.msRequestFullscreen) { /* IE11 */
             elem.msRequestFullscreen();
+            setTimeout(forceLandscape, 500);
         }
+    } else {
+        // Jika sudah fullscreen tapi orientasi salah, paksa lock lagi
+        forceLandscape();
     }
+}
+
 }
 
 function logout() {
