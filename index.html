@@ -81,22 +81,14 @@
         }
 
         /* Landscape Enforcement */
-        #rotate-warning {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95); /* Sedikit transparan agar canvas terlihat dikit */
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        @media screen and (orientation: portrait) {
-            #rotate-warning { display: flex; }
+        /* Paksa sembunyi selamanya */
+		#rotate-warning { display: none !important; }
+	
+		@media screen and (orientation: portrait) {
+    /* Tetap sembunyi walaupun portrait */
+    #rotate-warning { display: none !important; }
+}
+        
             /* FIX: JANGAN SEMBUNYIKAN GAME CONTAINER AGAR TETAP RENDER */
             /* #game-container { display: none; } <--- HAPUS INI */
         }
@@ -275,7 +267,102 @@
             text-shadow: 1px 1px 2px black;
         }
         .time-clock { font-size: 16px; font-weight: bold; font-family: 'Exo 2'; color: white; }
+		
+		  /* --- STYLING KHUSUS UNTUK DUEL MINIGAME (BARU) --- */
+        #duel-minigame {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); /* Gelap transparan */
+            z-index: 2200; /* Di atas segalanya */
+            display: none; /* Hidden default */
+            flex-direction: column; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+            pointer-events: auto;
+        }
+        
+        .duel-arena {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+            border: 2px solid #ef4444;
+            border-radius: 16px;
+            padding: 25px;
+            width: 90%; max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.4);
+            animation: bounceIn 0.3s;
+            position: relative;
+        }
 
+        .duel-header {
+            font-family: 'Cinzel', serif;
+            font-size: 24px; color: #ef4444;
+            text-shadow: 0 0 10px #7f1d1d;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ef4444;
+            padding-bottom: 10px;
+        }
+
+        .duel-characters {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .duel-char {
+            display: flex; flex-direction: column; align-items: center; width: 100px;
+        }
+
+        .duel-avatar {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            background: #334155;
+            object-fit: cover;
+            margin-bottom: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .duel-hp-container {
+            width: 80px; height: 10px;
+            background: #333; border-radius: 5px;
+            border: 1px solid #555;
+            overflow: hidden;
+        }
+        .duel-hp-bar {
+            height: 100%; width: 100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .duel-vs-text {
+            font-family: 'Cinzel'; font-size: 32px; font-weight: 900;
+            color: #ef4444; font-style: italic;
+        }
+
+        .duel-status-text {
+            min-height: 50px;
+            font-family: 'Exo 2'; font-size: 14px;
+            color: #e2e8f0; margin-bottom: 20px;
+            padding: 10px; background: rgba(255,255,255,0.05);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .duel-controls {
+            display: flex; gap: 15px; justify-content: center;
+        }
+
+        .duel-btn {
+            width: 70px; height: 70px;
+            border-radius: 12px;
+            background: linear-gradient(to bottom, #334155, #1e293b);
+            border: 1px solid #64748b;
+            font-size: 32px; cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 4px 0 #0f172a;
+        }
+        .duel-btn:active { transform: translateY(4px); box-shadow: none; }
+        .duel-btn:hover { background: #475569; border-color: var(--secondary); }
+
+        /* --- END DUEL STYLES --- */
+		
+		
         /* 4. COMBAT HUD (Floating HP Bar - Hidden by Default) */
         /* UPDATE: DIHAPUS KARENA SUDAH PINDAH KE HUD UTAMA */
         #combat-hud {
@@ -2112,6 +2199,46 @@ button, .round-btn, .d-btn, .auth-btn {
 </head>
 <body>
 
+   <!-- DUEL MINIGAME OVERLAY (BARU) -->
+    <div id="duel-minigame">
+        <div class="duel-arena">
+            <div class="duel-header">⚔️ ARENA DUEL ⚔️</div>
+            
+            <div class="duel-characters">
+                <!-- Sisi Player -->
+                <div class="duel-char">
+                    <img id="duel-p-img" src="images/boy.png" class="duel-avatar">
+                    <div class="duel-hp-container">
+                        <div id="duel-p-hp" class="duel-hp-bar"></div>
+                    </div>
+                    <span style="font-size:12px; margin-top:5px; font-weight:bold; color:#4ade80;">KAMU</span>
+                </div>
+                
+                <div class="duel-vs">VS</div>
+                
+                <!-- Sisi Rival -->
+                <div class="duel-char">
+                    <img id="duel-r-img" src="images/rival_boy.png" class="duel-avatar">
+                    <div class="duel-hp-container">
+                        <div id="duel-r-hp" class="duel-hp-bar"></div>
+                    </div>
+                    <span id="duel-r-name" style="font-size:12px; margin-top:5px; font-weight:bold; color:#ef4444;">RIVAL</span>
+                </div>
+            </div>
+
+            <div id="duel-status" class="duel-status-text">
+                Siapkan strategimu!<br>Pilih: Batu, Gunting, atau Kertas.
+            </div>
+
+            <div class="duel-controls">
+                <button class="duel-btn" onclick="handleDuelMove('batu')" title="Batu">✊</button>
+                <button class="duel-btn" onclick="handleDuelMove('kertas')" title="Kertas">✋</button>
+                <button class="duel-btn" onclick="handleDuelMove('gunting')" title="Gunting">✌️</button>
+            </div>
+            
+            <button class="main-menu-btn" onclick="quitDuel()" style="margin-top:20px; font-size:12px; border-color:#64748b; color:#94a3b8; background:transparent;">🏳️ MENYERAH</button>
+        </div>
+    </div>
 	
 <div id="rotate-warning">
     <h1 style="font-size: 40px; margin-bottom: 10px;">🔄</h1>
@@ -6756,6 +6883,146 @@ function exportToCSV() { // Hapus async
 /** ENGINE & CONFIG */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+     /* --- LOGIKA DUEL SUIT (BARU) --- */
+    let duelState = {
+        active: false,
+        playerHP: 3,
+        rivalHP: 3,
+        rivalName: '',
+        rivalId: ''
+    };
+
+    function startDuel(npc) {
+        // 1. Reset State
+        duelState.active = true;
+        duelState.playerHP = 3;
+        duelState.rivalHP = 3;
+        duelState.rivalName = npc.name;
+        duelState.rivalId = npc.id;
+
+        // 2. Setup Tampilan
+        const modal = document.getElementById('duel-minigame');
+        const pImg = document.getElementById('duel-p-img');
+        const rImg = document.getElementById('duel-r-img');
+        const rName = document.getElementById('duel-r-name');
+        
+        modal.style.display = 'flex';
+        
+        // Set Gambar (Gunakan STATE global jika ada, atau default)
+        const gender = (typeof STATE !== 'undefined' && STATE.player) ? STATE.player.gender : 'boy';
+        pImg.src = gender === 'boy' ? 'images/boy.png' : 'images/girl.png';
+        rImg.src = npc.imgSrc || 'images/rival_boy.png';
+        rName.innerText = npc.name ? npc.name.split(' ')[0].toUpperCase() : 'RIVAL';
+
+        document.getElementById('duel-status').innerHTML = "Ronde 1: Pilih langkahmu!<br><span style='color:#94a3b8; font-size:12px;'>(Batu mengalahkan Gunting, Gunting mengalahkan Kertas, Kertas mengalahkan Batu)</span>";
+        updateDuelUI();
+        
+        if(typeof STATE !== 'undefined') STATE.screen = 'minigame';
+    }
+
+    function handleDuelMove(pMove) {
+        if (!duelState.active) return;
+        
+        const moves = ['batu', 'gunting', 'kertas'];
+        const rMove = moves[Math.floor(Math.random() * moves.length)];
+        let result = 'draw';
+        let msg = "";
+
+        if (pMove === rMove) {
+            result = 'draw';
+            msg = "<span style='color:#fbbf24'>Seri! Tidak ada yang terluka.</span>";
+        } else if (
+            (pMove === 'batu' && rMove === 'gunting') ||
+            (pMove === 'gunting' && rMove === 'kertas') ||
+            (pMove === 'kertas' && rMove === 'batu')
+        ) {
+            result = 'win';
+            duelState.rivalHP--;
+            msg = "<span style='color:#4ade80'>Kamu Menang! Lawan terluka.</span>";
+        } else {
+            result = 'lose';
+            duelState.playerHP--;
+            msg = "<span style='color:#ef4444'>Kamu Kalah! Terkena serangan.</span>";
+        }
+
+        const icons = { 'batu': '✊', 'gunting': '✌️', 'kertas': '✋' };
+        document.getElementById('duel-status').innerHTML = `Kamu: ${icons[pMove]} <b style="margin:0 10px;">VS</b> Rival: ${icons[rMove]}<br>${msg}`;
+        updateDuelUI();
+
+        if (duelState.playerHP <= 0 || duelState.rivalHP <= 0) {
+            setTimeout(() => finishDuel(duelState.playerHP > 0), 1000);
+        }
+    }
+
+    function updateDuelUI() {
+        const pPct = (duelState.playerHP / 3) * 100;
+        const rPct = (duelState.rivalHP / 3) * 100;
+        document.getElementById('duel-p-hp').style.width = pPct + '%';
+        document.getElementById('duel-r-hp').style.width = rPct + '%';
+    }
+
+    function finishDuel(isWin) {
+        document.getElementById('duel-minigame').style.display = 'none';
+        duelState.active = false;
+        if(typeof STATE !== 'undefined') STATE.screen = 'play';
+
+        if (isWin) {
+            if(typeof STATE !== 'undefined') {
+                STATE.player.reputation += 2;
+                STATE.player.money += 500;
+            }
+            alert("MENANG! (+2 Reputasi, +500G)");
+        } else {
+            if(typeof STATE !== 'undefined') STATE.player.energy = Math.max(0, STATE.player.energy - 20);
+            alert("KALAH... (Energi -20)");
+        }
+    }
+
+    function quitDuel() {
+        document.getElementById('duel-minigame').style.display = 'none';
+        duelState.active = false;
+        if(typeof STATE !== 'undefined') STATE.screen = 'play';
+    }
+	
+	
+
+
+    // --- BAGIAN PENTING 2: PAKSA LANDSCAPE SAAT KLIK ---
+    function startGame() {
+        const elem = document.documentElement;
+
+        // 1. Minta Fullscreen dulu (Browser butuh ini biar bisa lock orientasi)
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().then(forceLandscape).catch(err => {
+                console.log("Fullscreen ditolak, tetap lanjut main.");
+                forceLandscape(); // Tetap coba putar walau gagal fullscreen
+            });
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+            setTimeout(forceLandscape, 500);
+        } else {
+            // Jika tidak support fullscreen, langsung coba putar
+            forceLandscape();
+        }
+
+        // Sembunyikan judul, tampilkan game
+        document.getElementById('title-screen').style.display = 'none';
+        document.getElementById('ui-layer').style.display = 'block';
+        
+        // Resize canvas biar pas layar
+        resize();
+        gameLoop();
+    }
+
+    // Fungsi Pengunci Layar (Hanya jalan di HP Android/Chrome Mobile)
+    function forceLandscape() {
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape')
+                .then(() => console.log("Sukses: Layar terkunci Landscape"))
+                .catch((err) => console.log("Info: Browser ini tidak mendukung kunci layar otomatis (Biasanya iPhone/Safari). Pemain harus putar HP manual."));
+        }
+    }
 
 /* UPDATE: UBAH KONSTANTA JADI VARIABEL DINAMIS AGAR RESPONSIF */
 let GAME_WIDTH = 480; 
