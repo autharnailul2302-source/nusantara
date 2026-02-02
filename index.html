@@ -7102,7 +7102,9 @@ function resize() {
     let scale = 2.2; // Desktop (Zoom Out agar lebih luas, sebelumnya 3.0)
     
     if (isMobile) {
-        scale = 1.5; // Mobile (Zoom Out agar tidak terlalu dekat, sebelumnya 2.0)
+        /* REVISI: Scale Mobile diperkecil (1.5 -> 1.15) agar area vertikal terlihat lebih banyak */
+        /* Ini mengatasi masalah kasur/lemari terpotong di layar HP yang pendek */
+        scale = 1.15; 
     } else if (isTablet) {
         scale = 1.8; // Tablet (Zoom Out, sebelumnya 2.5)
     }
@@ -9313,7 +9315,9 @@ async function initGame() {
             // Pastikan posisi player reset ke kasur atau tengah ruangan saat prolog
             if(hMap) {
                 STATE.player.x = Math.floor(hMap.w / 2) * TILE_SIZE; 
-                STATE.player.y = (hMap.h - 3) * TILE_SIZE; 
+                /* REVISI: Spawn player di tengah-atas (Tile 4) agar kamera menyorot Kasur/Lemari */
+                /* Sebelumnya (h-3) membuat player terlalu bawah sehingga atas terpotong */
+                STATE.player.y = 4 * TILE_SIZE; 
             }
             // Delay sedikit lebih lama agar map ter-render sempurna sebelum dialog muncul
             setTimeout(() => startWakeUpSequence(), 1500);
@@ -11662,6 +11666,13 @@ function gameLoop() {
 }
 
 function update() {
+    // --- FIX: UPDATE POINTER TUTORIAL SELALU (BAHKAN SAAT DIALOG/PAUSE) ---
+    // Pindahkan logika ini ke ATAS pengecekan screen !== 'play'
+    // Ini memastikan tangan penunjuk tetap muncul dan posisinya benar saat dialog tutorial aktif
+    if (STATE.tutorialFocusTarget) {
+        updateTutorialPointerPosition();
+    }
+
     if (STATE.screen !== 'play') return;
 	
     // Removed btnSkill display logic block here
@@ -12797,38 +12808,37 @@ function checkAutoTeleport() {
 
     for (let b of map.buildings) {
         if(b.entrance) {
-            // Titik tengah entrance
+            // Titik tengah entrance (Pintu)
             const eCenterX = (b.entrance.x * TILE_SIZE) + (TILE_SIZE / 2);
             const eCenterY = (b.entrance.y * TILE_SIZE) + (TILE_SIZE / 2);
             
-            // Jarak deteksi otomatis
+            // Jarak pemain ke titik tengah pintu
             const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
             
-            // UPDATE: Jarak deteksi diperbesar dari 30px ke 50px (Hampir 2 Tile)
-            // Ini agar pemain bisa trigger masuk meski tertahan tembok/pintu
-            if(dist < 50) {
-                // Daftar bangunan/trigger yang bisa auto-teleport
+            // --- PERUBAHAN 1: Radius Diperkecil ---
+            // Sebelumnya 50 (sangat lebar). Sekarang 25 (Pemain harus benar-benar injak pintu).
+            // Ini mengatasi masalah "sering tiba-tiba keluar sendiri".
+            if(dist < 25) {
+                
+                // --- PERUBAHAN 2: Daftar Otomatis Hanya untuk KELUAR ---
+                // Saya telah MENGHAPUS bangunan masuk (seperti 'player_house', 'merchant', dll) dari sini.
+                // Jadi saat mau MASUK, fungsi ini tidak akan jalan (tombol aksi akan muncul gantinya).
                 const autoTeleporters = [
-                    // RUMAH & TOKO PLAYER
-                    'player_house', 'house_exit', 'pshop_exit',
-                    
-                    // DUNGEON
-                    'dungeon_gate', 'dungeon_exit', 'dungeon_next',
-                    
-                    // FASILITAS UTAMA
-                    'merchant', 'shop_exit', 
-                    'library', 'library_exit', 
-                    'guild', 'guild_exit', 
-                    'school', 'school_exit',
-                    'blacksmith', 'smith_exit',
-                    'mentor', 'mentor_exit',
-
-                    // FIX: MENAMBAHKAN BANGUNAN LAIN AGAR KONSISTEN (AUTO KELUAR/MASUK)
-                    'clinic', 'clinic_exit',         // Klinik
-                    'wedding', 'wedding_exit',       // Balai Nikah
-                    'lover1_home', 'lover1_exit',    // Rumah Ayu
-                    'fisherman_home', 'fisherman_exit', // Rumah Nelayan
-                    'candi', 'candi_exit'            // Candi Kuno
+                    // HANYA DAFTAR PINTU KELUAR (EXIT)
+                    'house_exit', 'pshop_exit',
+                    'dungeon_exit', 'dungeon_next', // Next level dungeon tetap auto biar smooth
+                    'shop_exit', 
+                    'library_exit', 
+                    'guild_exit', 
+                    'school_exit',
+                    'smith_exit',
+                    'mentor_exit',
+                    'clinic_exit',
+                    'wedding_exit',
+                    'lover1_exit', 
+                    'fisherman_exit',
+                    'candi_exit',
+                    'ruins_exit'
                 ];
                 
                 if (autoTeleporters.includes(b.id)) {
