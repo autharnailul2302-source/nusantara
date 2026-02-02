@@ -6522,48 +6522,6 @@ DataService.getMentorName = async function(mentorEmail) {
     return "Mentor Budi"; // Fallback jika gagal
 };
 
-// FIX: UPDATE PROMPT MESSAGE MENJADI LEBIH ROBUST
-async function promptTeacherMessage(email, btnElement) {
-    const msg = prompt("Kirim pesan motivasi/teguran ke siswa ini:");
-    if(msg) {
-        // Fallback untuk event jika btnElement tidak terkirim (support legacy call)
-        if (!btnElement && typeof event !== 'undefined') btnElement = event.target;
-
-        let originalText = "✉️";
-        
-        // Tampilkan indikator loading visual pada tombol
-        if(btnElement) {
-            originalText = btnElement.innerText;
-            btnElement.innerText = "⏳...";
-            btnElement.disabled = true;
-            btnElement.style.opacity = "0.7";
-        }
-        
-        try {
-            // FIX: Pastikan koneksi ke Cloud siap sebelum kirim
-            await DataService.init(true);
-            
-            const success = await DataService.sendMessage(email, "GURU: " + msg);
-            
-            if(success) {
-                alert("✅ Pesan berhasil dikirim ke Inbox Siswa!");
-            } else {
-                // Jika gagal (misal mode offline atau local storage kosong)
-                alert("❌ Gagal kirim pesan. Pastikan Anda Online dan terhubung ke Cloud.");
-            }
-        } catch (e) {
-            console.error("Message Error:", e);
-            alert("Error Sistem: " + e.message);
-        } finally {
-            // Kembalikan tombol ke kondisi semula
-            if(btnElement) {
-                btnElement.innerText = originalText;
-                btnElement.disabled = false;
-                btnElement.style.opacity = "1";
-            }
-        }
-    }
-}
 
 // UPDATE: SYNC GRADING (Menggunakan latestStudentData)
 function renderGrading() {
@@ -6889,6 +6847,8 @@ const ctx = canvas.getContext('2d');
     };
 
     function startDuel(npc) {
+        toggleFullScreen(); // <--- BARIS BARU: Paksa layar penuh di awal
+
         // 1. Reset State
         duelState.active = true;
         duelState.playerHP = 3;
@@ -6904,8 +6864,8 @@ const ctx = canvas.getContext('2d');
         
         modal.style.display = 'flex';
         
-        // Set Gambar (Gunakan STATE global jika ada, atau default)
-        const gender = (typeof STATE !== 'undefined' && STATE.player) ? STATE.player.gender : 'boy';
+        // Load Gambar
+        const gender = STATE.player.gender || 'boy';
         pImg.src = gender === 'boy' ? 'images/boy.png' : 'images/girl.png';
         rImg.src = npc.imgSrc || 'images/rival_boy.png';
         rName.innerText = npc.name ? npc.name.split(' ')[0].toUpperCase() : 'RIVAL';
@@ -6915,7 +6875,7 @@ const ctx = canvas.getContext('2d');
         
         if(typeof STATE !== 'undefined') STATE.screen = 'minigame';
     }
-
+	
     function handleDuelMove(pMove) {
         if (!duelState.active) return;
         
@@ -6957,31 +6917,54 @@ const ctx = canvas.getContext('2d');
         document.getElementById('duel-r-hp').style.width = rPct + '%';
     }
 
-    function finishDuel(isWin) {
+function finishDuel(isWin) {
+        // 1. Sembunyikan Arena Duel
         document.getElementById('duel-minigame').style.display = 'none';
-        duelState.active = false;
-        if(typeof STATE !== 'undefined') STATE.screen = 'play';
+        
+        // 2. Siapkan Pesan Menang/Kalah
+        let title, msg;
+        let pImg = STATE.player.gender === 'boy' ? 'images/boy.png' : 'images/girl.png';
 
         if (isWin) {
-            if(typeof STATE !== 'undefined') {
-                STATE.player.reputation += 2;
-                STATE.player.money += 500;
-            }
-            alert("MENANG! (+2 Reputasi, +500G)");
+            title = "MENANG DUEL! 🏆";
+            msg = "Hebat! Kamu berhasil mengalahkan rivalmu.\n\nHadiah:\n+2 Reputasi\n+500 Gold";
         } else {
-            if(typeof STATE !== 'undefined') STATE.player.energy = Math.max(0, STATE.player.energy - 20);
-            alert("KALAH... (Energi -20)");
+            title = "KALAH DUEL... 🤕";
+            msg = "Sayang sekali, strategimu terbaca.\n\nHukuman:\n-20 Energi (Kelelahan)";
         }
+
+        // 3. Tampilkan Dialog Hasil (PENTING: Tombol di sini yang memicu Fullscreen)
+        showDialogue(title, msg, [{
+            text: "Lanjut Main (Klik Disini) >>", 
+            action: () => {
+                // Update State Game
+                duelState.active = false;
+                STATE.screen = 'play';
+                
+                // Berikan Hadiah/Hukuman
+                if (isWin) {
+                    STATE.player.reputation += 2;
+                    STATE.player.money += 500;
+                    showToast("Hadiah Diterima!");
+                } else {
+                    STATE.player.energy = Math.max(0, STATE.player.energy - 20);
+                }
+                
+                // Tutup Dialog & PAKSA FULLSCREEN
+                closeDialogue();
+                toggleFullScreen(); // <--- INI KUNCINYA
+            }
+        }], pImg);
     }
 
-    function quitDuel() {
+
+ function quitDuel() {
         document.getElementById('duel-minigame').style.display = 'none';
         duelState.active = false;
-        if(typeof STATE !== 'undefined') STATE.screen = 'play';
+        STATE.screen = 'play';
+        toggleFullScreen(); // Paksa fullscreen saat keluar
     }
 	
-	
-
 
     // --- BAGIAN PENTING 2: PAKSA LANDSCAPE SAAT KLIK ---
     function startGame() {
@@ -15714,10 +15697,11 @@ function interactNPC(npc) {
         }
 
         showDialogue(npc.name, taunt, [
-            {text: "Tantang Duel (Coming Soon)", action: () => {
-                showToast("Fitur Duel belum tersedia.");
-                closeDialogue();
-            }},
+            // Tombol ini sekarang memanggil fungsi startDuel(npc) yang ada di bawah
+			{text: "⚔️ Tantang Duel!", action: () => {
+			 closeDialogue(); // 1. Tutup dialog percakapan
+		     startDuel(npc);  // 2. Panggil layar duel
+			 }},
             {text: "Kita bersaing secara sehat!", action: () => {
                 showDialogue(npc.name, "Hah? Bersaing? Mimpi lu ketinggian! Tapi oke, kita liat siapa yang menang.", [{text:"Liat saja nanti", action:closeDialogue}], npc.imgSrc);
             }},
