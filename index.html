@@ -4517,15 +4517,9 @@ function checkSession(titleEl) {
 
 // NEW: FUNCTION TOGGLE FULLSCREEN & FORCE LANDSCAPE
 function toggleFullScreen() {
-    if (!document.fullscreenElement &&    // Standard
-        !document.webkitFullscreenElement && // Safari/Chrome lama
-        !document.mozFullScreenElement && // Firefox lama
-        !document.msFullscreenElement) {  // IE/Edge lama
-        
-        // Minta Fullscreen
-        const elem = document.documentElement;
-		
-		 // --- UPDATE: FUNGSI MEMAKSA ORIENTASI LANDSCAPE (ANDROID/CHROME) ---
+    const elem = document.documentElement;
+
+    // --- UPDATE: FUNGSI MEMAKSA ORIENTASI LANDSCAPE (ANDROID/CHROME) ---
     // Ini memungkinkan game berputar otomatis meskipun "Auto-Rotate" di HP dimatikan
     const forceLandscape = () => {
         if (screen.orientation && screen.orientation.lock) {
@@ -4537,13 +4531,15 @@ function toggleFullScreen() {
                 });
         }
     };
-	
-        if (!document.fullscreenElement &&    // Standard
-        !document.webkitFullscreenElement && // Safari/Chrome lama
-        !document.mozFullScreenElement && // Firefox lama
-        !document.msFullscreenElement) {  // IE/Edge lama
-        
-        // Minta Fullscreen Dulu (Wajib agar bisa lock orientation)
+
+    // Cek apakah browser sudah dalam mode fullscreen?
+    const isFullscreen = document.fullscreenElement || 
+                         document.webkitFullscreenElement || 
+                         document.mozFullScreenElement || 
+                         document.msFullscreenElement;
+
+    if (!isFullscreen) {  
+        // KONDISI 1: BELUM FULLSCREEN -> Request Fullscreen dulu, baru Lock Landscape
         if (elem.requestFullscreen) {
             elem.requestFullscreen().then(forceLandscape).catch(err => console.log(err)); 
         } else if (elem.webkitRequestFullscreen) { /* Safari */
@@ -4554,11 +4550,10 @@ function toggleFullScreen() {
             setTimeout(forceLandscape, 500);
         }
     } else {
-        // Jika sudah fullscreen tapi orientasi salah, paksa lock lagi
+        // KONDISI 2: SUDAH FULLSCREEN -> Langsung Paksa Lock Landscape
+        // (Berguna jika pemain tidak sengaja memutar HP kembali ke potrait)
         forceLandscape();
     }
-}
-
 }
 
 function logout() {
