@@ -2090,6 +2090,23 @@ button, .round-btn, .d-btn, .auth-btn {
             30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
             40%, 60% { transform: translate3d(8px, 0, 0); }
         }
+		
+		 /* --- NEW: ABOUT AVATAR ANIMATION (BREATHING) --- */
+        @keyframes avatarBreathe {
+            0% { transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(251, 191, 36, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); }
+        }
+
+        .about-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--secondary);
+            object-fit: cover;
+            margin-bottom: 15px;
+            animation: avatarBreathe 3s infinite ease-in-out; /* Efek Bernapas */
+        }
 
     </style>
 </head>
@@ -2169,6 +2186,33 @@ button, .round-btn, .d-btn, .auth-btn {
             <button class="main-menu-btn" onclick="closeLeaderboard()" style="width:100%; min-width:unset; margin-top:20px; padding:12px; font-size:14px; border-color:#ef4444; color:#ef4444;">TUTUP LEADERBOARD</button>
         </div>
     </div>
+	
+	<!-- NEW: ABOUT SCREEN OVERLAY -->
+    <div id="about-screen" class="minigame-overlay" style="display:none; z-index: 2500;">
+        <div class="journal-box" style="text-align:center; max-width: 400px; max-height: 90vh; overflow-y: auto;">
+            <h2 style="font-family:'Cinzel'; color:var(--secondary); margin-bottom:15px; text-shadow:0 0 10px var(--secondary); font-size: 22px;">TENTANG PENGEMBANG</h2>
+            
+            <!-- AVATAR BERNAPAS -->
+            <div style="display: flex; justify-content: center;">
+                <img src="images/nailul.png" class="about-avatar" alt="Avatar Nailul" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDUiIGZpbGw9IiMxZTNhOGEiIHN0cm9rZT0iI2ZiYmYyNCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTMwIDgwIFE1MCA1MCA3MCA4MCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjM1IiBjeT0iNDUiIHI9IjUiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSI2NSIgY3k9IjQ1IiByPSI1IiBmaWxsPSIjZmZmIi8+PC9zdmc+'">
+            </div>
+
+            <p style="font-size:13px; color:#e2e8f0; line-height:1.6; margin-bottom: 20px; text-align: justify; padding: 0 10px;">
+                <strong>Game Nusantara Arsa</strong> adalah simulasi kehidupan anak yang dirancang untuk mempersiapkan masa depanmu.
+                <br><br>
+                Pilihlah satu dari **4 Role Kehidupan** (Pekerja, Mahasiswa, Wirausaha, atau Menikah) dan hadapi tantangan dunia nyata dalam format permainan RPG yang seru. Belajar mengambil keputusan, mengelola aset, dan bersosialisasi sebelum terjun ke masyarakat yang sesungguhnya.
+            </p>
+            
+            <div style="margin: 15px 0; border-top: 1px dashed #475569; padding-top: 15px; font-size: 12px; color: #94a3b8; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px;">
+                <strong>Dikembangkan Oleh:</strong><br>
+                <span style="color: var(--secondary); font-size: 14px; font-weight: bold;">NAILUL AUTHAR, S.Kom.</span><br>
+                Guru TKJ - SMK Negeri 1 Brondong<br><br>
+                📧 <span style="color: var(--accent);">nailulauthar2302@gmail.com</span>
+            </div>
+            
+            <button class="main-menu-btn" onclick="document.getElementById('about-screen').style.display='none'" style="width:100%; font-size:14px; padding:10px; min-width: unset;">TUTUP</button>
+        </div>
+    </div>
 
     <!-- NEW: AUDIO PROMPT -->
     <div id="audio-prompt">
@@ -2203,9 +2247,10 @@ button, .round-btn, .d-btn, .auth-btn {
         <h1>NUSANTARA ARSA</h1>
         <h2>Rise of Student</h2>
         <div style="z-index: 10; display:flex; flex-direction:column; align-items:center;">
-            <button class="main-menu-btn" onclick="goToLogin()">START GAME</button>
+            <button class="main-menu-btn" onclick="goToLogin()">MULAI BERTUALANG</button>
             <button class="main-menu-btn" onclick="showLeaderboard()">RANKING</button>
-            <button class="main-menu-btn" onclick="toggleFullScreen()">FULL SCREEN</button>
+             <!-- UPDATE: GANTI TOMBOL FULLSCREEN MENJADI ABOUT -->
+            <button class="main-menu-btn" onclick="document.getElementById('about-screen').style.display='flex'">TENTANG GIM</button>
         </div>
         <p style="position: absolute; bottom: 20px; font-size: 12px; color: #94a3b8; font-family: 'Exo 2'; z-index: 10;">Ver 4.4 - Fullscreen Mobile Support</p>
     </div>
@@ -3174,6 +3219,7 @@ const AudioService = {
         wedding: new Audio('audio/wedding.mp3')
     },
     currentTrack: null,
+	currentAmbience: null, // NEW: Track Ambience (Suara Latar)
 
     init: function() {
         try {
@@ -3197,7 +3243,8 @@ const AudioService = {
             // Set Volume Default
             if(this.tracks.opening) this.tracks.opening.volume = 0.5;
             if(this.tracks.village) this.tracks.village.volume = 0.5;
-            if(this.tracks.night) this.tracks.night.volume = 0.7;
+            // Ambience Volume (Agak kecil agar tidak menutupi musik)
+            if(this.tracks.night) this.tracks.night.volume = 0.6; 
             if(this.tracks.sea) this.tracks.sea.volume = 0.0; 
             if(this.tracks.rain) this.tracks.rain.volume = 0.4;
             if(this.tracks.bird) this.tracks.bird.volume = 0.3;
@@ -3249,6 +3296,32 @@ const AudioService = {
             }
         }
     },
+	
+	
+	// --- NEW: FUNGSI AMBIENCE (SUARA LATAR) ---
+    playAmbience: function(trackName) {
+        if (!this.enabled) return;
+        if (this.currentAmbience === trackName) return;
+
+        // Stop ambience sebelumnya
+        this.stopAmbience();
+
+        this.currentAmbience = trackName;
+        if(this.tracks[trackName]) {
+            this.tracks[trackName].play().catch(()=>{});
+        }
+    },
+	
+	stopAmbience: function() {
+        if (this.currentAmbience && this.tracks[this.currentAmbience]) {
+            this.tracks[this.currentAmbience].pause();
+            this.tracks[this.currentAmbience].currentTime = 0;
+        }
+        this.currentAmbience = null;
+    },
+
+	
+	
 
     playSFX: function(trackName) {
         if (!this.enabled) return;
@@ -3280,31 +3353,37 @@ const AudioService = {
         } else if (STATE.screen === 'play') {
             // Logika Musik Berdasarkan Lokasi
             if (STATE.location === 'village') {
-                // Cek Waktu Siang/Malam
-                // Jika Jam 18:00 s/d 05:00 pagi, mainkan suara malam (jangkrik)
-                if (STATE.time >= 1800 || STATE.time < 500) {
-                    this.playBGM('night');
+                
+                // --- FIX: MUSIK MUSIM DIPUTAR 24 JAM (TIDAK PEDULI SIANG/MALAM) ---
+                if (STATE.season === 'spring') {
+                    this.playBGM('spring');
+                } else if (STATE.season === 'summer') {
+                    this.playBGM('summer');
+                } else if (STATE.season === 'autumn') {
+                    this.playBGM('autumn'); // file: audio/fall.mp3
+                } else if (STATE.season === 'winter') {
+                    this.playBGM('winter');
                 } else {
-                    // --- NEW: LOGIKA MUSIK MUSIMAN (SIANG HARI) ---
-                    if (STATE.season === 'spring') {
-                        this.playBGM('spring');
-                    } else if (STATE.season === 'summer') {
-                        this.playBGM('summer');
-                    } else if (STATE.season === 'autumn') {
-                        this.playBGM('autumn'); // file: audio/fall.mp3
-                    } else if (STATE.season === 'winter') {
-                        this.playBGM('winter');
-                    } else {
-                        this.playBGM('village'); // Fallback jika musim tidak terdeteksi
-                    }
+                    this.playBGM('village'); // Fallback
                 }
+
+                // --- FIX: SUARA MALAM HANYA SEBAGAI BACKGROUND (AMBIENCE) ---
+                // Jika Jam 18:00 s/d 05:00 pagi, nyalakan layer suara jangkrik
+                if (STATE.time >= 1800 || STATE.time < 500) {
+                    this.playAmbience('night');
+                } else {
+                    this.stopAmbience(); // Matikan suara malam saat siang
+                }
+                
             } else if (STATE.location === 'dungeon') {
+                this.stopAmbience(); // Matikan suara malam di dungeon
                 if (STATE.bossSpawned) {
                     this.playBGM('boss');
                 } else {
                     this.playBGM('dungeon');
                 }
             } else {
+				 this.stopAmbience(); // Matikan suara malam di dalam rumah
                 // Interior
                 if (STATE.location === 'wedding_interior') {
                     this.playBGM('wedding');
@@ -4251,6 +4330,9 @@ if (document.readyState === 'loading') {
 
 // UPDATE: HANDLE PILIHAN AUDIO -> LANJUT KE LOADING ASET
 function handleAudioChoice(enable) {
+    // Browser butuh interaksi user untuk fullscreen, jadi ini tempat terbaik.
+    toggleFullScreen();
+
     AudioService.enabled = enable;
     
     // 1. Sembunyikan Audio Prompt
@@ -8349,6 +8431,8 @@ function initTouchControls() {
             /* FIX: Tambahkan Splash Screen ke pengecualian agar tombol start bisa diklik */
             e.target.closest('#splash-screen') || 
             e.target.closest('#teacher-dashboard') || 
+            /* FIX: TAMBAHKAN LEADERBOARD AGAR BISA SCROLL & KLIK DI HP */
+            e.target.closest('#leaderboard-overlay') || 
             e.target.tagName === 'INPUT' ||
             e.target.tagName === 'SELECT' ||
             e.target.tagName === 'TEXTAREA' ||
@@ -11027,45 +11111,6 @@ async function forceSync() {
     }, 2000);
 }
 
-// --- NEW FUNCTION: RENDER INVENTORY ITEMS ---
-function renderInventory() {
-    const grid = document.getElementById('inventory-grid');
-    grid.innerHTML = '';
-    
-    const inv = STATE.player.inventory || {};
-    let hasItem = false;
-
-    // DATABASE ITEM SEDERHANA UNTUK NAMA & IKON
-    const ITEM_DB = {
-        'ikan_segar': { name: 'Ikan Segar', icon: '🐟' },
-        'gandum': { name: 'Gandum', icon: '🌾' },
-        'kain': { name: 'Kain Sutra', icon: '🧵' },
-        'permata': { name: 'Berlian', icon: '💎' },
-        'coklat': { name: 'Coklat', icon: '🍫' },
-        'bunga': { name: 'Bunga', icon: '🌹' },
-        'buku_tesis': { name: 'Tesis', icon: '📖' }
-    };
-
-    for (let key in inv) {
-        if (inv[key] > 0) {
-            hasItem = true;
-            const itemData = ITEM_DB[key] || { name: key.toUpperCase(), icon: '📦' };
-            
-            const div = document.createElement('div');
-            div.className = 'inv-item';
-            div.innerHTML = `
-                <div class="inv-qty">${inv[key]}</div>
-                <div style="font-size:30px; margin-bottom:5px;">${itemData.icon}</div>
-                <span>${itemData.name}</span>
-            `;
-            grid.appendChild(div);
-        }
-    }
-
-    if (!hasItem) {
-        grid.innerHTML = '<div class="inv-empty-msg">Tas Kosong...<br>Belum ada item yang didapat.</div>';
-    }
-}
 
 function triggerGameOver() {
     if(STATE.gameOverTriggered) return;
@@ -18626,7 +18671,6 @@ function draw() {
 
     // --- NEW: RENDER SILUET IKAN (LAYER BAWAH - UNDERWATER) ---
     // Digambar setelah Tiles/Background tapi SEBELUM Objek/Player/Dermaga
-    // Agar ikan terlihat berenang "di dalam air" dan bisa lewat di bawah dermaga
     if (STATE.location === 'village') {
         STATE.critters.forEach(c => {
             if (c.type === 'fish_silhouette') {
@@ -18664,6 +18708,11 @@ function draw() {
         });
     }
 
+    // --- FIX: HAPUS BLOK KODE "GHOST" INI ---
+    // Blok kode di bawah ini menggambar objek TANPA cek musim, menyebabkan Snowman muncul terus.
+    // Kita hapus karena objek sudah digambar ulang dengan benar di 'renderList' di bawahnya.
+    
+    /*
     map.objects.forEach(o => {
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         
@@ -18699,6 +18748,7 @@ function draw() {
             ctx.fillText(o.icon, o.x*TILE_SIZE+5, o.y*TILE_SIZE+25);
         }
     });
+    */
 
     if(DEBUG_MAP_BOUNDARIES && STATE.location === 'village') {
         ctx.save();
@@ -20445,6 +20495,18 @@ function renderInventory() {
                 div.title = "KLIK UNTUK MENGGUNAKAN: " + itemData.desc;
             } else {
                 div.title = itemData.desc || "Item Koleksi";
+				
+				 // NEW: KLIK UNTUK LIHAT INFO (PENGGANTI TOOLTIP DI HP)
+                div.onclick = () => {
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    showDialogue(
+                        `INFO: ${itemData.name.toUpperCase()}`, 
+                        itemData.desc || "Sebuah item misterius yang ditemukan di Nusantara Arsa.", 
+                        [{text: "Tutup", action: closeDialogue}], 
+                        itemData.img
+                    );
+                };
+            
             }
 
             // Render Image jika ada (Prioritas), fallback ke Icon Emoji
