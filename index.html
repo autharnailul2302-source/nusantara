@@ -112,6 +112,56 @@
             border: none; 
             box-shadow: none;
         }
+		
+		/* --- 1. LAYAR HITAM JEDA (RESUME OVERLAY) --- */
+        /* Ini adalah layar yang muncul saat balik dari tab lain */
+        #resume-overlay {
+            position: fixed; /* Menempel di layar kaca HP */
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); /* Hitam pekat transparan dikit */
+            z-index: 9999; /* Pastikan paling atas */
+            display: none; /* Sembunyi dulu awalnya */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(5px); /* Efek buram keren */
+        }
+
+        .resume-title {
+            font-family: 'Cinzel', serif;
+            color: #fbbf24; /* Emas */
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .resume-text {
+            color: #cbd5e1;
+            font-size: 14px;
+            max-width: 80%;
+            margin-bottom: 30px;
+        }
+
+        /* Tombol Lanjut yang Besar agar mudah ditekan */
+        .resume-btn {
+            background: linear-gradient(135deg, #1e3a8a, #06b6d4);
+            color: white;
+            border: 2px solid white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+            animation: pulse 1.5s infinite; /* Animasi denyut */
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
 
         canvas {
             display: block;
@@ -2232,7 +2282,17 @@ button, .round-btn, .d-btn, .auth-btn {
     </style>
 </head>
 <body>
-
+	<!-- 2. HTML UNTUK LAYAR JEDA -->
+    <!-- Kode ini yang akan tampil menutupi game saat fullscreen lepas -->
+    <div id="resume-overlay">
+        <div class="resume-title">PERMAINAN DIJEDA</div>
+        <p class="resume-text">
+            Browser membatalkan Full Screen karena Anda beralih aplikasi.<br>
+            Ketuk tombol di bawah untuk kembali fokus.
+        </p>
+        <!-- Saat diklik, panggil fungsi resumeFullscreen() -->
+        <button class="resume-btn" onclick="resumeFullscreen()">▶ LANJUT MAIN</button>
+    </div>
  <!-- CUSTOM PROMPT MODAL (Pesan Guru) -->
     <div id="custom-prompt-modal">
         <div class="prompt-box">
@@ -22081,6 +22141,50 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+ // Fungsi untuk memaksa masuk Full Screen kembali
+        function resumeFullscreen() {
+            var elem = document.documentElement; // Mengambil seluruh halaman HTML
+
+            // Perintah standar untuk berbagai browser (Chrome, Safari, Firefox)
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => {
+                    console.log("Gagal Fullscreen: ", err);
+                });
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+
+            // Setelah berhasil (atau mencoba), hilangkan layar hitam
+            document.getElementById('resume-overlay').style.display = 'none';
+        }
+
+        // Event Listener: Mata-mata yang memantau apakah kita pindah tab/aplikasi
+        document.addEventListener("visibilitychange", function() {
+            // Jika halaman sedang AKTIF (Kita kembali ke tab Chrome ini)
+            if (!document.hidden) {
+                console.log("Pengguna kembali ke game.");
+
+                // Cek: Apakah Fullscreen-nya lepas?
+                // (Biasanya 'null' kalau lepas)
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    
+                    // JIKA LEPAS: Munculkan layar hitam agar user menekan tombol lagi
+                    document.getElementById('resume-overlay').style.display = 'flex';
+                }
+            }
+        });
+
+        // Tambahan: Kadang di HP orientasi berubah bikin fullscreen lepas
+        window.addEventListener("resize", function() {
+            // Cek tinggi layar, jika mendadak kecil (status bar muncul), tawarkan fullscreen lagi
+            if (window.innerHeight < screen.height * 0.8) {
+                // Jangan langsung paksa (browser blokir), tapi tampilkan tombol overlay jika belum ada
+                // Logic ini opsional, yang utama adalah 'visibilitychange' di atas.
+            }
+        });
+		
 </script>
 </body>
 </html>
