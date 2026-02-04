@@ -12852,10 +12852,9 @@ function checkAutoTeleport() {
             // Jarak pemain ke titik tengah pintu
             const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
             
-            // --- PERUBAHAN 1: Radius Diperkecil ---
-            // Sebelumnya 50 (sangat lebar). Sekarang 25 (Pemain harus benar-benar injak pintu).
-            // Ini mengatasi masalah "sering tiba-tiba keluar sendiri".
-            if(dist < 25) {
+            // --- PERBAIKAN: Radius Diperbesar agar Auto-Exit konsisten ---
+            // Sebelumnya 25 (terlalu sempit, sulit dipicu). Diubah ke 50 (hampir 2 tile).
+            if(dist < 50) {
                 
                 // --- PERUBAHAN 2: Daftar Otomatis Hanya untuk KELUAR ---
                 // Saya telah MENGHAPUS bangunan masuk (seperti 'player_house', 'merchant', dll) dari sini.
@@ -13712,7 +13711,8 @@ function handleAction() {
             'clinic', 'clinic_exit',
             'wedding', 'wedding_exit', // NEW: Wedding Teleport
             'lover1_home', 'lover1_exit', // NEW: Ayu's House Teleport
-            'fisherman_home', 'fisherman_exit' // NEW: Fisherman House Teleport
+            'fisherman_home', 'fisherman_exit', // NEW: Fisherman House Teleport
+            'candi', 'candi_exit' // FIX: MENAMBAHKAN CANDI YANG HILANG
         ];
         
         if(teleporters.includes(entranceBuilding.id)) {
@@ -22141,13 +22141,19 @@ if ('serviceWorker' in navigator) {
     });
 }
 
- // Fungsi untuk memaksa masuk Full Screen kembali
+        // Fungsi untuk memaksa masuk Full Screen kembali
         function resumeFullscreen() {
-            var elem = document.documentElement; // Mengambil seluruh halaman HTML
+            var elem = document.documentElement;
 
-            // Perintah standar untuk berbagai browser (Chrome, Safari, Firefox)
+            // 1. Minta Fullscreen
             if (elem.requestFullscreen) {
-                elem.requestFullscreen().catch(err => {
+                elem.requestFullscreen().then(() => {
+                    // 2. SETELAH Fullscreen Berhasil, BARU Paksa Landscape
+                    // Ini kunci agar layar HP otomatis miring
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(e => console.log(e));
+                    }
+                }).catch(err => {
                     console.log("Gagal Fullscreen: ", err);
                 });
             } else if (elem.webkitRequestFullscreen) { /* Safari */
@@ -22156,7 +22162,7 @@ if ('serviceWorker' in navigator) {
                 elem.msRequestFullscreen();
             }
 
-            // Setelah berhasil (atau mencoba), hilangkan layar hitam
+            // 3. Hilangkan layar hitam
             document.getElementById('resume-overlay').style.display = 'none';
         }
 
