@@ -4474,9 +4474,17 @@ async function preloadAllGameAssets() {
         // NEW: ASSET BIJIH BESI
         'images/bijihbesi.png',
         // NEW: ASSET KAYU BAKAR
-        'images/kayubakar.png', // <--- TAMBAHKAN KOMA DI SINI
+        'images/kayubakar.png', // <--- TAMBAHAN KOMA DI SINI
 		// NEW: ASSET BONEKA SALJU
 		'images/snowman.png',
+
+        // --- [FIX] TAMBAHAN ASET RUMAH AGAR TIDAK BLANK SAAT LOGIN ---
+        'images/houselevel1.png',
+        'images/houselevel2.png',
+        'images/houselevel3.png',
+        'images/houselevel4.png',
+        'images/houselevel5.png',
+        'images/tokoplayer.png' 
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -20017,7 +20025,10 @@ function drawBuilding(ctx, b) {
             return; // Selesai gambar batu, skip sisanya
         }
 
-        if(!b.loadedImg) {
+        // --- [FIX] LOGIKA UPDATE GAMBAR DINAMIS ---
+        // Cek: Jika belum ada loadedImg ATAU src-nya sudah berubah (misal habis upgrade rumah)
+        // Maka load ulang gambar baru
+        if(!b.loadedImg || (b.loadedImg.src && !b.loadedImg.src.includes(src))) {
             b.loadedImg = new Image();
             b.loadedImg.src = src;
             b.loadedImg.onerror = function() { this.error = true; };
