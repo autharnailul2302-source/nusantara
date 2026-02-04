@@ -2035,6 +2035,21 @@ button, .round-btn, .d-btn, .auth-btn {
     object-fit: contain;
 }
 
+ /* --- NEW: STYLING GAME BALAP --- */
+        .race-btn {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 24px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: 0.1s;
+        }
+        .race-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.95); }
+
 #minimap-label {
     position: absolute;
     bottom: 2px;
@@ -2278,6 +2293,27 @@ button, .round-btn, .d-btn, .auth-btn {
             margin-bottom: 15px;
             animation: avatarBreathe 3s infinite ease-in-out; /* Efek Bernapas */
         }
+        
+        /* --- NEW: RACING MINIGAME ANIMATIONS --- */
+        @keyframes roadScroll {
+            from { background-position-y: 0; }
+            to { background-position-y: 100px; }
+        }
+        .road-moving {
+            animation: roadScroll 0.2s linear infinite;
+        }
+
+        /* Efek Ledakan */
+        @keyframes boom {
+            0% { transform: scale(1); opacity: 1; filter: hue-rotate(0deg); }
+            50% { transform: scale(1.5); opacity: 0.8; filter: hue-rotate(90deg); }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .explosion {
+            animation: boom 0.5s forwards;
+            font-size: 60px !important;
+            text-shadow: 0 0 20px red;
+        }
 
     </style>
 </head>
@@ -2332,6 +2368,58 @@ button, .round-btn, .d-btn, .auth-btn {
             
             <button onclick="closeWarnetGame()" style="margin-top: 15px; background: transparent; color: #ef4444; border: none;">BATAL KERJA</button>
         </div>
+    </div>
+    <!-- NEW: RACING MINIGAME OVERLAY (RETRO STYLE) -->
+    <div id="racing-minigame" class="minigame-overlay" style="background: radial-gradient(circle, #2d3748, #000);">
+        <h2 style="color: #fbbf24; font-family: 'Cinzel'; margin: 10px 0; text-shadow: 0 0 10px black;">BALAP LIAR RETRO</h2>
+        
+        <!-- TRACK JALANAN (BERGERAK) -->
+        <div id="race-track" style="position:relative; width: 300px; height: 400px; background: #333; border: 4px solid #000; border-radius: 4px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+            
+            <!-- GARIS JALAN (Asphalt Texture) -->
+            <div id="road-lines" class="road-moving" style="position:absolute; top:0; left:0; width:100%; height:100%; 
+                background-image: 
+                    linear-gradient(90deg, transparent 49%, #fff 49%, #fff 51%, transparent 51%), 
+                    linear-gradient(90deg, #10b981 10%, #333 10%, #333 90%, #10b981 90%);
+                background-size: 100% 40px, 100% 100%;">
+            </div>
+            
+            <!-- DEKORASI PINGGIR (PANORAMA BERGERAK) -->
+            <div id="scenery-left" style="position:absolute; top:0; left:0; width:30px; height:100%; overflow:hidden;"></div>
+            <div id="scenery-right" style="position:absolute; top:0; right:0; width:30px; height:100%; overflow:hidden;"></div>
+
+            <!-- ZONA SENTUH KIRI & KANAN (LANGSUNG DI LAYAR) -->
+            <!-- Zona Kiri (50% Lebar) -->
+            <div style="position:absolute; top:0; left:0; width:50%; height:100%; z-index:20; cursor:pointer;" 
+                 ontouchstart="event.preventDefault(); event.stopPropagation(); if(raceState.active) moveCar(-1); else initRace();" 
+                 onmousedown="event.stopPropagation(); if(raceState.active) moveCar(-1); else initRace();">
+            </div>
+
+            <!-- Zona Kanan (50% Lebar) -->
+            <div style="position:absolute; top:0; right:0; width:50%; height:100%; z-index:20; cursor:pointer;" 
+                 ontouchstart="event.preventDefault(); event.stopPropagation(); if(raceState.active) moveCar(1); else initRace();" 
+                 onmousedown="event.stopPropagation(); if(raceState.active) moveCar(1); else initRace();">
+            </div>
+
+            <!-- UPDATE: Ukuran Mobil Player Disamakan dengan NPC (40x40) -->
+            <div id="player-car" style="position:absolute; bottom: 20px; left: 130px; transition: left 0.1s; pointer-events: none; z-index: 5; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center;">
+                <!-- FIX: Menyimpan parentElement ke variabel 'p' sebelum memanipulasi DOM agar tidak error null reference -->
+                <img src="images/player-race.png" style="width: 100%; height: 100%; object-fit: contain;" onerror="var p=this.parentElement; this.style.display='none'; p.innerText='🏎️'; p.style.fontSize='30px'; p.style.transform='rotate(-90deg)'">
+            </div>
+            <div id="score-race" style="position:absolute; top: 10px; right: 10px; color: #fbbf24; font-weight: 900; font-family: monospace; font-size: 20px; text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 5;">SKOR: 0</div>
+            
+            <!-- PERBAIKAN POSISI TEKS: Menggunakan left:0 dan width:100% agar pasti di tengah -->
+            <div id="start-msg-race" style="position:absolute; top:50%; left:0; width:100%; transform:translateY(-50%); text-align:center; color:#fbbf24; font-weight:900; font-size:18px; font-family:'Exo 2'; text-shadow: 2px 2px 4px #000; animation: pulse 1s infinite; pointer-events: none; z-index: 25;">
+                TAP LAYAR / TOMBOL ⬅️➡️<br>UNTUK MULAI BALAPAN!
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:40px; margin-top:15px;">
+            <button class="race-btn" ontouchstart="event.stopPropagation(); moveCar(-1)" onmousedown="event.stopPropagation(); moveCar(-1)">⬅️</button>
+            <button class="race-btn" ontouchstart="event.stopPropagation(); moveCar(1)" onmousedown="event.stopPropagation(); moveCar(1)">➡️</button>
+        </div>
+        
+        <button onclick="quitRacing()" style="margin-top:10px; background:transparent; border:1px solid #ef4444; color:#ef4444; padding: 5px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; position: relative; z-index: 30;">BATAL MAIN</button>
     </div>
 
    <!-- DUEL MINIGAME OVERLAY (BARU) -->
@@ -4479,12 +4567,21 @@ async function preloadAllGameAssets() {
 		'images/snowman.png',
 
         // --- [FIX] TAMBAHAN ASET RUMAH AGAR TIDAK BLANK SAAT LOGIN ---
+        'images/warnet.png', // <--- TAMBAHAN BARU: WARNET
+		'images/penjagawarnet.png', // <--- BARU: PENJAGA
+        'images/maidwarnet.png',    // <--- BARU: MAID
         'images/houselevel1.png',
         'images/houselevel2.png',
         'images/houselevel3.png',
         'images/houselevel4.png',
         'images/houselevel5.png',
-        'images/tokoplayer.png' 
+        'images/tokoplayer.png',
+        'images/player-race.png', // <--- NEW: ASSET MOBIL BALAP
+        // --- NEW: ASSET MUSUH BALAP ---
+        'images/taxi-race.png',
+        'images/bike-race.png',
+        'images/truck-race.png',
+        'images/suv-race.png'
     ];
     
     manualAssets.forEach(src => imagesToLoad.push({ src: src }));
@@ -7486,7 +7583,19 @@ for(let i=0; i<10; i++) {
             { id: 'school', x: 38, y: 10, w: 6, h: 5, img: 'images/kampus.png', entrance: {x: 41, y: 14, map: 'school_interior'}, name: "Kampus", roleSpecific: 'student', openTime: 700, closeTime: 1800 },
             { id: 'merchant', x: 26, y: 22, w: 6, h: 5, img: 'images/rumahmerchant.png', entrance: {x: 29, y: 26, map: 'merchant_interior'}, name: "Merchant", openTime: 600, closeTime: 2000 },
             { id: 'mentor', x: 28, y: 15, w: 6, h: 5, img: 'images/rumahmentor.png', entrance: {x: 31, y: 19, map: 'mentor_interior'}, name: "Rumah Mentor", openTime: 800, closeTime: 2200 },
-            
+            /* NEW: WARNET (BARAT/KIRI KLINIK) */
+            { 
+                id: 'warnet', 
+                x: 12, 
+                y: 16, 
+                w: 5, 
+                h: 4, 
+                img: 'images/warnet.png', 
+                entrance: {x: 14, y: 19, map: 'warnet_interior'}, // <--- UPDATE INI 
+                name: "Warnet Desa", 
+                openTime: 800, 
+                closeTime: 2400 
+            },
             /* REVISI: HAPUS roleSpecific: 'worker' DARI BLACKSMITH AGAR BUKA UNTUK UMUM */
             /* UPDATE: Jam Tutup diperpanjang sampai 21:00 (Jam 9 Malam) */
             { id: 'blacksmith', x: 34, y: 27, w: 6, h: 5, img: 'images/rumahblacksmith.png', entrance: {x: 37, y: 31, map: 'blacksmith_interior'}, name: "Blacksmith", openTime: 800, closeTime: 2100 },
@@ -8175,7 +8284,51 @@ for(let i=0; i<10; i++) {
             {x: 7, y: 15, type: 'door_out', icon: '🚪'}
         ]
     },
-    'dungeon': {
+
+
+// --- NEW: WARNET INTERIOR MAP (14x12) ---
+    'warnet_interior': {
+        w: 14, h: 12,
+        // Kita pakai lantai kayu (ID 10) dan tembok putih (ID 11) agar terlihat modern
+        tiles: (() => {
+            const arr = new Array(14 * 12).fill(10); // 10 = Lantai Kayu
+            // Buat Tembok Keliling
+            for(let x=0; x<14; x++) { arr[0*14+x] = 11; arr[(12-1)*14+x] = 11; }
+            for(let y=0; y<12; y++) { arr[y*14+0] = 11; arr[y*14+(14-1)] = 11; }
+            arr[(12-1)*14 + 7] = 8; // Pintu Keluar
+            return arr;
+        })(),
+        buildings: [
+            /* FIX: KOORDINAT X DIPERBAIKI DARI 14 KE 6 AGAR SESUAI PINTU (x:7) */
+            { id: 'warnet_exit', x: 6, y: 11, w: 3, h: 1, type: 'trigger', entrance: {x: 7, y: 11}, name: "Keluar Warnet" }
+        ],
+        npcs: [
+            // OPERATOR (PENJAGA)
+            {id: 'op_warnet', x: 7, y: 3, name: 'Operator (OP)', imgSrc: 'images/penjagawarnet.png', type: 'service', schedule: 'always', w: 40, h: 60},
+            // MAID (PELAYAN MAKANAN)
+            {id: 'maid_warnet', x: 11, y: 5, name: 'Mela (Maid)', imgSrc: 'images/maidwarnet.png', type: 'service', schedule: 'always', w: 40, h: 60}
+        ],
+        objects: [
+            // Meja Operator
+            {x: 6, y: 2, w: 2, h: 2, type: 'counter', icon: '💻', img: 'images/mejakasir.png', name: "Server Pusat"},
+            
+            // Bilik Komputer Kiri
+            {x: 2, y: 5, w: 2, h: 2, type: 'table', icon: '🖥️', img: 'images/mejabelajar.png', name: "PC-01 (Gaming)"},
+            {x: 2, y: 8, w: 2, h: 2, type: 'table', icon: '🖥️', img: 'images/mejabelajar.png', name: "PC-02 (Browsing)"},
+            
+            // Bilik Komputer Tengah
+            {x: 5, y: 5, w: 2, h: 2, type: 'table', icon: '🖥️', img: 'images/mejabelajar.png', name: "PC-03 (VIP)"},
+            {x: 5, y: 8, w: 2, h: 2, type: 'table', icon: '🖥️', img: 'images/mejabelajar.png', name: "PC-04 (Umum)"},
+            
+            // Rak Snack/Minuman
+            {x: 11, y: 2, w: 2, h: 2, type: 'shelf', icon: '🥤', text: "Kulkas Minuman Dingin", img: 'images/lemariobat.png'},
+
+            {x: 7, y: 11, type: 'door_out', icon: '🚪'}
+        ]
+    },   
+
+
+   'dungeon': {
         w: DUNGEON_W, h: DUNGEON_H,
         tiles: dungeonTiles,
         npcs: [],
@@ -12882,7 +13035,8 @@ function checkAutoTeleport() {
                     'lover1_exit', 
                     'fisherman_exit',
                     'candi_exit',
-                    'ruins_exit'
+                    'ruins_exit',
+					'warnet_exit' // <--- TAMBAHKAN INI
                 ];
                 
                 if (autoTeleporters.includes(b.id)) {
@@ -12963,25 +13117,25 @@ function processTeleport(b) {
         if (STATE.player.role === 'entrepreneur') {
             STATE.location = 'player_shop_interior';
             STATE.player.x = 7 * TILE_SIZE;
-            STATE.player.y = 10 * TILE_SIZE;
+            /* FIX: Geser Y lebih dalam (ke 9) agar jauh dari pintu (11) */
+            STATE.player.y = 9 * TILE_SIZE; 
             showToast("Masuk Toko Sendiri 🏪");
         } else {
             // Role lain masuk rumah biasa
             STATE.location = 'house';
             const hMap = maps['house'];
             const doorX = Math.floor(hMap.w / 2);
-            const doorY = hMap.h - 2; 
+            /* FIX: Geser Y lebih dalam (h-3) agar tidak langsung keluar */
+            const doorY = hMap.h - 3; 
             STATE.player.x = doorX * TILE_SIZE;
             STATE.player.y = doorY * TILE_SIZE;
             showToast("Masuk Rumah 🏠");
         }
     } 
     else if(b.id === 'house_exit' || b.id === 'pshop_exit') {
-        // --- NEW: BLOKIR PINTU SAAT TUTORIAL ---
+        // ... (Logika keluar rumah tetap sama) ...
         if (STATE.isPrologue && !STATE.tutorialIndoorComplete) {
-            // Mainkan suara error/hit
             if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
-            
             showDialogue("TUTORIAL BELUM SELESAI", 
                 "⛔ Eitss... Jangan keluar dulu!\n\nSelesaikan langkah-langkah tutorial di dalam rumah agar kamu paham cara bermain.\n\nIkuti petunjuk tangan 👆.", 
                 [{text:"Baiklah", action:closeDialogue}], 
@@ -13011,7 +13165,8 @@ function processTeleport(b) {
     else if(b.id === 'merchant') {
         STATE.location = 'merchant_interior';
         STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 10 * TILE_SIZE; 
+        /* FIX: Geser Y ke 9 */
+        STATE.player.y = 9 * TILE_SIZE; 
         showToast("Masuk Merchant 💰");
     }
     else if(b.id === 'shop_exit') {
@@ -13026,7 +13181,8 @@ function processTeleport(b) {
     else if(b.id === 'clinic') {
         STATE.location = 'clinic_interior';
         STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 10 * TILE_SIZE; 
+        /* FIX: Geser Y ke 9 */
+        STATE.player.y = 9 * TILE_SIZE; 
         showToast("Masuk Klinik 🏥");
     }
     else if(b.id === 'clinic_exit') {
@@ -13041,7 +13197,8 @@ function processTeleport(b) {
     else if(b.id === 'blacksmith') {
         STATE.location = 'blacksmith_interior';
         STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 10 * TILE_SIZE; 
+        /* FIX: Geser Y ke 9 */
+        STATE.player.y = 9 * TILE_SIZE; 
         showToast("Masuk Bengkel ⚒️");
     }
     else if(b.id === 'smith_exit') {
@@ -13056,7 +13213,8 @@ function processTeleport(b) {
     else if(b.id === 'mentor') {
         STATE.location = 'mentor_interior';
         STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 10 * TILE_SIZE;
+        /* FIX: Geser Y ke 9 */
+        STATE.player.y = 9 * TILE_SIZE;
         showToast("Bertamu ke Rumah Mentor 🏠");
     }
     else if(b.id === 'mentor_exit') {
@@ -13071,7 +13229,8 @@ function processTeleport(b) {
     else if(b.id === 'library') {
         STATE.location = 'library_interior';
         STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 10 * TILE_SIZE;
+        /* FIX: Geser Y ke 9 */
+        STATE.player.y = 9 * TILE_SIZE;
         showToast("Masuk Perpustakaan 📚");
     }
     else if(b.id === 'library_exit') {
@@ -13086,6 +13245,7 @@ function processTeleport(b) {
     else if(b.id === 'guild') {
         STATE.location = 'guild_interior';
         STATE.player.x = 8 * TILE_SIZE; 
+        /* FIX: Geser Y ke 11 (Pintu di 13) */
         STATE.player.y = 11 * TILE_SIZE;
         showToast("Masuk Guild Petualang ⚔️");
     }
@@ -13097,15 +13257,13 @@ function processTeleport(b) {
         showToast("Keluar Guild");
     }
 
-    // --- KAMPUS (DENGAN LOGIKA JAM & HARI) ---
+    // --- KAMPUS ---
     else if(b.id === 'school') {
-        // Cek Hari Libur (Sabtu/Minggu)
         const dayIndex = (STATE.day - 1) % 7; 
         if (dayIndex === 5 || dayIndex === 6) {
             showDialogue("SATPAM KAMPUS", "📢 KAMPUS LIBUR! \nHari Sabtu dan Minggu tidak ada perkuliahan.", [{text: "Baik Pak", action: closeDialogue}]);
             return; 
         }
-        // Cek Telat (08:30 - 14:00 dikunci)
         if (STATE.time > 830 && STATE.time < 1400) {
             showDialogue("SATPAM KAMPUS", "⛔ STOP! Kamu terlambat! \nKuliah sudah dimulai. Pintu dikunci.", [{text: "Pulang dengan Malu", action: closeDialogue}]);
             return; 
@@ -13113,7 +13271,8 @@ function processTeleport(b) {
 
         STATE.location = 'school_interior';
         STATE.player.x = 8 * TILE_SIZE; 
-        STATE.player.y = 12 * TILE_SIZE;
+        /* FIX: Geser Y ke 11 (Pintu di 13) */
+        STATE.player.y = 11 * TILE_SIZE;
         
         if(STATE.time >= 1400) showToast("Kampus Sore (Bebas)");
         else showToast("Masuk Kampus 🎓");
@@ -13130,7 +13289,8 @@ function processTeleport(b) {
     else if(b.id === 'lover1_home') {
         STATE.location = 'lover1_interior';
         STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 10 * TILE_SIZE;
+        /* FIX: Geser Y ke 9 */
+        STATE.player.y = 9 * TILE_SIZE;
         showToast("Bertamu ke Rumah Ayu 🌸");
     }
     else if(b.id === 'lover1_exit') {
@@ -13145,7 +13305,8 @@ function processTeleport(b) {
     else if(b.id === 'fisherman_home') {
         STATE.location = 'fisherman_interior';
         STATE.player.x = 6 * TILE_SIZE; 
-        STATE.player.y = 8 * TILE_SIZE;
+        /* FIX: Geser Y ke 7 (Pintu di 9) */
+        STATE.player.y = 7 * TILE_SIZE;
         showToast("Bertamu ke Tetangga (Nelayan) ⚓");
     }
     else if(b.id === 'fisherman_exit') {
@@ -13160,6 +13321,7 @@ function processTeleport(b) {
     else if(b.id === 'candi') {
         STATE.location = 'candi_interior';
         STATE.player.x = 7 * TILE_SIZE; 
+        /* FIX: Geser Y ke 13 (Pintu di 15) */
         STATE.player.y = 13 * TILE_SIZE;
         showToast("Masuk Candi Kuno 🗿");
     }
@@ -13175,7 +13337,8 @@ function processTeleport(b) {
     else if(b.id === 'wedding') {
         STATE.location = 'wedding_interior';
         STATE.player.x = 7 * TILE_SIZE; 
-        STATE.player.y = 12 * TILE_SIZE;
+        /* FIX: Geser Y ke 11 (Pintu di 13) */
+        STATE.player.y = 11 * TILE_SIZE;
         showToast("Masuk Balai Pernikahan 💍");
     }
     else if(b.id === 'wedding_exit') {
@@ -13185,10 +13348,26 @@ function processTeleport(b) {
         clearSpawnZone('village', 23, 27);
         showToast("Keluar Balai");
     }
+	
+	// --- WARNET (FIX MASALAH UTAMA) ---
+    else if(b.id === 'warnet') {
+        STATE.location = 'warnet_interior';
+        STATE.player.x = 7 * TILE_SIZE; 
+        /* FIX: Geser Y ke 9 (Pintu di 11) - Maju 2 Langkah agar tidak langsung keluar */
+        STATE.player.y = 9 * TILE_SIZE;
+        showToast("Masuk Warnet 💻");
+    }
+    else if(b.id === 'warnet_exit') {
+        STATE.location = 'village';
+        STATE.player.x = 10 * TILE_SIZE; 
+        STATE.player.y = 20 * TILE_SIZE;
+        clearSpawnZone('village', 10, 20);
+        showToast("Keluar Warnet");
+    }
 
     // --- DUNGEON ---
     else if(b.id === 'dungeon_gate') {
-        STATE.dungeonLevel = 1; // FIX: Reset ke Level 1 setiap kali masuk dari gerbang utama
+        STATE.dungeonLevel = 1; 
         STATE.location = 'dungeon';
         STATE.player.x = TILE_SIZE * 5; 
         STATE.player.y = TILE_SIZE * 5;
@@ -13197,25 +13376,22 @@ function processTeleport(b) {
         createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
         spawnEnemies(); 
 
-        // Tutorial Combat (One Time)
         if (!STATE.player.hasSeenDungeonTutorial) {
             STATE.player.hasSeenDungeonTutorial = true;
             setTimeout(() => {
-                // Step 1: Basic Attack
-                showTutorialFocus('btn-action'); // Highlight tombol pedang
+                showTutorialFocus('btn-action'); 
                 showDialogue("TUTORIAL COMBAT (1/2)", 
                     "⚠️ **ZONA BERBAHAYA!**\nTombol aksi berubah jadi **PEDANG** ⚔️.\n\nTekan cepat 3x untuk **COMBO SERANGAN**!", 
                     [{
                         text: "Lanjut ke Skill >>", 
                         action: () => { 
-                            // Step 2: Ultimate Skill
-                            showTutorialFocus('btn-skill'); // Highlight tombol skill
+                            showTutorialFocus('btn-skill'); 
                             showDialogue("TUTORIAL SKILL (2/2)", 
                                 "🔥 **ULTIMATE SKILL**:\nTombol Api ini untuk **LEDAKAN AREA**!\n\nEfek: Damage Besar + Musuh Terlempar.\nSyarat: **10 Energi**.\nCooldown: 3 Detik.\n\nGunakan saat dikepung banyak musuh!", 
                                 [{
                                     text: "Siap Bertarung!", 
                                     action: () => { 
-                                        clearTutorialFocus(); // Hapus highlight
+                                        clearTutorialFocus(); 
                                         closeDialogue(); 
                                         manualSave(); 
                                     }
@@ -13720,7 +13896,8 @@ function handleAction() {
             'wedding', 'wedding_exit', // NEW: Wedding Teleport
             'lover1_home', 'lover1_exit', // NEW: Ayu's House Teleport
             'fisherman_home', 'fisherman_exit', // NEW: Fisherman House Teleport
-            'candi', 'candi_exit' // FIX: MENAMBAHKAN CANDI YANG HILANG
+            'candi', 'candi_exit', // FIX: MENAMBAHKAN CANDI YANG HILANG
+			'warnet', 'warnet_exit' // <--- TAMBAHAN INI
         ];
         
         if(teleporters.includes(entranceBuilding.id)) {
@@ -13729,7 +13906,7 @@ function handleAction() {
         }
         
         // --- LOGIKA BANGUNAN LAIN (YANG BUKA MENU/DIALOG) TETAP DISINI ---
-
+		
         // UPDATE: Interaksi Papan Misi (sekarang sebagai Building)
         if(entranceBuilding.id === 'papan_misi') {
              const dynamicText = getMissionBoardText();
@@ -14887,6 +15064,53 @@ function interactNPC(npc) {
             {text: "Kamu sedang apa?", action: () => {
                 showDialogue(npc.name, "Aku sedang belajar membedakan bijih besi dan batu biasa. Susah juga ya...", [{text:"Semangat!", action:closeDialogue}], npc.imgSrc);
             }}
+        ], npc.imgSrc);
+    }
+	
+	// --- NEW: INTERAKSI OPERATOR WARNET (MENU KERJA/MAIN) ---
+    else if(npc.id === 'op_warnet') {
+        // Panggil fungsi menu warnet yang sudah ada, tapi ganti gambarnya jadi penjaga
+        // Kita modifikasi sedikit fungsi openWarnetMenu nanti atau override disini
+        showDialogue("OPERATOR (OP)", "Selamat datang di Warnet Desa. \nKoneksi lancar, AC dingin, Mie Instan ready. Mau sewa billing?", [
+            {text: "💻 Sewa PC (Kerja/Main)", action: () => {
+                closeDialogue();
+                openWarnetMenu(); // Panggil menu lama
+            }},
+            {text: "Tanya Paket Malam", action: () => {
+                showDialogue(npc.name, "Paket Malam (Begadang) tersedia dari jam 22:00 - 04:00. Diskon 50% tapi awas masuk angin.", [{text:"Oke", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Batal", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- NEW: INTERAKSI MAID CAFE (JUAL MAKANAN) ---
+    else if(npc.id === 'maid_warnet') {
+        showDialogue(npc.name, "Selamat datang, Master! ❤️ \nMau pesan cemilan atau minuman penyegar untuk menemani main game?", [
+            {text: "☕ Beli Kopi/Tonic (Pulihkan Energi)", action: () => {
+                showDialogue("MENU CAFE", "Pilih menu penyegar:", [
+                    {text: "Kopi Hitam (200 G) - Energi +20", action: () => {
+                        if(STATE.player.money >= 200) {
+                            STATE.player.money -= 200;
+                            STATE.player.energy = Math.min(100, STATE.player.energy + 20);
+                            showToast("Segar! Energi +20");
+                            closeDialogue();
+                        } else showToast("Uang kurang");
+                    }},
+                    {text: "Tonic Stamina (1000 G) - Full", action: () => buyItem('tonic_stamina', 1000)},
+                    {text: "Batal", action: () => interactNPC(npc)}
+                ], npc.imgSrc);
+            }},
+            {text: "🍞 Beli Cemilan", action: () => {
+                 showDialogue("SNACK MENU", "Cemilan ringan:", [
+                    {text: "Roti Bakar (150 G)", action: () => buyItem('gandum', 150)}, // Anggap gandum = roti
+                    {text: "Coklat (300 G)", action: () => buyItem('coklat', 300)},
+                    {text: "Kembali", action: () => interactNPC(npc)}
+                 ], npc.imgSrc);
+            }},
+            {text: "Kamu Lucu (Gombal)", action: () => {
+                showDialogue(npc.name, "Hihihi... Master bisa aja. \n(Dia tersenyum malu-malu)", [{text:"Hehe", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Dah", action: closeDialogue}
         ], npc.imgSrc);
     }
 
@@ -22098,6 +22322,8 @@ function startFestivalEvent(eventData) {
 
 // --- NEW: PWA SERVICE WORKER (FITUR SIMPAN ASET OFFLINE) ---
 // Kode ini membuat browser menyimpan gambar secara agresif agar tidak download ulang
+// [UPDATE] Dinonaktifkan sementara karena Blob URL tidak didukung di lingkungan preview ini
+/*
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
         // Kita gunakan Blob untuk membuat Service Worker tanpa file eksternal (Single File Magic)
@@ -22151,6 +22377,7 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
+*/
 
         // Fungsi untuk memaksa masuk Full Screen kembali
         function resumeFullscreen() {
@@ -22201,7 +22428,340 @@ if ('serviceWorker' in navigator) {
                 // Logic ini opsional, yang utama adalah 'visibilitychange' di atas.
             }
         });
+
+// --- FITUR BARU: WARNET & FREELANCE ---
+const WARNET_SOAL = [
+    { q: "Apa singkatan dari CPU?", a: "Central Processing Unit", b: "Central Process Umbrella", valid: 0 },
+    { q: "Bahasa untuk struktur web?", a: "HTML", b: "Snake", valid: 0 },
+    { q: "Untuk menghias tampilan web?", a: "CSS", b: "PDF", valid: 0 },
+    { q: "1 Byte berapa bit?", a: "10 Bit", b: "8 Bit", valid: 1 },
+    { q: "Shortcut Copy?", a: "Ctrl+C", b: "Alt+F4", valid: 0 }
+];
+let currentWarnetSoal = null;
+
+// --- UPDATE FUNGSI WARNET MENU (GANTI LOGIKA MAIN GAME) ---
+        function openWarnetMenu() {
+            showDialogue("WARNET DESA", "Selamat datang! \nKoneksi kencang, PC spek dewa. \nTarif: 500 Gold / Sesi.", [
+                {text: "💻 Kerja Freelance (Dapat Uang)", action: () => {
+                    if(STATE.player.money >= 500) {
+                        if(STATE.player.energy >= 20) {
+                            STATE.player.money -= 500;
+                            STATE.player.energy -= 20;
+                            closeDialogue();
+                            openWarnetGame(); // Buka Minigame Coding
+                        } else showToast("Energi kurang (Butuh 20)");
+                    } else showToast("Uang sewa kurang (500 G)");
+                }},
+                // --- UPDATE: Panggil Game Balap ---
+                {text: "🏎️ Main Balap Liar (Dapat Energi)", action: () => {
+                     startRacingGame();
+                }},
+                {text: "Batal", action: closeDialogue}
+            ], 'images/warnet.png');
+        }
 		
+		 let raceState = {
+            active: false,
+            score: 0,
+            carX: 130, // Posisi Tengah (Lane 2)
+            enemies: [],
+            scenery: [], // Pohon/Batu
+            speed: 5,
+            animationId: null
+        };
+
+        function startRacingGame() {
+            // Cek Uang
+            if(STATE.player.money < 500) {
+                showToast("Uang tidak cukup (Butuh 500 G)");
+                return;
+            }
+            
+            // Bayar
+            STATE.player.money -= 500;
+            
+            // Tutup Dialog Menu Warnet
+            closeDialogue();
+            
+            // Buka Overlay
+            document.getElementById('racing-minigame').style.display = 'flex';
+            STATE.screen = 'minigame';
+            
+            // Reset State
+            raceState.score = 0;
+            raceState.carX = 130;
+            raceState.enemies = [];
+            raceState.scenery = [];
+            raceState.speed = 4; // Start speed lebih cepat dikit
+            raceState.active = false; // Tunggu tap start
+            
+            // Update UI Awal
+            updateRaceUI();
+            
+            // Reset Visual ke Gambar Mobil
+            const pCar = document.getElementById('player-car');
+            pCar.style.transform = 'none'; // Reset rotasi jika sebelumnya diset oleh error
+            // FIX: Terapkan perbaikan yang sama pada string injeksi HTML
+            pCar.innerHTML = '<img src="images/player-race.png" style="width: 100%; height: 100%; object-fit: contain;" onerror="var p=this.parentElement; this.style.display=\'none\'; p.innerText=\'🏎️\'; p.style.fontSize=\'40px\'; p.style.transform=\'rotate(-90deg)\'">';
+            pCar.classList.remove('explosion');
+            
+            // Mulai animasi jalan
+            document.getElementById('road-lines').classList.add('road-moving');
+
+            document.getElementById('score-race').innerText = "SKOR: 0";
+            document.getElementById('start-msg-race').style.display = 'block';
+            
+            // Bersihkan musuh lama & scenery
+            const track = document.getElementById('race-track');
+            const oldEnemies = track.querySelectorAll('.enemy-car');
+            oldEnemies.forEach(e => e.remove());
+            
+            const oldScenery = track.querySelectorAll('.scenery-item');
+            oldScenery.forEach(s => s.remove());
+            
+            // UPDATE: Hapus listener klik manual karena sudah diganti div overlay
+            document.getElementById('race-track').onclick = null; 
+        }
+
+        function initRace() {
+            raceState.active = true;
+            document.getElementById('start-msg-race').style.display = 'none';
+            document.getElementById('race-track').onclick = null; // Hapus listener start
+            raceLoop();
+        }
+
+        function moveCar(dir) {
+            // Jika game belum mulai, tap tombol juga bisa trigger start
+            if (!raceState.active && document.getElementById('racing-minigame').style.display === 'flex') {
+                // Jangan start lewat tombol arah
+                return;
+            }
+            
+            // Pindah Jalur (Kiri/Kanan) sejauh 100px
+            raceState.carX += dir * 100; 
+            
+            // Batasi Jalur (Clamp)
+            if (raceState.carX < 30) raceState.carX = 30; // Lane 1
+            if (raceState.carX > 230) raceState.carX = 230; // Lane 3
+            
+            updateRaceUI();
+        }
+
+        function updateRaceUI() {
+            const pCar = document.getElementById('player-car');
+            pCar.style.left = raceState.carX + 'px';
+        }
+
+        function raceLoop() {
+            if (!raceState.active) return;
+            
+            const track = document.getElementById('race-track');
+
+            // --- 1. SPAWN SCENERY (PINGGIR JALAN) ---
+            if(Math.random() < 0.1) { // 10% chance
+                const side = Math.random() < 0.5 ? 'left' : 'right';
+                const type = Math.random() < 0.7 ? '🌲' : '🪨'; // Pohon atau Batu
+                
+                const el = document.createElement('div');
+                el.innerText = type;
+                el.className = 'scenery-item';
+                el.style.position = 'absolute';
+                el.style.top = '-30px';
+                el.style.fontSize = '20px';
+                
+                if(side === 'left') el.style.left = (Math.random() * 10) + 'px';
+                else el.style.right = (Math.random() * 10) + 'px';
+                
+                track.appendChild(el);
+                raceState.scenery.push({ y: -30, el: el });
+            }
+
+            // Move Scenery
+            for(let i = raceState.scenery.length - 1; i >= 0; i--) {
+                let item = raceState.scenery[i];
+                item.y += raceState.speed;
+                item.el.style.top = item.y + 'px';
+                if(item.y > 420) {
+                    item.el.remove();
+                    raceState.scenery.splice(i, 1);
+                }
+            }
+
+            // --- 2. SPAWN ENEMY (MOBIL/TRUK) ---
+            // Peluang spawn meningkat seiring skor
+            if (Math.random() < 0.015 + (raceState.score * 0.001)) {
+                spawnEnemyCar();
+            }
+            
+            // Update posisi musuh
+            for (let i = raceState.enemies.length - 1; i >= 0; i--) {
+                let en = raceState.enemies[i];
+                en.y += raceState.speed; // Ikuti kecepatan player seolah player maju
+                
+                // Buat elemen DOM jika belum ada
+                if (!en.el) {
+                    en.el = document.createElement('div');
+                    en.el.className = 'enemy-car';
+                    // en.el.innerText = en.icon; // OLD: Text Only
+                    en.el.style.position = 'absolute';
+                    en.el.style.fontSize = '35px'; // Ukuran mobil (Fallback Icon)
+                    en.el.style.width = '40px';
+                    en.el.style.height = '40px';
+                    en.el.style.display = 'flex';
+                    en.el.style.justifyContent = 'center';
+                    en.el.style.alignItems = 'center';
+                    
+                    // UPDATE: Jangan putar container secara default (Hanya putar jika Fallback ke Icon)
+                    // Agar gambar Top-Down tidak miring
+                    // en.el.style.transform = 'rotate(-90deg)'; <-- DIHAPUS
+                    
+                    en.el.style.top = en.y + 'px';
+                    en.el.style.left = en.x + 'px';
+                    
+                    // UPDATE: Render Gambar jika ada, Fallback ke Icon dengan Rotasi
+                    if (en.img) {
+                        // Jika gambar gagal (onerror), baru kita putar parent-nya -90deg dan tampilkan icon
+                        en.el.innerHTML = `<img src="${en.img}" style="width: 100%; height: 100%; object-fit: contain;" onerror="var p=this.parentElement; this.style.display='none'; p.innerText='${en.icon}'; p.style.fontSize='40px'; p.style.transform='rotate(-90deg)'">`;
+                    } else {
+                        en.el.innerText = en.icon;
+                        en.el.style.transform = 'rotate(-90deg)'; // Putar jika hanya icon
+                    }
+
+                    // Truk sedikit lebih besar visualnya (Fallback font size)
+                    if(en.type === 'truck') en.el.style.fontSize = '45px';
+                    
+                    track.appendChild(en.el);
+                } else {
+                    en.el.style.top = en.y + 'px';
+                }
+                
+                // Cek Tabrakan (Hitbox Sederhana)
+                // Mobil Player Y = Bottom 20px (Sekitar 340-380px dari atas)
+                // X harus sama (satu jalur)
+                if (Math.abs(en.x - raceState.carX) < 20 && en.y > 320 && en.y < 380) {
+                    gameOverRace();
+                    return;
+                }
+                
+                // Cek Lewat (Score)
+                if (en.y > 420) {
+                    en.el.remove(); // Hapus dari DOM
+                    raceState.enemies.splice(i, 1); // Hapus dari Array
+                    raceState.score++;
+                    
+                    // Makin lama makin cepat
+                    if(raceState.score % 5 === 0) raceState.speed += 0.5;
+                }
+            }
+            
+            document.getElementById('score-race').innerText = "SKOR: " + raceState.score;
+            raceState.animationId = requestAnimationFrame(raceLoop);
+        }
+
+        function spawnEnemyCar() {
+            // 3 Jalur: 30, 130, 230 (Sesuai posisi player)
+            const lanes = [30, 130, 230];
+            const x = lanes[Math.floor(Math.random() * lanes.length)];
+            
+            // Variasi Musuh (UPDATE: Tambahkan Property Gambar)
+            const types = [
+                {icon: '🚛', type: 'truck', img: 'images/truck-race.png'}, // Truk (Besar)
+                {icon: '🚕', type: 'taxi', img: 'images/taxi-race.png'},
+                {icon: '🚙', type: 'suv', img: 'images/suv-race.png'},
+                {icon: '🛵', type: 'bike', img: 'images/bike-race.png'}
+            ];
+            const chosen = types[Math.floor(Math.random() * types.length)];
+
+            // Jangan spawn jika jalur itu baru saja ada mobil (biar gak numpuk)
+            const tooClose = raceState.enemies.some(e => e.x === x && e.y < 80);
+            if (!tooClose) {
+                // UPDATE: Push dengan properti img
+                raceState.enemies.push({ x: x, y: -60, el: null, icon: chosen.icon, type: chosen.type, img: chosen.img });
+            }
+        }
+
+        function gameOverRace() {
+            raceState.active = false;
+            cancelAnimationFrame(raceState.animationId);
+            
+            // Hentikan animasi jalan
+            document.getElementById('road-lines').classList.remove('road-moving');
+
+            // EFEK LEDAKAN
+            const pCar = document.getElementById('player-car');
+            pCar.innerText = '💥'; // Ganti jadi ledakan
+            pCar.classList.add('explosion'); // Tambah animasi CSS
+            
+            if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+
+            // Delay agar ledakan terlihat dulu
+            setTimeout(() => {
+                // Konversi Skor ke Energi (1 Skor = 1 Energi, Max 100)
+                const energyGain = Math.min(100, raceState.score); 
+                STATE.player.energy = Math.min(100, STATE.player.energy + energyGain);
+                
+                // UPDATE: GANTI ALERT DENGAN DIALOGUE AGAR TIDAK KELUAR FULLSCREEN
+                quitRacing(); // Tutup overlay balap dulu
+                
+                showDialogue("TABRAKAN MAUT! 💥", 
+                    `Mobilmu hancur!\n\nSkor Akhir: **${raceState.score}**\nEnergi Pulih: **+${energyGain}**`, 
+                    [{
+                        text: "Lanjut Main", 
+                        action: () => {
+                            closeDialogue();
+                            // Paksa fullscreen lagi jaga-jaga
+                            toggleFullScreen();
+                        }
+                    }], 
+                    'images/player-race.png'
+                );
+                
+            }, 800);
+        }
+
+        function quitRacing() {
+            raceState.active = false;
+            if(raceState.animationId) cancelAnimationFrame(raceState.animationId);
+            document.getElementById('racing-minigame').style.display = 'none';
+            STATE.screen = 'play';
+        }
+        
+function openWarnetGame() {
+    STATE.screen = 'minigame';
+    document.getElementById('warnet-modal').style.display = 'flex';
+    
+    // Pilih Soal Acak
+    const idx = Math.floor(Math.random() * WARNET_SOAL.length);
+    currentWarnetSoal = WARNET_SOAL[idx];
+    
+    // Tampilkan Soal
+    document.getElementById('warnet-task-desc').innerText = "KLIEN BERTANYA: " + currentWarnetSoal.q;
+    document.getElementById('warnet-code-display').innerText = "PILIH JAWABAN YANG BENAR";
+    document.getElementById('btn-code-a').innerText = currentWarnetSoal.a;
+    document.getElementById('btn-code-b').innerText = currentWarnetSoal.b;
+}
+
+function checkWarnetAnswer(pilihan) {
+    if(pilihan === currentWarnetSoal.valid) {
+        // Menang
+        const gaji = 1500 + (STATE.player.int * 50);
+        STATE.player.money += gaji;
+        STATE.player.int += 1; // Nambah pinter
+        gainExp(50);
+        showToast(`Project Selesai! Dibayar ${gaji} G`);
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+    } else {
+        // Kalah
+        showToast("Project Gagal... Klien Marah (Bug!)");
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+    }
+    closeWarnetGame();
+}
+
+function closeWarnetGame() {
+    document.getElementById('warnet-modal').style.display = 'none';
+    STATE.screen = 'play';
+}
 </script>
 </body>
 </html>
