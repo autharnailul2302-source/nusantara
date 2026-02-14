@@ -1784,6 +1784,25 @@
             margin-bottom: 40px;
             max-width: 700px;
         }
+		
+		/* --- AWAL EFEK TEKS MELAYANG --- */
+@keyframes floatUp {
+    0% { transform: translate(-50%, -50%) translateY(0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) translateY(-60px); opacity: 0; }
+}
+
+.floating-text {
+    position: fixed;
+    z-index: 9999; /* Agar tampil di atas modal/popup lain */
+    font-size: 28px;
+    font-weight: 900;
+    text-shadow: 2px 2px 5px rgba(0,0,0,1); /* Efek bayangan agar teks terbaca jelas */
+    pointer-events: none; /* Agar tidak mengganggu jika tidak sengaja terklik */
+    animation: floatUp 1.5s ease-out forwards;
+    left: 50%; /* Muncul di tengah layar */
+    top: 50%;
+}
+/* --- AKHIR EFEK TEKS MELAYANG --- */
 
         /* --- DASHBOARD GURU STYLES --- */
         #teacher-dashboard {
@@ -2369,7 +2388,90 @@ button, .round-btn, .d-btn, .auth-btn {
             <button onclick="closeWarnetGame()" style="margin-top: 15px; background: transparent; color: #ef4444; border: none;">BATAL KERJA</button>
         </div>
     </div>
-    <!-- NEW: RACING MINIGAME OVERLAY (RETRO STYLE) -->
+
+    <!-- NEW: NEGOTIATION MINIGAME (TAWAR MENAWAR) -->
+    <div id="negotiation-minigame" class="minigame-overlay" style="z-index: 2200;">
+        <div class="journal-box" style="width: 320px; text-align: center; border: 2px solid #fbbf24;">
+            <h3 style="color: #fbbf24; font-family: 'Cinzel'; margin-bottom: 5px;">🤝 TAWAR MENAWAR</h3>
+            <p id="neg-desc" style="font-size: 12px; color: #cbd5e1; margin-bottom: 15px;">Hentikan slider di area <span style="color:#4ade80; font-weight:bold;">HIJAU</span>!</p>
+            
+            <!-- Slider Container -->
+            <div style="position: relative; width: 100%; height: 40px; background: #334155; border-radius: 20px; margin-bottom: 20px; overflow: hidden; border: 3px solid #475569; box-shadow: inset 0 0 10px #000;">
+                <!-- Background Merah (Gagal) -->
+                <div style="position: absolute; width: 100%; height: 100%; background: linear-gradient(90deg, #ef4444 0%, #7f1d1d 50%, #ef4444 100%); opacity: 0.5;"></div>
+                
+                <!-- Target Zone (Hijau) -->
+                <div id="neg-target" style="position: absolute; top: 0; height: 100%; background: #22c55e; box-shadow: 0 0 15px #22c55e; border-left: 2px solid #fff; border-right: 2px solid #fff;"></div>
+                
+                <!-- Moving Cursor -->
+                <div id="neg-cursor" style="position: absolute; top: -5px; width: 6px; height: 50px; background: #fff; box-shadow: 0 0 10px #fff; border-radius: 3px; z-index: 10;"></div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="stopNegotiation()" class="main-menu-btn" style="width: 100%; padding: 12px; background: #fbbf24; color: #000; border-color: #fff;">🛑 STOP!</button>
+            </div>
+        </div>
+    </div>
+   
+<!-- ================================================== -->
+<!-- MODAL: UI PASAR GROSIR (NAIK-TURUN HARGA) -->
+<!-- ================================================== -->
+<div id="pasar-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1060; align-items: center; justify-content: center; flex-direction: column;">
+    <div style="background: #1e293b; border: 2px solid #eab308; border-radius: 12px; padding: 20px; width: 90%; max-width: 400px; color: white; max-height: 80vh; overflow-y: auto;">
+        <h2 style="color: #eab308; text-align: center; margin-top: 0;">🛒 Grosir Keliling</h2>
+        <p style="text-align: center; font-size: 14px; color: #cbd5e1;">Beli saat <b style="color:#ef4444;">MERAH</b>, Jual saat <b style="color:#4ade80;">HIJAU</b>!</p>
+        
+        <div style="display: flex; justify-content: space-between; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+            <span>Uang: <b id="pasar-uang-player" style="color: #4ade80;">0 G</b></span>
+            <button onclick="refreshPasar()" style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">🔄 Refresh (-50 G)</button>
+        </div>
+
+        <h3 style="border-bottom: 1px solid #475569; padding-bottom: 5px;">📦 Pasar (Beli)</h3>
+        <div id="pasar-buy-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"></div>
+
+        <h3 style="border-bottom: 1px solid #475569; padding-bottom: 5px;">🎒 Tas Kamu (Jual)</h3>
+        <div id="pasar-sell-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"></div>
+
+        <button onclick="closePasar()" style="width: 100%; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">Tutup Grosir</button>
+    </div>
+</div>
+
+
+<!-- NEW: SALES RUSH MINIGAME (JAGA TOKO) -->
+    <div id="sales-minigame" class="minigame-overlay">
+        <div class="journal-box" style="width: 90%; max-width: 400px; border: 2px solid #10b981;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:10px; margin-bottom:15px;">
+                <div style="font-family:'Cinzel'; color:#10b981; font-size:18px;">💰 <span id="sales-score">0</span> G</div>
+                <div style="font-family:'Exo 2'; color:#ef4444; font-weight:bold;">❤️ <span id="sales-lives">3</span></div>
+            </div>
+
+            <!-- AREA PELANGGAN -->
+            <div style="position:relative; height:160px; margin-bottom:10px; display:flex; justify-content:center; align-items:flex-end;">
+                <!-- Bubble Pesanan -->
+                <div id="sales-bubble" style="position:absolute; top:0; right:15%; background:white; color:black; padding:10px 15px; border-radius:20px 20px 20px 0; font-size:28px; font-weight:bold; box-shadow:0 5px 15px rgba(0,0,0,0.5); animation: floatUp 2s infinite;">
+                    🥖
+                </div>
+                <!-- Gambar Pelanggan -->
+                <img id="sales-customer-img" src="images/boy.png" style="height:130px; filter:drop-shadow(0 0 10px rgba(0,0,0,0.5)); transition: transform 0.2s;">
+            </div>
+
+            <!-- Timer Bar -->
+            <div style="width:100%; height:8px; background:#334155; border-radius:4px; margin-bottom:20px; overflow:hidden;">
+                <div id="sales-patience-bar" style="width:100%; height:100%; background:linear-gradient(90deg, #10b981, #facc15, #ef4444); transition: width 0.1s linear;"></div>
+            </div>
+
+            <div style="text-align:center; margin-bottom:10px; font-size:12px; color:#94a3b8;">KLIK BARANG YANG SESUAI:</div>
+
+            <!-- Grid Tombol Barang -->
+            <div id="sales-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                <!-- Diisi JS -->
+            </div>
+
+            <button onclick="quitSalesGame()" style="margin-top:20px; background:transparent; border:none; color:#ef4444; font-size:12px; cursor:pointer;">TUTUP TOKO (MENYERAH)</button>
+        </div>
+    </div>
+
+   <!-- NEW: RACING MINIGAME OVERLAY (RETRO STYLE) -->
     <div id="racing-minigame" class="minigame-overlay" style="background: radial-gradient(circle, #2d3748, #000);">
         <h2 style="color: #fbbf24; font-family: 'Cinzel'; margin: 10px 0; text-shadow: 0 0 10px black;">BALAP LIAR RETRO</h2>
         
@@ -11864,7 +11966,14 @@ function gameLoop() {
 }
 
 function update() {
-    // --- FIX: UPDATE POINTER TUTORIAL SELALU (BAHKAN SAAT DIALOG/PAUSE) ---
+    
+	// UPDATE: PASSIVE INCOME CHECK
+        if (STATE.player.role === 'entrepreneur') {
+            updatePassiveIncome();
+        }
+	
+	
+	// --- FIX: UPDATE POINTER TUTORIAL SELALU (BAHKAN SAAT DIALOG/PAUSE) ---
     // Pindahkan logika ini ke ATAS pengecekan screen !== 'play'
     // Ini memastikan tangan penunjuk tetap muncul dan posisinya benar saat dialog tutorial aktif
     if (STATE.tutorialFocusTarget) {
@@ -16621,6 +16730,10 @@ function interactNPC(npc) {
                     {text: "Kembali", action: () => interactNPC(npc)}
                 ], npc.imgSrc);
             }},
+			 {text: "📦 Cek Grosir Barang", action: () => {
+                closeDialogue(); // Tutup dialog dulu
+                openPasar();     // Buka UI Grosir Pasar
+            }},
             {text: "Cara Bertani", action: () => {
                 showDialogue(npc.name, "Mudah kok! Pergi ke lahan di belakang rumahmu:\n1. Gunakan Cangkul (jika ada).\n2. Tanam Bibit.\n3. Siram tiap pagi.\n4. Panen saat matang dan jual ke Merchant!", [{text:"Siap!", action:closeDialogue}], npc.imgSrc);
             }},
@@ -16642,6 +16755,16 @@ function interactNPC(npc) {
                     {text: "Pupuk Organik (100 G) 💩", action: () => buyItem('pupuk', 100)},
                     {text: "Kembali", action: () => interactNPC(npc)}
                 ], npc.imgSrc);
+            }},
+			{text: "📦 Cek Grosir Barang", action: () => {
+                closeDialogue(); // Tutup dialog dulu
+                openPasar();     // Buka UI Grosir Pasar
+            }},
+            {text: "Cara Bertani", action: () => {
+                showDialogue(npc.name, "Mudah kok! Pergi ke lahan di belakang rumahmu:\n1. Gunakan Cangkul (jika ada).\n2. Tanam Bibit.\n3. Siram tiap pagi.\n4. Panen saat matang dan jual ke Merchant!", [{text:"Siap!", action:closeDialogue}], npc.imgSrc);
+            }},
+            {text: "Beli Alat Tani?", action: () => {
+                showDialogue(npc.name, "Untuk Cangkul dan Penyiram, silakan beli di **Toko Merchant** (Gedung Selatan). Saya hanya jual bibitnya.", [{text:"Oke", action:closeDialogue}], npc.imgSrc);
             }},
             {text: "Tentang Suami", action: () => {
                 showDialogue(npc.name, "Dia itu pelit ngasih diskon, tapi kalau soal kualitas barang, dia nggak main-main. \nKami merintis toko ini dari nol lho.", [{text:"Hebat Bu", action:closeDialogue}], npc.imgSrc);
@@ -16839,34 +16962,220 @@ function giveGift(npc, item) {
     showDialogue(npc.name, dialogueText, [{text:"Sama-sama", action:closeDialogue}], npc.imgSrc);
 }
 
+// --- NEW: NEGOTIATION MINIGAME LOGIC ---
+let negState = {
+    active: false,
+    pos: 0,         // Posisi kursor (0 - 100)
+    dir: 1,         // Arah (1: Kanan, -1: Kiri)
+    speed: 1.5,     // Kecepatan gerak
+    targetStart: 0, // Posisi awal zona hijau (0 - 100)
+    targetWidth: 15, // Lebar zona hijau
+    interval: null,
+    callback: null, // Fungsi yang dijalankan setelah selesai (mengembalikan multiplier harga)
+    type: 'buy'     // 'buy' atau 'sell'
+};
+
+function startNegotiation(type, difficulty, onFinish) {
+    negState.active = true;
+    negState.type = type;
+    negState.callback = onFinish;
+    
+    // Reset Posisi
+    negState.pos = 0;
+    negState.dir = 1;
+    
+    // Tingkat Kesulitan (Speed & Width)
+    if (difficulty === 'hard') {
+        negState.speed = 2.5;
+        negState.targetWidth = 10;
+    } else {
+        negState.speed = 1.5;
+        negState.targetWidth = 20;
+    }
+
+    // Random Target Zone (Hindari pinggir banget)
+    negState.targetStart = 10 + Math.random() * (80 - negState.targetWidth);
+
+    // Update UI Visual
+    const targetEl = document.getElementById('neg-target');
+    targetEl.style.left = negState.targetStart + '%';
+    targetEl.style.width = negState.targetWidth + '%';
+    
+    const cursorEl = document.getElementById('neg-cursor');
+    cursorEl.style.left = '0%';
+
+    // Tampilkan Overlay
+    document.getElementById('negotiation-minigame').style.display = 'flex';
+    STATE.screen = 'minigame';
+
+    // Start Loop
+    if (negState.interval) clearInterval(negState.interval);
+    negState.interval = setInterval(negotiationLoop, 16); // ~60 FPS
+}
+
+function negotiationLoop() {
+    if (!negState.active) return;
+
+    // Gerakkan Kursor
+    negState.pos += negState.speed * negState.dir;
+
+    // Pantul di ujung
+    if (negState.pos >= 100) {
+        negState.pos = 100;
+        negState.dir = -1;
+    } else if (negState.pos <= 0) {
+        negState.pos = 0;
+        negState.dir = 1;
+    }
+
+    // Update Visual
+    const cursorEl = document.getElementById('neg-cursor');
+    cursorEl.style.left = negState.pos + '%';
+}
+
+function stopNegotiation() {
+    if (!negState.active) return;
+    
+    negState.active = false;
+    clearInterval(negState.interval);
+
+    // Cek Hasil
+    const hitStart = negState.pos;
+    const targetStart = negState.targetStart;
+    const targetEnd = negState.targetStart + negState.targetWidth;
+    
+    let isSuccess = false;
+    let multiplier = 1.0;
+    let msg = "";
+
+    // Cek apakah kursor berhenti di dalam area hijau
+    if (hitStart >= targetStart && hitStart <= targetEnd) {
+        isSuccess = true;
+        // Hitung seberapa tengah (Perfect Center = Bonus Lebih)
+        const centerDist = Math.abs((targetStart + negState.targetWidth/2) - hitStart);
+        const isPerfect = centerDist < (negState.targetWidth / 4); // Sangat tengah
+
+        if (negState.type === 'buy') {
+            multiplier = isPerfect ? 0.7 : 0.85; // Diskon 30% atau 15%
+            msg = isPerfect ? "PERFECT! DISKON 30% 🔥" : "SUKSES! DISKON 15% ✅";
+        } else {
+            multiplier = isPerfect ? 1.3 : 1.15; // Jual Mahal 30% atau 15%
+            msg = isPerfect ? "PERFECT! HARGA JUAL +30% 🔥" : "SUKSES! HARGA JUAL +15% ✅";
+        }
+        
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        createParticle(window.innerWidth/2, window.innerHeight/2, '#4ade80');
+    } else {
+        // GAGAL (Zona Merah)
+        if (negState.type === 'buy') {
+            multiplier = 1.1; // Harga NAIK 10% (Penjual Marah)
+            msg = "GAGAL! PENJUAL MARAH (Harga +10%) 😡";
+        } else {
+            multiplier = 0.9; // Harga Jual TURUN 10%
+            msg = "GAGAL! PEMBELI NAWAR SADIS (Harga -10%) 📉";
+        }
+        
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+        // Efek getar
+        const box = document.querySelector('#negotiation-minigame .journal-box');
+        box.style.transform = "translateX(10px)";
+        setTimeout(() => box.style.transform = "translateX(0)", 100);
+    }
+
+    // Tampilkan Hasil Sebentar
+    const descEl = document.getElementById('neg-desc');
+    const oldText = descEl.innerText;
+    descEl.innerHTML = `<b style="font-size:16px; color:${isSuccess?'#4ade80':'#ef4444'}">${msg}</b>`;
+
+    setTimeout(() => {
+        // Tutup Minigame
+        document.getElementById('negotiation-minigame').style.display = 'none';
+        descEl.innerText = oldText; // Reset teks
+        
+        // Eksekusi Callback dengan Multiplier baru
+        if (negState.callback) negState.callback(multiplier);
+        
+    }, 1500);
+}
+
 function showCommodityAction(item, price, npc) {
     const p = STATE.player;
     const owned = p.inventory[item.id] || 0;
     
+    // Hitung Harga Awal
+    const buy1 = price;
+    const buy5 = price * 5;
+    const sell1 = Math.floor(price * 0.8); // Harga jual dasar lebih rendah (margin)
+    
     showDialogue(`TRANSAKSI: ${item.name}`, 
         `Harga Pasar: ${price.toLocaleString()} G \n(Normal: ${item.base.toLocaleString()} G) \n\nUangmu: ${p.money.toLocaleString()} G \nStokmu: ${owned}`, 
         [
-            {text: `Beli 1 (-${price.toLocaleString()})`, action: () => executeTrade(item.id, price, 1, 'buy', npc)},
-            {text: `Beli 5 (-${(price*5).toLocaleString()})`, action: () => executeTrade(item.id, price, 5, 'buy', npc)},
-            {text: `Jual 1 (+${price.toLocaleString()})`, action: () => executeTrade(item.id, price, 1, 'sell', npc)},
-            {text: `Jual SEMUA`, action: () => executeTrade(item.id, price, 'all', 'sell', npc)},
+            {text: `Beli 1 (-${buy1.toLocaleString()})`, action: () => executeTrade(item.id, buy1, 1, 'buy', npc)},
+            
+            // UPDATE: Beli 5 sekarang memicu Minigame Tawar Menawar
+            {text: `Beli 5 (Grosir & Tawar) 🤝`, action: () => {
+                // Cek dulu apakah uang cukup untuk harga normal (syarat masuk negosiasi)
+                if (p.money >= buy5) {
+                    closeDialogue();
+                    // Mulai Minigame
+                    startNegotiation('buy', 'normal', (multiplier) => {
+                        const finalPricePerUnit = Math.floor(price * multiplier);
+                        // Panggil executeTrade dengan harga baru
+                        executeTrade(item.id, finalPricePerUnit, 5, 'buy', npc, multiplier);
+                    });
+                } else {
+                    showToast("Uang tidak cukup untuk grosir!");
+                }
+            }},
+            
+            {text: `Jual 1 (+${sell1.toLocaleString()})`, action: () => executeTrade(item.id, sell1, 1, 'sell', npc)},
+            
+            // UPDATE: Jual Semua juga memicu Minigame jika jumlah > 1
+            {text: `Jual SEMUA (Nego Harga) 🤝`, action: () => {
+                if (owned > 1) {
+                    closeDialogue();
+                    startNegotiation('sell', 'hard', (multiplier) => {
+                        const finalSellPrice = Math.floor(sell1 * multiplier);
+                        executeTrade(item.id, finalSellPrice, 'all', 'sell', npc, multiplier);
+                    });
+                } else if (owned === 1) {
+                    executeTrade(item.id, sell1, 1, 'sell', npc);
+                } else {
+                    showToast("Kamu tidak punya barang ini!");
+                }
+            }},
+            
             {text: "Kembali", action: () => openTradingMenu(npc)}
         ], npc.imgSrc);
 }
 
-function executeTrade(id, price, qty, type, npc) {
+function executeTrade(id, price, qty, type, npc, multiplier = 1.0) {
     const p = STATE.player;
     if(!p.inventory[id]) p.inventory[id] = 0;
 
+    // Helper text untuk hasil negosiasi
+    let negoText = "";
+    if (multiplier !== 1.0) {
+        const pct = Math.round((multiplier - 1) * 100);
+        if (type === 'buy') {
+            if (pct > 0) negoText = ` (Mahal +${pct}%)`;
+            else negoText = ` (Diskon ${Math.abs(pct)}%)`;
+        } else {
+            if (pct > 0) negoText = ` (Bonus +${pct}%)`;
+            else negoText = ` (Rugi ${Math.abs(pct)}%)`;
+        }
+    }
+
     if(type === 'buy') {
         const cost = price * qty;
+        // Cek uang lagi untuk harga final
         if(p.money >= cost) {
             p.money -= cost;
             p.inventory[id] += qty;
-            showToast(`Membeli ${qty} ${id.toUpperCase()}`);
+            showToast(`Beli ${qty} ${id.toUpperCase()}${negoText}`);
             if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Trading Beli
         } else {
-            showToast("Uang tidak cukup!");
+            showToast("Uang tidak cukup (Harga Naik!)");
         }
     } else if(type === 'sell') {
         let amount = qty;
@@ -16876,13 +17185,22 @@ function executeTrade(id, price, qty, type, npc) {
             const profit = price * amount;
             p.inventory[id] -= amount;
             p.money += profit;
-            showToast(`Menjual ${amount} ${id.toUpperCase()} (+${profit})`);
+            showToast(`Jual ${amount} ${id.toUpperCase()}${negoText}`);
             if(typeof AudioService !== 'undefined') AudioService.playSFX('item'); // SFX Trading Jual
         } else {
             showToast("Barang tidak cukup!");
         }
     }
-    showCommodityAction(COMMODITIES.find(c=>c.id===id), price, npc);
+    
+    // Setelah transaksi, kembali ke menu komoditas
+    // Kita cari objek komoditas dari ID untuk refresh harga asli di dialog berikutnya
+    const commItem = COMMODITIES.find(c => c.id === id);
+    const originalPrice = getDailyPrice(commItem.id, commItem.base, commItem.volatility);
+    
+    // Perlu delay sedikit agar toast terbaca sebelum dialog baru muncul
+    setTimeout(() => {
+        showCommodityAction(commItem, originalPrice, npc);
+    }, 500);
 }
 
 // --- FIX: MENGHAPUS FUNGSI DUPLIKAT YANG MENYEBABKAN ERROR REPUTASI ---
@@ -17205,26 +17523,40 @@ function interactObject(obj) {
     // --- NEW: INTERAKSI TOKO PLAYER (MANAJEMEN TOKO) ---
     else if (STATE.location === 'player_shop_interior' && STATE.player.role === 'entrepreneur') {
         if (obj.type === 'counter') {
-            // Manajemen Toko (Collect Profit)
-            const income = Math.floor(STATE.player.biz * 10 * (1 + Math.random())); // Simple passive income
-            
-            showDialogue("MANAJEMEN TOKO", `Level Bisnis: ${STATE.player.biz}\nEstimasi Pendapatan Harian: ${STATE.player.biz * 10} - ${STATE.player.biz * 20} G`, [
-                {text: "Cek Penjualan (Collect)", action: () => {
-                    // Hanya bisa collect sekali sehari (gunakan flag)
-                    if (STATE.player.lastShopCollect !== STATE.day) {
-                        STATE.player.money += income;
-                        STATE.player.lastShopCollect = STATE.day;
-                        // Tambah skill bisnis sedikit
-                        STATE.player.biz += 1;
-                        showToast(`💰 Profit Hari Ini: ${income} G`);
-                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                        closeDialogue();
-                    } else {
-                        showToast("Sudah ambil omset hari ini!");
+			// Manajemen Toko (Jaga Lapak Minigame)
+            const income = Math.floor(STATE.player.biz * 10 * (1 + Math.random()));
+			
+            showDialogue("MEJA KASIR", `Level Bisnis: ${Math.floor(STATE.player.biz)}\nApa yang ingin bos lakukan hari ini?`, [
+                {
+                    text: "⚡ Jaga Toko (Minigame)", 
+                    action: () => {
+                        // Cek Energi
+                        if (STATE.player.energy >= 15) {
+                            STATE.player.energy -= 15;
+                            closeDialogue();
+                            startSalesGame(); // Buka Minigame Sales Rush
+                        } else {
+                            showToast("Terlalu lelah untuk jaga toko (Butuh 15 Energi)");
+                        }
                     }
-                }},
+                },
+                {
+                    text: "💰 Ambil Omset Pasif", 
+                    action: () => {
+                        if (STATE.player.lastShopCollect !== STATE.day) {
+                            STATE.player.money += income;
+                            STATE.player.lastShopCollect = STATE.day;
+                            STATE.player.biz += 1;
+                            createFloatingText(`+${income} G`, '#4ade80');
+                            if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showDialogue("LAPORAN KEUANGAN", `Pendapatan pasif hari ini: **${income} G**\nSkill Bisnis naik +1.`, [{text:"Mantap", action:closeDialogue}], 'images/mejakasir.png');
+                        } else {
+                            showToast("Omset hari ini sudah diambil!");
+                        }
+                    }
+                },
                 {text: "Tutup", action: closeDialogue}
-            ], 'images/mejadosen.png');
+            ], 'images/mejakasir.png');
             return;
         } else if (obj.type === 'shelf') {
             // UPDATE: Cek apakah ini Lemari Pakaian atau Rak Barang Dagangan
@@ -22750,7 +23082,17 @@ function checkWarnetAnswer(pilihan) {
         gainExp(50);
         showToast(`Project Selesai! Dibayar ${gaji} G`);
         if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
-    } else {
+		// --- TAMBAHAN EFEK MELAYANG (BARU) ---
+        // Munculkan teks Uang (Warna Hijau)
+        createFloatingText(`+${gaji} G`, '#4ade80');
+        
+        // Munculkan teks EXP (Warna Biru), diberi jeda 0.3 detik agar tidak numpuk dengan teks Uang
+        setTimeout(() => {
+            createFloatingText(`+50 EXP`, '#60a5fa');
+        }, 300);
+        // -----------
+
+   } else {
         // Kalah
         showToast("Project Gagal... Klien Marah (Bug!)");
         if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
@@ -22762,6 +23104,487 @@ function closeWarnetGame() {
     document.getElementById('warnet-modal').style.display = 'none';
     STATE.screen = 'play';
 }
+
+// --- FUNGSI MEMBUAT TEKS MELAYANG ---
+function createFloatingText(text, color) {
+    // 1. Buat elemen div baru
+    const floatEl = document.createElement('div');
+    
+    // 2. Beri class CSS yang sudah kita buat di Langkah 1
+    floatEl.className = 'floating-text';
+    
+    // 3. Masukkan teks dan warnanya
+    floatEl.innerText = text;
+    floatEl.style.color = color;
+    
+    // 4. Masukkan ke dalam halaman utama (body)
+    document.body.appendChild(floatEl);
+    
+    // 5. Hapus elemen setelah 1.5 detik (sesuai durasi animasi CSS) agar tidak menumpuk di memori
+    setTimeout(() => {
+        floatEl.remove();
+    }, 1500);
+}
+
+// ==========================================
+// LOGIKA PASAR GROSIR (NAIK-TURUN)
+// ==========================================
+
+if (!STATE.player.tradeInventory) STATE.player.tradeInventory = {};
+
+const TRADE_ITEMS = [
+    { id: 'sepatu_b', name: '👟 Sepatu Bekas', basePrice: 500, min: 100, max: 1500 },
+    { id: 'kaos_v', name: '👕 Kaos Vintage', basePrice: 200, min: 50, max: 600 },
+    { id: 'jam_d', name: '⌚ Jam Digital', basePrice: 800, min: 300, max: 2500 },
+    { id: 'snack_k', name: '🍬 Snack Kiloan', basePrice: 50, min: 20, max: 150 }
+];
+
+let currentMarketPrices = {};
+
+function generateMarketPrices() {
+    currentMarketPrices = {};
+    let chaBonus = (STATE.player.cha || 0) * 0.01;
+    if (chaBonus > 0.3) chaBonus = 0.3; // Diskon max 30% dari Charisma
+
+    TRADE_ITEMS.forEach(item => {
+        let rawPrice = Math.floor(Math.random() * (item.max - item.min + 1)) + item.min;
+        currentMarketPrices[item.id] = {
+            buy: Math.floor(rawPrice * (1 - (chaBonus / 2))),
+            sell: Math.floor(rawPrice * (1 + (chaBonus / 2))),
+            base: item.basePrice
+        };
+    });
+}
+
+function openPasar() {
+    STATE.screen = 'minigame';
+    document.getElementById('pasar-modal').style.display = 'flex';
+    generateMarketPrices(); 
+    renderPasarUI();
+}
+
+function closePasar() {
+    document.getElementById('pasar-modal').style.display = 'none';
+    STATE.screen = 'play';
+}
+
+function refreshPasar() {
+    if (STATE.player.money >= 50) {
+        STATE.player.money -= 50;
+        if(typeof createFloatingText === 'function') createFloatingText("-50 G", "#ef4444");
+        generateMarketPrices();
+        renderPasarUI();
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('select');
+    } else {
+        if(typeof showToast === 'function') showToast("Uang tidak cukup untuk sogok info pasar!");
+    }
+}
+
+function renderPasarUI() {
+    document.getElementById('pasar-uang-player').innerText = `${STATE.player.money} G`;
+    const buyList = document.getElementById('pasar-buy-list');
+    const sellList = document.getElementById('pasar-sell-list');
+    
+    buyList.innerHTML = ''; 
+    sellList.innerHTML = '';
+
+    TRADE_ITEMS.forEach(item => {
+        let prices = currentMarketPrices[item.id];
+        let ownedCount = STATE.player.tradeInventory[item.id] || 0;
+        let priceColor = prices.buy < item.basePrice ? '#ef4444' : '#4ade80'; 
+        let trendIcon = prices.buy < item.basePrice ? '📉' : '📈';
+
+        // Toko (Beli)
+        buyList.innerHTML += `
+            <div style="background: #334155; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid ${priceColor}">
+                <div style="font-size: 14px; margin-bottom: 5px;">${item.name}</div>
+                <div style="font-size: 16px; font-weight: bold; color: ${priceColor};">${trendIcon} ${prices.buy} G</div>
+                <button onclick="buyTradeItem('${item.id}')" style="margin-top: 8px; width: 100%; padding: 5px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;">Beli</button>
+            </div>
+        `;
+
+        // Tas (Jual)
+        if (ownedCount > 0) {
+            sellList.innerHTML += `
+                <div style="background: #334155; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #3b82f6">
+                    <div style="font-size: 14px; margin-bottom: 5px;">${item.name} <span style="background: #eab308; color: black; padding: 2px 5px; border-radius: 10px; font-size: 12px; font-weight:bold;">x${ownedCount}</span></div>
+                    <div style="font-size: 16px; font-weight: bold; color: #60a5fa;">Laku: ${prices.sell} G</div>
+                    <button onclick="sellTradeItem('${item.id}')" style="margin-top: 8px; width: 100%; padding: 5px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">Jual</button>
+                </div>
+            `;
+        }
+    });
+
+    if (sellList.innerHTML === '') {
+        sellList.innerHTML = '<div style="color: #94a3b8; font-style: italic; grid-column: span 2; text-align: center;">Tas daganganmu kosong.</div>';
+    }
+}
+
+function buyTradeItem(itemId) {
+    let price = currentMarketPrices[itemId].buy;
+    if (STATE.player.money >= price) {
+        STATE.player.money -= price;
+        STATE.player.tradeInventory[itemId] = (STATE.player.tradeInventory[itemId] || 0) + 1;
+        if(typeof createFloatingText === 'function') createFloatingText(`-${price} G`, '#ef4444');
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        renderPasarUI();
+    } else {
+        if(typeof showToast === 'function') showToast("Uang tidak cukup!");
+    }
+}
+
+function sellTradeItem(itemId) {
+    if (STATE.player.tradeInventory[itemId] > 0) {
+        let price = currentMarketPrices[itemId].sell;
+        STATE.player.tradeInventory[itemId] -= 1;
+        STATE.player.money += price;
+        
+        if(typeof gainExp === 'function') gainExp(25); // Bonus EXP wirausaha
+        
+        if(typeof createFloatingText === 'function') {
+            createFloatingText(`+${price} G`, '#4ade80');
+            setTimeout(() => { createFloatingText("+25 EXP", "#60a5fa"); }, 300);
+        }
+        
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        renderPasarUI();
+    }
+}
+
+// --- SALES RUSH MINIGAME (JAGA LAPAK) ---
+const SALES_ITEMS = [
+    { id: 'roti', name: 'Roti', icon: '🥖' },
+    { id: 'susu', name: 'Susu', icon: '🥛' },
+    { id: 'sabun', name: 'Sabun', icon: '🧼' },
+    { id: 'paket', name: 'Paket', icon: '📦' },
+    { id: 'obat', name: 'Obat', icon: '💊' },
+    { id: 'lampu', name: 'Lampu', icon: '💡' }
+];
+
+let salesState = {
+    active: false,
+    score: 0,
+    lives: 3,
+    targetItem: null,
+    patience: 100,
+    decay: 0.5,
+    interval: null
+};
+
+function startSalesGame() {
+    salesState.active = true;
+    salesState.score = 0;
+    salesState.lives = 3;
+    salesState.decay = 0.4; // Initial difficulty
+    
+    document.getElementById('sales-minigame').style.display = 'flex';
+    STATE.screen = 'minigame';
+    
+    updateSalesUI();
+    renderSalesButtons();
+    nextSalesCustomer();
+    
+    if(salesState.interval) clearInterval(salesState.interval);
+    salesState.interval = setInterval(salesLoop, 50); // 20 FPS
+}
+
+function renderSalesButtons() {
+    const grid = document.getElementById('sales-grid');
+    grid.innerHTML = '';
+    SALES_ITEMS.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'auth-btn';
+        btn.style.padding = '8px';
+        btn.style.display = 'flex';
+        btn.style.flexDirection = 'column';
+        btn.style.alignItems = 'center';
+        btn.style.fontSize = '10px';
+        btn.innerHTML = `<span style="font-size:24px; margin-bottom:2px;">${item.icon}</span>${item.name}`;
+        btn.onclick = () => handleSalesClick(item.id);
+        grid.appendChild(btn);
+    });
+}
+
+function nextSalesCustomer() {
+    if(!salesState.active) return;
+    
+    salesState.patience = 100;
+    salesState.decay += 0.05; // Makin lama makin cepat marah
+    
+    // Random Item
+    salesState.targetItem = SALES_ITEMS[Math.floor(Math.random() * SALES_ITEMS.length)];
+    
+    // Tampilkan Bubble
+    const bubble = document.getElementById('sales-bubble');
+    bubble.innerText = salesState.targetItem.icon;
+    bubble.style.transform = 'scale(0)';
+    setTimeout(()=> bubble.style.transform = 'scale(1)', 100);
+    
+    // Random Customer Image
+    const customers = ['boy', 'girl', 'peer1', 'peer2', 'peer3', 'lover1girl', 'lover1boy'];
+    const randCust = customers[Math.floor(Math.random() * customers.length)];
+    const img = document.getElementById('sales-customer-img');
+    img.src = `images/${randCust}.png`;
+    img.style.transform = 'translateX(50px)';
+    setTimeout(()=> img.style.transform = 'translateX(0)', 100);
+}
+
+function salesLoop() {
+    if(!salesState.active) return;
+    
+    salesState.patience -= salesState.decay;
+    const bar = document.getElementById('sales-patience-bar');
+    bar.style.width = salesState.patience + "%";
+    
+    if(salesState.patience > 50) bar.style.background = '#10b981';
+    else if(salesState.patience > 20) bar.style.background = '#facc15';
+    else bar.style.background = '#ef4444';
+    
+    if(salesState.patience <= 0) {
+        handleSalesMistake("Pelanggan Kabur! 😡");
+    }
+}
+
+function handleSalesClick(id) {
+    if(!salesState.active) return;
+    
+    if(id === salesState.targetItem.id) {
+        // BENAR
+        salesState.score += 50; // +50 Gold per item
+        createFloatingText("+50 G", "#4ade80");
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        updateSalesUI();
+        nextSalesCustomer();
+    } else {
+        // SALAH
+        handleSalesMistake("Salah Barang! ❌");
+    }
+}
+
+function handleSalesMistake(msg) {
+    salesState.lives--;
+    updateSalesUI();
+    showToast(msg);
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+    
+    // Shake effect
+    const box = document.querySelector('#sales-minigame .journal-box');
+    box.style.transform = "translateX(5px)";
+    setTimeout(()=> box.style.transform = "translateX(0)", 100);
+    
+    if(salesState.lives <= 0) {
+        endSalesGame();
+    } else {
+        nextSalesCustomer();
+    }
+}
+
+function updateSalesUI() {
+    document.getElementById('sales-score').innerText = salesState.score;
+    document.getElementById('sales-lives').innerText = salesState.lives;
+}
+
+function endSalesGame() {
+    clearInterval(salesState.interval);
+    salesState.active = false;
+    document.getElementById('sales-minigame').style.display = 'none';
+    STATE.screen = 'play';
+    
+    // Give Rewards
+    STATE.player.money += salesState.score;
+    const expGain = Math.floor(salesState.score / 5);
+    gainExp(expGain);
+    STATE.player.biz += 2; // Skill Bisnis naik
+    
+    // Skip Waktu (Kerja memakan waktu)
+    STATE.time += 200; // +2 Jam
+    
+    showDialogue("REKAP PENJUALAN", 
+        `Toko Tutup!\n\n💰 Pendapatan: **${salesState.score} Gold**\n🧠 Pengalaman: **${expGain} EXP**\n📈 Skill Bisnis: **+2**\n\n(Waktu berlalu 2 Jam)`, 
+        [{text:"Mantap!", action:closeDialogue}], 
+        'images/mejakasir.png'
+    );
+}
+
+function quitSalesGame() {
+    clearInterval(salesState.interval);
+    salesState.active = false;
+    document.getElementById('sales-minigame').style.display = 'none';
+    STATE.screen = 'play';
+}
+
+// --- NEW: SISTEM PASSIVE INCOME (BISNIS) ---
+const BUSINESS_TIERS = [
+    { 
+        id: 'gerobak', 
+        name: 'Gerobak Kopi Keliling', 
+        desc: 'Bisnis pemula. Kopi sachet untuk pekerja.',
+        cost: 5000, 
+        income: 10, // per 5 detik
+        reqBiz: 0,
+        icon: '☕',
+        img: 'images/gerobak.png' // Pastikan ada atau fallback
+    },
+    { 
+        id: 'kios', 
+        name: 'Kios Pulsa & Snack', 
+        desc: 'Ruko kecil di pinggir jalan. Selalu ramai.',
+        cost: 25000, 
+        income: 35, 
+        reqBiz: 10,
+        icon: '🏪',
+        img: 'images/warnet.png' 
+    },
+    { 
+        id: 'minimarket', 
+        name: 'Minimarket ArsaMart', 
+        desc: 'Toko modern dengan AC. Favorit warga.',
+        cost: 100000, 
+        income: 150, 
+        reqBiz: 25,
+        icon: '🛒',
+        img: 'images/merchant.png' 
+    },
+    { 
+        id: 'mall', 
+        name: 'Arsa Grand Mall', 
+        desc: 'Pusat perbelanjaan elit. Mesin uang raksasa.',
+        cost: 1000000, 
+        income: 1000, 
+        reqBiz: 50,
+        icon: '🏢',
+        img: 'images/kampus.png' 
+    }
+];
+
+// Helper: Init Data Bisnis Player
+function initBusinessState() {
+    if (!STATE.player.business) {
+        STATE.player.business = {
+            owned: {}, // { 'gerobak': 2, 'kios': 1 }
+            lastCollect: Date.now()
+        };
+    }
+}
+
+// 1. Loop Passive Income (Jalan di Background)
+function updatePassiveIncome() {
+    initBusinessState();
+    const p = STATE.player;
+    
+    // Hitung total income per tick (5 detik)
+    let totalIncome = 0;
+    BUSINESS_TIERS.forEach(biz => {
+        const count = p.business.owned[biz.id] || 0;
+        totalIncome += count * biz.income;
+    });
+
+    if (totalIncome > 0) {
+        // Cek waktu
+        const now = Date.now();
+        if (now - p.business.lastCollect >= 5000) { // 5 Detik
+            const ticks = Math.floor((now - p.business.lastCollect) / 5000);
+            const earn = totalIncome * ticks;
+            
+            p.money += earn;
+            p.business.lastCollect = now;
+            
+            // Visual Feedback (Kecil di pojok, jangan spam toast)
+            // Hanya muncul jika sedang main (screen play)
+            if (STATE.screen === 'play') {
+                spawnFloatingText(STATE.player.x, STATE.player.y - 50, `+${earn} G (Bisnis)`, '#10b981', 10);
+            }
+        }
+    } else {
+        p.business.lastCollect = Date.now(); // Reset biar ga numpuk timestamp
+    }
+}
+
+// 2. UI Menu Bisnis
+function openBusinessMenu() {
+    initBusinessState();
+    const p = STATE.player;
+    
+    document.getElementById('business-modal').style.display = 'flex';
+    STATE.screen = 'minigame';
+    
+    updateBusinessUI();
+}
+
+function closeBusinessMenu() {
+    document.getElementById('business-modal').style.display = 'none';
+    STATE.screen = 'play';
+}
+
+function updateBusinessUI() {
+    const p = STATE.player;
+    const list = document.getElementById('biz-upgrade-list');
+    list.innerHTML = '';
+    
+    let totalIncome = 0;
+    let totalOwned = 0;
+
+    BUSINESS_TIERS.forEach(biz => {
+        const count = p.business.owned[biz.id] || 0;
+        totalIncome += count * biz.income;
+        totalOwned += count;
+        
+        // Cek Syarat
+        const canBuy = p.money >= biz.cost;
+        const reqMet = p.biz >= biz.reqBiz;
+        
+        let btnStyle = "background:#10b981;";
+        let btnText = `BELI (${biz.cost.toLocaleString()} G)`;
+        let btnAction = `buyBusiness('${biz.id}')`;
+        
+        if (!reqMet) {
+            btnStyle = "background:#334155; color:#64748b; cursor:not-allowed;";
+            btnText = `🔒 Butuh BIZ ${biz.reqBiz}`;
+            btnAction = "";
+        } else if (!canBuy) {
+            btnStyle = "background:#ef4444; opacity:0.7;";
+            btnText = `Uang Kurang`;
+        }
+
+        const div = document.createElement('div');
+        div.style.cssText = "background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid #334155; display:flex; gap:10px; align-items:center;";
+        
+        div.innerHTML = `
+            <div style="font-size:30px;">${biz.icon}</div>
+            <div style="flex:1;">
+                <div style="font-weight:bold; color:#f1f5f9;">${biz.name} <span style="background:#f59e0b; color:black; padding:1px 6px; border-radius:10px; font-size:10px;">Lvl ${count}</span></div>
+                <div style="font-size:10px; color:#94a3b8;">${biz.desc}</div>
+                <div style="font-size:11px; color:#4ade80; margin-top:2px;">Income: +${biz.income} G / 5s</div>
+            </div>
+            <button class="auth-btn" style="width:auto; padding:8px 12px; font-size:10px; ${btnStyle}" onclick="${btnAction}">${btnText}</button>
+        `;
+        list.appendChild(div);
+    });
+
+    document.getElementById('biz-income-rate').innerText = totalIncome.toLocaleString();
+    document.getElementById('biz-total-assets').innerText = totalOwned + " Unit";
+}
+
+function buyBusiness(id) {
+    const p = STATE.player;
+    const biz = BUSINESS_TIERS.find(b => b.id === id);
+    
+    if (p.money >= biz.cost) {
+        p.money -= biz.cost;
+        p.business.owned[id] = (p.business.owned[id] || 0) + 1;
+        p.biz += 2; // Beli bisnis nambah skill bisnis
+        
+        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+        createFloatingText(`-${biz.cost}`, '#ef4444');
+        showToast(`Sukses Membeli ${biz.name}!`);
+        
+        updateBusinessUI();
+    } else {
+        showToast("Uang tidak cukup!");
+    }
+}
+
+
 </script>
 </body>
 </html>
