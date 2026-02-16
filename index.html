@@ -218,12 +218,7 @@
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
         .hud-avatar-circle img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
-        .hud-role-icon {
-            position: absolute; bottom: -2px; right: -2px; width: 26px; height: 26px;
-            background: var(--secondary); border: 2px solid #fff; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2;
-        }
+        
         .hud-info-bars { display: flex; flex-direction: column; gap: 6px; width: 130px; }
         .hud-level-text {
             font-size: 14px; font-weight: 800; color: #fff;
@@ -1648,7 +1643,7 @@ button, .round-btn, .d-btn, .auth-btn {
 /* --- NEW: MINIMAP STYLES --- */
 #minimap-container {
     position: absolute;
-    top: 90px; /* Di bawah HUD baru */
+    top: 110px; /* Di bawah HUD baru */
     left: 20px;
     width: 120px;
     height: 90px; /* Aspect Ratio mendekati map */
@@ -3162,8 +3157,6 @@ button, .round-btn, .d-btn, .auth-btn {
                     <div class="hud-avatar-circle">
                         <img id="hud-avatar-img" src="images/boy.png" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjAiIGZpbGw9IiMzYjgyZjYiLz48L3N2Zz4='">
                     </div>
-                    <!-- Role Icon Indicator -->
-                    <div class="hud-role-icon" id="hud-role-icon" title="Role Aktif">?</div>
                 </div>
                 <div class="hud-info-bars">
                     <div class="hud-level-text">LV <span id="level-display">1</span> - <span id="hud-name">Player</span></div>
@@ -11572,28 +11565,6 @@ function updateHUDInfo() {
     // FIX: UPDATE MONEY DISPLAY AGAR SINKRON
     // Menggunakan locale 'id-ID' agar format ribuan menggunakan titik (contoh: 36.000)
     document.getElementById('money-display').innerText = p.money.toLocaleString('id-ID');
-
-    // Role Icon & Color Logic
-    const roleIcon = document.getElementById('hud-role-icon');
-    let icon = "?";
-    let color = "#cbd5e1"; // Default Gray
-
-    if(p.role === 'worker') { icon = "💪"; color = "#ef4444"; } // Red
-    else if(p.role === 'student') { icon = "🧠"; color = "#3b82f6"; } // Blue
-    else if(p.role === 'entrepreneur') { icon = "📈"; color = "#10b981"; } // Green
-    else if(p.role === 'family') { icon = "❤️"; color = "#d946ef"; } // Pink
-    
-    roleIcon.innerText = icon;
-    roleIcon.style.backgroundColor = color;
-
-    // Update Stats Matrix
-    // UPDATE: DIHAPUS KARENA ELEMENT SUDAH HILANG DARI HTML
-    /*
-    document.getElementById('stat-str').innerText = p.str;
-    document.getElementById('stat-int').innerText = p.int;
-    document.getElementById('stat-rep').innerText = p.reputation;
-    document.getElementById('stat-biz').innerText = p.biz;
-    */
 
     // Update Bars Width
     const hpPct = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
