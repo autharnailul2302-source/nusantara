@@ -3002,7 +3002,8 @@ button, .round-btn, .d-btn, .auth-btn {
 
     <!-- NEW: STUDENT PROFILE MODAL (KARTU PELAJAR) -->
     <div id="profile-modal" class="minigame-overlay">
-        <div class="journal-box" style="width: 90%; max-width: 400px; padding: 0; overflow: hidden; border: none; background: transparent; box-shadow: none;">
+        <!-- FIX: Ubah overflow:hidden menjadi overflow-y:auto dan tambahkan max-height agar bisa di-scroll di HP -->
+        <div class="journal-box" style="width: 90%; max-width: 400px; padding: 0; max-height: 90vh; overflow-y: auto; border: none; background: transparent; box-shadow: none; -webkit-overflow-scrolling: touch;">
             <!-- ID Card Container -->
             <div style="background: #f8fafc; border-radius: 16px; border: 4px solid #334155; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Exo 2', sans-serif;">
                 
@@ -22578,16 +22579,21 @@ function togglePhone() {
         const h = Math.floor(STATE.time/100).toString().padStart(2,'0');
         const m = Math.floor((STATE.time%100)*0.6).toString().padStart(2,'0');
         document.getElementById('phone-clock').innerText = `${h}:${m}`;
-        // Reset View
+        
+        // FIX: Reset View Pastikan Home nyala, yang lain MATI semua
         document.getElementById('phone-screen-home').style.display = 'block';
         document.getElementById('phone-screen-sosmed').style.display = 'none';
+        document.getElementById('phone-screen-messages').style.display = 'none';
+        document.getElementById('phone-screen-bank').style.display = 'none';
     }
 }
 
 // --- FIX: FUNGSI TOMBOL HOME/BACK DI HP ---
 function closePhoneApp() {
-    // Sembunyikan aplikasi yang sedang terbuka
+    // Sembunyikan SEMUA aplikasi yang mungkin terbuka
     document.getElementById('phone-screen-sosmed').style.display = 'none';
+    document.getElementById('phone-screen-messages').style.display = 'none';
+    document.getElementById('phone-screen-bank').style.display = 'none';
     
     // Tampilkan kembali layar utama HP
     document.getElementById('phone-screen-home').style.display = 'block';
