@@ -248,18 +248,9 @@
         .hp-fill { background: linear-gradient(180deg, #f87171, #dc2626); }
 
 
-        /* 2. SECTION STATS (Tengah) */
-        .hud-stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px 15px;
-            background: rgba(15, 23, 42, 0.6);
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(2px);
-            pointer-events: auto; /* FIX: Kembalikan interaksi khusus untuk elemen ini */
-        }
+        /* 2. SECTION STATS (Tengah) - DIHAPUS SESUAI REQUEST */
+        /* .hud-stats-grid { display: none; } */ 
+        /* CSS ini dihapus karena HTML-nya juga dihapus */
 
         .stat-pill {
             display: flex; align-items: center; gap: 5px;
@@ -423,16 +414,7 @@
             display: none !important; 
         }
 
-        /* --- NEW: COLLAPSIBLE HUD STYLES --- */
-         #hud-toggle-btn {
-            position: absolute; top: 95px; left: 50%; transform: translateX(-50%);
-            width: 40px; height: 25px; background: #fff; border: 2px solid var(--accent);
-            border-top: none; border-radius: 0 0 15px 15px; color: var(--accent);
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 60; font-size: 14px; font-weight: bold;
-            box-shadow: 0 4px 5px rgba(0,0,0,0.1); pointer-events: auto;
-        }
-		 #hud-toggle-btn:hover { background: var(--accent); color: white; height: 30px; }
+        
         .hud-top.compact-mode .hud-stats-grid { opacity: 0; transform: translateY(-20px) scale(0.9); pointer-events: none; visibility: hidden; }
         .hud-top.compact-mode .hud-info-bars { opacity: 0; width: 0; margin: 0; overflow: hidden; }
         .hud-top.compact-mode ~ #hud-toggle-btn { top: 0; border: 2px solid var(--accent); border-top: none; background: #fff; }
@@ -2077,12 +2059,14 @@ button, .round-btn, .d-btn, .auth-btn {
                         <span class="app-label">Sosmed</span>
                     </div>
                     <!-- App Pesan -->
-                    <div class="app-icon" onclick="openMessageArchiveFromPhone()">
+                    <!-- FIX: Ubah onclick dari openMessageArchiveFromPhone() menjadi openMessagesApp() -->
+                    <div class="app-icon" onclick="openMessagesApp()">
                         <div class="app-btn" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;">💬</div>
                         <span class="app-label">Pesan</span>
                     </div>
                     <!-- App Bank -->
-                    <div class="app-icon" onclick="showToast('Saldo: ' + STATE.player.money + ' G')">
+                    <!-- UPDATE: Sekarang membuka Aplikasi Bank sungguhan, bukan cuma toast -->
+                    <div class="app-icon" onclick="openBankApp()">
                         <div class="app-btn" style="background: linear-gradient(135deg, #10b981, #047857); color: white;">🏦</div>
                         <span class="app-label">M-Bank</span>
                     </div>
@@ -2103,7 +2087,64 @@ button, .round-btn, .d-btn, .auth-btn {
                     </div>
                 </div>
             </div>
+			
+			 <!-- NEW: App Messages View (Hidden by default) -->
+            <div id="phone-screen-messages" class="phone-content" style="display: none; padding: 0; background: #f8fafc;">
+                <div class="sosmed-feed" style="background: #f1f5f9;">
+                    <div class="feed-header" style="color: #3b82f6; border-bottom: 1px solid #cbd5e1;">
+                        <span onclick="closePhoneApp()" style="cursor:pointer; margin-right:10px; font-size:18px;">⬅️</span>
+                        <span style="font-size: 18px;">💬</span> KOTAK MASUK
+                    </div>
+                    <div id="phone-messages-list" style="padding: 5px;">
+                        <!-- List pesan akan diinject di sini -->
+                    </div>
+                </div>
+            </div>
+			
+			 <!-- NEW: App Banking View (Hidden by default) -->
+            <div id="phone-screen-bank" class="phone-content" style="display: none; padding: 0; background: #f0fdf4;">
+                <div class="sosmed-feed" style="background: #f0fdf4; min-height: 100%;">
+                    <div class="feed-header" style="color: #059669; border-bottom: 1px solid #bbf7d0;">
+                        <span onclick="closePhoneApp()" style="cursor:pointer; margin-right:10px; font-size:18px;">⬅️</span>
+                        <span style="font-size: 18px;">🏦</span> M-BANK
+                    </div>
+                    
+                    <!-- Kartu Saldo -->
+                    <div class="bank-card">
+                        <div style="font-size: 10px; opacity: 0.9;">SALDO AKTIF</div>
+                        <div style="font-size: 22px; font-weight: bold; margin: 5px 0;">Rp <span id="bank-balance-display">0</span></div>
+                        <div style="font-size: 9px; opacity: 0.8; margin-top: 10px;">REKENING UTAMA • 123-456-7890</div>
+                    </div>
 
+                    <!-- Menu Cepat -->
+                    <div class="bank-menu-grid">
+                        <div class="bank-menu-item" onclick="showToast('Fitur Transfer Segera Hadir')">
+                            <span class="bank-icon">💸</span>
+                            <span class="bank-label">Transfer</span>
+                        </div>
+                        <div class="bank-menu-item" onclick="showToast('Semua Tagihan Lunas')">
+                            <span class="bank-icon">🧾</span>
+                            <span class="bank-label">Tagihan</span>
+                        </div>
+                        <div class="bank-menu-item" onclick="showToast('Scan QRIS...')">
+                            <span class="bank-icon">📷</span>
+                            <span class="bank-label">QRIS</span>
+                        </div>
+                        <div class="bank-menu-item" onclick="showToast('Top Up E-Wallet')">
+                            <span class="bank-icon">💳</span>
+                            <span class="bank-label">Top Up</span>
+                        </div>
+                    </div>
+
+                    <!-- Mutasi -->
+                    <div style="background: white; border-radius: 12px 12px 0 0; padding: 15px; min-height: 200px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 10px;">MUTASI TERAKHIR</div>
+                        <div id="bank-history-list">
+                            <!-- Diisi JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Home Bar -->
             <div style="background: #0f172a; padding: 10px;">
                 <div class="phone-home-btn" onclick="closePhoneApp()"></div>
@@ -2964,6 +3005,106 @@ button, .round-btn, .d-btn, .auth-btn {
         </div>
     </div>
 
+    <!-- NEW: STUDENT PROFILE MODAL (KARTU PELAJAR) -->
+    <div id="profile-modal" class="minigame-overlay">
+        <div class="journal-box" style="width: 90%; max-width: 400px; padding: 0; overflow: hidden; border: none; background: transparent; box-shadow: none;">
+            <!-- ID Card Container -->
+            <div style="background: #f8fafc; border-radius: 16px; border: 4px solid #334155; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Exo 2', sans-serif;">
+                
+                <!-- Header (Warna Dinamis Sesuai Role) -->
+                <div id="profile-header" style="background: #334155; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b;">
+                    <div style="font-family: 'Fredoka', sans-serif; font-size: 20px; letter-spacing: 1px;">KARTU PELAJAR</div>
+                    <div style="font-size: 10px; opacity: 0.8; font-family: monospace;">ID: <span id="profile-id">---</span></div>
+                </div>
+
+                <div style="padding: 20px; display: flex; gap: 15px; flex-direction: column; background: #fff;">
+                    
+                    <!-- Top Section: Photo & Basic Info -->
+                    <div style="display: flex; gap: 15px;">
+                        <!-- Avatar Box -->
+                        <div style="width: 90px; height: 110px; background: #e2e8f0; border: 2px solid #cbd5e1; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+                            <img id="profile-img" src="" style="width: 100%; height: 100%; object-fit: cover;">
+                            <!-- Watermark -->
+                            <div style="position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); color: white; font-size: 8px; text-align: center;">RESMI</div>
+                        </div>
+                        
+                        <!-- Info Box -->
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div id="profile-name" style="font-weight: 900; font-size: 18px; color: #0f172a; line-height: 1.2; margin-bottom: 4px;">Nama Siswa</div>
+                                <div id="profile-role-badge" style="display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; background: #94a3b8; color: white;">NOVICE</div>
+                                <div style="font-size: 10px; color: #64748b; margin-top: 4px;">SMK Negeri 1 Brondong</div>
+                            </div>
+                            
+                            <!-- Level Bar -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; color: #334155; margin-bottom: 2px;">
+                                    <span>LV <span id="profile-lvl">1</span></span>
+                                    <span id="profile-exp-txt" style="color: #64748b;">0/100</span>
+                                </div>
+                                <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                                    <div id="profile-exp-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 5px 0;">
+
+                    <!-- Stats Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <!-- STR -->
+                        <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 8px; display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 20px;">💪</div>
+                            <div>
+                                <div style="font-size: 9px; color: #991b1b; font-weight: bold; letter-spacing: 0.5px;">STRENGTH</div>
+                                <div id="profile-str" style="font-size: 16px; font-weight: 900; color: #ef4444;">0</div>
+                            </div>
+                        </div>
+                        <!-- INT -->
+                        <div style="background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 8px; display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 20px;">🧠</div>
+                            <div>
+                                <div style="font-size: 9px; color: #1e40af; font-weight: bold; letter-spacing: 0.5px;">INTELLIGENCE</div>
+                                <div id="profile-int" style="font-size: 16px; font-weight: 900; color: #3b82f6;">0</div>
+                            </div>
+                        </div>
+                        <!-- BIZ -->
+                        <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 8px; display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 20px;">📈</div>
+                            <div>
+                                <div style="font-size: 9px; color: #166534; font-weight: bold; letter-spacing: 0.5px;">BUSINESS</div>
+                                <div id="profile-biz" style="font-size: 16px; font-weight: 900; color: #10b981;">0</div>
+                            </div>
+                        </div>
+                        <!-- REP -->
+                        <div style="background: #fdf4ff; border: 1px solid #f0abfc; border-radius: 8px; padding: 8px; display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 20px;">❤️</div>
+                            <div>
+                                <div style="font-size: 9px; color: #86198f; font-weight: bold; letter-spacing: 0.5px;">REPUTATION</div>
+                                <div id="profile-rep" style="font-size: 16px; font-weight: 900; color: #d946ef;">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Info -->
+                    <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-around;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 10px; color: #64748b;">TOTAL ASET</div>
+                            <div style="font-weight: bold; color: #d97706;">💰 <span id="profile-money">0</span> G</div>
+                        </div>
+                        <div style="text-align: center; border-left: 1px solid #cbd5e1; padding-left: 15px;">
+                            <div style="font-size: 10px; color: #64748b;">STATUS WAJIB</div>
+                            <div style="font-weight: bold; color: #0f172a;">📝 <span id="profile-jurnal">0</span> Entri</div>
+                        </div>
+                    </div>
+
+                    <button class="main-menu-btn" onclick="closeProfileModal()" style="width: 100%; font-size: 14px; padding: 12px; margin: 0; background: #334155; border-color: #475569; color: white;">TUTUP PROFIL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- NEW: CALENDAR MODAL (GRID STYLE) -->
     <div id="calendar-modal" class="minigame-overlay">
         <div class="journal-box" style="width: 420px; max-width: 95%; padding: 20px; max-height: 90vh;">
@@ -3015,8 +3156,8 @@ button, .round-btn, .d-btn, .auth-btn {
         <!-- REDESIGNED HUD (3 COLUMNS) -->
         <div class="hud-top" id="main-hud"> <!-- Added ID -->
             <!-- 1. LEFT: PROFILE & BARS -->
-            <!-- UPDATE: Menambahkan ID 'hud-profile-box' untuk tutorial -->
-            <div class="hud-profile-section" id="hud-profile-box">
+            <!-- UPDATE: Menambahkan onclick untuk membuka profil -->
+            <div class="hud-profile-section" id="hud-profile-box" onclick="openProfileModal()" style="cursor: pointer;">
                 <div class="hud-avatar-wrapper">
                     <div class="hud-avatar-circle">
                         <img id="hud-avatar-img" src="images/boy.png" alt="Avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjAiIGZpbGw9IiMzYjgyZjYiLz48L3N2Zz4='">
@@ -3048,21 +3189,8 @@ button, .round-btn, .d-btn, .auth-btn {
             </div>
 
             <!-- 2. CENTER: CORE STATS MATRIX -->
-            <!-- UPDATE: Tambahkan ID 'hud-stats-box' untuk tutorial -->
-            <div class="hud-stats-grid" id="hud-stats-box">
-                <div class="stat-pill ic-str" title="Strength (Jalur Pekerja)">
-                    <span>💪 STR</span> <span class="stat-val" id="stat-str">5</span>
-                </div>
-                <div class="stat-pill ic-int" title="Intelligence (Jalur Mahasiswa)">
-                    <span>🧠 INT</span> <span class="stat-val" id="stat-int">5</span>
-                </div>
-                <div class="stat-pill ic-rep" title="Reputation (Jalur Keluarga)">
-                    <span>❤️ REP</span> <span class="stat-val" id="stat-rep">0</span>
-                </div>
-                <div class="stat-pill ic-biz" title="Business Skill (Jalur Wirausaha)">
-                    <span>📈 BIZ</span> <span class="stat-val" id="stat-biz">0</span>
-                </div>
-            </div>
+            <!-- UPDATE: DIHAPUS KARENA SUDAH PINDAH KE MENU PROFIL -->
+            <!-- <div class="hud-stats-grid" id="hud-stats-box"> ... </div> -->
 
             <!-- 3. RIGHT: META INFO (Time/Money) -->
             <div class="hud-meta-section">
@@ -9341,6 +9469,9 @@ async function initGame() {
             STATE.player.dailyMonsterKills = saved.dailyMonsterKills || 0;
             STATE.player.dailyTalkCount = saved.dailyTalkCount || 0; // Load Talk Count
             
+            // --- FIX: LOAD DATA VIRAL AGAR TIDAK HILANG SAAT RELOAD ---
+            STATE.viral = saved.viral || { active: null, day: 0 };
+
             STATE.player.attackCooldown = 0;
             STATE.player.isAttacking = false;
             
@@ -9778,12 +9909,12 @@ function tutorialStep_Calendar() {
 }
 
 function tutorialStep_Stats() {
-    // STEP 7: HUD STATS
-    // Gunakan showTutorialFocus untuk elemen UI
-    showTutorialFocus('hud-stats-box', "STATUS");
+    // STEP 7: STATUS INFO
+    // UPDATE: Fokus ke Profil karena Stats Grid sudah dihapus
+    showTutorialFocus('hud-profile-box', "STATUS");
 
     showDialogue("TUTORIAL (7/12)", 
-        "📊 **STATUS KARAKTER (HUD)**:\nPerhatikan kotak di tengah atas layar ini!\n\n💪 **STR**: Kekuatan Fisik (Pekerja)\n🧠 **INT**: Kecerdasan (Mahasiswa)\n❤️ **REP**: Reputasi Sosial (Keluarga)\n📈 **BIZ**: Skill Bisnis (Wirausaha)\n\nTingkatkan status ini sesuai **Role** yang kamu pilih nanti!", 
+        "📊 **STATUS KARAKTER**:\nKlik foto profilmu (di sini 👆) untuk melihat Kartu Pelajar & Status Lengkap!\n\n💪 **STR**: Kekuatan Fisik\n🧠 **INT**: Kecerdasan\n❤️ **REP**: Reputasi\n📈 **BIZ**: Bisnis\n\nTingkatkan sesuai Role-mu!", 
         [{text: "Siap, Paham!", action: () => {
             tutorialStep_ExpEnergy(); // Lanjut ke EXP & Energy (NEW)
         }}]
@@ -11456,10 +11587,13 @@ function updateHUDInfo() {
     roleIcon.style.backgroundColor = color;
 
     // Update Stats Matrix
+    // UPDATE: DIHAPUS KARENA ELEMENT SUDAH HILANG DARI HTML
+    /*
     document.getElementById('stat-str').innerText = p.str;
     document.getElementById('stat-int').innerText = p.int;
     document.getElementById('stat-rep').innerText = p.reputation;
     document.getElementById('stat-biz').innerText = p.biz;
+    */
 
     // Update Bars Width
     const hpPct = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
@@ -11549,6 +11683,73 @@ function toggleInventory() {
         screen.style.display = 'none';
         STATE.screen = 'play'; // Resume game
     }
+}
+
+// --- NEW FUNCTION: OPEN PROFILE MODAL ---
+function openProfileModal() {
+    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+    
+    const p = STATE.player;
+    const userData = DataService.user || { name: "Player", email: "Guest" };
+    
+    // 1. Set Basic Info
+    document.getElementById('profile-name').innerText = userData.name || "Siswa";
+    // Gunakan 6 karakter awal email sebagai ID simulasi
+    document.getElementById('profile-id').innerText = (userData.email || "000000").substring(0, 6).toUpperCase();
+    
+    // Set Avatar yang sama dengan HUD
+    const hudImg = document.getElementById('hud-avatar-img').src;
+    document.getElementById('profile-img').src = hudImg;
+
+    // 2. Set Role Badge & Header Color
+    const roleBadge = document.getElementById('profile-role-badge');
+    const header = document.getElementById('profile-header');
+    let roleText = "NOVICE";
+    let roleColor = "#64748b"; // Default Grey
+    let headerColor = "#334155"; // Default Dark
+
+    if (p.role === 'worker') { 
+        roleText = "PEKERJA (FIGHTER)"; 
+        roleColor = "#ef4444"; headerColor = "#7f1d1d"; 
+    } else if (p.role === 'student') { 
+        roleText = "MAHASISWA (MAGE)"; 
+        roleColor = "#3b82f6"; headerColor = "#1e3a8a"; 
+        if (p.major) roleText += ` - ${p.major.toUpperCase()}`;
+    } else if (p.role === 'entrepreneur') { 
+        roleText = "WIRAUSAHA (SUPPORT)"; 
+        roleColor = "#10b981"; headerColor = "#064e3b"; 
+    } else if (p.role === 'family') { 
+        roleText = "KELUARGA (TANKER)"; 
+        roleColor = "#d946ef"; headerColor = "#701a75"; 
+    }
+
+    roleBadge.innerText = roleText;
+    roleBadge.style.background = roleColor;
+    header.style.background = headerColor;
+    header.style.borderColor = roleColor; // Border bawah header ikut warna role
+
+    // 3. Set Stats
+    document.getElementById('profile-lvl').innerText = p.level;
+    document.getElementById('profile-str').innerText = p.str;
+    document.getElementById('profile-int').innerText = p.int;
+    document.getElementById('profile-biz').innerText = p.biz;
+    document.getElementById('profile-rep').innerText = p.reputation;
+    document.getElementById('profile-money').innerText = p.money.toLocaleString('id-ID');
+    document.getElementById('profile-jurnal').innerText = (p.reflections || []).length;
+
+    // 4. Update EXP Bar
+    const expPct = Math.floor((p.exp / p.maxExp) * 100);
+    document.getElementById('profile-exp-bar').style.width = expPct + "%";
+    document.getElementById('profile-exp-txt').innerText = `${Math.floor(p.exp)}/${p.maxExp}`;
+
+    // Show Modal
+    document.getElementById('profile-modal').style.display = 'flex';
+    STATE.screen = 'modal';
+}
+
+function closeProfileModal() {
+    document.getElementById('profile-modal').style.display = 'none';
+    STATE.screen = 'play';
 }
 
 // --- NEW FUNCTION: UPDATE STATUS DI INVENTORY ---
@@ -12118,6 +12319,9 @@ function update() {
         }
 
         randomizeWeather();
+        
+        // --- FIX: PASTIKAN TREN HARIAN DIGENERATE SAAT GANTI HARI ---
+        generateDailyTrend();
         
         // --- NEW: RESPAWN BUNGA LIAR SETIAP HARI ---
         spawnWildFlowers();
@@ -15146,6 +15350,278 @@ function interactNPC(npc) {
         showDialogue(npc.name, greetingText, opts, npc.imgSrc);
     }
     
+    // --- FIX: INTERAKSI ANAK KECIL (BOCAH & GADIS) ---
+    // Menangani NPC dengan ID berawalan 'child_' (kecuali child_blacksmith yang sudah dihandle di atas)
+    else if (npc.id.startsWith('child_')) {
+        let dialogText = "";
+        let childOpts = [];
+
+        // 1. BOCAH LAKI-LAKI (NAKAL/AKTIF)
+        if (npc.id.includes('boy')) { 
+            const boyTalks = [
+                "Woi! Awas, aku lagi jadi Pesawat Jet! Ngenggg! ✈️",
+                "Kak, pernah liat hantu di Dungeon nggak? Katanya serem lho...",
+                "Cita-citaku mau jadi Guild Master terkuat se-Nusantara!",
+                "Sst... jangan bilang ibuku aku main di pinggir laut ya.",
+                "Aku nemu kerang bagus tadi, tapi capitnya sakit! Aww!"
+            ];
+            dialogText = boyTalks[Math.floor(Math.random() * boyTalks.length)];
+            
+            childOpts = [
+                {text: "🏃 Ajak Main Kejar-kejaran (Energi -5)", action: () => {
+                    if(STATE.player.energy >= 5) {
+                        STATE.player.energy -= 5;
+                        showToast("Hosh... Hosh... Kamu lelah tapi senang!");
+                        
+                        // Efek Visual
+                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                        createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fff');
+
+                        showDialogue(npc.name, "Hahaha! Kakak lambat banget! Wleee! 😝\n(Bocah itu berlari kegirangan)", [{text:"Awas ya nanti!", action:closeDialogue}], npc.imgSrc);
+                    } else showToast("Kamu terlalu lelah untuk lari.");
+                }},
+                {text: "Nasehati", action: () => {
+                     showDialogue(npc.name, "Iya iya bawel... mirip bapakku aja. 🙄", [{text:"Hhh..", action:closeDialogue}], npc.imgSrc);
+                }},
+                {text: "Dah", action: closeDialogue}
+            ];
+        } 
+        // 2. GADIS KECIL (MANIS/POLOS)
+        else { 
+            const girlTalks = [
+                "Kakak, liat deh pita rambutku. Bagus nggak?",
+                "Aku suka bunga. Baunya harum sekali~ 🌸",
+                "Kalau besar nanti aku mau jadi Dokter seperti Dokter Budi!",
+                "Bonekaku ketinggalan di rumah... sedih deh.",
+                "Langitnya biru ya... seperti warna bajumu."
+            ];
+            dialogText = girlTalks[Math.floor(Math.random() * girlTalks.length)];
+            
+            childOpts = [
+                {text: "🥰 Puji Dia", action: () => {
+                    // Tambah sedikit mood/partikel
+                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#f472b6');
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    
+                    showDialogue(npc.name, "Hihihi, makasih Kakak! Kakak baik deh. ❤️", [{text:"Sama-sama", action:closeDialogue}], npc.imgSrc);
+                }},
+                 {text: "🍫 Kasih Coklat (Dari Tas)", action: () => {
+                    if ((STATE.player.inventory['coklat'] || 0) > 0) {
+                        STATE.player.inventory['coklat']--;
+                        if(STATE.player.inventory['coklat']<=0) delete STATE.player.inventory['coklat'];
+                        
+                        showToast("Memberi Coklat (-1)");
+                        createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                        if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                        
+                        showDialogue(npc.name, "Wahhh! Coklat! Nyam nyam... Enak banget! Makasih Kakak! \n(Dia terlihat sangat bahagia)", [{text:"Senangnya", action:closeDialogue}], npc.imgSrc);
+                    } else {
+                        showToast("Kamu tidak punya Coklat di tas.");
+                    }
+                }},
+                {text: "Dah", action: closeDialogue}
+            ];
+        }
+        
+        showDialogue(npc.name, dialogText, childOpts, npc.imgSrc);
+    }
+
+    // --- FIX: MENGEMBALIKAN INTERAKSI AISYAH & MARIA (TOLERANSI) ---
+    else if (npc.id === 'cewek_islam' || npc.id === 'cewek_kristen') {
+        const chats = NPC_RELIGIOUS_CHATS[npc.id];
+        let chatText = "Damai sejahtera untukmu.";
+        
+        if (chats && chats.length > 0) {
+            chatText = chats[Math.floor(Math.random() * chats.length)];
+        }
+        
+        // Efek Visual Damai (Biru Muda/Putih)
+        createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#e0f2fe');
+
+        showDialogue(npc.name, chatText, [
+            {text: "Indahnya Toleransi 🤝", action: () => {
+                // Sedikit reward moral/reputasi (Peluang 50%)
+                if(Math.random() < 0.5) {
+                    STATE.player.reputation += 1;
+                    showToast("Hati menjadi tenang (+1 Reputasi)");
+                }
+                closeDialogue();
+            }},
+            {text: "Terima kasih nasihatnya", action: closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- FIX: INTERAKSI SATPAM & NPC UNIK LAINNYA (YANG SEMPAT HILANG) ---
+    
+    // 1. SATPAM KAMPUS
+    else if (npc.id === 'satpam') {
+        const isNight = STATE.time >= 1800 || STATE.time < 600;
+        let satpamText = "Selamat pagi. Tunjukkan kartu mahasiswamu jika ingin masuk.";
+        let satpamOpts = [{text: "Siap Pak", action: closeDialogue}];
+
+        if (isNight) {
+            satpamText = "Kampus sudah tutup. Dilarang keluyuran malam-malam di sini, banyak nyamuk.";
+        } else {
+            satpamOpts.push({text: "Lapor Situasi", action: () => showDialogue("SATPAM", "Aman terkendali. Saya memantau area ini 24 jam. Jangan lupa kunci ganda kendaraanmu.", [{text:"Siap", action:closeDialogue}], npc.imgSrc)});
+        }
+        
+        showDialogue("SATPAM", satpamText, satpamOpts, npc.imgSrc);
+    }
+
+    // 2. SARJANA (TIPS KULIAH)
+    else if (npc.id === 'sarjana_tekno') {
+        showDialogue(npc.name, "Jurusan Teknologi itu masa depan! 💻\nFokus naikkan INT untuk coding. Kalau lulus, gajinya besar lho.", [{text:"Wah menarik", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'sarjana_sejarah') {
+        showDialogue(npc.name, "Sejarah mengajarkan kebijaksanaan. 📜\nBanyak rahasia pulau ini yang tertulis di prasasti kuno. Kamu harus rajin ke perpustakaan.", [{text:"Siap Kak", action:closeDialogue}], npc.imgSrc);
+    }
+
+    // 3. NELAYAN & PEMANCING & DUYUNG
+    else if (npc.id === 'nelayan') {
+        showDialogue(npc.name, "Ombak hari ini tenang. Ikan-ikan sedang lapar.\nKalau mau mancing, beli pancingan dulu atau pakai punyaku di ujung dermaga.", [{text:"Oke Pak", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'pemancing_misterius') {
+        showDialogue(npc.name, "Sst... Ikan legendaris hanya muncul saat hujan deras.\nJangan bilang siapa-siapa ya.", [{text:"Rahasia aman", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'putriduyung') {
+        showDialogue(npc.name, "Halo manusia darat... 🧜‍♀️\nApakah di atas sana lebih indah dari lautan? Aku suka melihat kakimu.", [
+            {text:"Kamu cantik", action:() => {
+                updateRelationship(npc, 2, "Digombalin");
+                showDialogue(npc.name, "Hihihi... kamu bisa aja. Hati-hati jangan sampai tenggelam ya. ❤️", [{text:"Dah", action:closeDialogue}], npc.imgSrc);
+            }}, 
+            {text:"Pergi", action:closeDialogue}
+        ], npc.imgSrc);
+    }
+    else if (npc.id.includes('swimmer')) {
+        showDialogue(npc.name, "Byurr! Airnya segar sekali! 🌊\nAyo nyebur, jangan takut basah!", [{text:"Nanti saja", action:closeDialogue}], npc.imgSrc);
+    }
+
+    // 4. SENIMAN & PENYANYI
+    else if (npc.id === 'seniman') {
+        showDialogue(npc.name, "Warna langit sore ini... inspirasi yang sempurna untuk lukisan abstrakku. 🎨", [{text:"Keren", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'penyanyi') {
+        showDialogue(npc.name, "Do Re Mi Fa Sol... 🎵\nSuaraku sedang serak, butuh air jahe hangat.", [{text:"Semangat", action:closeDialogue}], npc.imgSrc);
+    }
+
+    // 5. NPC INTERIOR (BLACKSMITH, MARINE, DLL)
+    else if (npc.id === 'blacksmith') {
+        showDialogue("KEPALA BENGKEL", "Besi yang bagus butuh tempaan yang panas! 🔥\nSayang sekali kamu belum bawa bahan Legendary untuk ditempa.", [{text:"Nanti saya cari", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'marine_tailor') {
+        showDialogue("MARINE", "Halo! Mau jahit baju baru? 🧵\nBawakan aku Kain Sutra, nanti kubuatkan yang spesial.", [{text:"Lihat Koleksi", action:() => {
+            showDialogue("MARINE", "Saat ini stok bajuku sedang habis diborong Sultan. Cek lagi nanti ya!", [{text:"Yah..", action:closeDialogue}], npc.imgSrc);
+        }}, {text:"Tutup", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'librarian') {
+        showDialogue("PUSTAKAWAN", "Sst! Harap tenang di perpustakaan. 🤫\nBuku-buku ada di rak, silakan baca tapi jangan dibawa pulang.", [{text:"Maaf Bu", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'kutubuku') {
+        showDialogue("SENIOR KUTUBUKU", "Skripsiku... dimana draft skripsiku... 😭\nAku tidak bisa lulus kalau hilang... (Dicuri Monster)", [{text:"Sabar kak", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'aya_twin') {
+        showDialogue("AYA", "Kak Ayu lagi keluar ya? Aku lebih suka di rumah baca novel.\nJangan bilang Kak Ayu aku habisin kuenya. 🍰", [{text:"Rahasia aman", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'penghulu') {
+        showDialogue("BAPAK MODIN", "Pernikahan adalah ibadah terpanjang. Sudah siap lahir batin?\nJangan lupa bawa Cincin dan Pasanganmu kemari.", [{text:"Insyaallah", action:closeDialogue}], npc.imgSrc);
+    }
+
+    // 6. DUNGEON & MISTIS
+    else if (npc.id === 'penjagadungeon') {
+        showDialogue("PENJAGA", "Berhenti! Dungeon di depan sangat berbahaya. ⚔️\nHanya petualang dengan STR tinggi yang bisa bertahan.", [{text:"Saya berani!", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'monster_skripsi') {
+        showDialogue("PENCURI NASKAH", "Grrr... Mau ambil skripsi ini? 👹\nLangkahi dulu mayatku!", [
+            {text:"SERANG! (Mulai Battle)", action: () => {
+                closeDialogue();
+                startRuinsBattle();
+            }},
+            {text:"Kabur", action:closeDialogue}
+        ], npc.imgSrc);
+    }
+    else if (npc.id === 'dewi_arsa') {
+        showDialogue("DEWI ARSA", "Cahaya bulan memberkatimu, anak muda. 🌙\nJaga hatimu tetap murni di tengah kerasnya dunia.", [{text:"Terima kasih Dewi", action:closeDialogue}], npc.imgSrc);
+    }
+    else if (npc.id === 'dewi_roro') {
+        showDialogue("DEWI RORO", "Candi ini menjaga keseimbangan roh. 🌸\nJangan kotori tempat ini dengan niat jahat.", [{text:"Baik Nyai", action:closeDialogue}], npc.imgSrc);
+    }
+    
+    // 7. KURCACI & PERI (EVENT)
+    else if (npc.id === 'kurcaci_tani') {
+        showDialogue("KURCACI TANI", "Hohoho! Panen raya! 🌾\nKalau kamu rajin, aku bantu siram tanamanmu tiap pagi!", [
+            {text: "Pekerjakan (1000G)", action: () => {
+                if(STATE.player.money >= 1000) {
+                    STATE.player.money -= 1000;
+                    STATE.player.hiredDwarf = true;
+                    showToast("Kurcaci Tani Dipekerjakan!");
+                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#fbbf24');
+                    manualSave();
+                    closeDialogue();
+                } else showToast("Uang kurang!");
+            }}, 
+            {text:"Nanti", action:closeDialogue}
+        ], npc.imgSrc);
+    }
+    else if (npc.id === 'peripanen') {
+        showDialogue("PERI PANEN", "Wangi anggur musim gugur... 🍇\nAku bisa memanen tanamanmu otomatis jika kau mau.", [
+             {text: "Pekerjakan (2000G)", action: () => {
+                if(STATE.player.money >= 2000) {
+                    STATE.player.money -= 2000;
+                    STATE.player.hiredFairy = true;
+                    showToast("Peri Panen Dipekerjakan!");
+                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#f472b6');
+                    manualSave();
+                    closeDialogue();
+                } else showToast("Uang kurang!");
+            }}, 
+            {text:"Nanti", action:closeDialogue}
+        ], npc.imgSrc);
+    }
+
+    // --- FIX: MENGEMBALIKAN INTERAKSI HEWAN (YANG SEMPAT HILANG) ---
+    else if (npc.type === 'animal') {
+        let soundText = "";
+        let reaction = "";
+        
+        // Tentukan Suara & Reaksi berdasarkan ID Hewan
+        if (npc.id.includes('ayam')) { 
+            soundText = "Petok! Petok! 🐔"; 
+            reaction = "Ayam itu mengepakkan sayapnya dengan riang.";
+        } else if (npc.id.includes('sapi')) { 
+            soundText = "Moooo... 🐄"; 
+            reaction = "Sapi itu mengunyah rumput sambil menatapmu.";
+        } else if (npc.id.includes('kambing')) { 
+            soundText = "Mbeeeek! 🐐"; 
+            reaction = "Kambing itu menyeruduk pelan kakimu (Manja).";
+        } else if (npc.id.includes('kuda')) { 
+            soundText = "Hiihihihi! 🐎"; 
+            reaction = "Kuda itu meringkik gagah.";
+        } else {
+            soundText = "..."; 
+            reaction = "Hewan itu memperhatikanmu.";
+        }
+
+        // Mainkan suara hewan jika ada
+        if(typeof AudioService !== 'undefined' && npc.sound) {
+            AudioService.playSFX(npc.sound);
+        }
+
+        showDialogue(npc.name.toUpperCase(), `"${soundText}"\n\n(${reaction})`, [
+            {
+                text: "Elus dengan Sayang 👋❤️", 
+                action: () => {
+                    // Efek Visual Hati
+                    createParticle(npc.x*TILE_SIZE, npc.y*TILE_SIZE, '#ec4899'); 
+                    showToast(`${npc.name} merasa disayang!`);
+                    
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    
+                    closeDialogue();
+                }
+            },
+            {text: "Tinggalkan", action: closeDialogue}
+        ], npc.imgSrc);
+    }
 
     // --- ELSE BLOCK UNTUK WARGA/GENERIC NPC ---
     else {
@@ -16700,7 +17176,10 @@ function manualSave() {
         // 10. Pesan & Jurnal & MATERI KULIAH
         reflections: STATE.player.reflections,
         messages: STATE.player.messages,
-        learnedSubjects: STATE.player.learnedSubjects || [] // FIX: Simpan Array Mata Pelajaran
+        learnedSubjects: STATE.player.learnedSubjects || [], // FIX: Simpan Array Mata Pelajaran
+        
+        // 11. SIMPAN STATE VIRAL
+        viral: STATE.viral
     });
 }
 
@@ -22143,6 +22622,56 @@ function closePhoneApp() {
     document.getElementById('phone-screen-home').style.display = 'block';
 }
 
+// --- NEW: FUNGSI BUKA APLIKASI PESAN DI DALAM HP ---
+function openMessagesApp() {
+    document.getElementById('phone-screen-home').style.display = 'none';
+    document.getElementById('phone-screen-messages').style.display = 'block';
+
+    const list = document.getElementById('phone-messages-list');
+    const msgs = STATE.player.messages || [];
+    
+    list.innerHTML = '';
+    
+    if (msgs.length === 0) {
+        list.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px; font-size:12px;">Kotak masuk kosong.</div>';
+    } else {
+        // Tampilkan pesan terbaru di atas (Reverse)
+        [...msgs].reverse().forEach(m => {
+            // Format Waktu Simpel
+            let dateStr = "Baru saja";
+            if(m.time) {
+                const date = new Date(m.time);
+                // Format: HH:MM
+                dateStr = `${date.getHours()}:${date.getMinutes().toString().padStart(2,'0')}`;
+            }
+
+            const bubble = document.createElement('div');
+            // Style ala Bubble Chat
+            bubble.style.cssText = `
+                background: #fff; 
+                padding: 10px; 
+                margin-bottom: 8px; 
+                border-radius: 0 12px 12px 12px; 
+                border-left: 4px solid #3b82f6; 
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                font-family: 'Exo 2', sans-serif;
+            `;
+            
+            bubble.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                    <span style="font-weight:bold; color:#3b82f6; font-size:11px;">👩‍🏫 Guru Pembimbing</span>
+                    <span style="font-size:9px; color:#94a3b8;">${dateStr}</span>
+                </div>
+                <div style="font-size:12px; color:#334155; line-height:1.4;">${m.text}</div>
+            `;
+            list.appendChild(bubble);
+        });
+        
+        // Tandai semua dibaca saat membuka aplikasi
+        STATE.player.messages.forEach(m => m.read = true);
+    }
+}
+
 // --- FIX: FUNGSI BUKA PESAN DARI HP ---
 function openMessageArchiveFromPhone() {
     togglePhone(); // Tutup HP dulu karena Arsip Pesan adalah Overlay besar
@@ -22215,6 +22744,46 @@ function updateMoneyUI() {
 
 
 
+// --- NEW: FUNGSI APLIKASI BANKING ---
+function openBankApp() {
+    document.getElementById('phone-screen-home').style.display = 'none';
+    document.getElementById('phone-screen-bank').style.display = 'block';
+
+    // 1. Update Saldo
+    const balance = STATE.player.money || 0;
+    document.getElementById('bank-balance-display').innerText = balance.toLocaleString('id-ID');
+
+    // 2. Generate Dummy History (Mutasi)
+    // Karena kita tidak menyimpan log transaksi detail, kita buat dummy berdasarkan aktivitas terakhir
+    const historyList = document.getElementById('bank-history-list');
+    historyList.innerHTML = '';
+
+    // Buat data dummy yang terlihat realistis
+    const transactions = [
+        { desc: "Bunga Tabungan", amount: Math.floor(balance * 0.001), type: "in", date: "Hari Ini" },
+        { desc: "Biaya Admin", amount: 500, type: "out", date: "Kemarin" },
+    ];
+
+    // Tambahkan histori kerja jika ada
+    if (STATE.player.jobStatus === 'employed') {
+        transactions.unshift({ desc: "Gaji Harian", amount: 5000 + (STATE.player.jobLevel * 2000), type: "in", date: "Hari Ini" });
+    }
+
+    transactions.forEach(trx => {
+        const item = document.createElement('div');
+        item.className = 'trx-item';
+        item.innerHTML = `
+            <div>
+                <div class="trx-date">${trx.date}</div>
+                <div class="trx-desc">${trx.desc}</div>
+            </div>
+            <div class="trx-amount ${trx.type === 'in' ? 'trx-in' : 'trx-out'}">
+                ${trx.type === 'in' ? '+' : '-'} Rp ${trx.amount.toLocaleString('id-ID')}
+            </div>
+        `;
+        historyList.appendChild(item);
+    });
+}
 
 </script>
 </body>
