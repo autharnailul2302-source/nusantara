@@ -9262,95 +9262,63 @@ function regenerateHouseMap() {
         
         // Create Walls
         for(let x=0; x<w; x++) { 
-            /* REVISI: Tile atas diubah jadi 13 agar sama dengan tile bawah */
-            tiles[x] = 13; // Top Wall (ID 13 - Tembok Bawah Player)
-            tiles[(h-1)*w + x] = 13; // Bottom Wall (ID 13 - Tembok Bawah Player)
+            tiles[x] = 13; // Top Wall
+            tiles[(h-1)*w + x] = 13; // Bottom Wall
         }
         for(let y=0; y<h; y++) { 
-            tiles[y*w] = 11; // Left Wall (ID 11)
-            tiles[y*w + (w-1)] = 11; // Right Wall (ID 11)
+            tiles[y*w] = 11; // Left Wall
+            tiles[y*w + (w-1)] = 11; // Right Wall
         }
 
-        // Door Position (Always Bottom Center)
+        // Door Position
         const doorX = Math.floor(w / 2);
         const doorY = h - 1;
-        tiles[doorY * w + doorX] = 8; // Door Tile ID (Overwrites wall)
+        tiles[doorY * w + doorX] = 8; 
 
         // Update Global Map Object
         maps['house'] = {
-            w: w, 
-            h: h,
-            tiles: tiles,
-            npcs: [], 
+            w: w, h: h, tiles: tiles, npcs: [], 
             buildings: [
-                { 
-                    id: 'house_exit', 
-                    x: doorX - 1, 
-                    y: doorY, 
-                    w: 3, 
-                    h: 1, 
-                    type: 'trigger', 
-                    entrance: {x: doorX, y: doorY}, 
-                    name: "Keluar Rumah" 
-                }
+                { id: 'house_exit', x: doorX - 1, y: doorY, w: 3, h: 1, type: 'trigger', entrance: {x: doorX, y: doorY}, name: "Keluar Rumah" }
             ],
             objects: [
-                /* ADDED: KASUR PLAYER (Interactive Sleep) */
-                // FIX: Ubah 'images/kasur.png' menjadi 'images/bed.png' agar konsisten
-                /* REVISI POSISI: Dinaikkan ke y:0 agar nempel tembok */
-                /* REVISI UKURAN: Dikecilkan jadi 2x3 (Single Bed) agar proporsional */
                 {x: 1, y: 0, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk"},
-
-                /* UPDATE: MEJA BUKU HARIAN (Menggantikan Buku Melayang) */
-                /* Posisi disesuaikan agar tidak menumpuk */
-                /* REVISI: Mengganti images/mejabuku.png menjadi images/mejabelajar.png */
-                /* UPDATE UKURAN: Diperbesar kembali jadi 2x2 */
-                /* UPDATE POSISI: Diturunkan ke y:0 */
                 {x: 4, y: 0, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Meja Jurnal"},
-                
-                /* NEW: LEMARI PAKAIAN (WARDROBE) */
-                /* Posisi di x:7 (sebelah meja belajar) */
                 {x: 7, y: 0, w: 2, h: 3, type: 'shelf', icon: '👗', text: "Lemari Pakaian", img: 'images/lemari.png'},
-                
-                /* REVISI POSISI KALENDER: Geser ke POJOK KANAN (w-2) agar selalu di ujung kanan sesuai lebar rumah */
                 {x: w - 2, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png'},
-                
-                /* UPDATE: MEJA TELEPON (Menggantikan Telepon Melayang) */
-                /* REVISI: Update gambar ke images/mejatelpon.png dan ukuran jadi 2x2 */
-                /* UPDATE POSISI: Dinaikkan ke y:6 agar tidak nempel tembok bawah */
                 {x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon"},
-
-                /* NEW: VAS MERAH (DEKORASI) */
-                /* Posisi di sebelah kanan Lemari Pakaian (x:9, y:0) */
                 {x: 9, y: 0, w: 1, h: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Merah", img: 'images/vasmerah.png'}
             ]
         };
         
         // --- UPDATE: SPAWN PASANGAN DI RUMAH JIKA MENIKAH ---
         if (STATE.player.married && STATE.player.spouseId) {
-            const sid = STATE.player.spouseId;
-            let sName = "Pasangan";
-            let sImg = "images/lover1girl.png"; // Fallback
-            
-            // Mapping Data Pasangan
-            if(sid === 'lover1girl') { sName = "Ayu"; sImg = "images/lover1girl.png"; }
-            else if(sid === 'lover2girl') { sName = "Putri"; sImg = "images/lover2girl.png"; }
-            else if(sid === 'lover1boy') { sName = "Dr. Budi"; sImg = "images/lover1boy.png"; }
-            else if(sid === 'lover2boy') { sName = "Satria"; sImg = "images/lover2boy.png"; }
-            
-            // Tambahkan ke Array NPC Rumah
-            maps['house'].npcs.push({
-                id: sid, // Gunakan ID asli agar interaksi "Married" aktif
-                x: Math.floor(w/2) + 2, // Posisi agak ke kanan tengah
-                y: Math.floor(h/2),
-                name: sName,
-                imgSrc: sImg,
-                type: 'wander', // Jalan-jalan dalam rumah
-                schedule: 'always',
-                w: 40, h: 60,
-                vx: 0, vy: 0
-            });
-        }
+            // --- NEW: CEK APAKAH PASANGAN SEDANG KERJA? (KHUSUS ROLE FAMILY) ---
+            if (STATE.player.role === 'family' && STATE.player.spouseWorkStatus === 'working') {
+                // Spouse is away working (Jangan spawn)
+            } else {
+                const sid = STATE.player.spouseId;
+                let sName = "Pasangan";
+                let sImg = "images/lover1girl.png"; 
+                
+                if(sid === 'lover1girl') { sName = "Ayu"; sImg = "images/lover1girl.png"; }
+                else if(sid === 'lover2girl') { sName = "Putri"; sImg = "images/lover2girl.png"; }
+                else if(sid === 'lover1boy') { sName = "Dr. Budi"; sImg = "images/lover1boy.png"; }
+                else if(sid === 'lover2boy') { sName = "Satria"; sImg = "images/lover2boy.png"; }
+                
+                maps['house'].npcs.push({
+                    id: sid,
+                    x: Math.floor(w/2) + 2, 
+                    y: Math.floor(h/2),
+                    name: sName,
+                    imgSrc: sImg,
+                    type: 'wander',
+                    schedule: 'always',
+                    w: 40, h: 60,
+                    vx: 0, vy: 0
+                });
+            }
+        } // <--- FIX: KURUNG KURAWAL INI SEBELUMNYA HILANG
 
         console.log(`House Map Regenerated: ${w}x${h}`);
     } catch(e) {
@@ -9362,9 +9330,6 @@ function regenerateHouseMap() {
 async function initGame() {
     try {
         resize();
-
-        // 1. Coba inisialisasi koneksi Cloud di awal
-        // Agar listener pesan bisa langsung aktif dalam mode Firebase jika online
         await DataService.init(true);
 
         document.getElementById('start-screen').classList.add('hidden');
@@ -9383,13 +9348,11 @@ async function initGame() {
 
         const saved = DataService.loadGame();
         if(saved) {
-            // --- FIX: MEMULIHKAN LOGIKA LOAD DATA INTI YANG HILANG ---
             STATE.day = parseInt(saved.day) || 1;
             STATE.time = saved.time !== undefined ? saved.time : 600;
             STATE.season = saved.season || 'spring';
             STATE.weather = saved.weather || 'clear';
 
-            // Load Player Stats
             STATE.player.hp = saved.hp !== undefined ? saved.hp : 100;
             STATE.player.maxHp = saved.maxHp || 100;
             STATE.player.energy = saved.energy !== undefined ? saved.energy : 100;
@@ -9397,51 +9360,40 @@ async function initGame() {
             STATE.player.level = saved.level || 1;
             STATE.player.exp = saved.exp || 0;
             
-            // Load Attributes
             STATE.player.str = saved.str || 5;
             STATE.player.int = saved.int || 5;
             STATE.player.biz = saved.biz || 0;
             STATE.player.reputation = saved.reputation || 0;
             STATE.player.ethics = saved.ethics || 100;
 
-            // Load Role & Career
-            STATE.player.role = saved.role || 'none'; // Load role dulu untuk pengecekan
+            STATE.player.role = saved.role || 'none';
             STATE.player.major = saved.major || null;
             STATE.player.scholarship = saved.scholarship || false;
             STATE.player.jobStatus = saved.jobStatus || 'unemployed';
             STATE.player.bossReputation = saved.bossReputation || 50;
-            // NEW: LOAD JOB LEVEL (Default 1 jika tidak ada)
             STATE.player.jobLevel = saved.jobLevel || 1;
             
             STATE.player.shiftStarted = saved.shiftStarted || false;
             STATE.player.salaryDays = saved.salaryDays || 0;
             STATE.player.lastAttendanceDay = saved.lastAttendanceDay || 0;
 
-            // --- FIX: LOGIKA PROLOGUE YANG LEBIH KUAT ---
-            // Jika Hari 1 DAN Belum Pilih Role, MAKA WAJIB PROLOGUE (Tutorial Tok-Tok)
-            // Ini mengatasi bug dimana status saved.isPrologue salah simpan jadi false
             if (STATE.day === 1 && STATE.player.role === 'none') {
                 STATE.isPrologue = true;
-                STATE.time = 600; // FIX: Pastikan Waktu Tutorial Selalu Jam 06:00 Pagi
+                STATE.time = 600;
             } else {
-                // Selain itu, ikuti status save data (atau false jika tidak ada)
                 STATE.isPrologue = saved.isPrologue !== undefined ? saved.isPrologue : false;
             }
 
-            // Load Assets & Relations
             STATE.player.inventory = saved.inventory || {};
             STATE.player.furniture = saved.furniture || [];
             STATE.player.houseLevel = saved.houseLevel || 1;
-            STATE.player.furniture = saved.furniture || [];
-            // NEW: Load Status Kurcaci (Apakah sudah dipekerjakan)
             STATE.player.hiredDwarf = saved.hiredDwarf || false;
-			STATE.player.hiredFairy = saved.hiredFairy || false; // <--- TAMBAHKAN INI
+			STATE.player.hiredFairy = saved.hiredFairy || false;
 
             STATE.player.relationships = saved.relationships || {};
             STATE.player.married = saved.married || false;
             STATE.player.spouseId = saved.spouseId || null;
 
-            // Load Quest & Progress
             STATE.player.activeQuest = saved.activeQuest || null;
             STATE.questProgress = saved.questProgress || {};
             STATE.dungeonLevel = saved.dungeonLevel || 1;
@@ -9451,19 +9403,29 @@ async function initGame() {
             STATE.player.lastMonthlyClaim = saved.lastMonthlyClaim || 0;
             STATE.player.claimedLifeTrial = saved.claimedLifeTrial || false;
             
-            // FIX: LOAD DATA MATA PELAJARAN YANG SUDAH DIPELAJARI
             STATE.player.learnedSubjects = saved.learnedSubjects || [];
 
-            // NEW: LOAD STATUS TUTORIAL DUNGEON & FISHING
             STATE.player.hasSeenDungeonTutorial = saved.hasSeenDungeonTutorial || false;
             STATE.player.hasSeenFishingTutorial = saved.hasSeenFishingTutorial || false;
-
-            // NEW: LOAD COUNTER MANCING, MONSTER & TALK
+			
+			// --- FIX: Syntax Error Diperbaiki (Menggunakan Assignment =) ---
             STATE.player.dailyFishingCount = saved.dailyFishingCount || 0;
             STATE.player.dailyMonsterKills = saved.dailyMonsterKills || 0;
-            STATE.player.dailyTalkCount = saved.dailyTalkCount || 0; // Load Talk Count
+            STATE.player.dailyTalkCount = saved.dailyTalkCount || 0;
+
+            // --- FIX: Syntax Error Diperbaiki ---
+            STATE.player.spouseWorkStatus = saved.spouseWorkStatus || 'home';
+            STATE.player.spouseAngry = saved.spouseAngry || false;
+		
+		    // --- SYNC STATUS KERJA PASANGAN DENGAN WAKTU SAAT LOAD ---
+            if (STATE.player.married && STATE.player.role === 'family') {
+                if (STATE.time >= 730 && STATE.time < 1600) {
+                    STATE.player.spouseWorkStatus = 'working';
+                } else {
+                    STATE.player.spouseWorkStatus = 'home';
+                }
+            }
             
-            // --- FIX: LOAD DATA VIRAL AGAR TIDAK HILANG SAAT RELOAD ---
             STATE.viral = saved.viral || { active: null, day: 0 };
 
             STATE.player.attackCooldown = 0;
@@ -9472,71 +9434,54 @@ async function initGame() {
             const genderToLoad = saved.gender || 'boy';
             selectGender(genderToLoad, true);
             
-			
-			// --- TAMBAHAN BARU: LOAD BAJU (RESTORE OUTFIT) ---
-            STATE.player.outfit = saved.outfit || 'default'; // Load data baju
-            
+			// Load Outfit
+            STATE.player.outfit = saved.outfit || 'default';
             if (STATE.player.outfit !== 'default') {
-                // Tentukan suffix file gambar berdasarkan jenis baju
                 let suffix = "";
                 if (STATE.player.outfit === 'wedding') suffix = "-weding";
                 else if (STATE.player.outfit === 'armor') suffix = "-armor";
                 else if (STATE.player.outfit === 'special') suffix = "-special";
                 
-                // Terapkan gambar ke sprite player
                 const p = STATE.player;
                 const g = genderToLoad;
-                
                 if(p.spriteIdle) p.spriteIdle.src = `images/${g}-idle${suffix}.png`;
                 if(p.spriteWalk) p.spriteWalk.src = `images/${g}-walk${suffix}.png`;
                 if(p.spriteWalkUp) p.spriteWalkUp.src = `images/${g}-atas${suffix}.png`;
                 if(p.spriteWalkDown) p.spriteWalkDown.src = `images/${g}-bawah${suffix}.png`;
                 if(p.spriteAttack) p.spriteAttack.src = `images/${g}-pukul${suffix}.png`;
             }
-            // -------------------------------------------------
 			
-            // STATE.season sudah di-load di atas
-            if(!saved.weather) randomizeWeather(); // Hanya randomize jika tidak ada data save
+            if(!saved.weather) randomizeWeather();
 
             showToast("System: Data Loaded Completely");
         } else {
-            // New Game Setup
             if(!STATE.player.spriteIdle) selectGender('boy', true);
             STATE.isPrologue = true;
             STATE.gameOverTriggered = false;
             STATE.gameFinished = false;
             STATE.freeRoamMode = false;
             STATE.day = 1;
-            STATE.time = 600; // Pastikan Mulai Jam 06:00 Pagi
+            STATE.time = 600;
             STATE.player.role = 'none';
             STATE.player.money = 10000;
             randomizeWeather();
         }
 
-        // --- NEW: MULAI LISTENER PESAN (REAL-TIME) ---
-        // Panggil setelah data diload agar STATE.player.messages siap
         if(DataService.user && DataService.user.role === 'siswa') {
             DataService.startMessageListener();
-			// --- TAMBAHAN BARU: AKTIFKAN MULTIPLAYER ---
             DataService.startGhostListener(); 
-            // ------------------------------------------
-
-            // --- [BARU] UPDATE NAMA MENTOR SESUAI GURU PENDAMPING ---
             if (DataService.user.mentor) {
                 const realMentorName = await DataService.getMentorName(DataService.user.mentor);
                 STATE.mentorName = realMentorName;
-                console.log("Mentor Updated:", STATE.mentorName);
             }
         }
 
         regenerateHouseMap();
         updateBagIcon();
 
-        // FIX: Request Fullscreen di Mobile kadang gagal jika tidak dari event click langsung.
-        // Kita bungkus dalam try-catch agar tidak stop eksekusi
         try {
             if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch((e)=>{ console.log("Fullscreen blocked:", e); });
+                document.documentElement.requestFullscreen().catch((e)=>{});
             }
         } catch(e) {}
         
@@ -9551,16 +9496,12 @@ async function initGame() {
             STATE.player.x = 100; STATE.player.y = 100;
         }
 
-        // FIX: PAKSA RESIZE LAGI UNTUK MEMASTIKAN CANVAS MUNCUL DI HP
-        // (Terkadang canvas size 0x0 saat transisi halaman di mobile browser)
         setTimeout(resize, 100);
         setTimeout(resize, 500);
-        setTimeout(resize, 1500); // Safety check terakhir
+        setTimeout(resize, 1500);
         
         gameLoop();
         
-        // --- [BARU] UPDATE NAMA NPC MENTOR DI MAP ---
-        // Kita update nama NPC di peta 'village' dan 'mentor_interior' agar saat diklik namanya benar
         ['village', 'mentor_interior'].forEach(mapName => {
             const map = maps[mapName];
             if(map && map.npcs) {
@@ -9571,18 +9512,11 @@ async function initGame() {
             }
         });
 
-        // FIX: UBAH LOGIKA START WAKE UP SEQUENCE (TOK TOK)
-        // Jalankan jika statusnya Prologue, TIDAK PEDULI ada save data atau tidak.
-        // Ini memastikan setelah reset (yang otomatis save), prolog tetap jalan.
         if(STATE.isPrologue) {
-            // Pastikan posisi player reset ke kasur atau tengah ruangan saat prolog
             if(hMap) {
                 STATE.player.x = Math.floor(hMap.w / 2) * TILE_SIZE; 
-                /* REVISI: Spawn player di tengah-atas (Tile 4) agar kamera menyorot Kasur/Lemari */
-                /* Sebelumnya (h-3) membuat player terlalu bawah sehingga atas terpotong */
                 STATE.player.y = 4 * TILE_SIZE; 
             }
-            // Delay sedikit lebih lama agar map ter-render sempurna sebelum dialog muncul
             setTimeout(() => startWakeUpSequence(), 1500);
         } else {
             setTimeout(() => showDailyQuestPopup(), 1000);
@@ -9591,8 +9525,6 @@ async function initGame() {
         
         window.saveIntervalId = setInterval(() => {
             if(STATE.screen === 'play') {
-                // FIX: Gunakan manualSave() agar data konsisten dan lengkap (DRY Principle)
-                // Jangan menulis ulang objek save di sini
                 manualSave();
             }
         }, 2000); 
@@ -13093,6 +13025,113 @@ function update() {
     
     // NEW: Kurangi cooldown teleport setiap frame
     if(STATE.teleportCooldown > 0) STATE.teleportCooldown--;
+	
+	// --- NEW: LOGIKA JADWAL KERJA PASANGAN (ROLE FAMILY) ---
+    // Hanya berlaku jika sudah menikah dan role pemain adalah 'family' (Bapak/Ibu RT)
+    if (STATE.player.married && STATE.player.role === 'family') {
+        
+        // 1. WAKTUNYA BERANGKAT KERJA (07:30)
+        // Cek range waktu kecil agar tidak terlewat
+        if (STATE.time >= 730 && STATE.time < 740 && STATE.player.spouseWorkStatus !== 'working') {
+            STATE.player.spouseWorkStatus = 'working';
+            
+            // Hapus pasangan dari peta rumah (Visual)
+            const houseMap = maps['house'];
+            if (houseMap) {
+                houseMap.npcs = houseMap.npcs.filter(n => n.id !== STATE.player.spouseId);
+            }
+            
+            // Notifikasi / Dialog
+            if (STATE.location === 'house') {
+                // Ambil gambar pasangan
+                let sImg = 'images/girl.png';
+                const sId = STATE.player.spouseId;
+                if(sId === 'lover1girl') sImg = "images/lover1girl.png";
+                else if(sId === 'lover2girl') sImg = "images/lover2girl.png";
+                else if(sId === 'lover1boy') sImg = "images/lover1boy.png";
+                else if(sId === 'lover2boy') sImg = "images/lover2boy.png";
+
+                showDialogue("PASANGAN", 
+                    "Sayang, aku berangkat kerja dulu ya. Jaga rumah baik-baik.\n\nAku akan pulang jam **16:00** nanti. Pastikan kamu ada di rumah menyambutku ya!", 
+                    [{
+                        text: "Hati-hati di jalan!", 
+                        action: () => {
+                            closeDialogue();
+                            // UPDATE: Tampilkan Menu Rencana Harian setelah pasangan pergi
+                            setTimeout(showDailyHousekeepingMenu, 800);
+                        }
+                    }], 
+                    sImg
+                );
+            } else {
+                showToast("ℹ️ Pasanganmu telah berangkat kerja.");
+            }
+        }
+
+        // 2. WAKTUNYA PULANG KERJA (16:00)
+        if (STATE.time >= 1600 && STATE.time < 1610 && STATE.player.spouseWorkStatus === 'working') {
+            STATE.player.spouseWorkStatus = 'home';
+            
+            // Ambil gambar pasangan
+            let sImg = 'images/girl.png';
+            const sId = STATE.player.spouseId;
+            if(sId === 'lover1girl') sImg = "images/lover1girl.png";
+            else if(sId === 'lover2girl') sImg = "images/lover2girl.png";
+            else if(sId === 'lover1boy') sImg = "images/lover1boy.png";
+            else if(sId === 'lover2boy') sImg = "images/lover2boy.png";
+
+            // Tambahkan kembali pasangan ke rumah
+            regenerateHouseMap();
+
+            // CEK APAKAH PEMAIN ADA DI RUMAH?
+            if (STATE.location === 'house') {
+                // Pemain disiplin ada di rumah
+                STATE.player.spouseAngry = false;
+                
+                // Efek partikel hati
+                createParticle(STATE.player.x, STATE.player.y, '#ec4899');
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                
+                // --- UPDATE: CEK HASIL KERJA RUMAH TANGGA ---
+                let choresBonusMsg = "";
+                let choresBonusRep = 0;
+                
+                if (STATE.player.dailyChores) {
+                    if (STATE.player.dailyChores.cooking) {
+                        choresBonusMsg += "\nWah, wangi masakan enak! Kamu masak ya? Makasih sayang! 🍲";
+                        choresBonusRep += 2;
+                    }
+                    if (STATE.player.dailyChores.cleaning) {
+                        choresBonusMsg += "\nRumah juga bersih banget. Kamu rajin sekali! ✨";
+                        choresBonusRep += 2;
+                    }
+                    // Reset chores harian
+                    STATE.player.dailyChores = {};
+                }
+                // -------------------------------------------
+
+                showDialogue("PASANGAN", 
+                    "Aku pulang! 🏠\nSenang sekali melihatmu sudah di rumah menyambutku." + choresBonusMsg + "\n\n(Hubungan Makin Harmonis ❤️)", 
+                    [{text: "Selamat datang kembali!", action: closeDialogue}], 
+                    sImg
+                );
+                
+                // Bonus Reputasi
+                STATE.player.reputation += (2 + choresBonusRep);
+                updateRelationship({id: sId}, 2 + choresBonusRep, "Disiplin & Rajin");
+                
+            } else {
+                // Pemain keluyuran (Marah Besar)
+                STATE.player.spouseAngry = true;
+                
+                showToast("⚠️ GAWAT! Pasangan pulang tapi kamu tidak di rumah!");
+                if(typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+                
+                // Hukuman Reputasi Langsung
+                STATE.player.reputation = Math.max(0, STATE.player.reputation - 5);
+            }
+        }
+    }
 
     // --- NEW: UPDATE PERGERAKAN BOT HANTU (AGAR TERLIHAT HIDUP) ---
     if (STATE.ghosts) {
@@ -13123,6 +13162,62 @@ function update() {
     }
 }
 
+// --- NEW FUNCTION: MENU HARIAN IRT (HOUSEKEEPING) ---
+function showDailyHousekeepingMenu() {
+    // Tentukan gambar player untuk dialog (monolog dalam hati)
+    const pImg = STATE.player.gender === 'boy' ? 'images/boy.png' : 'images/girl.png';
+    
+    showDialogue("RENCANA HARIAN", "Suami/Istri sudah berangkat kerja.\nApa yang ingin aku kerjakan dulu ya?", [
+        {
+            text: "🍳 Masak Siang & Malam (Energi -20)",
+            action: () => {
+                if (STATE.player.energy >= 20) {
+                    STATE.player.energy -= 20;
+                    if(!STATE.player.dailyChores) STATE.player.dailyChores = {};
+                    STATE.player.dailyChores.cooking = true;
+                    
+                    showToast("Masakan lezat siap! (Pasangan akan senang)");
+                    if(typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    closeDialogue();
+                } else {
+                    showToast("Terlalu lelah untuk memasak...");
+                }
+            }
+        },
+        {
+            text: "🧹 Bersih-bersih Rumah (Energi -30)",
+            action: () => {
+                if (STATE.player.energy >= 30) {
+                    STATE.player.energy -= 30;
+                    if(!STATE.player.dailyChores) STATE.player.dailyChores = {};
+                    STATE.player.dailyChores.cleaning = true;
+                    
+                    createParticle(STATE.player.x, STATE.player.y, '#ffffff'); // Partikel kilau
+                    showToast("Rumah kinclong! ✨");
+                    closeDialogue();
+                } else {
+                    showToast("Energi kurang untuk bersih-bersih.");
+                }
+            }
+        },
+        {
+            text: "🛒 Belanja Kebutuhan Dapur",
+            action: () => {
+                showToast("Pergilah ke Toko Merchant atau Pedagang Keliling!");
+                closeDialogue();
+            }
+        },
+        {
+            text: "🛋️ Santai Dulu Aja",
+            action: () => {
+                showToast("Menikmati waktu luang...");
+                closeDialogue();
+            }
+        }
+    ], pImg);
+}
+
+// --- NEW: UPDATE PERGERAKAN BOT HANTU (AGAR TERLIHAT HIDUP) ---
 // --- NEW FUNCTION: CHECK AUTO TELEPORT ---
 function checkAutoTeleport() {
     // Jika sedang cooldown, jangan cek teleport (Mencegah loop masuk-keluar)
