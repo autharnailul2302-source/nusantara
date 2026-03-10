@@ -6538,13 +6538,13 @@
         </div>
 
         <!-- NEW: STUDENT PROFILE MODAL (KARTU PELAJAR) -->
-        <div id="profile-modal" class="minigame-overlay" style="overflow-y: auto; -webkit-overflow-scrolling: touch; align-items: flex-start; padding: 12px 0 32px;">
-            <!-- FIX: Ubah overflow:hidden menjadi overflow-y:auto dan tambahkan max-height agar bisa di-scroll di HP -->
+        <div id="profile-modal" class="minigame-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; align-items: flex-start; justify-content: center; padding: 16px 12px 60px; box-sizing: border-box; display: none;">
+            <!-- FIX: center on mobile, scrollable, tombol logout selalu kelihatan -->
             <div class="journal-box"
-                style="width: 92%; max-width: 400px; padding: 0; max-height: none; overflow-y: visible; border: none; background: transparent; box-shadow: none; margin: auto;">
+                style="width: 94%; max-width: 400px; padding: 0; overflow: visible; border: none; background: transparent; box-shadow: none; margin: 0 auto;">
                 <!-- ID Card Container -->
                 <div
-                    style="background: #f8fafc; border-radius: 16px; border: 4px solid #334155; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Exo 2', sans-serif;">
+                    style="background: #f8fafc; border-radius: 16px; border: 4px solid #334155; overflow: visible; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Exo 2', sans-serif;">
 
                     <!-- Header (Warna Dinamis Sesuai Role) -->
                     <div id="profile-header"
@@ -6671,11 +6671,11 @@
                         </div>
 
                         <!-- Tombol Tutup & Logout -->
-                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 4px;">
+                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 16px;">
                             <button class="main-menu-btn" onclick="closeProfileModal()"
-                                style="flex:1; font-size: 12px; padding: 10px 6px; margin: 0; background: #334155; border-color: #475569; color: white; min-height: 44px;">✖ TUTUP</button>
-                            <button class="main-menu-btn" onclick="closeProfileModal(); if(confirm('Yakin ingin keluar dari game?')) logout();"
-                                style="flex:1; font-size: 12px; padding: 10px 6px; margin: 0; background: #7f1d1d; border-color: #991b1b; color: white; min-height: 44px;">🚪 LOGOUT</button>
+                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: #334155; border-color: #475569; color: white; min-height: 48px; border-radius: 10px; cursor:pointer;">✖ TUTUP</button>
+                            <button class="main-menu-btn" onclick="closeProfileModal(); if(confirm('Yakin logout?')) logout();"
+                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: linear-gradient(135deg,#991b1b,#7f1d1d); border: 2px solid #ef4444; color: white; min-height: 48px; border-radius: 10px; font-weight: bold; box-shadow: 0 3px 10px rgba(239,68,68,0.4); cursor:pointer;">🚪 KELUAR</button>
                         </div>
                     </div>
                 </div>
@@ -6922,15 +6922,23 @@
                         Bagaimana harimu di dunia Nusantara Arsa?
                     </p>
 
-                    <!-- Textarea sudah diperbaiki CSS-nya di atas (background putih, teks hitam) -->
-                    <textarea id="journal-input" placeholder="Tulis refleksimu disini..."></textarea>
+                    <!-- Textarea -->
+                    <textarea id="journal-input" placeholder="Tulis refleksimu disini..." oninput="updateJournalRewardPreview()"></textarea>
 
-                    <div style="text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
-                        <!-- FIX: Tombol Batal menggunakan class btn-secondary -->
+                    <!-- Reward Preview Bar -->
+                    <div id="journal-reward-preview" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; border-radius: 10px; padding: 8px 12px; margin: 8px 0; font-size: 12px; font-family: Fredoka, sans-serif; display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                        <span style="color:#78350f; font-weight:700;">🎁 Reward:</span>
+                        <span id="journal-reward-text" style="color:#92400e;">Tulis minimal 20 karakter untuk lihat reward~</span>
+                    </div>
+
+                    <!-- Char counter -->
+                    <div id="journal-char-count" style="font-size: 11px; color: #94a3b8; text-align:right; margin-bottom: 6px;">0 karakter</div>
+
+                    <div style="display: flex; gap: 10px;">
                         <button onclick="closeJournal()" class="btn-secondary"
-                            style="width: auto; padding: 10px 20px;">BATAL</button>
-                        <button onclick="saveJournal()" class="auth-btn"
-                            style="width: auto; margin-top:0; padding: 10px 20px;">SIMPAN</button>
+                            style="flex:1; padding: 10px;">BATAL</button>
+                        <button onclick="saveJournal()" id="journal-submit-btn" class="auth-btn" disabled
+                            style="flex:2; margin-top:0; padding: 10px; opacity:0.5; transition: opacity 0.3s;">✏️ KIRIM JURNAL</button>
                     </div>
                 </div>
             </div>
@@ -6945,6 +6953,8 @@
                 </div>
             </div>
             <div id="toast" style="opacity:0;"></div>
+            <!-- Autosave indicator -->
+            <div id="autosave-indicator" style="position:fixed; bottom:8px; right:8px; background:rgba(0,0,0,0.55); color:#86efac; font-size:10px; font-family:Fredoka,sans-serif; padding:3px 8px; border-radius:20px; opacity:0; transition:opacity 0.5s; pointer-events:none; z-index:9999;">☁️ Tersimpan</div>
         </div>
 
         <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
@@ -9938,9 +9948,15 @@
 
                     setTimeout(() => {
                         document.getElementById('login-screen').style.display = 'none';
+                        const titleSc = document.getElementById('title-screen');
+                        if (titleSc) { titleSc.style.display = 'none'; titleSc.classList.add('hidden'); }
                         if (userData.role === 'guru' || userData.role === 'admin') {
                             initTeacherDashboard();
                         } else {
+                            const uiLayer = document.getElementById('ui-layer');
+                            const gc = document.getElementById('gameCanvas');
+                            if (uiLayer) uiLayer.style.display = 'block';
+                            if (gc) gc.style.display = 'block';
                             startGame(userData);
                         }
                     }, 900);
@@ -9957,7 +9973,7 @@
                 }
             }
 
-            function showGoogleRegisterForm(role, email, displayName, photoURL) {
+            async function showGoogleRegisterForm(role, email, displayName, photoURL) {
                 const loginCard = document.querySelector('.login-card');
 
                 // Simpan konten asli untuk bisa kembali
@@ -9994,16 +10010,49 @@
                     </button>
                 `;
 
-                // Isi dropdown guru jika siswa
+                // Isi dropdown guru jika siswa — fetch dari cloud dulu, fallback lokal
                 if (role === 'siswa') {
-                    const dbLocal = DataService.getDB();
                     const guruSelect = document.getElementById('greg-guru');
-                    Object.values(dbLocal).filter(u => u.role === 'guru').forEach(g => {
-                        const opt = document.createElement('option');
-                        opt.value = g.email;
-                        opt.textContent = g.name;
-                        guruSelect.appendChild(opt);
-                    });
+                    guruSelect.innerHTML = '<option value="">⏳ Memuat daftar guru...</option>';
+
+                    // Coba ambil dari Firestore dulu (paling akurat)
+                    try {
+                        let guruList = [];
+                        if (db) {
+                            const snap = await db.collection('artifacts').doc('nusantara-arsa').collection('users')
+                                .where('role', '==', 'guru').get();
+                            guruList = snap.docs.map(d => ({ email: d.id, name: d.data().name, school: d.data().school || '' }));
+                        }
+                        // Tambah dari lokal juga (merge, hindari duplikat)
+                        const dbLocal = DataService.getDB();
+                        Object.entries(dbLocal).filter(([,u]) => u.role === 'guru').forEach(([email, u]) => {
+                            if (!guruList.find(g => g.email === email)) {
+                                guruList.push({ email, name: u.name, school: u.school || '' });
+                            }
+                        });
+
+                        guruSelect.innerHTML = '<option value="">-- Pilih Guru Pendamping --</option>';
+                        if (guruList.length === 0) {
+                            guruSelect.innerHTML += '<option value="" disabled>Belum ada guru terdaftar</option>';
+                        } else {
+                            guruList.forEach(g => {
+                                const opt = document.createElement('option');
+                                opt.value = g.email;
+                                opt.textContent = g.name + (g.school ? ' (' + g.school + ')' : '');
+                                guruSelect.appendChild(opt);
+                            });
+                        }
+                    } catch(e) {
+                        console.warn('Gagal fetch guru:', e);
+                        guruSelect.innerHTML = '<option value="">-- Pilih Guru (Offline) --</option>';
+                        const dbLocal = DataService.getDB();
+                        Object.entries(dbLocal).filter(([,u]) => u.role === 'guru').forEach(([email, u]) => {
+                            const opt = document.createElement('option');
+                            opt.value = email;
+                            opt.textContent = u.name;
+                            guruSelect.appendChild(opt);
+                        });
+                    }
                 }
             }
 
@@ -10060,9 +10109,15 @@
 
                 setTimeout(() => {
                     document.getElementById('login-screen').style.display = 'none';
+                    const titleSc2 = document.getElementById('title-screen');
+                    if (titleSc2) { titleSc2.style.display = 'none'; titleSc2.classList.add('hidden'); }
                     if (role === 'guru') {
                         initTeacherDashboard();
                     } else {
+                        const uiLayer = document.getElementById('ui-layer');
+                        const gc = document.getElementById('gameCanvas');
+                        if (uiLayer) uiLayer.style.display = 'block';
+                        if (gc) gc.style.display = 'block';
                         startGame(newUser);
                     }
                 }, 900);
@@ -10375,6 +10430,18 @@
 
             // FIX: Ubah menjadi ASYNC dan Tambahkan AWAIT DataService.init(true)
             async function initTeacherDashboard() {
+                // Pastikan semua layar lain tersembunyi sebelum tampilkan dashboard
+                const loginSc = document.getElementById('login-screen');
+                const titleSc = document.getElementById('title-screen');
+                const startSc = document.getElementById('start-screen');
+                const uiLayer = document.getElementById('ui-layer');
+                const gc = document.getElementById('gameCanvas');
+                if (loginSc) loginSc.style.display = 'none';
+                if (titleSc) { titleSc.style.display = 'none'; titleSc.classList.add('hidden'); }
+                if (startSc) startSc.classList.add('hidden');
+                if (uiLayer) uiLayer.style.display = 'none';
+                if (gc) gc.style.display = 'none';
+
                 document.getElementById('teacher-dashboard').style.display = 'block';
 
                 // Tampilkan halaman Welcome terlebih dahulu
@@ -15175,8 +15242,14 @@ ${reward.tip}`,
                     window.saveIntervalId = setInterval(() => {
                         if (STATE.screen === 'play') {
                             manualSave();
+                            // Autosave indicator: flash ikon kecil di HUD
+                            const ind = document.getElementById('autosave-indicator');
+                            if (ind) {
+                                ind.style.opacity = '1';
+                                setTimeout(() => { ind.style.opacity = '0'; }, 1200);
+                            }
                         }
-                    }, 2000);
+                    }, 30000); // Autosave tiap 30 detik (hemat kuota, sudah save juga tiap aksi penting)
 
                 } catch (err) {
                     console.error("CRITICAL ERROR IN INITGAME:", err);
@@ -21075,9 +21148,7 @@ ${reward.tip}`,
                         showDialogue(npc.name, "Halo kawan! Sukses ujiannya ya.", [{ text: "Sip", action: closeDialogue }], npc.imgSrc);
                     }
                     return;
-                }
-
-                else if (npc.id === 'mentor') {
+                } else if (npc.id === 'mentor') {
                     const role = STATE.player.role;
 
                     // FIX: Jika Role belum dipilih (New Game / Reset), paksa jalankan Tutorial
@@ -21846,9 +21917,7 @@ ${reward.tip}`,
                             },
                             { text: "Terima kasih, Gorki!", action: closeDialogue }
                         ], npc.imgSrc);
-                }
-
-                else if (npc.id === 'peri_farm') {
+                } else if (npc.id === 'peri_farm') {
                     // Peri di ladang sehari-hari (sudah di-hire)
                     const farmEntries = Object.entries(STATE.player.farming || {});
                     const matang = farmEntries.filter(([,c]) => c && c.stage >= 3).length;
@@ -22979,9 +23048,7 @@ ${reward.tip}`,
 
                     showDialogue("LEMARI PAKAIAN", "Pilih pakaian untuk dikenakan hari ini:", clothesOpts, 'images/lemari.png');
                     return;
-                }
-
-                else if (obj.type === 'bookshelf') {
+                } else if (obj.type === 'bookshelf') {
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                     showToast(`📖 Membaca: "${obj.text}"`);
                     // Sedikit EXP untuk membaca
@@ -23122,15 +23189,6 @@ ${reward.tip}`,
                         },
 
                         /* UPDATE: HAPUS OPSI JURNAL & TIDUR DARI BUKU (SUDAH PINDAH KE KASUR) */
-
-                        {
-                            text: "💾 Simpan Game (Save)", action: () => {
-                                manualSave();
-                                if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                                showToast("Data Tersimpan! ✅");
-                                closeDialogue();
-                            }
-                        },
 
                         { text: "Tutup", action: closeDialogue }
                     ], 'images/buku.png'); // FIX: Menggunakan 'images/buku.png' untuk ikon dialog, tapi objeknya 'mejabuku.png'
@@ -23596,80 +23654,132 @@ ${reward.tip}`,
                 STATE.screen = 'play';
             }
 
+            // Helper: hitung reward jurnal berdasarkan panjang teks & role
+            function calcJournalReward(text) {
+                const len = text.length;
+                const role = STATE.player ? STATE.player.role : 'none';
+
+                // Base reward makin besar sesuai panjang tulisan
+                let gold, exp, ap, bonusItem = null, bonusQty = 0;
+
+                if (len >= 200) {
+                    gold = 1500; exp = 100; ap = 10;
+                } else if (len >= 100) {
+                    gold = 1000; exp = 75; ap = 7;
+                } else if (len >= 50) {
+                    gold = 700; exp = 60; ap = 5;
+                } else if (len >= 20) {
+                    gold = 500; exp = 50; ap = 3;
+                } else {
+                    return null; // belum cukup
+                }
+
+                // Bonus item per role
+                const roleBonus = {
+                    worker:       { item: 'kopi',          qty: 1, label: '☕ Kopi' },
+                    student:      { item: 'buku_catatan',  qty: 1, label: '📒 Buku Catatan' },
+                    entrepreneur: { item: 'koin_emas',     qty: 1, label: '🪙 Koin Emas' },
+                    family:       { item: 'bunga',         qty: 2, label: '💐 Bunga x2' },
+                    none:         { item: 'coklat',        qty: 1, label: '🍫 Coklat' },
+                };
+                const rb = roleBonus[role] || roleBonus['none'];
+                bonusItem = rb.item; bonusQty = rb.qty;
+
+                // Bonus extra kalau tulisan panjang
+                const streak = STATE.player.reflections ? STATE.player.reflections.length : 0;
+                const streakBonus = streak > 0 && streak % 5 === 0; // tiap 5 jurnal
+
+                return { gold, exp, ap, bonusItem, bonusQty, bonusLabel: rb.label, streakBonus, streak: streak + 1 };
+            }
+
+            // Update reward preview saat user ngetik
+            function updateJournalRewardPreview() {
+                const input = document.getElementById('journal-input');
+                const previewEl = document.getElementById('journal-reward-text');
+                const charEl = document.getElementById('journal-char-count');
+                const submitBtn = document.getElementById('journal-submit-btn');
+                if (!input || !previewEl) return;
+
+                const text = input.value.trim();
+                const len = text.length;
+                if (charEl) charEl.textContent = len + ' karakter';
+
+                const reward = calcJournalReward(text);
+                if (!reward) {
+                    previewEl.textContent = 'Tulis minimal 20 karakter untuk dapat reward~';
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.5'; }
+                    return;
+                }
+
+                const streakTxt = reward.streakBonus ? ` 🔥 Jurnal ke-${reward.streak} → Bonus AP +5!` : '';
+                previewEl.innerHTML = `+${reward.gold}G &nbsp;+${reward.exp} EXP &nbsp;+${reward.ap} AP &nbsp;${reward.bonusLabel}${streakTxt}`;
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+            }
+
             function saveJournal() {
                 const input = document.getElementById('journal-input');
                 const text = input.value.trim();
 
-                if (text.length < 5) {
-                    alert("Tulislah refleksi yang bermakna (min. 5 karakter)! Guru ingin tahu kegiatanmu.");
+                const reward = calcJournalReward(text);
+                if (!reward) {
+                    showToast("Tulis minimal 20 karakter dulu ya!");
                     return;
                 }
 
-                // 1. Simpan Data Jurnal (UPDATE: Sertakan role & pertanyaan agar guru bisa kontekstualkan)
+                // 1. Simpan entri jurnal
                 const entry = {
                     day: STATE.day,
-                    date: Date.now(), // Real timestamp
+                    date: Date.now(),
                     text: text,
                     role: (STATE.player && STATE.player.role) ? STATE.player.role : 'none',
                     question: getJournalQuestion(),
                 };
-
                 if (!STATE.player.reflections) STATE.player.reflections = [];
                 STATE.player.reflections.push(entry);
 
-                // 2. Beri Reward (Gold + EXP)
-                const goldReward = 500;
-                const expReward = 50;
-                STATE.player.money += goldReward;
-                gainExp(expReward);
+                // 2. Beri reward
+                STATE.player.money += reward.gold;
+                gainExp(reward.exp);
+                STATE.player.achievementPoints = (STATE.player.achievementPoints || 0) + reward.ap;
+                if (reward.bonusItem) addItem(reward.bonusItem, reward.bonusQty);
+                if (reward.streakBonus) STATE.player.achievementPoints += 5;
 
-                // FIX: Paksa simpan ke database/cloud segera agar data Jurnal tidak hilang/delay
-                // Sebelumnya hanya mengandalkan auto-save per 2 detik, yang berisiko data belum terkirim.
-                showToast("☁️ Mengirim Jurnal ke Cloud..."); // Feedback Visual
+                // 3. Autosave (sudah jalan background tiap 2 detik, tapi paksa sekali lagi untuk jurnal)
                 manualSave();
 
-                // 3. Feedback Visual & Audio
-                if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                // showToast diganti di atas agar tidak tertumpuk cepat
+                // 4. Feedback
+                if (typeof AudioService !== 'undefined') AudioService.playSFX('levelup');
+                createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+                createParticle(STATE.player.x + 20, STATE.player.y - 10, '#86efac');
 
-                createParticle(STATE.player.x, STATE.player.y, '#fbbf24'); // Partikel Emas
-
-                // 4. Tutup Modal
+                // 5. Tutup Modal
                 const modal = document.getElementById('journal-modal');
                 modal.style.display = 'none';
                 STATE.screen = 'play';
 
-                // 5. Cek apakah ini triggered dari Tidur?
+                // 6. Cek tidur pending
+                const streakMsg = reward.streakBonus ? `\n🔥 Jurnal ke-${reward.streak}! Bonus +5 AP!` : '';
                 if (isSleepPending) {
                     isSleepPending = false;
-
-                    // FIX: GANTI CONFIRM BROWSER DENGAN DIALOG GAME
-                    // Confirm() bawaan browser menyebabkan mobile keluar dari fullscreen.
-                    // Kita ganti dengan showDialogue agar tetap imersif.
                     setTimeout(() => {
-                        showDialogue("JURNAL TERSIMPAN", "Data refleksi berhasil dicatat.\nApakah kamu ingin melanjutkan tidur?", [
+                        showDialogue("✅ JURNAL TERKIRIM!", `Guru sudah menerima refleksimu~\n\n🎁 Reward Hari Ini:\n• +${reward.gold} Gold\n• +${reward.exp} EXP\n• +${reward.ap} AP\n• ${reward.bonusLabel}${streakMsg}\n\nLanjut tidur?`, [
                             {
-                                text: "Ya, Tidur Sekarang (Zzz) 🛌",
-                                action: () => {
-                                    // FIX: Panggil toggleFullScreen() lagi untuk memastikan layar penuh
-                                    // Browser butuh interaksi user (klik tombol ini) untuk trigger fullscreen
-                                    toggleFullScreen();
-                                    handleSleep();
-                                }
+                                text: "Tidur Sekarang 🛌",
+                                action: () => { toggleFullScreen(); handleSleep(); }
                             },
                             {
                                 text: "Nanti Dulu",
-                                action: () => {
-                                    closeDialogue();
-                                    toggleFullScreen(); // Kembalikan fullscreen jika batal
-                                }
+                                action: () => { closeDialogue(); toggleFullScreen(); }
                             }
                         ], 'images/buku.png');
-                    }, 500);
+                    }, 300);
                 } else {
-                    // Jika jurnal manual (bukan mau tidur), kembalikan fullscreen langsung
                     toggleFullScreen();
-                    showToast(`📝 Jurnal Tersimpan! (+${goldReward}G)`);
+                    setTimeout(() => {
+                        showDialogue("✅ JURNAL TERKIRIM!", `Refleksimu sudah dicatat dan dikirim ke gurumu~\n\n🎁 Reward:\n• +${reward.gold} Gold\n• +${reward.exp} EXP\n• +${reward.ap} AP\n• ${reward.bonusLabel}${streakMsg}`, [
+                            { text: "Yay! Terus semangat! 💪", action: closeDialogue }
+                        ], 'images/buku.png');
+                    }, 300);
                 }
             }
 
