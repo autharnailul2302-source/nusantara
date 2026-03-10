@@ -6815,13 +6815,26 @@
                         </div>
 
                         <!-- Tombol Tutup & Logout -->
-                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 16px;">
+                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 16px; box-sizing: border-box; width: 100%;">
                             <button class="main-menu-btn" onclick="closeProfileModal()"
-                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: #334155; border-color: #475569; color: white; min-height: 48px; border-radius: 10px; cursor:pointer;">✖ TUTUP</button>
-                            <button class="main-menu-btn" onclick="closeProfileModal(); if(confirm('Yakin logout?')) logout();"
-                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: linear-gradient(135deg,#991b1b,#7f1d1d); border: 2px solid #ef4444; color: white; min-height: 48px; border-radius: 10px; font-weight: bold; box-shadow: 0 3px 10px rgba(239,68,68,0.4); cursor:pointer;">🚪 KELUAR</button>
+                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: #334155; border-color: #475569; color: white; min-height: 48px; border-radius: 10px; cursor:pointer; min-width: 0; box-sizing: border-box; box-shadow: none;">✖ TUTUP</button>
+                            <button class="main-menu-btn" onclick="showLogoutConfirm();"
+                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: linear-gradient(135deg,#991b1b,#7f1d1d); border: 2px solid #ef4444; color: white; min-height: 48px; border-radius: 10px; font-weight: bold; box-shadow: 0 3px 10px rgba(239,68,68,0.4); cursor:pointer; min-width: 0; box-sizing: border-box;">🚪 KELUAR</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🚪 LOGOUT CONFIRM MODAL (Mobile-safe, no confirm()) -->
+        <div id="logout-confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; align-items:center; justify-content:center;">
+            <div style="background:#1e293b; border:2px solid #ef4444; border-radius:16px; padding:28px 24px; max-width:320px; width:90%; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                <div style="font-size:48px; margin-bottom:12px;">🚪</div>
+                <div style="font-size:18px; font-weight:bold; color:white; margin-bottom:8px;">Keluar Permainan?</div>
+                <div style="font-size:13px; color:#94a3b8; margin-bottom:20px;">Progress terakhir akan tersimpan otomatis. Yakin ingin logout?</div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="document.getElementById('logout-confirm-modal').style.display='none';" style="flex:1; padding:12px; background:#334155; border:2px solid #475569; color:white; border-radius:10px; font-weight:bold; cursor:pointer; font-size:14px;">✖ Batal</button>
+                    <button onclick="document.getElementById('logout-confirm-modal').style.display='none'; closeProfileModal(); logout();" style="flex:1; padding:12px; background:linear-gradient(135deg,#991b1b,#7f1d1d); border:2px solid #ef4444; color:white; border-radius:10px; font-weight:bold; cursor:pointer; font-size:14px;">🚪 Ya, Keluar</button>
                 </div>
             </div>
         </div>
@@ -6943,7 +6956,10 @@
 
                 <!-- 3. RIGHT: META INFO (Time/Money) -->
                 <div class="hud-meta-section">
-                    <div class="money-badge">💰 <span id="money-display">50.000</span></div>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                        <div class="money-badge">💰 <span id="money-display">50.000</span></div>
+                        <div class="money-badge" style="background:linear-gradient(180deg,#a78bfa,#7c3aed); color:#fff; border-color:#c4b5fd; box-shadow:0 4px 0 #5b21b6; font-size:13px; padding:5px 11px;">🏅 <span id="hud-ap-display">0</span> AP</div>
+                    </div>
 
                     <!-- UPDATE: Menambahkan ID 'hud-time-container' untuk target tutorial -->
                     <div id="hud-time-container" class="stat-item time-container"
@@ -10061,8 +10077,13 @@
                     // Cek role mismatch (siswa login di tab guru atau sebaliknya)
                     if (userData.role !== role && userData.role !== 'admin') {
                         const roleLabel = { siswa: 'Siswa', guru: 'Guru', admin: 'Admin' };
-                        msgEl.style.color = '#f97316';
-                        msgEl.innerText = '⚠️ Akun terdaftar sebagai ' + (roleLabel[userData.role] || userData.role) + '. Melanjutkan...';
+                        const correctRole = roleLabel[userData.role] || userData.role;
+                        const usedRole = roleLabel[role] || role;
+                        msgEl.style.color = '#ef4444';
+                        msgEl.innerText = `❌ SALAH AKUN! Akun ini terdaftar sebagai ${correctRole}, bukan ${usedRole}. Silakan login di tab yang sesuai.`;
+                        // Reset Google sign-in state agar bisa coba lagi
+                        try { if (firebase && firebase.auth) await firebase.auth().signOut(); } catch(e) {}
+                        return; // HENTIKAN login, jangan lanjut ke game
                     }
 
                     // USER LAMA — sync cloud dulu, baru masuk
@@ -10306,6 +10327,11 @@
                 }
             }
 
+            function showLogoutConfirm() {
+                const modal = document.getElementById('logout-confirm-modal');
+                if (modal) modal.style.display = 'flex';
+            }
+
             function logout() {
                 if (window.gameLoopId) {
                     cancelAnimationFrame(window.gameLoopId);
@@ -10521,6 +10547,16 @@
                     } else {
                         const res = await DataService.login(email, pass);
                         if (res.success) {
+                            // CEK SALAH AKUN: siswa login di tab guru atau sebaliknya
+                            if (res.user.role && res.user.role !== role && res.user.role !== 'admin') {
+                                const roleLabel = { siswa: 'Siswa', guru: 'Guru', admin: 'Admin' };
+                                const correctRole = roleLabel[res.user.role] || res.user.role;
+                                const usedRole = roleLabel[role] || role;
+                                msgEl.style.color = '#ef4444';
+                                msgEl.innerText = `❌ SALAH AKUN! Akun "${email}" terdaftar sebagai ${correctRole}, bukan ${usedRole}.\n\nSilakan login menggunakan tab ${correctRole}.`;
+                                return;
+                            }
+
                             localStorage.setItem(SESSION_KEY, email);
 
                             // FIX: JANGAN SEMBUNYIKAN LAYAR LOGIN DULUAN SEBELUM LOGIKA SIAP
@@ -13268,11 +13304,11 @@
                         /* MOVED: CINTA MATRE PINDAH KE INTERIOR (GUILD & PERPUS) */
 
                         /* DIKEMBALIKAN: Peer 1 (Siswa Laki-laki) */
-                        { id: 'peer1', x: 12, y: 12, name: 'Teman Sekelas', imgSrc: 'images/peer1.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 40, h: 60 },
+                        { id: 'peer1', x: 12, y: 12, name: 'Raka - Teman Sekelas', imgSrc: 'images/peer1.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 40, h: 60 },
 
                         /* DIHAPUS: Tetangga A (Peer 1) yang tinggal di rumah kiri */
-                        { id: 'peer2', x: 28, y: 11, name: 'Tetangga B', imgSrc: 'images/peer2.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 40, h: 60 },
-                        { id: 'peer3', x: 35, y: 30, name: 'Petani', imgSrc: 'images/peer3.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 40, h: 60 },
+                        { id: 'peer2', x: 28, y: 11, name: 'Budi - Tetangga', imgSrc: 'images/peer2.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 40, h: 60 },
+                        { id: 'peer3', x: 35, y: 30, name: 'Pak Slamet - Petani', imgSrc: 'images/peer3.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 40, h: 60 },
 
                         /* UPDATE: POSISI NPC DI DERMAGA MENGIKUTI PERUBAHAN BANGUNAN */
                         { id: 'nelayan', x: 44, y: 36, name: 'Pak Nelayan', imgSrc: 'images/nelayan.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 40, h: 60 },
@@ -13297,10 +13333,10 @@
                         { id: 'putriduyung', x: 38, y: 36, name: 'Putri Duyung', imgSrc: 'images/putriduyung.png', type: 'service', schedule: 'night', w: 40, h: 60 },
 
                         /* UPDATE: SENIMAN (Dipindah ke bawah Papan Misi - Area Santai) */
-                        { id: 'seniman', x: 12, y: 14, name: 'Seniman', imgSrc: 'images/seniman.png', type: 'static', schedule: 'day', w: 40, h: 60 },
+                        { id: 'seniman', x: 12, y: 14, name: 'Aryo - Seniman', imgSrc: 'images/seniman.png', type: 'static', schedule: 'day', w: 40, h: 60 },
 
                         /* UPDATE: PENYANYI (Dipindah ke sebelah Seniman di bawah Papan) */
-                        { id: 'penyanyi', x: 13, y: 14, name: 'Penyanyi', imgSrc: 'images/penyanyi.png', type: 'static', schedule: 'day', w: 40, h: 60 },
+                        { id: 'penyanyi', x: 13, y: 14, name: 'Nadia - Penyanyi', imgSrc: 'images/penyanyi.png', type: 'static', schedule: 'day', w: 40, h: 60 },
 
                         /* NEW: PERENANG DI LAUT (Swimmers) */
                         { id: 'swimmer_boy', x: 3, y: 20, name: 'Perenang Santai', imgSrc: 'images/pantai-boy.png', type: 'swimmer', vx: 0.5, vy: 0.5, schedule: 'day', w: 40, h: 60 },
@@ -13355,7 +13391,7 @@
                         { id: 'monster_skripsi', x: 50, y: 13, name: 'Pencuri Naskah', imgSrc: 'images/monster-thief.png', type: 'static', schedule: 'always', questReq: 'find_draft', w: 45, h: 45 },
 
                         /* MOVED: Penjaga Dungeon dipindah agak ke depan (y:21) agar sejajar entrance */
-                        { id: 'penjagadungeon', x: 46, y: 21, name: 'Penjaga', imgSrc: 'images/penjagadungeon.png', type: 'service', schedule: 'always', w: 40, h: 60 },
+                        { id: 'penjagadungeon', x: 46, y: 21, name: 'Siap - Penjaga Dungeon', imgSrc: 'images/penjagadungeon.png', type: 'service', schedule: 'always', w: 40, h: 60 },
 
                         /* UPDATE: AYAM DIKECILKAN (20x20) */
                         { id: 'ayam1', x: 15, y: 15, name: 'Ayam', imgSrc: 'images/ayam.png', type: 'animal', sound: 'ayam', vx: 0, vy: 0, cooldown: 0, loveTimer: 0, schedule: 'day', w: 20, h: 20 },
@@ -13471,14 +13507,14 @@
                     npcs: [
                         /* UPDATE: Pustakawan diposisikan di tengah belakang meja (x:6.5) dan mundur sedikit (y:1.8) */
                         /* Menggunakan koordinat desimal agar presisi di tengah meja yang lebarnya 2 tile */
-                        { id: 'librarian', x: 6.5, y: 1.8, name: 'Pustakawan', imgSrc: 'images/penjagaperpus.png', type: 'service', schedule: 'always', w: 40, h: 60 },
+                        { id: 'librarian', x: 6.5, y: 1.8, name: 'Bu Ratna - Pustakawan', imgSrc: 'images/penjagaperpus.png', type: 'service', schedule: 'always', w: 40, h: 60 },
 
                         /* ADDED: NPC CINTA MATRE (Hanya muncul di Perpus sesuai gender pemain) */
                         /* Siska (cewek matre) muncul jika pemain Cowok - DI PERPUSTAKAAN */
                         { id: 'lover_matre_girl', x: 11, y: 8, name: 'Siska (Sosialita)', imgSrc: 'images/lover_matre_girl.png', type: 'wander', schedule: 'day', genderReq: 'boy', w: 40, h: 60 },
 
                         /* NEW: NPC KUTUBUKU (Pemberi Quest Skripsi Tahun ke-3) */
-                        { id: 'kutubuku', x: 2, y: 8, name: 'Senior Kutubuku', imgSrc: 'images/kutubuku.png', type: 'static', schedule: 'day', w: 40, h: 60 }
+                        { id: 'kutubuku', x: 2, y: 8, name: 'Mas Hendra - Kutubuku', imgSrc: 'images/kutubuku.png', type: 'static', schedule: 'day', w: 40, h: 60 }
                     ],
                     objects: [
                         /* UPDATE: MEJA PUSTAKAWAN (Image Baru & Ukuran Diperbesar w:2) */
@@ -14147,22 +14183,22 @@
                 'lover_matre_boy':  { season: 'spring',  day: 20, name: 'Rendi (Anak Sultan)',  img: 'images/lover_matre_boy.png' },
                 'trader_outside':   { season: 'summer',  day: 3,  name: 'Pedagang Keliling',    img: 'images/merchant.png' },
                 'blacksmith':       { season: 'autumn',  day: 12, name: 'Kepala Bengkel',       img: 'images/blacksmith.png' },
-                'librarian':        { season: 'winter',  day: 18, name: 'Pustakawan',           img: 'images/penjagaperpus.png' },
+                'librarian':        { season: 'winter',  day: 18, name: 'Bu Ratna - Pustakawan',           img: 'images/penjagaperpus.png' },
                 'guild_master':     { season: 'spring',  day: 28, name: 'Guild Master',         img: 'images/masterguild.png' },
                 'lecture':          { season: 'autumn',  day: 22, name: 'Dosen Pembimbing',     img: 'images/lecture.png' },
                 'sarjana_tekno':    { season: 'winter',  day: 25, name: 'Senior Teknologi',     img: 'images/sarjanateknologi.png' },
                 'sarjana_sejarah':  { season: 'spring',  day: 16, name: 'Ahli Sejarah',         img: 'images/sarjanasejarah.png' },
                 'nelayan':          { season: 'summer',  day: 27, name: 'Pak Nelayan',          img: 'images/nelayan.png' },
                 'istrinelayan':     { season: 'autumn',  day: 8,  name: 'Bu Nelayan',           img: 'images/istrinelayan.png' },
-                'peer1':            { season: 'spring',  day: 12, name: 'Teman Sekelas',        img: 'images/peer1.png' },
-                'peer2':            { season: 'summer',  day: 18, name: 'Tetangga B',           img: 'images/peer2.png' },
-                'peer3':            { season: 'winter',  day: 11, name: 'Petani',               img: 'images/peer3.png' },
+                'peer1':            { season: 'spring',  day: 12, name: 'Raka - Teman Sekelas',        img: 'images/peer1.png' },
+                'peer2':            { season: 'summer',  day: 18, name: 'Budi - Tetangga',           img: 'images/peer2.png' },
+                'peer3':            { season: 'winter',  day: 11, name: 'Pak Slamet - Petani',               img: 'images/peer3.png' },
                 'child_blacksmith': { season: 'autumn',  day: 26, name: 'Lina (Anak Besi)',     img: 'images/anakblacksmith.png' },
                 'marine_tailor':    { season: 'winter',  day: 3,  name: 'Marine (Penjahit)',    img: 'images/marine.png' },
                 'penghulu':         { season: 'summer',  day: 22, name: 'Bapak Penghulu',       img: 'images/modin.png' },
-                'penjagadungeon':   { season: 'autumn',  day: 17, name: 'Penjaga Dungeon',      img: 'images/penjagadungeon.png' },
-                'seniman':          { season: 'spring',  day: 23, name: 'Seniman',              img: 'images/seniman.png' },
-                'penyanyi':         { season: 'winter',  day: 20, name: 'Penyanyi',             img: 'images/penyanyi.png' },
+                'penjagadungeon':   { season: 'autumn',  day: 17, name: 'Siap - Penjaga Dungeon',      img: 'images/penjagadungeon.png' },
+                'seniman':          { season: 'spring',  day: 23, name: 'Aryo - Seniman',              img: 'images/seniman.png' },
+                'penyanyi':         { season: 'winter',  day: 20, name: 'Nadia - Penyanyi',             img: 'images/penyanyi.png' },
                 'senior_kaia':      { season: 'summer',  day: 11, name: 'Kaia (Senior)',        img: 'images/kaia.png' },
                 'cewek_islam':      { season: 'spring',  day: 6,  name: 'Aisyah',              img: 'images/cewek-islam.png' },
                 'cewek_kristen':    { season: 'autumn',  day: 30, name: 'Maria',               img: 'images/cewek-kristen.png' },
@@ -14407,7 +14443,7 @@ ${reward.tip}`,
                     4:  { name: "🎂 Ultah Dr. Budi", type: "birthday", icon: "🎂", npcId: "lover1boy" },
                     6:  { name: "🎂 Ultah Aisyah", type: "birthday", icon: "🎂", npcId: "cewek_islam" },
                     8:  { name: "🎂 Ultah Mentor Budi", type: "birthday", icon: "🎂", npcId: "mentor" },
-                    12: { name: "🎂 Ultah Teman Sekelas", type: "birthday", icon: "🎂", npcId: "peer1" },
+                    12: { name: "🎂 Ultah Raka - Teman Sekelas", type: "birthday", icon: "🎂", npcId: "peer1" },
                     14: { name: "Festival Bunga (Valentine)", type: "festival", icon: "💖" },
                     16: { name: "🎂 Ultah Ahli Sejarah", type: "birthday", icon: "🎂", npcId: "sarjana_sejarah" },
                     18: { name: "Lomba Pacuan Kuda", type: "festival", icon: "🐎" },
@@ -16029,7 +16065,7 @@ ${reward.tip}`,
                 btnAction.innerText = '🔴';
                 showTutorialFocus('btn-action', "TEKAN INI");
 
-                showDialogue("🔴 INTERAKSI", "Tombol merah = Bicara / Masuk / Ambil Item.\n\nDi Dungeon, berubah jadi ⚔️ untuk menyerang!", [
+                showDialogue("🔴 TOMBOL AKSI", "Tombol bulat ini adalah tombol interaksi.\n\nFungsinya berubah otomatis:\n💬 Bicara dengan NPC\n🚪 Masuk/Keluar bangunan\n🌾 Berkebun & panen\n📬 Cek surat & papan info\n\n(Fungsi serang ⚔️ akan aktif otomatis saat masuk Dungeon)", [
                     {
                         text: "Oke! ▶",
                         action: () => {
@@ -16103,9 +16139,9 @@ ${reward.tip}`,
             }
 
             function tutorialStep_Diary() {
-                showInGameFocus(4, 0, "SAVE/JURNAL");
-                showDialogue("📔 JURNAL",
-                    "Meja belajar = SAVE GAME + Belajar Mandiri (INT naik).\n\nSekarang keluar dan temui Mentor di luar!",
+                showInGameFocus(5, 1, "JURNAL 📔");
+                showDialogue("📔 MEJA JURNAL",
+                    "Meja belajar = **TULIS JURNAL HARIAN** + Belajar Mandiri (INT naik).\n\nJurnal harian WAJIB diisi setiap hari — ini syarat STATUS WAJIB milikmu!\n\n📝 Cara: Dekati meja → tekan tombol aksi → pilih 'Tulis Jurnal'.\n\nSekarang keluar dan temui Mentor di luar!",
                     [{
                         text: "Ayo Keluar! ▶", action: () => {
                             clearTutorialFocus();
@@ -17581,6 +17617,8 @@ ${reward.tip}`,
                 // FIX: UPDATE MONEY DISPLAY AGAR SINKRON
                 // Menggunakan locale 'id-ID' agar format ribuan menggunakan titik (contoh: 36.000)
                 document.getElementById('money-display').innerText = p.money.toLocaleString('id-ID');
+                const hudAp = document.getElementById('hud-ap-display');
+                if (hudAp) hudAp.innerText = (p.achievementPoints || 0);
 
                 // Update Bars Width
                 const hpPct = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
@@ -20303,7 +20341,7 @@ ${reward.tip}`,
                 const btnAction = document.getElementById('btn-action');
                 if (btnAction.innerText === '🚫') {
                     showDialogue("LAHAN TERBENGKALAI",
-                        "Tanah ini keras dan dipenuhi akar liar.\nKamu tidak bisa mengolahnya sendirian.\n\n**SYARAT MEMBUKA LAHAN:**\nKamu harus mendapatkan bantuan dari ahli pertanian legendaris: **KURCACI TANI**.\n\n(Cari dia saat Festival Panen Raya di Musim Panas)",
+                        "Tanah ini keras dan dipenuhi akar liar.\nKamu tidak bisa mengolahnya sendirian.\n\n**CARA MEMBUKA LAHAN:**\nAjak **GORKI SI KURCACI TANI** bergabung bersamamu!\n\n📅 Cari Gorki saat **Festival Panen Raya di Musim Panas (Summer Hari 1)**.\nSetelah dia bergabung, seluruh ladang ini bisa kamu gunakan! 🌱",
                         [{ text: "Saya akan mencarinya!", action: closeDialogue }],
                         'images/lahan-liar.png'
                     );
@@ -21912,32 +21950,6 @@ ${reward.tip}`,
                             }
                         },
                         {
-                            text: STATE.player.hiredDwarf ? "✅ Kurcaci Tani (Sudah Dipekerjakan)" : "🧙 Sewa Kurcaci Tani (1000G)",
-                            action: () => {
-                                if (STATE.player.hiredDwarf) {
-                                    showToast("Kurcaci Tani sudah bekerja untukmu! 🌾");
-                                } else if (STATE.player.money >= 1000) {
-                                    STATE.player.money -= 1000;
-                                    STATE.player.hiredDwarf = true;
-                                    showToast("Kurcaci Tani dipekerjakan! Siram otomatis tiap pagi 🌱");
-                                    manualSave(); closeDialogue();
-                                } else showToast("Uang kurang! (Butuh 1000G)");
-                            }
-                        },
-                        {
-                            text: STATE.player.hiredFairy ? "✅ Peri Panen (Sudah Dipekerjakan)" : "🧚 Sewa Peri Panen (2000G)",
-                            action: () => {
-                                if (STATE.player.hiredFairy) {
-                                    showToast("Peri Panen sudah bekerja untukmu! 🍇");
-                                } else if (STATE.player.money >= 2000) {
-                                    STATE.player.money -= 2000;
-                                    STATE.player.hiredFairy = true;
-                                    showToast("Peri Panen dipekerjakan! Panen otomatis tiap hari 🧚‍♀️");
-                                    manualSave(); closeDialogue();
-                                } else showToast("Uang kurang! (Butuh 2000G)");
-                            }
-                        },
-                        {
                             text: "📦 Cek Grosir Barang", action: () => {
                                 closeDialogue();
                                 openPasar();
@@ -22424,7 +22436,26 @@ ${reward.tip}`,
 
                 // 6. DUNGEON & MISTIS
                 else if (npc.id === 'penjagadungeon') {
-                    showDialogue("PENJAGA", "Berhenti! Dungeon di depan sangat berbahaya. ⚔️\nHanya petualang dengan STR tinggi yang bisa bertahan.", [{ text: "Saya berani!", action: closeDialogue }], npc.imgSrc);
+                    const playerStr = STATE.player.strength || 0;
+                    const playerLvl = STATE.player.level || 1;
+                    let dungeonMsg = "";
+                    let opts = [];
+
+                    if (playerStr < 10) {
+                        dungeonMsg = `Siap — Penjaga Dungeon! 🛡️\n\nHei! Kamu belum cukup kuat untuk masuk.\nSTR kamu: ${playerStr} (Minimal 10 untuk masuk Dungeon).\n\nLatihan dulu di luar, tingkatkan STR-mu!\n\n⚔️ Di dalam ada monster berbahaya yang bisa membuatmu Game Over.`;
+                        opts = [
+                            { text: "Baik, saya latihan dulu!", action: closeDialogue },
+                            { text: "Tetap masuk! (Paksa)", action: () => { closeDialogue(); STATE.location = 'dungeon'; loadMap('dungeon'); } }
+                        ];
+                    } else {
+                        dungeonMsg = `Siap — Penjaga Dungeon! 🛡️\n\nSelamat datang, Petualang! STR-mu ${playerStr} sudah layak.\n\n⚠️ PERINGATAN:\n• Bawa Potion sebelum masuk\n• Monster semakin kuat di lantai bawah\n• Temukan Cincin Raja untuk membuka rahasia Dungeon\n\nKamu yakin siap menghadapi kegelapan?`;
+                        opts = [
+                            { text: "✅ Masuk Dungeon!", action: () => { closeDialogue(); STATE.location = 'dungeon'; loadMap('dungeon'); } },
+                            { text: "Ada info tentang Dungeon?", action: () => showDialogue("SIAP — PENJAGA DUNGEON", "🗺️ PETA DUNGEON:\nLt.1: Goblin & Slime (Mudah)\nLt.2: Orc & Troll (Sedang)\nLt.3: Boss Dragon (SANGAT KERAS!)\n\nItem langka hanya bisa ditemukan di lantai bawah.\nHati-hati dengan jebakan!", [{ text: "Siap tempur!", action: closeDialogue }], npc.imgSrc) },
+                            { text: "Tidak jadi, nanti dulu", action: closeDialogue }
+                        ];
+                    }
+                    showDialogue("SIAP — PENJAGA DUNGEON", dungeonMsg, opts, npc.imgSrc);
                 }
                 else if (npc.id === 'monster_skripsi') {
                     showDialogue("PENCURI NASKAH", "Grrr... Mau ambil skripsi ini? 👹\nLangkahi dulu mayatku!", [
@@ -22547,16 +22578,16 @@ ${reward.tip}`,
                             showDialogue("KURCACI TANI", "Hohoho! Aku sudah siram semua tanamanmu tadi pagi! Sisanya terserah kamu. 🌱\n\n(Kurcaci Tani sudah dipekerjakan — hadiah tahunan sudah diambil)", [{ text: "Bagus, teruskan!", action: closeDialogue }], npc.imgSrc);
                         }
                     } else {
-                        showDialogue("KURCACI TANI", "Hohoho! Festival Panen Raya! 🌾\nNama saya Gorki, Kurcaci Tani terbaik di tiga desa!\n\nKalau kamu rajin berkebun, aku bisa **menyiram semua tanamanmu secara otomatis** setiap pagi.\n\nAku hanya muncul **setahun sekali** di Festival ini — jangan lewatkan!", [
+                        showDialogue("GORKI — KURCACI TANI", "Hohoho! Festival Panen Raya! 🌾\nNama saya Gorki, Kurcaci Tani terbaik di tiga desa!\n\nLadang pemula seperti milikmu sangat butuh bantuan!\nKalau kamu ajak aku bergabung, aku bisa **menyiram semua tanamanmu secara otomatis** setiap pagi.\n\nAku hanya muncul **setahun sekali** di Festival ini — jangan lewatkan!", [
                             {
-                                text: "✅ Pekerjakan Gorki (1000G)", action: () => {
+                                text: "✅ Ajak Gorki Bergabung! (1000G)", action: () => {
                                     if (STATE.player.money >= 1000) {
                                         STATE.player.money -= 1000;
                                         STATE.player.hiredDwarf = true;
                                         createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#fbbf24');
                                         createParticle(npc.x * TILE_SIZE + 20, npc.y * TILE_SIZE - 10, '#86efac');
                                         manualSave();
-                                        showDialogue("KURCACI GORKI DIPEKERJAKAN! 🌱", "Hohoho! Mulai besok, semua tanamanmu akan kusiram tiap pagi sebelum kamu bangun!\n\nJangan lupa beli bibit di toko dan tanam di lahan ya!", [{ text: "Siap, Gorki! 🌾", action: closeDialogue }], npc.imgSrc);
+                                        showDialogue("GORKI BERGABUNG! 🌱", "Hohoho! Aku resmi bergabung bersamamu!\nMulai besok, semua tanamanmu akan kusiram tiap pagi sebelum kamu bangun!\n\nJangan lupa beli bibit di toko dan tanam di lahan ya!", [{ text: "Siap, Gorki! 🌾", action: closeDialogue }], npc.imgSrc);
                                     } else showToast("Uang kurang! Butuh 1000 Gold.");
                                 }
                             },
@@ -22579,22 +22610,83 @@ ${reward.tip}`,
                         }
                     } else {
                         const hasKurcaci = STATE.player.hiredDwarf;
-                        showDialogue("PERI PANEN", `Wangi anggur musim gugur memanggilku~ 🍇\nNama saya Sylva, Peri Panen dari Hutan Timur!\n\nAku bisa **memanen semua tanaman matangmu otomatis** setiap malam.\n\n${hasKurcaci ? '✅ Bagus! Kurcaci sudah bekerja di ladangmu. Dengan Peri, lahanmu akan jalan 100% otomatis!' : '⚠️ Tip: Rekrut Kurcaci Tani dulu di Festival Panen Raya (Summer hari 1) agar bisa berkebun!'}\n\nAku hanya muncul **setahun sekali** di Festival Anggur ini!`, [
+                        showDialogue("SYLVA — PERI PANEN", `Wangi anggur musim gugur memanggilku~ 🍇\nNama saya Sylva, Peri Panen dari Hutan Timur!\n\nAku bisa **memanen semua tanaman matangmu otomatis** setiap malam.\n\n${hasKurcaci ? '✅ Bagus! Gorki si Kurcaci sudah bekerja di ladangmu. Dengan aku, lahanmu akan jalan 100% otomatis!' : '⚠️ Tip: Ajak Gorki si Kurcaci Tani dulu di Festival Panen Raya (Summer hari 1) agar ladang makin optimal!'}\n\nAku hanya muncul **setahun sekali** di Festival Anggur ini!`, [
                             {
-                                text: "✅ Pekerjakan Sylva (2000G)", action: () => {
+                                text: "✅ Ajak Sylva Bergabung! (2000G)", action: () => {
                                     if (STATE.player.money >= 2000) {
                                         STATE.player.money -= 2000;
                                         STATE.player.hiredFairy = true;
                                         createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#f472b6');
                                         createParticle(npc.x * TILE_SIZE - 15, npc.y * TILE_SIZE - 15, '#c084fc');
                                         manualSave();
-                                        showDialogue("PERI SYLVA DIPEKERJAKAN! 🧚‍♀️", "Yeay! Mulai malam ini, semua tanaman yang matang (Stage 3) akan kupanen otomatis sebelum fajar!\n\nHasil panen akan masuk ke tasmu. Jangan lupa tanam bibit baru ya~", [{ text: "Siap, Sylva! 🍇", action: closeDialogue }], npc.imgSrc);
+                                        showDialogue("SYLVA BERGABUNG! 🧚‍♀️", "Yeay! Aku resmi bergabung bersamamu!\nMulai malam ini, semua tanaman yang matang (Stage 3) akan kupanen otomatis sebelum fajar!\n\nHasil panen akan masuk ke tasmu. Jangan lupa tanam bibit baru ya~", [{ text: "Siap, Sylva! 🍇", action: closeDialogue }], npc.imgSrc);
                                     } else showToast("Uang kurang! Butuh 2000 Gold.");
                                 }
                             },
                             { text: "Belum perlu sekarang", action: closeDialogue }
                         ], npc.imgSrc);
                     }
+                }
+
+                // --- DIALOG SPESIFIK: RAKA - TEMAN SEKELAS ---
+                else if (npc.id === 'peer1') {
+                    const rep = STATE.player.reputation || 0;
+                    const msgs = rep >= 60
+                        ? ["Eh bro! Makasih udah jadi teman terbaik aku di sini. Yuk nanti kita belajar bareng di kampus, EXP-nya double lho!", "Yo! Gue dapet kabar ada ujian mendadak besok. Lo udah siap? Belajar bareng yuk!", "Hei! Gue lagi cari partner buat tugas kelompok. Lo mau?"]
+                        : ["Hoi! Salam kenal, aku Raka. Kuliah di sini juga? Kita bisa belajar bareng kapan-kapan!", "Raka nih. Kalau butuh teman belajar, cari aku aja ya!", "Eh, kalau kamu sering ke kampus, nanti kita bisa ketemu di sana ya!"];
+                    showDialogue("RAKA — TEMAN SEKELAS", msgs[Math.floor(Math.random() * msgs.length)], [
+                        rep >= 30 ? { text: "Yuk belajar bareng!", action: () => { showToast("Belajar bareng Raka! +10 EXP 📚"); STATE.player.exp = (STATE.player.exp || 0) + 10; closeDialogue(); } } : null,
+                        { text: "Sip, makasih Raka!", action: closeDialogue }
+                    ].filter(Boolean), npc.imgSrc);
+                }
+
+                // --- DIALOG SPESIFIK: BUDI - TETANGGA ---
+                else if (npc.id === 'peer2') {
+                    const hour = STATE.hour || 8;
+                    const msgs = hour < 12
+                        ? "Pagi! Aku Budi, tetanggamu. Kalau butuh apa-apa jangan sungkan ya, pintu rumah aku selalu terbuka!"
+                        : hour < 17
+                        ? "Siang! Lagi sibuk apa? Aku baru pulang dari pasar. Harga sembako naik lagi nih..."
+                        : "Sore! Hari yang panjang ya. Istirahat yang cukup biar badan tetap fit!";
+                    showDialogue("BUDI — TETANGGA", msgs, [{ text: "Makasih Budi!", action: closeDialogue }], npc.imgSrc);
+                }
+
+                // --- DIALOG SPESIFIK: PAK SLAMET - PETANI ---
+                else if (npc.id === 'peer3') {
+                    const farming = STATE.player.farming || {};
+                    const totalPlants = Object.values(farming).filter(c => c && c.type).length;
+                    const msg = totalPlants > 0
+                        ? `Slamet aku, petani di sini. Lihat ladangmu udah ada ${totalPlants} tanaman — bagus! Jangan lupa siram tiap pagi, biar hasil panennya maksimal. Musim ini bagus untuk menanam padi!`
+                        : "Halo nak! Nama saya Slamet, petani di desa ini sejak 20 tahun lalu. Kamu belum punya tanaman? Coba ke ladangmu, cangkul tanahnya dan tanam bibit. Bertani itu mengasyikkan!";
+                    showDialogue("PAK SLAMET — PETANI", msg, [
+                        { text: "Terima kasih Pak Slamet!", action: closeDialogue },
+                        { text: "Tips bertani dong!", action: () => showDialogue("PAK SLAMET — PETANI", "🌾 TIPS BERTANI:\n1. Cangkul tanah dulu sebelum tanam\n2. Siram SETIAP pagi (Stage naik lebih cepat)\n3. Pupuk bisa mempercepat 1 hari\n4. Panen saat Stage 3 (penuh)\n5. Jual di Merchant untuk harga terbaik!", [{ text: "Mantap Pak!", action: closeDialogue }], npc.imgSrc) }
+                    ], npc.imgSrc);
+                }
+
+                // --- DIALOG SPESIFIK: ARYO - SENIMAN ---
+                else if (npc.id === 'seniman') {
+                    showDialogue("ARYO — SENIMAN", "Kreativitas adalah jiwa! Aku Aryo, seniman Pulau Arsa.\n\nSeni bukan hanya soal bakat — tapi ketekunan dan keberanian mengekspresikan diri.\n\nJika relasimu denganku sudah cukup dalam, aku bisa melukis potretmu untuk menaikkan Reputasi di desa! 🎨", [
+                        { text: "Keren banget, Aryo!", action: closeDialogue },
+                        { text: "Lukis potret aku!", action: () => {
+                            const rel = (STATE.player.relationships && STATE.player.relationships['seniman']) || 0;
+                            if (rel >= 65) {
+                                STATE.player.reputation = (STATE.player.reputation || 0) + 20;
+                                showDialogue("ARYO — SENIMAN", "🖼️ Potretmu sudah jadi! Karya terbaikku!\n\nReputasimu di desa naik +20! Warga-warga kagum melihat potretmu dipajang di balai desa.", [{ text: "Luar biasa, Aryo!", action: closeDialogue }], npc.imgSrc);
+                            } else {
+                                showDialogue("ARYO — SENIMAN", `Hmm... hubungan kita belum cukup dalam.\nRelasi kita: ${rel}/65.\n\nDatangi aku lebih sering dan bawa kain sutra sebagai kado — baru aku mau melukismu!`, [{ text: "Baik, aku akan kembali!", action: closeDialogue }], npc.imgSrc);
+                            }
+                        }}
+                    ], npc.imgSrc);
+                }
+
+                // --- DIALOG SPESIFIK: NADIA - PENYANYI ---
+                else if (npc.id === 'penyanyi') {
+                    const hour = STATE.hour || 8;
+                    const msg = hour >= 18
+                        ? "🎵 La la la~ Malam ini aku tampil di festival! Nanti kalau dengar lagu 'Angin Arsa', itu laguku lho!\n\nMusik bisa mengobati jiwa yang lelah. Apa kamu juga suka bernyanyi?"
+                        : "Halo! Aku Nadia, penyanyi desa ini. 🎤\nAku biasanya latihan di sini setiap pagi.\n\nSuara adalah instrumen terbaik — tak perlu beli, cukup dilatih!";
+                    showDialogue("NADIA — PENYANYI", msg, [{ text: "Suaramu merdu, Nadia!", action: closeDialogue }], npc.imgSrc);
                 }
 
                 // --- FIX: MENGEMBALIKAN INTERAKSI HEWAN (YANG SEMPAT HILANG) ---
@@ -23732,7 +23824,7 @@ ${reward.tip}`,
                     // UPDATE: Ganti 'bg' ke 'item' agar bunyi saat interaksi awal
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
 
-                    let questText = "Simpan progress?";
+                    let questText = "";
                     if (STATE.player.role === 'worker') {
                         questText = "QUEST PEKERJA:\n1. Pergi ke Merchant (Gedung).\n2. Bicara pada Bos & Lamar Kerja.\n3. Masuk kerja jam 08:00 setiap pagi.\n4. Jangan terlambat agar tidak dipecat!";
                     } else if (STATE.player.role === 'student') {
@@ -23741,9 +23833,17 @@ ${reward.tip}`,
                         questText = "QUEST WIRAUSAHA:\n1. Beli murah di Merchant.\n2. Jual saat harga naik di Menu Trading.\n3. Kumpulkan 100k Gold.";
                     } else if (STATE.player.role === 'family') {
                         questText = "QUEST KELUARGA:\n1. Sapa tetangga (Interact).\n2. Cari pasangan di desa.\n3. Nabung untuk nikah.";
+                    } else {
+                        questText = "Halo! Di meja ini kamu bisa tulis jurnal dan belajar mandiri.";
                     }
 
-                    showDialogue("BUKU HARIAN", questText, [
+                    showDialogue("📔 MEJA JURNAL", questText, [
+                        {
+                            text: "📝 Tulis Jurnal Harian", action: () => {
+                                closeDialogue();
+                                openJournalModal();
+                            }
+                        },
                         {
                             text: "ℹ️ Penjelasan Status", action: () => {
                                 showDialogue("PANDUAN STATUS",
@@ -23760,10 +23860,8 @@ ${reward.tip}`,
                             }
                         },
 
-                        /* UPDATE: HAPUS OPSI JURNAL & TIDUR DARI BUKU (SUDAH PINDAH KE KASUR) */
-
                         { text: "Tutup", action: closeDialogue }
-                    ], 'images/buku.png'); // FIX: Menggunakan 'images/buku.png' untuk ikon dialog, tapi objeknya 'mejabuku.png'
+                    ], 'images/buku.png');
                 }
                 else if (obj.type === 'catalog') {
                     showDialogue("KATALOG BELANJA", "Beli Furnitur & Upgrade:", [
