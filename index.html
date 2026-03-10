@@ -6815,11 +6815,11 @@
                         </div>
 
                         <!-- Tombol Tutup & Logout -->
-                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 16px; box-sizing: border-box; width: 100%;">
+                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 16px;">
                             <button class="main-menu-btn" onclick="closeProfileModal()"
-                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: #334155; border-color: #475569; color: white; min-height: 48px; border-radius: 10px; cursor:pointer; min-width: 0; box-sizing: border-box; box-shadow: none;">✖ TUTUP</button>
+                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: #334155; border-color: #475569; color: white; min-height: 48px; border-radius: 10px; cursor:pointer;">✖ TUTUP</button>
                             <button class="main-menu-btn" onclick="showLogoutConfirm();"
-                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: linear-gradient(135deg,#991b1b,#7f1d1d); border: 2px solid #ef4444; color: white; min-height: 48px; border-radius: 10px; font-weight: bold; box-shadow: 0 3px 10px rgba(239,68,68,0.4); cursor:pointer; min-width: 0; box-sizing: border-box;">🚪 KELUAR</button>
+                                style="flex:1; font-size: 13px; padding: 12px 6px; margin: 0; background: linear-gradient(135deg,#991b1b,#7f1d1d); border: 2px solid #ef4444; color: white; min-height: 48px; border-radius: 10px; font-weight: bold; box-shadow: 0 3px 10px rgba(239,68,68,0.4); cursor:pointer;">🚪 KELUAR</button>
                         </div>
                     </div>
                 </div>
@@ -6956,10 +6956,7 @@
 
                 <!-- 3. RIGHT: META INFO (Time/Money) -->
                 <div class="hud-meta-section">
-                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                        <div class="money-badge">💰 <span id="money-display">50.000</span></div>
-                        <div class="money-badge" style="background:linear-gradient(180deg,#a78bfa,#7c3aed); color:#fff; border-color:#c4b5fd; box-shadow:0 4px 0 #5b21b6; font-size:13px; padding:5px 11px;">🏅 <span id="hud-ap-display">0</span> AP</div>
-                    </div>
+                    <div class="money-badge">💰 <span id="money-display">50.000</span></div>
 
                     <!-- UPDATE: Menambahkan ID 'hud-time-container' untuk target tutorial -->
                     <div id="hud-time-container" class="stat-item time-container"
@@ -15575,14 +15572,26 @@ ${reward.tip}`,
                         buildings: [
                             { id: 'house_exit', x: doorX - 1, y: doorY, w: 3, h: 1, type: 'trigger', entrance: { x: doorX, y: doorY }, name: "Keluar Rumah" }
                         ],
-                        objects: [
-                            { x: 1, y: 0, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk" },
-                            { x: 4, y: 0, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Meja Jurnal" },
-                            { x: 7, y: 0, w: 2, h: 3, type: 'shelf', icon: '👗', text: "Lemari Pakaian", img: 'images/lemari.png' },
-                            { x: w - 2, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png' },
-                            { x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon" },
-                            { x: 9, y: 0, w: 1, h: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Merah", img: 'images/vasmerah.png' }
-                        ]
+                        objects: (() => {
+                            const baseObjs = [
+                                { x: 1, y: 0, w: 2, h: 3, type: 'bed', icon: '🛏️', img: 'images/bed.png', name: "Kasur Empuk" },
+                                { x: 4, y: 0, w: 2, h: 2, type: 'diary', icon: '📔', img: 'images/mejabelajar.png', name: "Meja Jurnal" },
+                                { x: 7, y: 0, w: 2, h: 3, type: 'shelf', icon: '👗', text: "Lemari Pakaian", img: 'images/lemari.png' },
+                                { x: w - 2, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png' },
+                                { x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon" },
+                                { x: 9, y: 0, w: 1, h: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Merah", img: 'images/vasmerah.png' }
+                            ];
+                            if (level >= 3) {
+                                baseObjs.push({
+                                    x: w - 4, y: 2, w: 3, h: 3,
+                                    type: 'kitchen',
+                                    icon: '🍳',
+                                    img: 'images/dapurayaayu.png',
+                                    name: level >= 5 ? "Dapur Mewah 🍽️" : "Dapur"
+                                });
+                            }
+                            return baseObjs;
+                        })()
                     };
 
                     // --- UPDATE: SPAWN PASANGAN DI RUMAH JIKA MENIKAH ---
@@ -15792,6 +15801,8 @@ ${reward.tip}`,
 
                     regenerateHouseMap();
                     updateBagIcon();
+                    // Show house level HUD indicator when inside house
+                    updateHouseLevelHUD();
                     updatePetHUD(); // Tampilkan pet HUD jika ada pet aktif
 
                     try {
@@ -15857,6 +15868,25 @@ ${reward.tip}`,
             }
 
             // --- NEW: TUTORIAL HELPER FUNCTIONS ---
+            function updateHouseLevelHUD() {
+                let el = document.getElementById('house-level-hud');
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'house-level-hud';
+                    el.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.82);color:#fbbf24;font-family:Fredoka,sans-serif;font-size:13px;padding:4px 16px;border-radius:20px;border:1.5px solid #fbbf24;pointer-events:none;z-index:500;display:none;letter-spacing:0.5px;';
+                    document.getElementById('game-container').appendChild(el);
+                }
+                if (STATE.location === 'house') {
+                    const hl = STATE.player.houseLevel || 1;
+                    const icons = ['🪵','🏡','🏠','🏰','🏯'];
+                    el.innerText = `${icons[hl-1]} Rumah Level ${hl}`;
+                    el.style.display = 'block';
+                    setTimeout(() => { if (el) el.style.display = 'none'; }, 3000);
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+
             function showTutorialFocus(elementId, labelText = null) {
                 // 1. Hapus highlight lama
                 document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
@@ -17617,8 +17647,6 @@ ${reward.tip}`,
                 // FIX: UPDATE MONEY DISPLAY AGAR SINKRON
                 // Menggunakan locale 'id-ID' agar format ribuan menggunakan titik (contoh: 36.000)
                 document.getElementById('money-display').innerText = p.money.toLocaleString('id-ID');
-                const hudAp = document.getElementById('hud-ap-display');
-                if (hudAp) hudAp.innerText = (p.achievementPoints || 0);
 
                 // Update Bars Width
                 const hpPct = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
@@ -18611,6 +18639,7 @@ ${reward.tip}`,
                                 else if (obj.type === 'sign') actionIcon = '🪧';
                                 else if (obj.type === 'bookshelf') actionIcon = '📖';
                                 else if (obj.type === 'bed') actionIcon = '🛏️';
+                                else if (obj.type === 'kitchen') actionIcon = '🍳';
                                 else actionIcon = '🖐️';
                                 break;
                             }
@@ -19627,6 +19656,7 @@ ${reward.tip}`,
                         STATE.player.x = doorX * TILE_SIZE;
                         STATE.player.y = doorY * TILE_SIZE;
                         showToast("Masuk Rumah 🏠");
+                        if (typeof updateHouseLevelHUD === 'function') updateHouseLevelHUD();
                     }
                 }
                 else if (b.id === 'house_exit' || b.id === 'pshop_exit') {
@@ -23863,13 +23893,98 @@ ${reward.tip}`,
                         { text: "Tutup", action: closeDialogue }
                     ], 'images/buku.png');
                 }
+                else if (obj.type === 'kitchen') {
+                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    const p = STATE.player;
+                    const houseLevel = p.houseLevel || 1;
+
+                    // Resep masakan ala Harvest Moon - level dapur menentukan pilihan
+                    const recipes = [
+                        {
+                            id: 'nasi_goreng', name: '🍳 Nasi Goreng', energyCost: 10,
+                            desc: 'Masak dari bahan sederhana.',
+                            effect: () => {
+                                p.energy = Math.min(100, p.energy + 30);
+                                p.hp = Math.min(p.maxHp, p.hp + 10);
+                                showToast('😋 Nasi Goreng siap! +30 Energy, +10 HP');
+                            },
+                            available: true
+                        },
+                        {
+                            id: 'sup_ayam', name: '🍲 Sup Ayam', energyCost: 15,
+                            desc: 'Menyehatkan dan mengenyangkan.',
+                            effect: () => {
+                                p.energy = Math.min(100, p.energy + 50);
+                                p.hp = Math.min(p.maxHp, p.hp + 25);
+                                showToast('🍲 Sup Ayam siap! +50 Energy, +25 HP');
+                            },
+                            available: houseLevel >= 3
+                        },
+                        {
+                            id: 'kue_lapis', name: '🍰 Kue Lapis', energyCost: 20,
+                            desc: 'Manis & bikin mood bagus. +REP jika dibagi.',
+                            effect: () => {
+                                p.energy = Math.min(100, p.energy + 20);
+                                p.reputation = (p.reputation || 0) + 5;
+                                showToast('🍰 Kue Lapis siap! +20 Energy, +5 REP');
+                            },
+                            available: houseLevel >= 4
+                        },
+                        {
+                            id: 'rendang', name: '🥩 Rendang Spesial', energyCost: 25,
+                            desc: 'Masakan terbaik. Buff stat penuh!',
+                            effect: () => {
+                                p.energy = Math.min(100, p.energy + 60);
+                                p.hp = Math.min(p.maxHp, p.hp + 40);
+                                p.str = (p.str || 0) + 1;
+                                showToast('🥩 Rendang siap! +60 Energy, +40 HP, +1 STR (hari ini)!');
+                            },
+                            available: houseLevel >= 5
+                        }
+                    ];
+
+                    const availableRecipes = recipes.filter(r => r.available);
+                    const opts = availableRecipes.map(r => ({
+                        text: `${r.name} (Energy -${r.energyCost})`,
+                        action: () => {
+                            if (p.energy < r.energyCost) {
+                                showToast('⚡ Energi tidak cukup untuk memasak!');
+                                return;
+                            }
+                            if (p.dailyChores && p.dailyChores.cooking) {
+                                showToast('✅ Sudah memasak hari ini!');
+                                return;
+                            }
+                            p.energy -= r.energyCost;
+                            if (!p.dailyChores) p.dailyChores = {};
+                            p.dailyChores.cooking = true;
+                            r.effect();
+                            closeDialogue();
+                            DataService.saveGame({ player: p, ...STATE });
+                        }
+                    }));
+                    opts.push({ text: '❌ Tutup', action: closeDialogue });
+
+                    const alreadyCooked = p.dailyChores && p.dailyChores.cooking;
+                    const kitchenName = houseLevel >= 5 ? "DAPUR MEWAH 🍽️" : "DAPUR 🍳";
+                    const desc = alreadyCooked
+                        ? `Sudah memasak hari ini! Istirahat dulu.
+
+(Bisa masak lagi besok)`
+                        : `Selamat datang di dapur!
+Pilih masakan:
+
+⚡ Energy kamu: ${p.energy}/100`;
+
+                    showDialogue(kitchenName, desc, opts, 'images/dapurayaayu.png');
+                }
                 else if (obj.type === 'catalog') {
                     showDialogue("KATALOG BELANJA", "Beli Furnitur & Upgrade:", [
                         { text: "Karpet Merah (50k)", action: () => buyFurniture('carpet_red', 50000) },
                         { text: "TV Layar Datar (150k)", action: () => buyFurniture('tv_flat', 150000) },
                         // --- NEW: RUMAH KURCACI DI KATALOG ---
                         { text: "🏠 Rumah Kurcaci (150k)", action: () => buyFurniture('rumah_kurcaci', 150000) },
-                        { text: `UPGRADE RUMAH (LV ${STATE.player.houseLevel + 1})`, action: () => upgradeHouse() },
+                        { text: `🏰 UPGRADE RUMAH (LV ${STATE.player.houseLevel + 1})`, action: () => showUpgradeHousePreview() },
                         { text: "Tutup", action: closeDialogue }
                     ], null);
                 }
@@ -25182,28 +25297,78 @@ ${reward.tip}`,
                 }
             }
 
+            // Deskripsi upgrade per level
+            const HOUSE_UPGRADE_INFO = {
+                2: { desc: "Rumah meluas! Lantai lebih luas & warna baru.\n🎁 Hadiah: +100 EXP", icon: "🏡" },
+                3: { desc: "Rumah makin nyaman! Dapur muncul di dalam rumah.\nBisa memasak tiap hari (Nasi Goreng & Sup Ayam).\n🎁 Hadiah: +200 EXP", icon: "🏠" },
+                4: { desc: "Rumah mewah! Dapur upgrade — bisa buat Kue Lapis.\nRuangan makin besar & lantai biru elegan.\n🎁 Hadiah: +300 EXP", icon: "🏰" },
+                5: { desc: "RUMAH MEWAH MAKSIMAL! Dapur premium — bisa bikin Rendang.\nLantai emas eksklusif. Rumah terbesar di desa!\n🎁 Hadiah: +500 EXP + 5 REP", icon: "🏯" }
+            };
+
+            function showUpgradeHousePreview() {
+                const p = STATE.player;
+                const nextLevel = p.houseLevel + 1;
+                if (p.houseLevel >= 5) { showToast("Level Rumah Maksimal! 🏯"); return; }
+                const cost = nextLevel * 500000;
+                const info = HOUSE_UPGRADE_INFO[nextLevel];
+                showDialogue("ARSITEK 👷", 
+                    `UPGRADE RUMAH ke Level ${nextLevel} ${info.icon}\n\nApa yang berubah:\n${info.desc}\n\nBiaya: ${cost.toLocaleString()} Gold\nUangmu: ${p.money.toLocaleString()} Gold`,
+                    [
+                        { text: `✅ Upgrade Sekarang!`, action: () => upgradeHouse() },
+                        { text: "❌ Batal", action: closeDialogue }
+                    ]
+                );
+            }
+
             function upgradeHouse() {
                 const nextLevel = STATE.player.houseLevel + 1;
                 const cost = nextLevel * 500000;
 
                 if (STATE.player.houseLevel >= 5) {
-                    showToast("Level Rumah Maksimal!");
+                    showToast("Level Rumah Maksimal! 🏯");
                     return;
                 }
 
                 if (STATE.player.money >= cost) {
                     STATE.player.money -= cost;
                     STATE.player.houseLevel = nextLevel;
-                    showToast(`RUMAH UPGRADE KE LEVEL ${nextLevel}! 🏰`);
-                    createParticle(18 * TILE_SIZE, 8 * TILE_SIZE, '#fbbf24');
-                    gainExp(200); // Big EXP for upgrade
+                    const info = HOUSE_UPGRADE_INFO[nextLevel] || { icon: "🏰", desc: "" };
 
-                    // --- REGENERATE MAP AFTER UPGRADE ---
+                    // Bonus EXP & REP per level
+                    const expBonus = [0, 0, 100, 200, 300, 500];
+                    gainExp(expBonus[nextLevel] || 200);
+                    if (nextLevel >= 5) {
+                        STATE.player.reputation = (STATE.player.reputation || 0) + 5;
+                        showToast("✨ +5 REP dari Rumah Mewah!");
+                    }
+
+                    // Efek visual
+                    for (let i = 0; i < 8; i++) {
+                        setTimeout(() => createParticle(
+                            18 * TILE_SIZE + (Math.random() - 0.5) * 100,
+                            8 * TILE_SIZE + (Math.random() - 0.5) * 100,
+                            ['#fbbf24','#34d399','#60a5fa','#f472b6'][Math.floor(Math.random() * 4)]
+                        ), i * 80);
+                    }
+
+                    // Regenerate map baru dengan ukuran & fitur sesuai level
                     regenerateHouseMap();
-
                     closeDialogue();
+                    updateHUDInfo();
+
+                    // Tampilkan notif upgrade
+                    setTimeout(() => {
+                        showDialogue(`RUMAH LEVEL ${nextLevel} ${info.icon}`,
+                            `Rumahmu berhasil diupgrade!\n\n${info.desc}\n\nSekarang masuk ke dalam rumah untuk melihat perubahannya!`,
+                            [{ text: "🏠 Lihat Rumah!", action: closeDialogue }]
+                        );
+                    }, 300);
                 } else {
-                    showDialogue("ARSITEK", `Butuh ${cost.toLocaleString()} Gold untuk Level ${nextLevel}.`, [{ text: "Nanti saja", action: closeDialogue }]);
+                    const shortage = (nextLevel * 500000) - STATE.player.money;
+                    showDialogue("ARSITEK 👷", 
+                        `Uang belum cukup untuk Level ${nextLevel}.\n\nKurang: ${shortage.toLocaleString()} Gold`, 
+                        [{ text: "Nanti saja", action: closeDialogue }]
+                    );
                 }
             }
 
@@ -25685,13 +25850,22 @@ ${reward.tip}`,
                                 }
                             }
 
-                            // NEW: Handle House Floor (ID 10 in House) - MENGGUNAKAN TILE LANTAI KAYU (Sama dengan Kampus)
+                            // NEW: Handle House Floor (ID 10 in House) - Warna lantai berubah sesuai level rumah
                             // UPDATE: Menambahkan 'player_shop_interior' agar lantainya sama dengan rumah
                             else if (t === 10 && (STATE.location === 'house' || STATE.location === 'player_shop_interior')) {
+                                const hl = STATE.player.houseLevel || 1;
                                 if (wallAssets.schoolFloor.complete && wallAssets.schoolFloor.naturalWidth !== 0) {
                                     ctx.drawImage(wallAssets.schoolFloor, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                                    // Overlay warna tint per level agar lantai terlihat berbeda
+                                    if (hl === 1) { ctx.fillStyle = 'rgba(120,53,15,0.35)'; ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE); }
+                                    else if (hl === 2) { ctx.fillStyle = 'rgba(252,211,77,0.25)'; ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE); }
+                                    else if (hl === 3) { ctx.fillStyle = 'rgba(167,243,208,0.2)'; ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE); }
+                                    else if (hl === 4) { ctx.fillStyle = 'rgba(147,197,253,0.2)'; ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE); }
+                                    else if (hl === 5) { ctx.fillStyle = 'rgba(253,186,116,0.25)'; ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE); }
                                 } else {
-                                    ctx.fillStyle = '#78350f'; // Warna kayu
+                                    // Fallback warna solid per level
+                                    const floorColors = ['#78350f','#92400e','#065f46','#1e3a8a','#92400e'];
+                                    ctx.fillStyle = floorColors[(hl - 1)] || '#78350f';
                                     ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                                 }
                             }
