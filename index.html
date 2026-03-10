@@ -31,6 +31,7 @@
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
     <style>
@@ -107,29 +108,6 @@
             #rotate-warning {
                 display: none !important;
             }
-
-            /* FIX PORTRAIT: Judul splash & title screen lebih kecil di HP portrait */
-            #title-screen h1 {
-                font-size: clamp(22px, 8vw, 48px) !important;
-                -webkit-text-stroke: 1.5px #a16207 !important;
-            }
-            #title-screen h2 {
-                font-size: clamp(9px, 3.2vw, 18px) !important;
-                letter-spacing: 2px !important;
-                margin-bottom: clamp(6px, 1.5vh, 16px) !important;
-            }
-            #splash-screen h1 {
-                font-size: clamp(22px, 8vw, 48px) !important;
-                -webkit-text-stroke: 1.5px #a16207 !important;
-            }
-            #splash-screen p {
-                font-size: clamp(9px, 3.2vw, 18px) !important;
-                letter-spacing: 2px !important;
-            }
-            .logo-main { width: clamp(32px, 7vw, 56px) !important; }
-            .logo-side { width: clamp(22px, 5vw, 42px) !important; }
-            #title-logo-row .logo-main { width: clamp(32px, 7vw, 56px) !important; }
-            #title-logo-row .logo-side { width: clamp(22px, 5vw, 42px) !important; }
         }
 
         /* FIX: JANGAN SEMBUNYIKAN GAME CONTAINER AGAR TETAP RENDER */
@@ -1746,7 +1724,7 @@
 
         #title-screen h1 {
             font-family: 'Fredoka', sans-serif;
-            font-size: clamp(24px, 7vw, 88px);
+            font-size: clamp(36px, 9vw, 88px);
             font-weight: 900;
             color: #fff;
             background: none;
@@ -1762,7 +1740,7 @@
 
         #title-screen h2 {
             font-family: 'Fredoka', sans-serif;
-            font-size: clamp(10px, 2.8vw, 30px);
+            font-size: clamp(13px, 3.5vw, 30px);
             font-weight: 700;
             color: #fef08a;
             text-transform: uppercase;
@@ -2092,6 +2070,46 @@
             transform: translateY(4px);
             box-shadow: 0 2px 0 #14532d;
         }
+
+        /* GOOGLE LOGIN BUTTON */
+        .google-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0;
+            color: #78350f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .google-divider::before, .google-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #a16207;
+            opacity: 0.4;
+        }
+        .google-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 11px 20px;
+            background: #fff;
+            border: 2px solid #a16207;
+            border-radius: 50px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #422006;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #a16207;
+            transition: all 0.15s;
+            margin-bottom: 4px;
+        }
+        .google-btn:hover { filter: brightness(0.97); }
+        .google-btn:active { transform: translateY(4px); box-shadow: 0 0px 0 #a16207; }
+        .google-btn img { width: 20px; height: 20px; }
 
         /* UPDATE: REDESIGN TOMBOL SWITCH (DAFTAR/LOGIN) AGAR LEBIH TERLIHAT */
         .auth-switch {
@@ -4923,14 +4941,14 @@
 
                 <!-- Blok judul — naik ke atas area tengah -->
                 <div id="splash-title-block">
-                    <h1 style="font-size: clamp(24px,7vw,72px); text-align:center; line-height:1.1;
+                    <h1 style="font-size: clamp(42px,9vw,72px); text-align:center; line-height:1.1;
                         font-family:'Fredoka'; margin:0 0 4px; color:#fff;
                         text-shadow: 4px 4px 0 #a16207, 0 0 30px rgba(251,191,36,0.3);
                         -webkit-text-stroke: 2px #a16207;
                         animation: splashTitleAnim 3s infinite ease-in-out;">
                         NUSANTARA ARSA
                     </h1>
-                    <p style="font-size: clamp(10px,2.8vw,26px); font-family:'Fredoka'; font-weight:700;
+                    <p style="font-size: clamp(16px,4vw,26px); font-family:'Fredoka'; font-weight:700;
                         color:#fef08a; letter-spacing:4px; text-transform:uppercase;
                         text-shadow: 2px 2px 0 #a16207; margin:0;">
                         — Pilih Jalanmu, Hadapi Duniamu —
@@ -5014,7 +5032,7 @@
                     <span style="color: #ea580c; font-size: 14px; font-weight: 900; font-family:'Fredoka';">NAILUL
                         AUTHAR, S.Kom.</span><br>
                     Guru TKJ - SMK Negeri 1 Brondong<br><br>
-                    📧 <span style="color: #0369a1; font-weight:bold;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bad4dbd3d6cfd6dbcfced2dbc888898a88faddd7dbd3d694d9d5d7">[email&#160;protected]</a></span>
+                    📧 <span style="color: #0369a1; font-weight:bold;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="523c333b3e273e3327263a33206061626012353f333b3e7c313d3f">[email&#160;protected]</a></span>
                 </div>
 
                 <button class="main-menu-btn" onclick="document.getElementById('about-screen').style.display='none'"
@@ -5126,6 +5144,11 @@
                             onclick="togglePassword('siswa-pass', 'toggle-siswa')">👁️</span>
                     </div>
                     <button type="submit" class="auth-btn">MENDARAT DI PULAU ARSA</button>
+                    <div class="google-divider">atau</div>
+                    <button type="button" class="google-btn" onclick="handleGoogleLogin('siswa')">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        Masuk dengan Google
+                    </button>
                 </form>
 
                 <!-- FORM GURU -->
@@ -5147,6 +5170,11 @@
                             onclick="togglePassword('guru-pass', 'toggle-guru')">👁️</span>
                     </div>
                     <button type="submit" class="auth-btn">ACCESS DASHBOARD</button>
+                    <div class="google-divider">atau</div>
+                    <button type="button" class="google-btn" onclick="handleGoogleLogin('guru')">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        Masuk dengan Google
+                    </button>
                 </form>
 
                 <!-- NEW: FORM ADMIN -->
@@ -9042,6 +9070,187 @@
             let currentRole = 'siswa';
             let teacherMonitorUnsub = null; // Variabel global untuk menyimpan unsubscribe listener monitoring
             let latestStudentData = []; // NEW: Cache Data Siswa Live untuk Dashboard
+
+            // ============================================
+            // GOOGLE LOGIN
+            // ============================================
+            async function handleGoogleLogin(role) {
+                const msgEl = document.getElementById('login-msg');
+                msgEl.innerText = '';
+                msgEl.style.color = '#ef4444';
+
+                try {
+                    toggleFullScreen();
+
+                    // Init Firebase Auth
+                    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                    const auth = firebase.auth();
+                    const provider = new firebase.auth.GoogleAuthProvider();
+
+                    msgEl.style.color = '#fbbf24';
+                    msgEl.innerText = '⏳ Membuka popup Google...';
+
+                    const result = await auth.signInWithPopup(provider);
+                    const user = result.user;
+                    const email = user.email;
+                    const displayName = user.displayName || '';
+                    const photoURL = user.photoURL || '';
+
+                    msgEl.innerText = '⏳ Menyinkronkan data...';
+
+                    await DataService.init(true);
+                    const dbLocal = DataService.getDB();
+
+                    // Cek apakah user sudah terdaftar
+                    let userData = dbLocal[email];
+
+                    if (!userData) {
+                        // USER BARU — tampilkan form isi data tambahan
+                        msgEl.style.color = '#4ade80';
+                        msgEl.innerText = '✅ Akun Google terdeteksi! Lengkapi data dulu.';
+                        showGoogleRegisterForm(role, email, displayName, photoURL);
+                        return;
+                    }
+
+                    // USER LAMA — langsung masuk
+                    localStorage.setItem(SESSION_KEY, email);
+                    DataService.user = userData;
+
+                    msgEl.style.color = '#4ade80';
+                    msgEl.innerText = `✅ Selamat datang, ${userData.name}!`;
+
+                    setTimeout(() => {
+                        document.getElementById('login-screen').style.display = 'none';
+                        if (userData.role === 'guru' || userData.role === 'admin') {
+                            initTeacherDashboard();
+                        } else {
+                            startGame(userData);
+                        }
+                    }, 900);
+
+                } catch (err) {
+                    console.error('Google login error:', err);
+                    if (err.code === 'auth/popup-closed-by-user') {
+                        msgEl.innerText = '⚠️ Popup ditutup. Coba lagi.';
+                    } else if (err.code === 'auth/popup-blocked') {
+                        msgEl.innerText = '⚠️ Popup diblokir browser. Izinkan popup untuk situs ini.';
+                    } else {
+                        msgEl.innerText = '❌ Gagal login Google: ' + (err.message || err.code);
+                    }
+                }
+            }
+
+            function showGoogleRegisterForm(role, email, displayName, photoURL) {
+                const loginCard = document.querySelector('.login-card');
+
+                // Simpan konten asli untuk bisa kembali
+                const originalContent = loginCard.innerHTML;
+
+                loginCard.innerHTML = `
+                    <h2 style="font-family:'Fredoka'; color:#d97706; text-align:center; margin-bottom:15px; font-size:20px;">
+                        📋 LENGKAPI DATA
+                    </h2>
+                    <div style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.6); padding:10px; border-radius:12px; margin-bottom:15px;">
+                        ${photoURL ? `<img src="${photoURL}" style="width:40px; height:40px; border-radius:50%; border:2px solid #a16207;">` : ''}
+                        <div>
+                            <div style="font-weight:800; color:#422006; font-size:14px;">${displayName}</div>
+                            <div style="font-size:11px; color:#78350f;">${email}</div>
+                        </div>
+                    </div>
+                    <div id="google-reg-msg" style="color:#ef4444; font-size:12px; margin-bottom:10px; min-height:15px; font-weight:bold;"></div>
+                    ${role === 'siswa' ? `
+                        <input type="text" id="greg-nama" class="form-input" placeholder="Nama Lengkap" value="${displayName}">
+                        <input type="text" id="greg-kelas" class="form-input" placeholder="Kelas (Contoh: XII TKJ 1)">
+                        <select id="greg-guru" class="form-input">
+                            <option value="">Pilih Guru Pendamping...</option>
+                        </select>
+                    ` : `
+                        <input type="text" id="greg-nama" class="form-input" placeholder="Nama Guru" value="${displayName}">
+                        <input type="text" id="greg-nip" class="form-input" placeholder="NIP">
+                        <input type="text" id="greg-sekolah" class="form-input" placeholder="Asal Sekolah" value="SMK Negeri 1 Brondong">
+                    `}
+                    <button class="auth-btn" onclick="submitGoogleRegister('${role}', '${email}', '${photoURL}')">
+                        ✅ SIMPAN & MULAI
+                    </button>
+                    <button style="width:100%; background:transparent; border:none; margin-top:10px; color:#78350f; font-size:12px; cursor:pointer; font-weight:bold;" onclick="location.reload()">
+                        ⬅ Batal
+                    </button>
+                `;
+
+                // Isi dropdown guru jika siswa
+                if (role === 'siswa') {
+                    const dbLocal = DataService.getDB();
+                    const guruSelect = document.getElementById('greg-guru');
+                    Object.values(dbLocal).filter(u => u.role === 'guru').forEach(g => {
+                        const opt = document.createElement('option');
+                        opt.value = g.email;
+                        opt.textContent = g.name;
+                        guruSelect.appendChild(opt);
+                    });
+                }
+            }
+
+            async function submitGoogleRegister(role, email, photoURL) {
+                const msgEl = document.getElementById('google-reg-msg');
+                const nama = document.getElementById('greg-nama')?.value?.trim();
+
+                if (!nama) {
+                    msgEl.innerText = '⚠️ Nama wajib diisi!';
+                    return;
+                }
+
+                let newUser = {
+                    email, role, name: nama,
+                    photoURL: photoURL || '',
+                    loginMethod: 'google',
+                    saveData: null,
+                    lastActive: Date.now()
+                };
+
+                if (role === 'siswa') {
+                    const kelas = document.getElementById('greg-kelas')?.value?.trim();
+                    const guru = document.getElementById('greg-guru')?.value;
+                    if (!kelas) { msgEl.innerText = '⚠️ Kelas wajib diisi!'; return; }
+                    newUser.details = kelas;
+                    newUser.mentor = guru || '';
+                } else {
+                    const nip = document.getElementById('greg-nip')?.value?.trim();
+                    const sekolah = document.getElementById('greg-sekolah')?.value?.trim();
+                    if (!nip || !sekolah) { msgEl.innerText = '⚠️ NIP & Sekolah wajib diisi!'; return; }
+                    newUser.details = nip;
+                    newUser.school = sekolah;
+                }
+
+                msgEl.style.color = '#4ade80';
+                msgEl.innerText = '⏳ Menyimpan...';
+
+                await DataService.init(true);
+                const dbLocal = DataService.getDB();
+                dbLocal[email] = newUser;
+                DataService.saveDB(dbLocal);
+
+                // Simpan ke Firestore
+                try {
+                    if (db) {
+                        const col = role === 'siswa' ? 'users' : 'leaderboard';
+                        await db.collection(col).doc(email.replace(/\./g,'_')).set(newUser, { merge: true });
+                    }
+                } catch(e) { console.warn('Cloud sync gagal, data tersimpan lokal.'); }
+
+                localStorage.setItem(SESSION_KEY, email);
+                DataService.user = newUser;
+
+                msgEl.innerText = `✅ Berhasil! Selamat datang, ${nama}!`;
+
+                setTimeout(() => {
+                    document.getElementById('login-screen').style.display = 'none';
+                    if (role === 'guru') {
+                        initTeacherDashboard();
+                    } else {
+                        startGame(newUser);
+                    }
+                }, 900);
+            }
 
             function switchRole(role) {
                 currentRole = role;
