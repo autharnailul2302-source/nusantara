@@ -14162,6 +14162,11 @@
                         { id: 'fake_girl', x: 19, y: 16, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'morning', genderReq: 'girl', w: 40, h: 60 },
                         { id: 'fake_girl', x: 40, y: 31, name: 'Bella (Rival)', imgSrc: 'images/rival_girl.png', type: 'wander', schedule: 'afternoon', genderReq: 'girl', w: 40, h: 60 },
 
+                        /* NEW: KI LAMONG — PENUTUR CERITA RAKYAT LAMONGAN */
+                        /* Duduk di bawah pohon dekat Candi Kuno (area historis, x:48, y:8) */
+                        /* Jadwal 'always' agar bisa ditemui kapan saja */
+                        { id: 'ki_lamong', x: 48, y: 8, name: 'Ki Lamong (Penutur Cerita)', imgSrc: 'images/peer3.png', type: 'static', schedule: 'always', w: 40, h: 60 },
+
                         /* NEW: MONSTER PENCURI SKRIPSI (Hanya muncul saat Quest Aktif) */
                         /* Lokasi: Depan Candi Kuno (Timur Laut Peta) - UPDATE: DIPINDAHKAN DARI HUTAN */
                         { id: 'monster_skripsi', x: 50, y: 13, name: 'Pencuri Naskah', imgSrc: 'images/monster-thief.png', type: 'static', schedule: 'always', questReq: 'find_draft', w: 45, h: 45 },
@@ -23734,14 +23739,266 @@ ${reward.tip}`,
                         { text: "Wah menarik", action: closeDialogue }], npc.imgSrc);
                 }
                 else if (npc.id === 'sarjana_sejarah') {
-                    showDialogue(npc.name, "Sejarah mengajarkan kebijaksanaan. 📜\nBanyak rahasia pulau ini yang tertulis di prasasti kuno. Kamu harus rajin ke perpustakaan.", [{ text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) },
-                        { text: "Siap Kak", action: closeDialogue }], npc.imgSrc);
+                    // ── FOLKTALE TRACKER ──
+                    const sudahDengarLamongan = STATE.player.folktale_lamongan || false;
+                    const opsiSejarah = sudahDengarLamongan
+                        ? { text: "📜 Asal-Usul Nama Lamongan (✔ Sudah didengar)", action: () => {
+                            showDialogue("BU WULAN — SEJARAH",
+                                "Masih ingat? Bagus sekali!\n\n\"Lamongan berasal dari nama seorang tokoh bernama Mbah Lamong — seorang ulama dan pemimpin bijak yang membuka wilayah ini. Namanya diabadikan menjadi nama daerah sebagai penghormatan atas jasanya.\"\n\nIni contoh nyata bahwa sejarah lokal sangat kaya. Rajin ke perpustakaan ya!",
+                                [{ text: "Siap Bu Wulan!", action: () => interactNPC(npc) }], npc.imgSrc);
+                          }}
+                        : { text: "📜 Ceritakan asal-usul nama Lamongan!", action: () => {
+                            STATE.player.folktale_lamongan = true;
+                            STATE.player.int = (STATE.player.int || 0) + 2;
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showToast("📖 Sejarah Lamongan dipelajari! INT +2");
+                            showDialogue("BU WULAN — SEJARAH",
+                                "Wah, kamu mau belajar sejarah lokal? Senangnya!\n\n📜 ASAL-USUL NAMA LAMONGAN\n\n\"Menurut catatan sejarah, nama Lamongan berasal dari tokoh bernama Mbah Lamong — seorang pemimpin dan ulama yang dihormati. Beliau dikenal karena mendirikan pemerintahan yang adil dan hidup berdampingan dengan seluruh lapisan masyarakat.\"\n\n\"Kata 'Lamongan' dipercaya merupakan bentuk penghormatan rakyat atas jasa-jasanya. Hingga kini, makam Mbah Lamong masih ada dan sering diziarahi warga sebagai bentuk mengenang sejarah.\"\n\n🏛️ Nilai yang bisa kita pelajari: nama sebuah tempat sering menyimpan cerita besar tentang orang-orang baik di dalamnya.\n\nINT +2 — Pengetahuan sejarahmu bertambah!",
+                                [{ text: "Terima kasih ilmunya, Bu Wulan!", action: () => interactNPC(npc) }], npc.imgSrc);
+                          }};
+                    showDialogue(npc.name, "Sejarah mengajarkan kebijaksanaan. 📜\nBanyak rahasia pulau ini yang tertulis di prasasti kuno. Kamu harus rajin ke perpustakaan.\n\nAku juga punya cerita tentang asal-usul nama daerah ini, lho. Mau dengar?", [
+                        opsiSejarah,
+                        { text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) },
+                        { text: "Siap Kak", action: closeDialogue }
+                    ], npc.imgSrc);
+                }
+
+                // ═══════════════════════════════════════════════════════════════
+                // 📜 KI LAMONG — PENUTUR CERITA RAKYAT LAMONGAN
+                // NPC khusus: duduk di dekat Candi Kuno, bisa ditemui kapan saja
+                // Menyimpan 4 cerita rakyat Lamongan yang bisa dibuka satu per satu
+                // ═══════════════════════════════════════════════════════════════
+                else if (npc.id === 'ki_lamong') {
+                    const p = STATE.player;
+
+                    // Tracker cerita
+                    const c1 = p.kilamong_c1 || false;
+                    const c2 = p.kilamong_c2 || false;
+                    const c3 = p.kilamong_c3 || false;
+                    const c4 = p.kilamong_c4 || false;
+
+                    const totalDibuka = [c1,c2,c3,c4].filter(Boolean).length;
+                    const semuaSelesai = totalDibuka === 4;
+
+                    // Status reward item
+                    const sudahKlaimGulungan = !!(p.inventory && (p.inventory['gulungan_mbahlamong'] || p.gulunganDibaca));
+                    const sudahKlaimKalung   = !!(p.inventory && p.inventory['kalung_nelayan']);
+                    const sudahKlaimKeris    = !!(p.inventory && p.inventory['keris_penjaga']);
+
+                    // Helper klaim reward item
+                    function klaimRewardKiLamong(itemId, namaItem, ikon, teksReward, onDone) {
+                        addItem(itemId, 1);
+                        if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                        createParticle(p.x, p.y, '#fbbf24');
+                        showToast('🎁 ' + namaItem + ' diterima!');
+                        showDialogue("KI LAMONG — PENUTUR CERITA",
+                            ikon + " REWARD DITERIMA: " + namaItem.toUpperCase() + "\n\n" + teksReward,
+                            [{ text: "Terima kasih, Ki Lamong! 🙏", action: () => onDone() }], npc.imgSrc);
+                    }
+
+                    // Salam pembuka dinamis
+                    let salamKiLamong = "Nak, duduklah sebentar di sini.\n\nAku Ki Lamong, penjaga cerita tanah leluhur ini. 🌿\n\nSetiap tanah punya cerita. Lamongan menyimpan kisah yang tak ternilai — tentang orang-orang bijak, nelayan pemberani, dan tradisi yang menjaga kita tetap manusia.\n\nMau dengar cerita mana?";
+                    if (semuaSelesai && sudahKlaimKeris) salamKiLamong = "Selamat datang kembali, Penjaga Cerita! 🏅\n\nSemua kisah leluhur sudah ada di dalam hatimu. Teruslah hidup dengan nilai-nilai itu.\n\nAku bangga padamu, Nak.";
+                    else if (semuaSelesai) salamKiLamong = "Selamat! Kamu sudah mendengar semua kisah leluhur Lamongan. 🏅\n\nKamu layak menerima pusaka terakhir — Keris Penjaga Cerita.\n\nAmbillah, dan jaga nilai-nilai leluhur ini seumur hidupmu.";
+                    else if (totalDibuka > 0) salamKiLamong = `Ah, kamu kembali! Bagus. Anak yang haus ilmu selalu mendapat lebih.\n\n${totalDibuka}/4 kisah sudah kamu pelajari. Masih ada ${4-totalDibuka} cerita yang menunggumu. 📜`;
+
+                    // ── HELPER: tampilkan cerita lengkap ──
+                    function bacaCeritaKiLamong(judul, isi, rewardText, onDone) {
+                        showDialogue("KI LAMONG — PENUTUR CERITA", judul + "\n\n" + isi + "\n\n" + rewardText,
+                            [{ text: "Terima kasih, Ki Lamong.", action: () => onDone() }], npc.imgSrc);
+                    }
+
+                    // ── OPSI CERITA (kondisional) ──
+                    const opsiCerita = [];
+
+                    // CERITA 1: Asal-Usul Mbah Lamong
+                    if (!c1) {
+                        opsiCerita.push({ text: "📜 [BARU] Siapa itu Mbah Lamong?", action: () => {
+                            p.kilamong_c1 = true;
+                            p.int = (p.int || 0) + 3;
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showToast("📖 Kisah Mbah Lamong dipelajari! INT +3");
+                            bacaCeritaKiLamong(
+                                "📜 KISAH MBAH LAMONG — SANG PENDIRI",
+                                "\"Dahulu, sebelum ada nama Lamongan, ada seorang ulama dan pemimpin bernama Mbah Lamong. Beliau datang dari kejauhan membawa ilmu, keadilan, dan kebijaksanaan.\n\nDi tanah yang subur ini, beliau membangun komunitas kecil. Tidak dengan kekerasan — tapi dengan teladan. Saat warga bertengkar, beliau hadir sebagai penengah. Saat gagal panen, beliau berbagi dari simpanannya sendiri.\n\nRakyat yang mencintainya menyebut tanah ini dengan namanya: La-mo-ngan. Sebuah penghormatan yang lebih abadi dari monumen apa pun.\"\n\n🏛️ Pesan leluhur: Nama yang baik dikenang bukan dari harta, tapi dari kebaikan yang ditinggalkan.",
+                                "INT +3 — Kamu memahami akar sejarah Lamongan!",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    } else {
+                        opsiCerita.push({ text: "📜 ✔ Mbah Lamong (Ulang)", action: () => {
+                            bacaCeritaKiLamong(
+                                "📜 KISAH MBAH LAMONG (Ringkasan)",
+                                "\"Lamongan dinamai dari Mbah Lamong — ulama bijak yang memimpin dengan teladan, bukan kekuasaan. Nama yang baik adalah warisan paling berharga.\"\n\nKamu sudah hafal kisah ini. Bagus!",
+                                "",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    }
+
+                    // CERITA 2: Legenda Nelayan Brondong
+                    if (!c2) {
+                        opsiCerita.push({ text: "📜 [BARU] Legenda Nelayan Brondong", action: () => {
+                            p.kilamong_c2 = true;
+                            p.reputation = (p.reputation || 0) + 5;
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showToast("📖 Legenda Brondong dipelajari! REP +5");
+                            bacaCeritaKiLamong(
+                                "🌊 LEGENDA NELAYAN BRONDONG",
+                                "\"Di pesisir utara, ada desa nelayan bernama Brondong. Konon, leluhur mereka punya perjanjian tak tertulis dengan laut.\n\nMereka tidak melaut di malam tertentu yang dianggap keramat. Bukan karena takut — tapi karena mereka menghormati bahwa laut butuh istirahat, dan ikan butuh berkembang biak.\n\nKearifan ini terbukti: generasi demi generasi, nelayan Brondong tidak pernah kehabisan ikan. Laut yang dihormati, memberi kembali berlipat-lipat.\"\n\n🐟 Ilmu Ekologi Lokal: Konsep ini mirip rotasi panen modern. Leluhur kita sudah tahu jauh sebelum sains merumuskannya.",
+                                "REP +5 — Kamu mengenal kearifan nelayan Lamongan!",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    } else {
+                        opsiCerita.push({ text: "📜 ✔ Nelayan Brondong (Ulang)", action: () => {
+                            bacaCeritaKiLamong(
+                                "🌊 LEGENDA BRONDONG (Ringkasan)",
+                                "\"Nelayan Brondong menghormati laut dengan tidak serakah. Hasilnya — laut memberi berlimpah turun-temurun.\"\n\nKamu sudah hafal kisah ini!",
+                                "",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    }
+
+                    // CERITA 3: Joko Tingkir (versi historis-edukatif)
+                    if (!c3) {
+                        opsiCerita.push({ text: "📜 [BARU] Perjalanan Joko Tingkir", action: () => {
+                            p.kilamong_c3 = true;
+                            p.str = (p.str || 0) + 2;
+                            p.int = (p.int || 0) + 2;
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showToast("📖 Kisah Joko Tingkir dipelajari! STR+2, INT+2");
+                            bacaCeritaKiLamong(
+                                "👑 KISAH JOKO TINGKIR — PEMUDA YANG BANGKIT",
+                                "\"Joko Tingkir adalah nama yang dikenal di seluruh tanah Jawa. Ia seorang pemuda dari keluarga sederhana yang pernah diasingkan karena dianggap berbahaya.\n\nNamun alih-alih menyerah, Joko Tingkir belajar, berlatih, dan membuktikan diri. Ia melewati ujian-ujian berat — termasuk melewati sungai penuh buaya dengan hanya kekuatan dan keberaniannya.\n\nIa akhirnya menjadi Sultan Hadiwijaya — pemimpin Kerajaan Pajang yang dihormati karena kebijaksanaan dan kemauannya untuk terus belajar dari kesalahan.\"\n\n💡 Pesan: Diasingkan bukan akhir — bisa jadi awal dari versi terbaik dirimu.",
+                                "STR +2, INT +2 — Semangat Joko Tingkir mengalir dalam dirimu!",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    } else {
+                        opsiCerita.push({ text: "📜 ✔ Joko Tingkir (Ulang)", action: () => {
+                            bacaCeritaKiLamong(
+                                "👑 JOKO TINGKIR (Ringkasan)",
+                                "\"Joko Tingkir — dari diasingkan hingga jadi Sultan. Ketekunan dan keberanian mengalahkan segalanya.\"\n\nKamu sudah hafal kisah ini!",
+                                "",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    }
+
+                    // CERITA 4: Tradisi Kupatan
+                    if (!c4) {
+                        opsiCerita.push({ text: "📜 [BARU] Makna Tradisi Kupatan", action: () => {
+                            p.kilamong_c4 = true;
+                            p.happiness = Math.min(100, (p.happiness || 50) + 10);
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showToast("📖 Tradisi Kupatan dipelajari! Happiness +10");
+                            bacaCeritaKiLamong(
+                                "🎋 TRADISI KUPATAN LAMONGAN",
+                                "\"Sepekan setelah Idul Fitri, seluruh Lamongan merayakan Kupatan. Setiap rumah membuat ketupat — nasi yang dibungkus anyaman janur kuning.\n\nTahukah kamu makna anyamannya? Rumit dan saling terkait — seperti kesalahan kita yang bertumpuk. Tapi saat dimasak bersama dan dimakan bersama tetangga, semua kesulitan itu luruh.\n\nKupatan bukan sekadar makanan. Ia adalah cara leluhur kita mengajarkan bahwa manusia butuh saling memaafkan secara nyata — bukan hanya di dalam hati, tapi diwujudkan bersama.\"\n\n🌸 Nilai Budaya: Komunal, memaafkan, dan kebersamaan adalah pondasi masyarakat Lamongan.",
+                                "Happiness +10 — Hatimu hangat dan damai!",
+                                () => {
+                                    if (semuaSelesai || [c1,c2,c3,true].filter(Boolean).length === 4) {
+                                        // Semua 4 cerita selesai!
+                                        setTimeout(() => {
+                                            p.reputation = (p.reputation || 0) + 10;
+                                            showToast("🏅 SEMUA KISAH LAMONGAN DIPELAJARI! REP +10 BONUS!");
+                                            showDialogue("KI LAMONG — PENUTUR CERITA",
+                                                "🎉 SELAMAT, ANAK MUDA!\n\nKamu telah mendengarkan semua kisah leluhur Lamongan:\n✅ Kisah Mbah Lamong\n✅ Legenda Nelayan Brondong\n✅ Perjalanan Joko Tingkir\n✅ Tradisi Kupatan\n\n\"Kini kamu bukan sekadar perantau — kamu sudah punya akar. Dan pohon yang berakar kuat, tumbuh paling tinggi.\"\n\n🏅 BONUS REP +10 — Gelar 'Penjaga Cerita Lamongan' diraih!",
+                                                [{ text: "Terima kasih, Ki Lamong! 🙏", action: closeDialogue }], npc.imgSrc);
+                                        }, 300);
+                                    } else {
+                                        interactNPC(npc);
+                                    }
+                                }
+                            );
+                        }});
+                    } else {
+                        opsiCerita.push({ text: "📜 ✔ Tradisi Kupatan (Ulang)", action: () => {
+                            bacaCeritaKiLamong(
+                                "🎋 KUPATAN (Ringkasan)",
+                                "\"Ketupat yang rumit melambangkan kesalahan kita. Dimakan bersama artinya saling memaafkan secara nyata.\"\n\nKamu sudah hafal kisah ini!",
+                                "",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    }
+
+                    // ── OPSI REWARD ITEM (muncul setelah cerita tertentu selesai) ──
+
+                    // Reward Cerita 1: Gulungan Mbah Lamong (setelah c1 selesai)
+                    if (c1 && !sudahKlaimGulungan) {
+                        opsiCerita.push({ text: "🎁 [REWARD] Ambil Gulungan Mbah Lamong!", action: () => {
+                            klaimRewardKiLamong(
+                                'gulungan_mbahlamong',
+                                'Gulungan Mbah Lamong',
+                                '📜',
+                                "Ini tulisan tangan Mbah Lamong sendiri. Bacalah saat kamu butuh kebijaksanaan.\n\nEfek: Dibaca dari Inventaris → INT +5 permanen.",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    }
+
+                    // Reward Cerita 2: Kalung Nelayan (setelah c2 selesai)
+                    if (c2 && !sudahKlaimKalung) {
+                        opsiCerita.push({ text: "🎁 [REWARD] Ambil Kalung Nelayan Brondong!", action: () => {
+                            klaimRewardKiLamong(
+                                'kalung_nelayan',
+                                'Kalung Nelayan Brondong',
+                                '🪬',
+                                "Kalung ini dipakai nelayan Brondong turun-temurun saat melaut.\n\nPasif: Selama kalung ada di inventaris, chance mendapat ikan langka saat memancing meningkat +10%.",
+                                () => interactNPC(npc)
+                            );
+                        }});
+                    }
+
+                    // Reward Semua Cerita: Keris Penjaga (setelah semua 4 selesai)
+                    if (semuaSelesai && !sudahKlaimKeris) {
+                        opsiCerita.push({ text: "⚔️ [REWARD UTAMA] Terima Keris Penjaga Cerita!", action: () => {
+                            klaimRewardKiLamong(
+                                'keris_penjaga',
+                                'Keris Penjaga Cerita',
+                                '⚔️',
+                                "Keris pusaka Ki Lamong — hanya diberikan kepada yang telah mendengarkan semua kisah leluhur.\n\n✨ Pasif Aktif Sekarang:\n• STR +5 | INT +5 | SPD +5 | BIZ +5\n\nKamu kini adalah Penjaga Cerita Lamongan yang sejati. 🏅",
+                                () => {
+                                    applyFolktalePassives();
+                                    interactNPC(npc);
+                                }
+                            );
+                        }});
+                    }
+
+                    // Tombol tutup di akhir
+                    opsiCerita.push({ text: "Terima kasih, Ki Lamong.", action: closeDialogue });
+
+                    showDialogue("KI LAMONG — PENUTUR CERITA", salamKiLamong, opsiCerita, npc.imgSrc);
                 }
 
                 // 3. NELAYAN & PEMANCING & DUYUNG
                 else if (npc.id === 'nelayan') {
-                    showDialogue(npc.name, "Ombak hari ini tenang. Ikan-ikan sedang lapar.\nKalau mau mancing, beli pancingan dulu atau pakai punyaku di ujung dermaga.", [{ text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) },
-                        { text: "Oke Pak", action: closeDialogue }], npc.imgSrc);
+                    // ── FOLKTALE TRACKER ──
+                    const sudahDengarBrondong = STATE.player.folktale_brondong || false;
+                    const opsiCerita = sudahDengarBrondong
+                        ? { text: "📜 Kisah Nelayan Brondong (✔ Sudah didengar)", action: () => {
+                            showDialogue("PAK SURYO — NELAYAN",
+                                "Kamu masih ingat ceritanya, nak? Bagus!\n\n\"Konon, para leluhur nelayan Brondong tidak pernah melaut di malam Jumat Legi. Mereka percaya laut punya penguasa yang dihormati — bukan dengan takut, tapi dengan menjaga alam dan tidak serakah.\"\n\nItu sebabnya sampai hari ini, nelayan Lamongan terkenal bijak dalam menangkap ikan — tidak pernah menguras lebih dari yang dibutuhkan.",
+                                [{ text: "Terima kasih Pak Suryo", action: () => interactNPC(npc) }], npc.imgSrc);
+                          }}
+                        : { text: "📜 Ceritakan kisah leluhur nelayan sini!", action: () => {
+                            STATE.player.folktale_brondong = true;
+                            STATE.player.reputation = (STATE.player.reputation || 0) + 3;
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showToast("📖 Kisah Brondong dipelajari! REP +3");
+                            showDialogue("PAK SURYO — NELAYAN",
+                                "Ho ho... kamu mau dengar cerita leluhur? Duduklah sebentar.\n\n📜 LEGENDA NELAYAN BRONDONG\n\n\"Dahulu kala, Desa Brondong adalah tempat di mana para nelayan hidup berdamai dengan laut. Ada seorang nelayan tua bernama Ki Suryo yang bisa berbicara dengan angin. Setiap kali badai akan datang, Ki Suryo memukul kentongan sebanyak tiga kali — pertanda bagi seluruh kampung untuk tidak melaut.\"\n\n\"Karena kebijaksanaannya, tidak ada satu pun kapal dari Brondong yang pernah tenggelam di zamannya. Itulah warisan yang kami jaga hingga kini — laut bukan ditaklukkan, tapi dihormati.\"\n\n🌊 REP +3 — Kamu belajar nilai kearifan lokal nelayan Lamongan!",
+                                [{ text: "Luar biasa kisahnya, Pak!", action: () => interactNPC(npc) }], npc.imgSrc);
+                          }};
+                    showDialogue(npc.name, "Ombak hari ini tenang. Ikan-ikan sedang lapar.\nKalau mau mancing, beli pancingan dulu atau pakai punyaku di ujung dermaga.\n\nOh ya, kamu mau dengar cerita tentang leluhur nelayan di sini tidak?", [
+                        opsiCerita,
+                        { text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) },
+                        { text: "Oke Pak, makasih", action: closeDialogue }
+                    ], npc.imgSrc);
                 }
                 else if (npc.id === 'pemancing_misterius') {
                     showDialogue(npc.name, "Sst... Ikan legendaris hanya muncul saat hujan deras.\nJangan bilang siapa-siapa ya.", [{ text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) },
@@ -24345,10 +24602,30 @@ ${reward.tip}`,
                     const msg = totalPlants > 0
                         ? `Slamet aku, petani di sini. Lihat ladangmu udah ada ${totalPlants} tanaman — bagus! Jangan lupa siram tiap pagi, biar hasil panennya maksimal. Musim ini bagus untuk menanam padi!`
                         : "Halo nak! Nama saya Slamet, petani di desa ini sejak 20 tahun lalu. Kamu belum punya tanaman? Coba ke ladangmu, cangkul tanahnya dan tanam bibit. Bertani itu mengasyikkan!";
+
+                    // ── FOLKTALE TRACKER ──
+                    const sudahDengarKupatan = STATE.player.folktale_kupatan || false;
+                    const opsiKupatan = sudahDengarKupatan
+                        ? { text: "📜 Tradisi Kupatan (✔ Sudah didengar)", action: () => {
+                            showDialogue("PAK SLAMET — PETANI",
+                                "Ha ha, masih ingat ceritanya? Bagus!\n\n\"Kupatan adalah tradisi sepekan setelah Lebaran. Ketupat bukan cuma makanan — bentuk anyamannya yang rumit melambangkan kesalahan manusia yang terbalut maaf. Saat dimakan bersama, artinya kita sudah saling memaafkan.\"\n\nNilai itu yang kami jaga turun-temurun di Lamongan!",
+                                [{ text: "Indah sekali maknanya!", action: () => interactNPC(npc) }], npc.imgSrc);
+                          }}
+                        : { text: "📜 Ceritakan tradisi desa ini, Pak!", action: () => {
+                            STATE.player.folktale_kupatan = true;
+                            STATE.player.happiness = Math.min(100, (STATE.player.happiness || 50) + 5);
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            showToast("📖 Tradisi Kupatan dipelajari! Happiness +5");
+                            showDialogue("PAK SLAMET — PETANI",
+                                "Nak, di Lamongan ini ada tradisi yang sudah turun-temurun namanya **Kupatan**.\n\n📜 TRADISI KUPATAN LAMONGAN\n\n\"Sepekan setelah Idul Fitri, seluruh warga berkumpul membuat ketupat bersama-sama. Ketupat dibuat dari janur kuning yang dianyam — rumit dan butuh kesabaran.\"\n\n\"Konon, rumitnya anyaman ketupat melambangkan kesalahan kita yang bertumpuk. Tapi saat dimasak dan dimakan bersama tetangga, artinya semua kesalahan sudah termaafkan.\"\n\n\"Di Lamongan, Kupatan bukan hanya ritual — ini adalah cara leluhur mengajarkan bahwa kebersamaan dan saling memaafkan itu lebih penting dari segalanya.\"\n\n🎋 Happiness +5 — Hatimu hangat mendengar cerita ini!",
+                                [{ text: "Terima kasih, Pak Slamet!", action: () => interactNPC(npc) }], npc.imgSrc);
+                          }};
+
                     showDialogue("PAK SLAMET — PETANI", msg, [
-                        { text: "Terima kasih Pak Slamet!", action: closeDialogue },
+                        opsiKupatan,
                         { text: "Tips bertani dong!", action: () => showDialogue("PAK SLAMET — PETANI", "🌾 TIPS BERTANI:\n1. Cangkul tanah dulu sebelum tanam\n2. Siram SETIAP pagi (Stage naik lebih cepat)\n3. Pupuk bisa mempercepat 1 hari\n4. Panen saat Stage 3 (penuh)\n5. Jual di Merchant untuk harga terbaik!", [{ text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) },
-                        { text: "Mantap Pak!", action: closeDialogue }], npc.imgSrc) }
+                        { text: "Mantap Pak!", action: closeDialogue }], npc.imgSrc) },
+                        { text: "Terima kasih Pak Slamet!", action: closeDialogue }
                     ], npc.imgSrc);
                 }
 
@@ -25203,7 +25480,60 @@ ${reward.tip}`,
                     txt += `${chk(STATE.dungeonLevel >= 2)} Eksplorasi Dungeon Lt.2\n`;
                 }
 
+                // ══════════════════════════════════════════════
+                // 📜 SIDE QUEST: KISAH LELUHUR LAMONGAN
+                // ══════════════════════════════════════════════
+                const c1 = p.kilamong_c1 || false;
+                const c2 = p.kilamong_c2 || false;
+                const c3 = p.kilamong_c3 || false;
+                const c4 = p.kilamong_c4 || false;
+                const totalCerita = [c1,c2,c3,c4].filter(Boolean).length;
+                const allCeritaDone = totalCerita === 4;
+
+                txt += `\n[📜 KISAH LELUHUR — SIDE QUEST]\n`;
+                if (allCeritaDone) {
+                    txt += `✅ Semua Kisah Lamongan Selesai! (4/4)\n`;
+                    txt += `${chk(!!(p.inventory && p.inventory.keris_penjaga))} Ambil Keris Penjaga dari Ki Lamong\n`;
+                } else {
+                    txt += `${chk(c1)} Kisah Mbah Lamong (Asal-Usul Lamongan)\n`;
+                    txt += `${chk(c2)} Legenda Nelayan Brondong\n`;
+                    txt += `${chk(c3)} Perjalanan Joko Tingkir\n`;
+                    txt += `${chk(c4)} Tradisi Kupatan Lamongan\n`;
+                    txt += `📍 Temui Ki Lamong di dekat Candi Kuno (Timur Laut)\n`;
+                }
+
                 return txt;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // 📜 SISTEM SIDE QUEST: KISAH LELUHUR — Fungsi Pendukung
+            // ═══════════════════════════════════════════════════════════════════
+
+            function applyFolktalePassives() {
+                const p = STATE.player;
+                if (p.inventory && p.inventory['keris_penjaga'] && !p.kerisPassiveApplied) {
+                    p.kerisPassiveApplied = true;
+                    p.str  = (p.str  || 0) + 5;
+                    p.int  = (p.int  || 0) + 5;
+                    p.spd  = (p.spd  || 0) + 5;
+                    p.biz  = (p.biz  || 0) + 5;
+                    showToast("⚔️ Keris Penjaga aktif! Semua stat +5");
+                }
+            }
+
+            function handleGulunganMbahLamong() {
+                const p = STATE.player;
+                if (p.gulunganDibaca) {
+                    showToast("📜 Kamu sudah membaca gulungan ini. INT sudah meningkat.");
+                    return;
+                }
+                p.gulunganDibaca = true;
+                p.int = (p.int || 0) + 5;
+                if (p.inventory['gulungan_mbahlamong'] > 0) p.inventory['gulungan_mbahlamong']--;
+                if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                showDialogue("📜 GULUNGAN MBAH LAMONG",
+                    "Kamu membuka gulungan tua itu dengan hati-hati...\n\n\"Ilmu yang tidak diamalkan adalah pohon yang tidak berbuah.\nKekuasaan yang tidak dilandasi kasih adalah pedang yang melukai tuannya sendiri.\nJagalah tanah ini seperti kamu menjaga ibumu — dengan cinta, bukan sekadar kewajiban.\"\n\n— Mbah Lamong\n\n✨ INT +5 permanen — Kebijaksanaan leluhur meresap dalam dirimu!",
+                    [{ text: "Luar biasa...", action: closeDialogue }], null);
             }
 
             // --- NEW FUNCTION: GUILD BOUNTY SYSTEM ---
@@ -31005,7 +31335,29 @@ Pilih masakan:
 
                     // Quest Items (Gambar Dinamis via Logic di bawah)
                     'draft_proposal': { name: 'Draft Skripsi', icon: '📑', desc: 'Bahan proposal (Quest Tahun 3).' },
-                    'buku_tesis': { name: 'Buku Tesis', icon: '📖', desc: 'Syarat kelulusan.' }
+                    'buku_tesis': { name: 'Buku Tesis', icon: '📖', desc: 'Syarat kelulusan.' },
+
+                    // ══════════════════════════════════════════════════════════
+                    // 📜 ITEM EKSKLUSIF — KISAH LELUHUR LAMONGAN
+                    // Reward khusus dari side quest folktale Ki Lamong
+                    // ══════════════════════════════════════════════════════════
+                    'gulungan_mbahlamong': {
+                        name: 'Gulungan Mbah Lamong',
+                        icon: '📜',
+                        type: 'consumable',
+                        action: 'baca_gulungan_mbahlamong',
+                        desc: 'Tulisan bijak Mbah Lamong. Dibaca: INT+5 permanen (sekali saja).'
+                    },
+                    'kalung_nelayan': {
+                        name: 'Kalung Nelayan Brondong',
+                        icon: '🪬',
+                        desc: 'Kalung keberuntungan dari Ki Lamong. Pasif: Chance ikan langka +10% saat memancing.'
+                    },
+                    'keris_penjaga': {
+                        name: 'Keris Penjaga Cerita',
+                        icon: '⚔️',
+                        desc: 'Keris pusaka Ki Lamong. Reward menyelesaikan semua 4 Kisah Leluhur. Pasif: +5 semua stat.'
+                    }
                 };
 
                 for (let key in inv) {
@@ -31117,6 +31469,12 @@ Pilih masakan:
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                     spawnFloatingText(STATE.player.x, STATE.player.y - 40, "SHIELD ON!", "#60a5fa", 16); // Visual Teks
                     consumed = true;
+                }
+
+                // 📜 GULUNGAN MBAH LAMONG (Item Folktale Ki Lamong)
+                else if (action === 'baca_gulungan_mbahlamong') {
+                    handleGulunganMbahLamong();
+                    return; // handleGulungan sudah urus pengurangan sendiri
                 }
 
                 // 3. MAKANAN & IKAN (FISH, BREAD, CHOCO)
