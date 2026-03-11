@@ -820,7 +820,7 @@
             font-family: 'Nunito', sans-serif;
             color: var(--text);
             min-height: 85px;
-            max-height: 58dvh;
+            max-height: 72dvh;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -829,15 +829,27 @@
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+        /* HP Portrait: kurangi padding agar tombol tidak terpotong */
+        @media (max-width: 600px) and (orientation: portrait) {
+            #dialogue-box {
+                padding: 10px 10px 10px 100px !important;
+                max-height: 78dvh !important;
             }
+            #dialogue-portrait {
+                height: 160px !important;
+                width: 110px !important;
+                left: -10px !important;
+            }
+            #dialogue-text { max-height: 16dvh !important; font-size: 12px !important; }
+            #dialogue-options button { padding: 7px 10px !important; font-size: 11px !important; }
+        }
+        @media (max-height: 700px) {
+            #dialogue-box { max-height: 80dvh !important; }
+            #dialogue-text { max-height: 14dvh !important; }
         }
 
         /* Desktop: kembalikan ukuran penuh */
@@ -856,7 +868,7 @@
             #dialogue-box { padding: 16px 20px 16px 175px; min-height: 105px; max-height: 52dvh; }
             #dialogue-title { font-size: 17px; }
             #dialogue-text { font-size: 14px; max-height: 22dvh; }
-            #dialogue-options { max-height: 26dvh; }
+            #dialogue-options { overflow: visible; }
         }
 
         #dialogue-title {
@@ -880,10 +892,12 @@
             color: #57534e;
             white-space: pre-wrap;
             overflow-y: auto;
-            flex: 1;
+            flex-shrink: 1;
+            flex-grow: 1;
             min-height: 0;
-            max-height: 28dvh;
+            max-height: 20dvh;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
             scrollbar-width: thin;
             scrollbar-color: #d97706 transparent;
         }
@@ -902,20 +916,16 @@
             box-shadow: 0 3px 0 #92400e;
         }
 
-        /* Dialogue options container — scrollable jika banyak tombol */
+        /* Dialogue options container — PAGING, tidak scroll */
         #dialogue-options {
             display: flex;
             flex-direction: column !important;
             flex-wrap: nowrap !important;
             gap: 5px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            max-height: 28dvh;
+            overflow: visible;
             flex-shrink: 0;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-            scrollbar-color: #d97706 transparent;
             padding-right: 2px;
+            touch-action: pan-y;
         }
         #dialogue-options button {
             width: 100%;
@@ -942,6 +952,21 @@
             background: linear-gradient(135deg,#7f1d1d,#991b1b);
             border-color: #ef4444;
             color: #fecaca;
+        }
+        /* Nav row paging — tombol tidak stretch full width */
+        #dialogue-options .dlg-nav-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 2px;
+        }
+        #dialogue-options .dlg-nav-row button {
+            flex: 1;
+            width: auto !important;
+            background: #1e3a8a;
+            border-color: #3b82f6;
+            color: #bfdbfe;
+            font-size: 11px;
+            text-align: center;
         }
 
         .btn-group:not(#dialogue-options) {
@@ -3126,9 +3151,7 @@
         #minimap-container {
             position: fixed;
             bottom: 80px;
-            /* Di atas Pet HUD (pet ada di bottom:20px, tinggi ~55px) */
             left: 10px;
-            /* Kiri bawah — jauh dari tombol aksi (kanan bawah) */
             width: 120px;
             height: 90px;
             background: rgba(15, 23, 42, 0.65);
@@ -3137,11 +3160,14 @@
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
             pointer-events: none;
-            display: flex;
+            display: none; /* Tersembunyi by default — hanya tampil saat ingame */
             justify-content: center;
             align-items: center;
             z-index: 40;
             backdrop-filter: blur(2px);
+        }
+        #minimap-container.ingame {
+            display: flex;
         }
 
         #minimapCanvas {
@@ -7184,7 +7210,7 @@
             </div>
 
             <!-- RESTRUCTURED DIALOGUE HTML -->
-            <div id="dialogue-wrapper" style="display:none;">
+            <div id="dialogue-wrapper" style="display:none;" ontouchstart="event.stopPropagation()" ontouchmove="event.stopPropagation()">
                 <img id="dialogue-portrait" src="" alt="Warga">
                 <div id="dialogue-box">
                     <div id="dialogue-title">Nama Warga</div>
@@ -10427,6 +10453,12 @@
                 // 6. Sembunyikan canvas game
                 const gcCanvas = document.getElementById('gameCanvas');
                 if (gcCanvas) gcCanvas.style.display = 'none';
+
+                // Sembunyikan minimap & pet HUD saat logout
+                const minimapEl = document.getElementById('minimap-container');
+                if (minimapEl) minimapEl.classList.remove('ingame');
+                const petHudEl2 = document.getElementById('pet-hud-indicator');
+                if (petHudEl2) petHudEl2.classList.remove('visible');
 
                 // 7. Tampilkan title screen
                 const titleScreen = document.getElementById('title-screen');
@@ -15993,6 +16025,12 @@ ${reward.tip}`,
                     STATE.screen = 'play';
                     STATE.location = 'house';
 
+                    // Tampilkan minimap & pet HUD hanya saat ingame
+                    const minimapEl = document.getElementById('minimap-container');
+                    if (minimapEl) minimapEl.classList.add('ingame');
+                    const petHudEl = document.getElementById('pet-hud-indicator');
+                    if (petHudEl) petHudEl.classList.add('visible');
+
                     const hMap = maps['house'];
                     if (hMap) {
                         STATE.player.x = Math.floor(hMap.w / 2) * TILE_SIZE;
@@ -18268,6 +18306,12 @@ ${reward.tip}`,
                 if (STATE.gameOverTriggered) return;
                 STATE.gameOverTriggered = true;
                 STATE.screen = 'gameover';
+
+                // Sembunyikan minimap & pet HUD saat game over
+                const _mm = document.getElementById('minimap-container');
+                if (_mm) _mm.classList.remove('ingame');
+                const _ph = document.getElementById('pet-hud-indicator');
+                if (_ph) _ph.classList.remove('visible');
 
                 const role = STATE.player.role;
                 let reflection = "";
@@ -26615,19 +26659,21 @@ Pilih masakan:
                             // Tombol navigasi halaman pilihan (hanya jika lebih dari 1 halaman)
                             if (totalOptPages > 1) {
                                 const navRow = document.createElement('div');
+                                navRow.className = 'dlg-nav-row';
                                 navRow.style.cssText = 'display:flex; gap:6px; margin-top:2px;';
 
+                                const navBtnStyle = 'flex:1; width:auto !important; background:#1e3a8a; border:2px solid #3b82f6; border-radius:10px; color:#bfdbfe; font-size:11px; padding:7px 6px; font-family:Nunito,sans-serif; font-weight:700; cursor:pointer; text-align:center; box-sizing:border-box;';
                                 if (optPage > 0) {
                                     const bPrev = document.createElement('button');
                                     bPrev.innerText = `◀ Hal. ${optPage}/${totalOptPages}`;
-                                    bPrev.style.cssText = 'flex:1; background:#1e3a8a; border-color:#3b82f6; color:#bfdbfe; font-size:11px;';
+                                    bPrev.style.cssText = navBtnStyle;
                                     bPrev.onclick = () => renderOpts(optPage - 1);
                                     navRow.appendChild(bPrev);
                                 }
                                 if (optPage < totalOptPages - 1) {
                                     const bNext = document.createElement('button');
                                     bNext.innerText = `Hal. ${optPage + 2}/${totalOptPages} ▶`;
-                                    bNext.style.cssText = 'flex:1; background:#1e3a8a; border-color:#3b82f6; color:#bfdbfe; font-size:11px;';
+                                    bNext.style.cssText = navBtnStyle;
                                     bNext.onclick = () => renderOpts(optPage + 1);
                                     navRow.appendChild(bNext);
                                 }
