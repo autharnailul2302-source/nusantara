@@ -2712,6 +2712,168 @@
         .bk-msg-box { background: #fff; border-radius: 16px; padding: 28px; width: 90%; max-width: 460px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid #e9d5ff; }
         /* --- END DASHBOARD BK STYLES --- */
 
+        /* ═══════════════════════════════════════════════
+           ANALITIK PREDIKTIF BK — STYLES
+        ═══════════════════════════════════════════════ */
+        #bk-predictive-panel {
+            margin-bottom: 24px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #7c3aed;
+            box-shadow: 0 4px 24px rgba(124,58,237,0.13);
+        }
+        .pred-header {
+            background: linear-gradient(135deg, #4c1d95, #6d28d9, #7c3aed);
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .pred-header-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 17px;
+            color: #fff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pred-header-sub {
+            font-size: 11px;
+            color: #ddd6fe;
+            margin-top: 3px;
+            font-weight: 400;
+        }
+        .pred-filter-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .pred-filter-btn {
+            background: rgba(255,255,255,0.15);
+            color: #e9d5ff;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Nunito', sans-serif;
+        }
+        .pred-filter-btn:hover, .pred-filter-btn.active {
+            background: rgba(255,255,255,0.9);
+            color: #6d28d9;
+            border-color: transparent;
+        }
+        .pred-body {
+            background: #fdfbff;
+            padding: 20px 24px;
+        }
+        .pred-insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .pred-insight-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1.5px solid #ede9fe;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .pred-insight-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.12); }
+        .pred-insight-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px; height: 100%;
+            background: var(--pred-accent, #7c3aed);
+        }
+        .pred-insight-icon { font-size: 22px; margin-bottom: 6px; }
+        .pred-insight-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .pred-insight-val { font-size: 26px; font-weight: 900; font-family: 'Fredoka', sans-serif; color: var(--pred-accent, #7c3aed); line-height: 1.1; margin: 2px 0; }
+        .pred-insight-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
+        .pred-insight-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-top: 4px;
+        }
+        .trend-up { background: #dcfce7; color: #16a34a; }
+        .trend-down { background: #fee2e2; color: #dc2626; }
+        .trend-neutral { background: #fef3c7; color: #d97706; }
+        .pred-section-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #374151;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+        .pred-section-title .pred-badge {
+            font-size: 10px;
+            background: linear-gradient(135deg, #6d28d9, #a78bfa);
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+        .pred-stat-bars { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .pred-stat-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+        .pred-stat-name { width: 160px; flex-shrink: 0; font-weight: 600; color: #374151; }
+        .pred-stat-track { flex: 1; height: 14px; background: #f1f5f9; border-radius: 20px; overflow: hidden; position: relative; }
+        .pred-stat-fill { height: 100%; border-radius: 20px; transition: width 1s cubic-bezier(.22,.61,.36,1); position: relative; }
+        .pred-stat-fill::after { content: attr(data-label); position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.9); }
+        .pred-stat-count { width: 38px; text-align: right; font-weight: 700; color: #374151; font-size: 12px; }
+        .pred-risk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .pred-risk-card { background: #fff; border-radius: 12px; padding: 16px 18px; border: 1.5px solid #e2e8f0; transition: 0.2s; }
+        .pred-risk-card:hover { border-color: #a78bfa; box-shadow: 0 4px 16px rgba(124,58,237,0.1); }
+        .pred-risk-title { font-size: 12px; font-weight: 800; color: #374151; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .pred-risk-meter { height: 8px; background: #f1f5f9; border-radius: 20px; overflow: hidden; margin-bottom: 8px; }
+        .pred-risk-fill { height: 100%; border-radius: 20px; transition: width 1.2s ease; }
+        .risk-low  { background: linear-gradient(90deg, #4ade80, #22c55e); }
+        .risk-mid  { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+        .risk-high { background: linear-gradient(90deg, #f87171, #ef4444); }
+        .pred-risk-meta { font-size: 10px; color: #94a3b8; display: flex; justify-content: space-between; }
+        .pred-action-list { display: flex; flex-direction: column; gap: 10px; }
+        .pred-action-item { background: #fff; border-radius: 10px; padding: 13px 16px; border-left: 4px solid var(--action-color, #7c3aed); box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; align-items: flex-start; gap: 12px; transition: 0.2s; }
+        .pred-action-item:hover { transform: translateX(3px); }
+        .pred-action-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .pred-action-content { flex: 1; }
+        .pred-action-title { font-size: 12px; font-weight: 800; color: #1e293b; margin-bottom: 3px; }
+        .pred-action-desc { font-size: 11px; color: #64748b; line-height: 1.5; }
+        .pred-action-tag { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 5px; }
+        .tag-urgent { background: #fee2e2; color: #dc2626; }
+        .tag-suggest { background: #dbeafe; color: #2563eb; }
+        .tag-info { background: #f0fdf4; color: #16a34a; }
+        .pred-trend-wrap { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+        .pred-trend-item { flex: 1; min-width: 120px; background: #fff; border-radius: 10px; padding: 12px 14px; border: 1.5px solid #ede9fe; text-align: center; }
+        .pred-trend-emoji { font-size: 20px; }
+        .pred-trend-name { font-size: 11px; font-weight: 700; color: #374151; margin: 4px 0 2px; }
+        .pred-trend-bar-wrap { height: 6px; background: #f1f5f9; border-radius: 20px; overflow: hidden; margin: 6px 0; }
+        .pred-trend-bar { height: 100%; border-radius: 20px; transition: width 1s ease; }
+        .pred-trend-pct { font-size: 13px; font-weight: 900; font-family: 'Fredoka', sans-serif; }
+        .pred-tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 2px solid #f1f5f9; }
+        .pred-tab-btn { padding: 8px 16px; font-size: 12px; font-weight: 700; color: #94a3b8; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-family: 'Nunito', sans-serif; transition: 0.2s; margin-bottom: -2px; }
+        .pred-tab-btn:hover { color: #6d28d9; }
+        .pred-tab-btn.active { color: #6d28d9; border-bottom-color: #7c3aed; }
+        .pred-tab-content { display: none; }
+        .pred-tab-content.active { display: block; }
+
         /* --- DASHBOARD GURU STYLES --- */
         @keyframes slideInRight {
             from { opacity: 0; transform: translateX(40px); }
@@ -6068,6 +6230,118 @@
                             </div>
                         </div>
 
+                        <!-- ════════════════════════════════════════
+                             ANALITIK PREDIKTIF
+                        ════════════════════════════════════════ -->
+                        <div id="bk-predictive-panel">
+                            <div class="pred-header">
+                                <div>
+                                    <div class="pred-header-title">🔮 Analitik Prediktif Minat Siswa</div>
+                                    <div class="pred-header-sub">Prediksi kecenderungan minat & risiko berdasarkan pola data kolektif kelas</div>
+                                </div>
+                                <div class="pred-filter-row">
+                                    <span style="font-size:10px; color:#ddd6fe; font-weight:600;">Filter:</span>
+                                    <button class="pred-filter-btn active" onclick="setPredFilter('all', this)">Semua Kelas</button>
+                                    <button class="pred-filter-btn" onclick="setPredFilter('kelas10', this)">Kelas X</button>
+                                    <button class="pred-filter-btn" onclick="setPredFilter('kelas11', this)">Kelas XI</button>
+                                    <button class="pred-filter-btn" onclick="setPredFilter('kelas12', this)">Kelas XII</button>
+                                </div>
+                            </div>
+
+                            <div class="pred-body">
+                                <!-- TABS -->
+                                <div class="pred-tabs">
+                                    <button class="pred-tab-btn active" onclick="switchPredTab('overview', this)">📊 Ringkasan</button>
+                                    <button class="pred-tab-btn" onclick="switchPredTab('trend', this)">📈 Tren Minat</button>
+                                    <button class="pred-tab-btn" onclick="switchPredTab('risk', this)">⚠️ Prediksi Risiko</button>
+                                    <button class="pred-tab-btn" onclick="switchPredTab('action', this)">💡 Rekomendasi Aksi</button>
+                                </div>
+
+                                <!-- TAB: RINGKASAN -->
+                                <div class="pred-tab-content active" id="predtab-overview">
+                                    <div class="pred-insights-grid" id="pred-insight-cards">
+                                        <div class="pred-insight-card" style="--pred-accent:#7c3aed;">
+                                            <div class="pred-insight-icon">🎯</div>
+                                            <div class="pred-insight-label">Jalur Dominan</div>
+                                            <div class="pred-insight-val" id="pred-dominant-val">—</div>
+                                            <div class="pred-insight-desc" id="pred-dominant-desc">Jalur yang paling banyak dipilih siswa</div>
+                                            <span class="pred-insight-trend trend-neutral" id="pred-dominant-trend">Menunggu data</span>
+                                        </div>
+                                        <div class="pred-insight-card" style="--pred-accent:#0ea5e9;">
+                                            <div class="pred-insight-icon">📊</div>
+                                            <div class="pred-insight-label">Indeks Keputusan</div>
+                                            <div class="pred-insight-val" id="pred-decision-val">—</div>
+                                            <div class="pred-insight-desc">% siswa yang sudah memilih jalur karir</div>
+                                            <span class="pred-insight-trend trend-neutral" id="pred-decision-trend">Menunggu data</span>
+                                        </div>
+                                        <div class="pred-insight-card" style="--pred-accent:#059669;">
+                                            <div class="pred-insight-icon">⚡</div>
+                                            <div class="pred-insight-label">Rata-rata Engagement</div>
+                                            <div class="pred-insight-val" id="pred-engage-val">—</div>
+                                            <div class="pred-insight-desc">Rata-rata level × hari bermain siswa</div>
+                                            <span class="pred-insight-trend trend-neutral" id="pred-engage-trend">Menunggu data</span>
+                                        </div>
+                                        <div class="pred-insight-card" style="--pred-accent:#dc2626;">
+                                            <div class="pred-insight-icon">🚨</div>
+                                            <div class="pred-insight-label">Siswa Berisiko Tinggi</div>
+                                            <div class="pred-insight-val" id="pred-risk-val">—</div>
+                                            <div class="pred-insight-desc">Prediksi butuh intervensi BK segera</div>
+                                            <span class="pred-insight-trend trend-neutral" id="pred-risk-trend">Menunggu data</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="pred-section-title">
+                                        📊 Distribusi Kecenderungan Minat Kolektif
+                                        <span class="pred-badge">Prediktif AI</span>
+                                    </div>
+                                    <div class="pred-stat-bars" id="pred-stat-bars">
+                                        <div style="text-align:center; color:#94a3b8; padding:16px; font-size:12px;">Klik <strong>Refresh Data</strong> untuk menjalankan analitik prediktif.</div>
+                                    </div>
+                                </div>
+
+                                <!-- TAB: TREN MINAT -->
+                                <div class="pred-tab-content" id="predtab-trend">
+                                    <div class="pred-section-title">
+                                        📈 Prediksi Tren Minat Per Jalur
+                                        <span class="pred-badge">Berdasarkan Pola Stat</span>
+                                    </div>
+                                    <div class="pred-trend-wrap" id="pred-trend-wrap">
+                                        <div style="text-align:center; color:#94a3b8; padding:16px; font-size:12px; width:100%;">Klik <strong>Refresh Data</strong> untuk analisis tren.</div>
+                                    </div>
+                                    <div class="pred-section-title" style="margin-top:10px;">
+                                        🧠 Analisis Profil Minat Tersembunyi
+                                        <span class="pred-badge">Insight</span>
+                                    </div>
+                                    <div id="pred-hidden-profile" style="color:#64748b; font-size:12px; padding:12px; background:#f8fafc; border-radius:10px; line-height:1.7;">
+                                        Analitik akan membaca pola investasi stat siswa (STR, INT, BIZ, REP) untuk mendeteksi minat tersembunyi yang mungkin belum tercermin dari pilihan jalur formal.
+                                    </div>
+                                </div>
+
+                                <!-- TAB: PREDIKSI RISIKO -->
+                                <div class="pred-tab-content" id="predtab-risk">
+                                    <div class="pred-section-title">
+                                        ⚠️ Peta Risiko Kolektif Kelas
+                                        <span class="pred-badge">4 Dimensi</span>
+                                    </div>
+                                    <div class="pred-risk-grid" id="pred-risk-grid">
+                                        <div style="text-align:center; color:#94a3b8; padding:16px; font-size:12px;">Klik <strong>Refresh Data</strong> untuk peta risiko.</div>
+                                    </div>
+                                    <div id="pred-risk-summary" style="background:#fff7ed; border:1.5px solid #fed7aa; border-radius:10px; padding:14px 18px; font-size:12px; color:#92400e; line-height:1.7; display:none;"></div>
+                                </div>
+
+                                <!-- TAB: REKOMENDASI AKSI -->
+                                <div class="pred-tab-content" id="predtab-action">
+                                    <div class="pred-section-title">
+                                        💡 Rekomendasi Tindakan untuk Guru BK
+                                        <span class="pred-badge">Auto-Generated</span>
+                                    </div>
+                                    <div class="pred-action-list" id="pred-action-list">
+                                        <div style="text-align:center; color:#94a3b8; padding:16px; font-size:12px;">Klik <strong>Refresh Data</strong> untuk rekomendasi aksi.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- KARTU STATISTIK JALUR -->
                         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:22px;">
                             <div class="bk-stat-card bk-card-worker">
@@ -6474,15 +6748,24 @@
                 lembaran baru.</p>
         </div>
 
-        <!-- NEW: CUTSCENE OVERLAY (FIX STUCK SETELAH NIKAH) -->
-        <div id="cutscene-layer"
-            style="display:none; opacity:0; position:absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:2000; flex-direction:column; justify-content:center; align-items:center; text-align:center; transition: opacity 2s; pointer-events:none;">
-            <h1 id="cutscene-text"
-                style="font-family:'Cinzel'; color:#fbbf24; font-size:32px; margin-bottom:20px; text-shadow:0 0 20px #b45309;">
-                JUDUL CUTSCENE</h1>
-            <p id="cutscene-sub"
-                style="font-family:'Exo 2'; color:#cbd5e1; font-size:16px; max-width:600px; line-height:1.6; padding:0 20px;">
-                Deskripsi cutscene...</p>
+        <!-- CINEMATIC ENGINE — Visual Storytelling Layer -->
+        <div id="cutscene-layer" style="display:none; opacity:0; position:fixed; top:0; left:0; width:100%; height:100%; z-index:8000; flex-direction:column; justify-content:center; align-items:center; text-align:center; transition: opacity 1.5s ease; pointer-events:all; overflow:hidden;">
+            <!-- Gradient bg dinamis (diganti via JS) -->
+            <div id="cs-bg" style="position:absolute;inset:0;background:#000;transition:background 1.5s;"></div>
+            <!-- Particle canvas untuk efek tambahan -->
+            <canvas id="cs-particles" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+            <!-- Cinematic bars atas bawah -->
+            <div id="cs-bar-top"    style="position:absolute;top:0;left:0;width:100%;height:0;background:#000;transition:height 0.8s ease;z-index:1;"></div>
+            <div id="cs-bar-bottom" style="position:absolute;bottom:0;left:0;width:100%;height:0;background:#000;transition:height 0.8s ease;z-index:1;"></div>
+            <!-- Konten utama -->
+            <div id="cs-content" style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:16px;max-width:700px;padding:0 24px;">
+                <div id="cs-chapter" style="font-family:'Cinzel';font-size:11px;letter-spacing:4px;color:rgba(255,255,255,0.5);text-transform:uppercase;opacity:0;transition:opacity 1s;"></div>
+                <h1 id="cutscene-text" style="font-family:'Cinzel';font-size:28px;margin:0;text-shadow:0 0 30px currentColor;opacity:0;transform:translateY(20px);transition:opacity 0.8s,transform 0.8s;line-height:1.3;"></h1>
+                <div id="cs-divider" style="width:0;height:2px;background:currentColor;opacity:0.5;transition:width 1.2s ease;margin:4px 0;"></div>
+                <p id="cutscene-sub" style="font-family:'Exo 2';font-size:14px;max-width:580px;line-height:1.8;padding:0;opacity:0;transform:translateY(10px);transition:opacity 0.8s 0.3s,transform 0.8s 0.3s;color:rgba(255,255,255,0.85);white-space:pre-line;"></p>
+                <!-- Narasi berjalan (typewriter) -->
+                <p id="cs-narasi" style="font-family:'Exo 2';font-size:13px;font-style:italic;color:rgba(255,255,255,0.6);max-width:560px;line-height:1.7;opacity:0;transition:opacity 0.5s;min-height:40px;"></p>
+            </div>
         </div>
 
         <!-- 📋 POTRET MASA DEPANKU — LAPORAN AKHIR -->
@@ -12453,6 +12736,272 @@
 
                 // Render all students table
                 renderBKAllTable(allStudents);
+
+                // Jalankan Analitik Prediktif
+                runPredictiveAnalytics(allStudents, _predFilter || 'all');
+            }
+
+            // ════════════════════════════════════════════════════════
+            // ANALITIK PREDIKTIF ENGINE
+            // ════════════════════════════════════════════════════════
+
+            let _predFilter = 'all';
+
+            function setPredFilter(filter, btn) {
+                _predFilter = filter;
+                document.querySelectorAll('.pred-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const students = latestStudentData.filter(s => s.role === 'siswa' || (!s.role));
+                const allStudents = students.map(s => {
+                    const sd = s.saveData || {};
+                    const role = (sd.role && sd.role !== 'none') ? sd.role : 'none';
+                    const level = sd.level || 1;
+                    const day = sd.day || 1;
+                    const score = calculateGrade(sd);
+                    const cfg = BK_ROLE_CONFIG[role] || BK_ROLE_CONFIG.none;
+                    let priority = 'ok';
+                    if (role === 'none') priority = 'urgent';
+                    else if (level < 3 && day > 10) priority = 'urgent';
+                    else if (score < 40) priority = 'warning';
+                    else if ((sd.reflections||[]).length === 0 && day > 5) priority = 'warning';
+                    return { ...s, sd, role, level, day, cfg, score, priority };
+                });
+                runPredictiveAnalytics(allStudents, filter);
+            }
+
+            function switchPredTab(tab, btn) {
+                document.querySelectorAll('.pred-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.pred-tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                const el = document.getElementById('predtab-' + tab);
+                if (el) el.classList.add('active');
+            }
+
+            function filterStudentsByClass(students, filter) {
+                if (filter === 'all') return students;
+                return students.filter(s => {
+                    const kelas = (s.details || s.sd && s.sd.kelas || '').toLowerCase();
+                    if (filter === 'kelas10') return kelas.includes('x') || kelas.includes('10');
+                    if (filter === 'kelas11') return kelas.includes('xi') || kelas.includes('11');
+                    if (filter === 'kelas12') return kelas.includes('xii') || kelas.includes('12');
+                    return true;
+                });
+            }
+
+            function runPredictiveAnalytics(allStudentsRaw, filter) {
+                const students = filterStudentsByClass(allStudentsRaw, filter);
+                const total = students.length;
+
+                if (total === 0) {
+                    document.getElementById('pred-stat-bars').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:16px;font-size:12px;">Tidak ada data siswa untuk filter ini.</div>';
+                    return;
+                }
+
+                const counts = { worker: 0, student: 0, entrepreneur: 0, family: 0, none: 0 };
+                let totalStr=0, totalInt=0, totalBiz=0, totalRep=0;
+                let totalLevel=0, totalDay=0, totalRefl=0;
+                let urgentCount=0;
+
+                students.forEach(s => {
+                    counts[s.role] = (counts[s.role] || 0) + 1;
+                    const sd = s.sd || {};
+                    totalStr += (sd.str || 0);
+                    totalInt += (sd.int || 0);
+                    totalBiz += (sd.biz || 0);
+                    totalRep += (sd.reputation || 0);
+                    totalLevel += s.level;
+                    totalDay += s.day;
+                    totalRefl += (sd.reflections || []).length;
+                    if (s.priority === 'urgent') urgentCount++;
+                });
+
+                const avgStr = totalStr / total;
+                const avgInt = totalInt / total;
+                const avgBiz = totalBiz / total;
+                const avgRep = totalRep / total;
+                const decisionPct = Math.round(((total - (counts.none||0)) / total) * 100);
+                const engageScore = ((totalLevel / total) * (totalDay / total)).toFixed(1);
+
+                const roleOrder = ['worker','student','entrepreneur','family'];
+                const dominantRole = roleOrder.reduce((a, b) => (counts[a]||0) >= (counts[b]||0) ? a : b);
+                const dominantCfg = BK_ROLE_CONFIG[dominantRole] || BK_ROLE_CONFIG.none;
+                const dominantPct = Math.round(((counts[dominantRole]||0) / total) * 100);
+
+                setInner('pred-dominant-val', dominantCfg.label);
+                setInner('pred-dominant-desc', counts[dominantRole] + ' dari ' + total + ' siswa (' + dominantPct + '%)');
+                setTrendBadge('pred-dominant-trend', dominantPct >= 40 ? 'up' : dominantPct >= 20 ? 'neutral' : 'down',
+                    dominantPct >= 40 ? 'Sangat Dominan' : dominantPct >= 20 ? 'Cukup Merata' : 'Tidak Menonjol');
+
+                setInner('pred-decision-val', decisionPct + '%');
+                setTrendBadge('pred-decision-trend', decisionPct >= 70 ? 'up' : decisionPct >= 40 ? 'neutral' : 'down',
+                    decisionPct >= 70 ? 'Baik' : decisionPct >= 40 ? 'Sedang' : 'Perlu Perhatian');
+
+                setInner('pred-engage-val', engageScore);
+                setTrendBadge('pred-engage-trend', engageScore >= 5 ? 'up' : engageScore >= 2 ? 'neutral' : 'down',
+                    engageScore >= 5 ? 'Aktif Bermain' : engageScore >= 2 ? 'Cukup Aktif' : 'Kurang Aktif');
+
+                setInner('pred-risk-val', urgentCount + ' siswa');
+                setTrendBadge('pred-risk-trend', urgentCount === 0 ? 'up' : urgentCount <= Math.ceil(total*0.2) ? 'neutral' : 'down',
+                    urgentCount === 0 ? 'Aman' : urgentCount <= Math.ceil(total*0.2) ? 'Perlu Dipantau' : 'Kritis');
+
+                const roleNames = { worker: 'Pekerja (Fighter)', student: 'Akademisi (Mage)', entrepreneur: 'Wirausaha (Support)', family: 'Keluarga (Healer)', none: 'Belum Memilih' };
+                const roleEmoji = { worker: 'Pekerja', student: 'Akademisi', entrepreneur: 'Wirausaha', family: 'Keluarga', none: 'Belum' };
+                const roleColors = { worker: '#3b82f6', student: '#8b5cf6', entrepreneur: '#10b981', family: '#ec4899', none: '#cbd5e1' };
+                const maxCount = Math.max(...Object.values(counts), 1);
+
+                const statMap = { worker: avgStr, student: avgInt, entrepreneur: avgBiz, family: avgRep };
+                const predictedRole = roleOrder.reduce((a, b) => statMap[a] >= statMap[b] ? a : b);
+
+                const barsEl = document.getElementById('pred-stat-bars');
+                barsEl.innerHTML = roleOrder.concat(['none']).map(role => {
+                    const cnt = counts[role] || 0;
+                    const pct = Math.round((cnt / total) * 100);
+                    const barW = Math.round((cnt / maxCount) * 100);
+                    const isPredicted = role === predictedRole && (counts.none || 0) > 0;
+                    const predTag = isPredicted ? ' <span style="font-size:9px;background:#fef3c7;color:#d97706;padding:1px 6px;border-radius:10px;margin-left:4px;">Prediksi</span>' : '';
+                    return '<div class="pred-stat-row">' +
+                        '<div class="pred-stat-name">' + roleNames[role] + predTag + '</div>' +
+                        '<div class="pred-stat-track"><div class="pred-stat-fill" style="width:' + barW + '%;background:' + roleColors[role] + ';" data-label="' + pct + '%"></div></div>' +
+                        '<div class="pred-stat-count">' + cnt + '</div></div>';
+                }).join('');
+
+                const trendData = [
+                    { role: 'worker',       emoji: 'Pekerja',   name: 'Pekerja',    val: avgStr, color: '#3b82f6' },
+                    { role: 'student',      emoji: 'Akademisi', name: 'Akademisi',  val: avgInt, color: '#8b5cf6' },
+                    { role: 'entrepreneur', emoji: 'Wirausaha', name: 'Wirausaha',  val: avgBiz, color: '#10b981' },
+                    { role: 'family',       emoji: 'Keluarga',  name: 'Keluarga',   val: avgRep, color: '#ec4899' },
+                ].sort((a,b) => b.val - a.val);
+
+                const maxStat = Math.max(avgStr, avgInt, avgBiz, avgRep, 1);
+                const trendWrap = document.getElementById('pred-trend-wrap');
+                const roleEmojiMap = { worker: 'Pekerja', student: 'Akademisi', entrepreneur: 'Wirausaha', family: 'Keluarga' };
+                trendWrap.innerHTML = trendData.map((t, i) => {
+                    const barPct = Math.round((t.val / maxStat) * 100);
+                    const rank = i === 0 ? '1st' : i === 1 ? '2nd' : i === 2 ? '3rd' : '4th';
+                    return '<div class="pred-trend-item">' +
+                        '<div class="pred-trend-emoji" style="font-size:18px;font-weight:900;">' + t.name + '</div>' +
+                        '<div class="pred-trend-name">' + t.name + '</div>' +
+                        '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px;">' + rank + ' Minat</div>' +
+                        '<div class="pred-trend-bar-wrap"><div class="pred-trend-bar" style="width:' + barPct + '%;background:' + t.color + ';"></div></div>' +
+                        '<div class="pred-trend-pct" style="color:' + t.color + ';">' + t.val.toFixed(1) + '</div>' +
+                        '<div style="font-size:9px;color:#94a3b8;margin-top:2px;">rata-rata stat</div>' +
+                        '</div>';
+                }).join('');
+
+                const hiddenEl = document.getElementById('pred-hidden-profile');
+                const topStat = trendData[0];
+                const gap = topStat.val - trendData[1].val;
+                const gapPct = maxStat > 0 ? Math.round((gap/maxStat)*100) : 0;
+                const isMultiMinat = (trendData[0].val - trendData[3].val) < (maxStat * 0.3);
+                const chosenDominantMatch = dominantRole === topStat.role;
+
+                hiddenEl.innerHTML =
+                    '<strong>Analisis Profil Minat Tersembunyi</strong><br><br>' +
+                    (isMultiMinat
+                        ? '<span style="color:#d97706;"><strong>Minat Tersebar Merata:</strong></span> Siswa menunjukkan minat seimbang antar jalur (selisih stat hanya ' + gapPct + '%). Banyak siswa masih dalam fase eksplorasi. Rekomendasikan sesi eksplorasi minat lebih lanjut.'
+                        : '<span style="color:#16a34a;"><strong>Minat Menonjol pada ' + topStat.name + ':</strong></span> Gap ' + gapPct + '% di atas jalur lain berdasarkan investasi stat.'
+                    ) + '<br><br>' +
+                    (chosenDominantMatch
+                        ? '<span style="color:#16a34a;"><strong>Pilihan Konsisten dengan Perilaku:</strong></span> Jalur terpilih (' + dominantCfg.label + ') sesuai dengan kecenderungan investasi stat. Kelas menunjukkan kesadaran karir yang baik.'
+                        : '<span style="color:#dc2626;"><strong>Ketidaksesuaian Pilihan vs Perilaku:</strong></span> Jalur paling dipilih adalah ' + dominantCfg.label + ', namun stat kolektif menunjukkan minat tertinggi pada <strong>' + topStat.name + '</strong>. Pertimbangkan sesi refleksi minat mendalam.'
+                    ) + '<br><br>' +
+                    '<span style="color:#7c3aed;"><strong>Rata-rata Jurnal Refleksi:</strong></span> ' + (totalRefl/total).toFixed(1) + ' entri/siswa — ' +
+                    ((totalRefl/total) >= 2 ? 'Baik, siswa aktif merefleksikan perjalanan karir.' : 'Rendah, dorong siswa untuk lebih aktif menulis jurnal di dalam game.');
+
+                const noChoiceRisk  = Math.round(((counts.none||0) / total) * 100);
+                const lowEngageRisk = Math.round((students.filter(s => s.level < 3 && s.day > 7).length / total) * 100);
+                const noJournalRisk = Math.round((students.filter(s => (s.sd && s.sd.reflections ? s.sd.reflections : []).length === 0 && s.day > 5).length / total) * 100);
+                const lowStatRisk   = Math.round((students.filter(s => Math.max(s.sd ? s.sd.str||0 : 0, s.sd ? s.sd.int||0 : 0, s.sd ? s.sd.biz||0 : 0, s.sd ? s.sd.reputation||0 : 0) < 10).length / total) * 100);
+
+                const riskGrid = document.getElementById('pred-risk-grid');
+                const risks = [
+                    { title: 'Risiko Kebingungan Karir', desc: 'Belum memilih jalur', pct: noChoiceRisk, count: counts.none||0 },
+                    { title: 'Risiko Rendah Engagement', desc: 'Level < 3 padahal sudah > 7 hari', pct: lowEngageRisk, count: students.filter(s => s.level < 3 && s.day > 7).length },
+                    { title: 'Risiko Minim Refleksi', desc: 'Belum punya jurnal refleksi', pct: noJournalRisk, count: students.filter(s => (s.sd && s.sd.reflections ? s.sd.reflections : []).length === 0 && s.day > 5).length },
+                    { title: 'Risiko Kompetensi Rendah', desc: 'Semua stat utama di bawah 10', pct: lowStatRisk, count: students.filter(s => Math.max(s.sd ? s.sd.str||0 : 0, s.sd ? s.sd.int||0 : 0, s.sd ? s.sd.biz||0 : 0, s.sd ? s.sd.reputation||0 : 0) < 10).length },
+                ];
+
+                riskGrid.innerHTML = risks.map(r => {
+                    const cls = r.pct >= 50 ? 'risk-high' : r.pct >= 25 ? 'risk-mid' : 'risk-low';
+                    const lvl = r.pct >= 50 ? 'Tinggi' : r.pct >= 25 ? 'Sedang' : 'Rendah';
+                    return '<div class="pred-risk-card">' +
+                        '<div class="pred-risk-title">' + r.title + '</div>' +
+                        '<div class="pred-risk-meter"><div class="pred-risk-fill ' + cls + '" style="width:' + r.pct + '%;"></div></div>' +
+                        '<div class="pred-risk-meta"><span>' + r.desc + '</span><span><strong>' + r.pct + '%</strong> (' + r.count + ' siswa) &middot; ' + lvl + '</span></div>' +
+                        '</div>';
+                }).join('');
+
+                const topRiskPct = Math.max(noChoiceRisk, lowEngageRisk, noJournalRisk, lowStatRisk);
+                const riskSummary = document.getElementById('pred-risk-summary');
+                riskSummary.style.display = 'block';
+                if (topRiskPct >= 50) {
+                    riskSummary.style.background = '#fff7ed'; riskSummary.style.borderColor = '#fed7aa'; riskSummary.style.color = '#92400e';
+                    riskSummary.innerHTML = '<strong>Perhatian Kritis:</strong> Lebih dari setengah siswa menunjukkan indikator risiko yang tinggi. Segera jadwalkan sesi konseling kelompok atau kelas BK khusus.';
+                } else if (topRiskPct >= 25) {
+                    riskSummary.style.background = '#fefce8'; riskSummary.style.borderColor = '#fef08a'; riskSummary.style.color = '#854d0e';
+                    riskSummary.innerHTML = '<strong>Pantauan Aktif Diperlukan:</strong> Sebagian siswa menunjukkan tanda-tanda yang perlu diperhatikan. Lakukan check-in individu untuk siswa prioritas konseling.';
+                } else {
+                    riskSummary.style.background = '#f0fdf4'; riskSummary.style.borderColor = '#86efac'; riskSummary.style.color = '#166534';
+                    riskSummary.innerHTML = '<strong>Kondisi Relatif Baik:</strong> Mayoritas siswa dalam kondisi perkembangan yang positif. Pertahankan program yang berjalan dan terus dorong eksplorasi minat.';
+                }
+
+                const actions = [];
+
+                if ((counts.none||0) > 0) {
+                    actions.push({ icon: '?', color: '#dc2626', tag: 'tag-urgent', tagText: 'Mendesak',
+                        title: 'Sesi Eksplorasi Karir — ' + (counts.none||0) + ' Siswa Belum Memilih',
+                        desc: (counts.none||0) + ' siswa (' + noChoiceRisk + '%) belum memilih jalur karir. Rekomendasikan penggunaan menu Eksplorasi di dalam game, atau adakan sesi diskusi kelompok tentang 4 jalur karir.' });
+                }
+
+                if (lowEngageRisk >= 20) {
+                    actions.push({ icon: 'G', color: '#d97706', tag: 'tag-suggest', tagText: 'Saran',
+                        title: 'Tingkatkan Motivasi untuk Siswa Pasif',
+                        desc: lowEngageRisk + '% siswa menunjukkan engagement rendah. Kirim pesan motivasi melalui fitur Kirim Pesan BK, atau gunakan template "Motivasi & Semangat".' });
+                }
+
+                if (!chosenDominantMatch) {
+                    actions.push({ icon: 'R', color: '#7c3aed', tag: 'tag-suggest', tagText: 'Insight',
+                        title: 'Diskusi Kesesuaian Minat vs Pilihan Jalur',
+                        desc: 'Terdeteksi ketidaksesuaian antara pilihan jalur formal siswa dengan kecenderungan minat berdasarkan investasi stat. Rekomendasikan sesi refleksi diri.' });
+                }
+
+                if (noJournalRisk >= 30) {
+                    actions.push({ icon: 'J', color: '#0ea5e9', tag: 'tag-suggest', tagText: 'Saran',
+                        title: 'Dorong Penulisan Jurnal Refleksi',
+                        desc: noJournalRisk + '% siswa belum menulis jurnal refleksi. Ingatkan siswa bahwa jurnal adalah bagian penting dari proses eksplorasi karir dan bisa jadi bahan portofolio P5/BK.' });
+                }
+
+                actions.push({ icon: 'I', color: topStat.color, tag: 'tag-info', tagText: 'Info Kelas',
+                    title: 'Kelas Cenderung Tertarik pada Jalur ' + topStat.name,
+                    desc: 'Berdasarkan analisis investasi stat kolektif, jalur ' + topStat.name + ' memiliki rata-rata stat tertinggi (' + topStat.val.toFixed(1) + '). Pertimbangkan mengundang narasumber terkait karir ini.' });
+
+                if (decisionPct < 50) {
+                    actions.push({ icon: 'D', color: '#059669', tag: 'tag-urgent', tagText: 'Jadwal',
+                        title: 'Jadwalkan Sesi Pengambilan Keputusan Karir',
+                        desc: 'Kurang dari 50% siswa telah membuat keputusan jalur karir. Rekomendasikan sesi BK khusus bertema "Mengenal Diri & Merencanakan Masa Depan".' });
+                }
+
+                const actionList = document.getElementById('pred-action-list');
+                actionList.innerHTML = actions.map(a =>
+                    '<div class="pred-action-item" style="--action-color:' + a.color + ';">' +
+                    '<div class="pred-action-content">' +
+                    '<div class="pred-action-title">' + a.title + '</div>' +
+                    '<div class="pred-action-desc">' + a.desc + '</div>' +
+                    '<span class="pred-action-tag ' + a.tag + '">' + a.tagText + '</span>' +
+                    '</div></div>'
+                ).join('') || '<div style="text-align:center;color:#16a34a;padding:20px;font-size:13px;">Tidak ada rekomendasi mendesak. Kelas dalam kondisi baik!</div>';
+            }
+
+            function setInner(id, val) {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = val;
+            }
+
+            function setTrendBadge(id, type, text) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.className = 'pred-insight-trend ' + (type === 'up' ? 'trend-up' : type === 'down' ? 'trend-down' : 'trend-neutral');
+                el.innerHTML = (type === 'up' ? 'naik ' : type === 'down' ? 'turun ' : '● ') + text;
             }
 
             function renderBKPriorityTable(students) {
@@ -16030,6 +16579,7 @@ ${reward.tip}`,
                     if (minimapEl) minimapEl.classList.add('ingame');
                     const petHudEl = document.getElementById('pet-hud-indicator');
                     if (petHudEl) petHudEl.classList.add('visible');
+                    setTimeout(() => updateMentorBubble(), 500); // Init bubble mentor
 
                     const hMap = maps['house'];
                     if (hMap) {
@@ -16925,17 +17475,26 @@ ${reward.tip}`,
                 // FIX: SIMPAN DATA JURUSAN SEGERA
                 manualSave();
 
-                let msg = `Selamat! Kamu resmi menjadi mahasiswa **${major.toUpperCase()}**.\nStatus: ${isScholarship ? 'BEASISWA PENUH 🏆' : 'REGULER 💰'}`;
-                if (isScholarship) msg += "\n(Kamu mendapat uang saku bulanan!)";
-                else msg += "\n(Jangan lupa siapkan uang untuk UKT tahunan!)";
-
-                showDialogue("PENDAFTARAN BERHASIL", msg, [{ text: "Siap Kuliah!", action: closeDialogue }], 'images/lecture.png');
-
                 updateHUDInfo();
-
-                // Efek Visual
                 createParticle(STATE.player.x, STATE.player.y, '#3b82f6');
                 if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+
+                if (isScholarship) {
+                    // 🎬 CINEMATIC BEASISWA
+                    setTimeout(() => {
+                        playCutsceneScholarship(major, () => {
+                            showToast(`🏆 Selamat! Kamu resmi mahasiswa ${major.toUpperCase()} — BEASISWA PENUH!`);
+                            if (typeof updateMentorBubble === 'function') updateMentorBubble();
+                        });
+                    }, 400);
+                } else {
+                    // Dialog biasa untuk jalur reguler
+                    showDialogue("PENDAFTARAN BERHASIL",
+                        `Selamat! Kamu resmi menjadi mahasiswa **${major.toUpperCase()}**.\nStatus: REGULER 💰\n\nJangan lupa siapkan uang untuk UKT tahunan!`,
+                        [{ text: "Siap Kuliah!", action: closeDialogue }],
+                        'images/lecture.png'
+                    );
+                }
             }
 
             function startEntranceExam(major) {
@@ -17962,26 +18521,44 @@ ${reward.tip}`,
                             }
 
                             // BERI HADIAH KELULUSAN
-                            addItem('buku_tesis', 1); // Simpan Tesis sebagai kenang-kenangan
+                            addItem('buku_tesis', 1);
 
-                            // NEW: BERIKAN IJAZAH SESUAI JURUSAN
-                            if (currentDefense.major === 'teknologi') {
+                            const major = currentDefense.major;
+                            if (major === 'teknologi') {
                                 addItem('ijazah_teknologi', 1);
-                                showToast("🎓 DITEMUKAN: Ijazah Sarjana Komputer (S.Kom)!");
                             } else {
                                 addItem('ijazah_sejarah', 1);
-                                showToast("🎓 DITEMUKAN: Ijazah Sarjana Humaniora (S.Hum)!");
                             }
 
-                            STATE.player.reputation += 50; // Reputasi naik drastis
-                            STATE.player.money += 5000; // Hadiah kelulusan dari kampus/ortu
-                            gainExp(5000); // Big Exp
+                            STATE.player.reputation += 50;
+                            STATE.player.money += 5000;
+                            gainExp(5000);
 
-                            // Achievement Sound
                             if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-
                             createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
                             closeDialogue();
+
+                            // 🎬 CINEMATIC WISUDA
+                            setTimeout(() => {
+                                const isScholar = STATE.player.scholarship || false;
+                                playCutsceneWisuda(major, isScholar, () => {
+                                    // Setelah wisuda, tampilkan toast selamat & update mentor
+                                    const gelar = major === 'teknologi' ? 'S.Kom' : 'S.Hum';
+                                    showToast(`🎓 Selamat ${gelar}! Kamu telah wisuda!`);
+                                    if (typeof updateMentorBubble === 'function') updateMentorBubble();
+                                    // Confetti game partikel tambahan
+                                    for (let i = 0; i < 30; i++) {
+                                        const angle = Math.random() * Math.PI * 2;
+                                        STATE.particles.push({
+                                            x: STATE.player.x, y: STATE.player.y,
+                                            vx: Math.cos(angle) * (2 + Math.random() * 5),
+                                            vy: Math.sin(angle) * (2 + Math.random() * 5),
+                                            life: 50 + Math.random() * 30,
+                                            color: ['#fbbf24','#86efac','#f9a8d4','#ffffff'][Math.floor(Math.random()*4)]
+                                        });
+                                    }
+                                });
+                            }, 500);
                         }
                     }], 'images/lecture.png');
                 } else {
@@ -18305,74 +18882,64 @@ ${reward.tip}`,
             function triggerGameOver() {
                 if (STATE.gameOverTriggered) return;
                 STATE.gameOverTriggered = true;
-                STATE.screen = 'gameover';
 
-                // Sembunyikan minimap & pet HUD saat game over
                 const _mm = document.getElementById('minimap-container');
                 if (_mm) _mm.classList.remove('ingame');
                 const _ph = document.getElementById('pet-hud-indicator');
                 if (_ph) _ph.classList.remove('visible');
-
-                const role = STATE.player.role;
-                let reflection = "";
-
-                if (role === 'worker') {
-                    reflection = "Sebagai seorang Fighter (Pekerja), kamu telah mengerahkan tenaga dan keringatmu. Mungkin hasilnya belum maksimal, tapi kerja kerasmu membentuk karakter yang kuat. Dunia industri memang keras, tapi kamu lebih keras.";
-                } else if (role === 'student') {
-                    reflection = "Jalur Mage (Akademisi) yang kamu pilih penuh dengan ilmu. Mungkin nilaimu belum sempurna, atau teorimu belum teruji di lapangan. Namun, wawasan adalah investasi jangka panjang yang tak akan rugi.";
-                } else if (role === 'entrepreneur') {
-                    reflection = "Menjadi Support (Pebisnis) itu berisiko. Mungkin profitmu belum setinggi langit, atau usahamu mengalami pasang surut. Ingat, kegagalan bisnis adalah biaya kuliah untuk kesuksesan di masa depan.";
-                } else {
-                    reflection = "Kamu menjalani hari-harimu tanpa arah yang spesifik. Eksplorasi itu baik, tapi fokus adalah kunci keberhasilan. Di kehidupan selanjutnya, cobalah tentukan tujuan lebih awal.";
-                }
-
-                document.getElementById('reflection-text').innerText = reflection;
-
-                const quotes = [
-                    "\"Kegagalan hanyalah kesempatan untuk memulai lagi dengan lebih cerdas.\" - Henry Ford",
-                    "\"Bukan seberapa sering kamu jatuh, tapi seberapa cepat kamu bangkit.\" - Unknown",
-                    "\"Masa depan dimiliki oleh mereka yang percaya pada keindahan mimpi mereka.\" - Eleanor Roosevelt",
-                    "\"Jangan takut gagal. Takutlah berada di tempat yang sama tahun depan.\" - Unknown",
-                    "\"Setiap ahli dulunya adalah seorang pemula.\" - Helen Hayes"
-                ];
-                document.getElementById('motivation-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
-
                 document.getElementById('ui-layer').classList.add('hidden');
-                document.getElementById('game-over-screen').style.display = 'flex';
 
-                DataService.resetSaveData();
+                // 🎬 CINEMATIC GAME OVER dulu, baru layar gameover
+                playCutsceneGameOver(() => {
+                    STATE.screen = 'gameover';
+                    const role = STATE.player.role;
+                    const reflections = {
+                        worker:       "Sebagai seorang Fighter (Pekerja), kamu telah mengerahkan tenaga dan keringatmu. Mungkin hasilnya belum maksimal, tapi kerja kerasmu membentuk karakter yang kuat. Dunia industri memang keras, tapi kamu lebih keras.",
+                        student:      "Jalur Mage (Akademisi) yang kamu pilih penuh dengan ilmu. Mungkin nilaimu belum sempurna, atau teorimu belum teruji di lapangan. Namun, wawasan adalah investasi jangka panjang yang tak akan rugi.",
+                        entrepreneur: "Menjadi Support (Pebisnis) itu berisiko. Mungkin profitmu belum setinggi langit, atau usahamu mengalami pasang surut. Ingat, kegagalan bisnis adalah biaya kuliah untuk kesuksesan di masa depan.",
+                    };
+                    document.getElementById('reflection-text').innerText = reflections[role] || "Kamu menjalani hari-harimu tanpa arah yang spesifik. Eksplorasi itu baik, tapi fokus adalah kunci keberhasilan.";
+                    const quotes = [
+                        "\"Kegagalan hanyalah kesempatan untuk memulai lagi dengan lebih cerdas.\" - Henry Ford",
+                        "\"Bukan seberapa sering kamu jatuh, tapi seberapa cepat kamu bangkit.\" - Unknown",
+                        "\"Masa depan dimiliki oleh mereka yang percaya pada keindahan mimpi mereka.\" - Eleanor Roosevelt",
+                        "\"Jangan takut gagal. Takutlah berada di tempat yang sama tahun depan.\" - Unknown",
+                        "\"Setiap ahli dulunya adalah seorang pemula.\" - Helen Hayes"
+                    ];
+                    document.getElementById('motivation-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+                    document.getElementById('game-over-screen').style.display = 'flex';
+                    DataService.resetSaveData();
+                });
             }
 
             function triggerGameWin() {
                 if (STATE.gameFinished) return;
                 STATE.gameFinished = true;
                 STATE.screen = 'modal';
-
-                const screen = document.getElementById('ending-screen');
-                const narration = document.getElementById('ending-narration');
-                const certBox = document.getElementById('cert-box');
-                const options = document.getElementById('ending-options');
-
-                screen.style.display = 'flex';
                 document.getElementById('ui-layer').classList.add('hidden');
 
-                narration.style.display = 'block';
-                narration.style.opacity = 0;
-                setTimeout(() => narration.style.opacity = 1, 500);
+                // 🎬 CINEMATIC GAME WIN dulu, baru layar ending
+                playCutsceneGameWin(() => {
+                    const screen     = document.getElementById('ending-screen');
+                    const narration  = document.getElementById('ending-narration');
+                    const certBox    = document.getElementById('cert-box');
+                    const options    = document.getElementById('ending-options');
 
-                setTimeout(() => {
-                    narration.style.display = 'none';
-                    certBox.style.display = 'block';
-
-                    document.getElementById('cert-name').innerText = DataService.user ? DataService.user.name : "Player";
-                    document.getElementById('cert-role').innerText = STATE.player.role.toUpperCase();
-                    document.getElementById('cert-rep').innerText = STATE.player.reputation;
-                    document.getElementById('cert-asset').innerText = STATE.player.money.toLocaleString();
+                    screen.style.display = 'flex';
+                    narration.style.display = 'block';
+                    narration.style.opacity = 0;
+                    setTimeout(() => narration.style.opacity = 1, 500);
 
                     setTimeout(() => {
-                        options.style.display = 'flex';
-                    }, 2000);
-                }, 4000);
+                        narration.style.display = 'none';
+                        certBox.style.display = 'block';
+                        document.getElementById('cert-name').innerText = DataService.user ? DataService.user.name : "Player";
+                        document.getElementById('cert-role').innerText = STATE.player.role.toUpperCase();
+                        document.getElementById('cert-rep').innerText = STATE.player.reputation;
+                        document.getElementById('cert-asset').innerText = STATE.player.money.toLocaleString();
+                        setTimeout(() => { options.style.display = 'flex'; }, 2000);
+                    }, 4000);
+                });
             }
 
             function continueFreeRoam() {
@@ -20341,28 +20908,31 @@ ${reward.tip}`,
                     STATE.location = 'dungeon';
                     STATE.player.x = TILE_SIZE * 5;
                     STATE.player.y = TILE_SIZE * 5;
-
-                    showToast(`🌀 WARPING TO LEVEL ${STATE.dungeonLevel}...`);
                     createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
                     spawnEnemies();
 
                     if (!STATE.player.hasSeenDungeonTutorial) {
                         STATE.player.hasSeenDungeonTutorial = true;
-                        setTimeout(() => {
-                            showTutorialFocus('btn-action');
-                            showDialogue("⚔️ DUNGEON",
-                                "Zona berbahaya! Tombol aksi → ⚔️ Serang musuh.\n🔥 Tombol Api = Ultimate (butuh 10 Energi, cooldown 3 detik).\n\nTips: gunakan Ultimate saat dikepung!",
-                                [{
-                                    text: "Siap Bertarung! ⚔️",
-                                    action: () => {
-                                        clearTutorialFocus();
-                                        closeDialogue();
-                                        manualSave();
-                                    }
-                                }],
-                                'images/penjagadungeon.png'
-                            );
-                        }, 1000);
+                        playCutsceneDungeonEnter(() => {
+                            showToast(`🌀 MASUK DUNGEON LEVEL ${STATE.dungeonLevel}...`);
+                            setTimeout(() => {
+                                showTutorialFocus('btn-action');
+                                showDialogue("⚔️ DUNGEON",
+                                    "Zona berbahaya! Tombol aksi → ⚔️ Serang musuh.\n🔥 Tombol Api = Ultimate (butuh 10 Energi, cooldown 3 detik).\n\nTips: gunakan Ultimate saat dikepung!",
+                                    [{
+                                        text: "Siap Bertarung! ⚔️",
+                                        action: () => {
+                                            clearTutorialFocus();
+                                            closeDialogue();
+                                            manualSave();
+                                        }
+                                    }],
+                                    'images/penjagadungeon.png'
+                                );
+                            }, 1000);
+                        });
+                    } else {
+                        showToast(`🌀 WARPING TO DUNGEON LEVEL ${STATE.dungeonLevel}...`);
                     }
                 }
                 else if (b.id === 'dungeon_exit') {
@@ -21357,16 +21927,21 @@ ${reward.tip}`,
                 createParticle(p.x, p.y, '#000000'); // Partikel Hitam (Kelam)
                 if (typeof AudioService !== 'undefined') AudioService.playSFX('hit');
 
-                // 5. Dialog Perpisahan
+                // 5. Dialog Perpisahan + Cutscene
                 showDialogue(npc.name,
                     `Selamat tinggal. Aku akan kembali ke rumah orang tuaku.\n\n(Harta dibagi dua: -${alimony.toLocaleString()} G)\n(Reputasi Hancur: Warga bergosip tentangmu)`,
                     [{
                         text: "(Dia pergi membawa koper...) 🚶‍♀️",
                         action: () => {
                             closeDialogue();
-                            regenerateHouseMap(); // Refresh map
-                            showToast("💔 STATUS: DUDA/JANDA");
-                            manualSave();
+                            // 🎬 CINEMATIC DIVORCE
+                            const exName = npc.name.replace(' (Sangat Kecewa)', '').replace(' (Calon)', '');
+                            playCutsceneDivorce(exName, () => {
+                                regenerateHouseMap();
+                                showToast("💔 STATUS: DUDA/JANDA");
+                                manualSave();
+                                if (typeof updateMentorBubble === 'function') updateMentorBubble();
+                            });
                         }
                     }],
                     npc.imgSrc
@@ -21467,6 +22042,536 @@ ${reward.tip}`,
 
                 // Lanjutkan ke interaksi normal
                 return normalInteractNPC(npc);
+            }
+
+
+
+            // ═══════════════════════════════════════════════════════════════
+            // 🧠 MENTOR CERDAS — Mesin Inferensi Lokal berbasis Data Game
+            // Mentor "berpikir" sendiri dari state game tanpa API eksternal
+            // ═══════════════════════════════════════════════════════════════
+
+
+            // ═══════════════════════════════════════════════════════════════
+            // 💬 SISTEM MENTOR PROAKTIF
+            //  • updateMentorBubble()   — dijalankan tiap hari baru & awal game
+            //  • triggerMorningMentor() — auto-dialog pagi (darurat + check-in)
+            // ═══════════════════════════════════════════════════════════════
+
+            function updateMentorBubble() {
+                const p = STATE.player;
+                if (!p) { window._mentorBubble = null; return; }
+
+                const alerts = getMentorAlerts(p);
+                const urgent = alerts.filter(a => a.level === 'danger');
+                const warn   = alerts.filter(a => a.level === 'warn');
+
+                if (urgent.length > 0) {
+                    // Merah — ada yang darurat
+                    window._mentorBubble = { icon: '⚠', color: '#ef4444' };
+                } else if (warn.length > 0) {
+                    // Kuning — ada peringatan
+                    window._mentorBubble = { icon: '!', color: '#f59e0b' };
+                } else if (STATE.day % 3 === 0) {
+                    // Hijau — check-in 3 hari sekali
+                    window._mentorBubble = { icon: '💬', color: '#10b981' };
+                } else {
+                    window._mentorBubble = null;
+                }
+            }
+
+            // Kumpulkan alerts dari state player — satu sumber kebenaran
+            function getMentorAlerts(p) {
+                const alerts = [];
+                const day = STATE.day || 1;
+
+                if ((p.energy || 100) < 20)
+                    alerts.push({ level:'danger', id:'energy',
+                        msg:`⚡ Energimu KRITIS (${Math.floor(p.energy||0)}%)! Segera istirahat.` });
+                if ((p.hp || 100) < 30)
+                    alerts.push({ level:'danger', id:'hp',
+                        msg:`❤️ HP-mu berbahaya (${Math.floor(p.hp||0)}/${p.maxHp||100})! Pergi ke Klinik.` });
+                if ((p.money || 0) < 2000 && day > 3)
+                    alerts.push({ level:'danger', id:'money',
+                        msg:`💰 Uangmu hampir habis (${(p.money||0).toLocaleString('id-ID')} G)! Cari penghasilan segera.` });
+                if (p.role === 'none' && day > 1)
+                    alerts.push({ level:'danger', id:'role',
+                        msg:`❓ Kamu belum memilih jalur karier! Temui aku segera.` });
+
+                if ((p.reflections || []).length === 0 && day > 3)
+                    alerts.push({ level:'warn', id:'journal',
+                        msg:`📝 Belum ada jurnal refleksi. Tulis jurnal = dapat Gold & AP bonus!` });
+                if (p.role === 'student' && !p.major && day > 3)
+                    alerts.push({ level:'warn', id:'major',
+                        msg:`🎓 Kamu pelajar tapi belum daftar jurusan di Kampus!` });
+                if (p.role === 'worker' && (p.jobStatus||'unemployed') === 'unemployed' && day > 3)
+                    alerts.push({ level:'warn', id:'job',
+                        msg:`⚔️ Kamu Pekerja tapi belum punya pekerjaan. Lamar di Merchant!` });
+                if ((p.portfolioItems||[]).length === 0 && p.role === 'student' && day > 5)
+                    alerts.push({ level:'warn', id:'portfolio',
+                        msg:`📁 Belum ada karya portofolio. Buat karya di Kampus!` });
+
+                return alerts;
+            }
+
+            // ── TRIGGER PAGI HARI ────────────────────────────────────────
+            // Dipanggil setelah animasi bangun tidur selesai
+            function triggerMorningMentor() {
+                const p = STATE.player;
+                if (!p) return;
+
+                const name  = DataService.user ? DataService.user.name : "Siswa";
+                const day   = STATE.day || 1;
+                const alerts = getMentorAlerts(p);
+                const urgent = alerts.filter(a => a.level === 'danger');
+                const warn   = alerts.filter(a => a.level === 'warn');
+
+                // Cari NPC mentor untuk gambar
+                let mentorNPC = null;
+                for (const mk of Object.keys(maps)) {
+                    if (maps[mk] && maps[mk].npcs) {
+                        const found = maps[mk].npcs.find(n => n.id === 'mentor');
+                        if (found) { mentorNPC = found; break; }
+                    }
+                }
+                const mentorImg  = (mentorNPC && mentorNPC.imgSrc) ? mentorNPC.imgSrc : 'images/mentor.png';
+                const mentorName = STATE.mentorName || 'Mentor Budi';
+
+                // ── KASUS 1: Darurat — selalu tampil ──────────────────────
+                if (urgent.length > 0) {
+                    const issueList = urgent.map(a => `• ${a.msg}`).join('\n');
+                    showDialogue(
+                        `🚨 ${mentorName} — PERINGATAN!`,
+                        `${name}, aku melihat kamu dalam kondisi yang mengkhawatirkan pagi ini.\n\n${issueList}\n\nJangan abaikan ini! Selesaikan sekarang sebelum melakukan aktivitas lain.`,
+                        [
+                            { text: '📊 Lihat Laporan Lengkap', action: () => {
+                                if (mentorNPC) showMentorFullReport(mentorNPC, runMentorAnalysis(p, name));
+                                else closeDialogue();
+                            }},
+                            { text: 'Oke, aku akan atasi', action: closeDialogue }
+                        ],
+                        mentorImg
+                    );
+                    updateMentorBubble();
+                    return;
+                }
+
+                // ── KASUS 2: Check-in tiap 3 hari ────────────────────────
+                if (day % 3 === 0) {
+                    const journals = p.reflections || [];
+                    const recentJournal = journals.length > 0
+                        ? `Aku sudah membaca ${journals.length} jurnalmu. Terus refleksikan perjalananmu!`
+                        : `Kamu belum menulis jurnal. Mulai malam ini ya!`;
+
+                    const warnPart = warn.length > 0
+                        ? `\n\n⚠️ Ada ${warn.length} hal yang perlu kamu perhatikan:\n` + warn.map(a=>`• ${a.msg}`).join('\n')
+                        : '';
+
+                    showDialogue(
+                        `📋 ${mentorName} — Check-in Hari ${day}`,
+                        `Selamat pagi, ${name}! Ini hari ke-${day} perjalananmu.\n\n${recentJournal}${warnPart}\n\nMau aku bantu analisis perkembanganmu?`,
+                        [
+                            { text: '🧠 Ya, analisis sekarang', action: () => {
+                                if (mentorNPC) openAIMentor(mentorNPC);
+                                else closeDialogue();
+                            }},
+                            { text: 'Nanti saja', action: closeDialogue }
+                        ],
+                        mentorImg
+                    );
+                    updateMentorBubble();
+                    return;
+                }
+
+                // ── KASUS 3: Ada peringatan (warn only) ───────────────────
+                if (warn.length > 0) {
+                    const top = warn[0]; // Ambil 1 terpenting
+                    showDialogue(
+                        `💬 ${mentorName}`,
+                        `Pagi, ${name}. Satu hal yang perlu kamu perhatikan hari ini:\n\n${top.msg}\n\nHari ke-${day}. Gunakan waktumu dengan bijak!`,
+                        [
+                            { text: '📋 Lihat semua saran', action: () => {
+                                if (mentorNPC) openAIMentor(mentorNPC);
+                                else closeDialogue();
+                            }},
+                            { text: 'Siap!', action: closeDialogue }
+                        ],
+                        mentorImg
+                    );
+                    updateMentorBubble();
+                    return;
+                }
+
+                // ── KASUS 4: Semua baik — pesan motivasi singkat ──────────
+                // Hanya tampil tiap 3 hari, kalau tidak ada peringatan tidak ganggu
+                updateMentorBubble(); // Hapus bubble karena semua OK
+            }
+
+            function openAIMentor(npc) {
+                const p = STATE.player;
+                const name = DataService.user ? DataService.user.name : "Siswa";
+                const analysis = runMentorAnalysis(p, name);
+
+                // Bangun menu berdasarkan topik yang terdeteksi
+                const menuOpts = analysis.topics.map(topic => ({
+                    text: topic.label,
+                    action: () => showMentorTopic(npc, topic, analysis)
+                }));
+                menuOpts.push({ text: "Lihat Laporan Lengkap", action: () => showMentorFullReport(npc, analysis) });
+                menuOpts.push({ text: "Kembali", action: () => { updateMentorBubble(); interactNPC(npc); } });
+
+                const urgentAlert = analysis.alerts.length > 0
+                    ? `\n\n⚠️ ADA ${analysis.alerts.length} HAL MENDESAK yang perlu kita bahas!`
+                    : "\n\n✅ Kondisimu terlihat cukup baik hari ini.";
+
+                showDialogue(npc.name,
+                    `${name}, aku sudah amati perkembanganmu sejak hari pertama kamu tiba di sini.\n\nHari ke-${STATE.day}, Level ${p.level||1}, Jalur: ${analysis.roleLabel}.${urgentAlert}\n\nMau aku bantu di bagian mana?`,
+                    menuOpts, npc.imgSrc
+                );
+            }
+
+            function showMentorTopic(npc, topic, analysis) {
+                showDialogue(npc.name, topic.content, [
+                    { text: "💡 Apa yang harus aku lakukan?", action: () => showDialogue(npc.name, topic.action, [
+                        { text: "Paham, terima kasih!", action: () => openAIMentor(npc) }
+                    ], npc.imgSrc)},
+                    { text: "Topik lain", action: () => openAIMentor(npc) }
+                ], npc.imgSrc);
+            }
+
+            function showMentorFullReport(npc, analysis) {
+                const p = STATE.player;
+                const report = buildFullReport(p, analysis);
+                showDialogue(`📋 LAPORAN MENTOR: ${analysis.name}`, report, [
+                    { text: "🤔 Saran Karier", action: () => showDialogue(npc.name, analysis.careerAdvice, [
+                        { text: "Kembali ke Laporan", action: () => showMentorFullReport(npc, analysis) }
+                    ], npc.imgSrc)},
+                    { text: "📖 Analisis Jurnal", action: () => showJournalAnalysis(npc, analysis) },
+                    { text: "Selesai", action: () => interactNPC(npc) }
+                ], npc.imgSrc);
+            }
+
+            function showJournalAnalysis(npc, analysis) {
+                const jText = analysis.journalInsight.length > 0
+                    ? analysis.journalInsight.join("\n\n")
+                    : "Kamu belum menulis jurnal refleksi sama sekali.\n\nJurnal sangat penting! Setiap kali kamu menulis, aku bisa membaca perkembanganmu lebih akurat dan memberikan saran yang lebih tepat.";
+                showDialogue(`📖 Analisis Jurnal`, jText, [
+                    { text: "Kembali", action: () => showMentorFullReport(npc, analysis) }
+                ], npc.imgSrc);
+            }
+
+            // ─── MESIN INFERENSI UTAMA ────────────────────────────────────
+            function runMentorAnalysis(p, name) {
+                const day    = STATE.day || 1;
+                const season = ['Semi','Panas','Gugur','Dingin'][Math.floor(((day-1)/30)%4)];
+                const year   = Math.floor((day-1)/(30*4)) + 1;
+
+                const str  = p.str  || 1;
+                const int  = p.int  || 1;
+                const biz  = p.biz  || 1;
+                const rep  = p.reputation || 1;
+                const hp   = Math.floor(p.hp  || 100);
+                const maxHp = p.maxHp || 100;
+                const energy = Math.floor(p.energy || 100);
+                const money  = p.money || 0;
+                const level  = p.level || 1;
+                const role   = p.role  || 'none';
+                const ap     = p.achievementPoints || 0;
+                const journals   = p.reflections    || [];
+                const portfolio  = p.portfolioItems || [];
+                const jobStatus  = p.jobStatus  || 'unemployed';
+                const jobLevel   = p.jobLevel   || 1;
+                const isMarried  = p.isMarried  || false;
+                const hasMajor   = !!p.major;
+                const scholarship= p.scholarship || false;
+                const dungLvl   = STATE.dungeonLevel || 1;
+
+                const roleLabel = {worker:'⚔️ Pekerja',student:'🎓 Pelajar',entrepreneur:'🏪 Wirausaha',family:'🏠 Keluarga',none:'❓ Belum Dipilih'}[role] || '❓';
+
+                // ── STAT DOMINAN & LEMAH ─────────────────────────────────
+                const statMap = {str, int, biz, rep};
+                const statNames = {str:'STR(Fisik)',int:'INT(Akademik)',biz:'BIZ(Bisnis)',rep:'REP(Sosial)'};
+                const dominant = Object.entries(statMap).sort((a,b)=>b[1]-a[1])[0];
+                const weakest  = Object.entries(statMap).sort((a,b)=>a[1]-b[1])[0];
+                const isBalanced = Math.max(str,int,biz,rep) - Math.min(str,int,biz,rep) <= 3;
+
+                // ── ANALISIS JURNAL ───────────────────────────────────────
+                const journalKeywords = {
+                    mandiri:   ['mandiri','usaha','bisnis','jualan','dagang','modal','untung','rugi'],
+                    akademik:  ['belajar','kuliah','nilai','ujian','pintar','cerdas','ilmu','kampus'],
+                    kerja:     ['kerja','lelah','gaji','bos','karyawan','skill','tekun','disiplin'],
+                    sosial:    ['teman','keluarga','cinta','nikah','bahagia','bersama','tolong'],
+                    stress:    ['capek','lelah','bosan','menyerah','susah','sulit','frustrasi','stress'],
+                    semangat:  ['semangat','bangkit','bisa','yakin','percaya','kuat','optimis']
+                };
+                const journalScore = {mandiri:0,akademik:0,kerja:0,sosial:0,stress:0,semangat:0};
+                const journalSample = journals.slice(-5);
+                journalSample.forEach(j => {
+                    const txt = (j.text || '').toLowerCase();
+                    Object.entries(journalKeywords).forEach(([cat, words]) => {
+                        words.forEach(w => { if (txt.includes(w)) journalScore[cat]++; });
+                    });
+                });
+                const journalDominant = Object.entries(journalScore).sort((a,b)=>b[1]-a[1]).filter(x=>x[1]>0);
+                const isStressed = journalScore.stress >= 2;
+                const isSemangat = journalScore.semangat >= 2;
+
+                // ── DETEKSI MISMATCH ROLE vs STAT ────────────────────────
+                const roleMismatch = (() => {
+                    if (role === 'worker'       && int > str * 1.5 && int >= 8) return `INT-mu (${int}) jauh di atas STR (${str}). Otakmu lebih tajam dari ototmu.`;
+                    if (role === 'student'      && biz > int * 1.5 && biz >= 8) return `BIZ-mu (${biz}) jauh di atas INT (${int}). Insting bisnismu kuat.`;
+                    if (role === 'entrepreneur' && int > biz * 1.5 && int >= 8) return `INT-mu (${int}) melebihi BIZ (${biz}). Kamu berpikir seperti akademisi.`;
+                    if (role === 'family'       && rep < 5 && day > 20)         return `REP-mu (${rep}) masih rendah padahal kamu pilih jalur Keluarga.`;
+                    return null;
+                })();
+
+                // ── DETEKSI JURNAL vs ROLE ────────────────────────────────
+                const journalRoleMismatch = (() => {
+                    if (role === 'worker'  && journalScore.mandiri >= 2) return `Di jurnalmu, kamu sering menulis soal "mandiri" dan "usaha" — apakah jalur Wirausaha lebih cocok untukmu?`;
+                    if (role === 'student' && journalScore.kerja   >= 2) return `Di jurnalmu, kamu banyak bicara soal "kerja" dan "kelelahan" — mungkin ada konflik antara impian dan kenyataan?`;
+                    if (role === 'entrepreneur' && journalScore.akademik >= 2) return `Tulisanmu penuh kata "belajar" dan "ilmu" — ada sisi akademis kuat yang belum kamu eksplorasi.`;
+                    return null;
+                })();
+
+                // ── DETEKSI MASALAH (ALERTS) ─────────────────────────────
+                const alerts = [];
+                if (energy < 20)                                      alerts.push({ id:'energy',  icon:'🔴', msg:`Energimu KRITIS (${energy}%)! Segera istirahat sebelum pingsan dan kena denda.` });
+                if (hp < 30)                                          alerts.push({ id:'hp',       icon:'🔴', msg:`HP-mu berbahaya (${hp}/${maxHp})! Pergi ke Klinik sekarang.` });
+                if (money < 2000 && day > 5)                          alerts.push({ id:'money',    icon:'🔴', msg:`Uangmu hampir habis (${money.toLocaleString('id-ID')} G)! Risiko bangkrut.` });
+                if (journals.length === 0 && day > 3)                 alerts.push({ id:'journal',  icon:'🟡', msg:`Kamu belum pernah menulis jurnal sejak ${day-1} hari lalu. Jurnal = AP dan bonus reward!` });
+                if (role === 'none' && day > 1)                       alerts.push({ id:'role',     icon:'🟡', msg:`Kamu belum memilih jalur karier! Temui aku segera.` });
+                if (role === 'student' && !hasMajor && day > 3)       alerts.push({ id:'major',    icon:'🟡', msg:`Kamu pelajar tapi belum daftar jurusan di Kampus!` });
+                if (role === 'student' && portfolio.length === 0 && day > 5) alerts.push({ id:'portfolio', icon:'🟡', msg:`Kamu belum punya karya portofolio satu pun. Pergi ke Bangku Kampus!` });
+                if (role === 'worker'  && jobStatus === 'unemployed' && day > 3) alerts.push({ id:'job', icon:'🟡', msg:`Kamu Pekerja tapi belum punya pekerjaan! Lamar ke Merchant atau Blacksmith.` });
+                if (isMarried && money < 5000)                        alerts.push({ id:'family',   icon:'🟡', msg:`Kamu sudah menikah tapi keuanganmu tipis. Tanggung jawab finansial keluarga penting!` });
+                if (isStressed)                                        alerts.push({ id:'stress',   icon:'💜', msg:`Dari jurnalmu, aku membaca kamu sedang kelelahan. Jangan lupakan istirahat dan self-care.` });
+                if (roleMismatch)                                      alerts.push({ id:'mismatch', icon:'💡', msg:roleMismatch });
+                if (journalRoleMismatch)                               alerts.push({ id:'jmismatch',icon:'💡', msg:journalRoleMismatch });
+
+                // ── TOPIK MENU (berdasarkan kondisi aktual) ───────────────
+                const topics = [];
+
+                // Selalu ada: evaluasi stat
+                topics.push({
+                    label: `📊 Evaluasi Statistikku (${dominant[0].toUpperCase()}:${dominant[1]} Dominan)`,
+                    content: buildStatEval(p, dominant, weakest, isBalanced, role),
+                    action:  buildStatAction(p, dominant, weakest, role)
+                });
+
+                // Saran keuangan
+                topics.push({
+                    label: `💰 Kondisi Keuangan (${money < 5000 ? '⚠️ Perlu Perhatian' : '✅ Aman'})`,
+                    content: buildMoneyAnalysis(money, role, day, p),
+                    action:  buildMoneyAction(money, role, p)
+                });
+
+                // Kondisi fisik jika ada masalah
+                if (energy < 50 || hp < 60) {
+                    topics.push({
+                        label: `❤️ Kondisi Fisik (${energy < 20 ? '🔴 KRITIS' : '⚠️ Waspada'})`,
+                        content: `HP-mu saat ini ${hp}/${maxHp} dan Energi ${energy}%.\n\n${energy < 20 ? 'INI DARURAT! Kamu hampir pingsan. Di game ini, kalau Energi nol kamu akan pingsan otomatis dan kehilangan Gold sebagai "biaya rumah sakit".' : 'Kondisimu mulai menurun. Jangan paksa dirimu terus bekerja.'}\n\n${hp < 50 ? 'HP rendah membuatmu rentan serangan di Dungeon dan bisa mati mendadak.' : ''}`,
+                        action: `Segera ke Klinik di desa untuk memulihkan HP (berbayar).\n\nUntuk Energi: Tidur di Kasur Rumah (gratis, skip ke pagi hari).\n\nJangan makan malam lewat jam 22:00 karena Energi regenerasi lebih lambat kalau kamu begadang.`
+                    });
+                }
+
+                // Saran jurnal
+                if (journals.length < 3 && day > 2) {
+                    topics.push({
+                        label: `📝 Soal Jurnal Refleksi (${journals.length} entri)`,
+                        content: buildJournalAdvice(journals, day, isStressed, isSemangat),
+                        action: `Tulis jurnal setiap malam sebelum tidur — di Kasur rumah ada opsi "Tidur & Refleksi".\n\nManfaat langsung: +Gold, +EXP, +AP.\nManfaat jangka panjang: aku bisa membaca tulisanmu dan memberikan saran yang lebih akurat.`
+                    });
+                } else if (journals.length >= 3) {
+                    topics.push({
+                        label: `📝 Analisis Jurnal (${journals.length} entri ditulis)`,
+                        content: buildJournalDeepAnalysis(journals, journalScore, journalDominant, role, name),
+                        action: buildJournalNextStep(journalScore, role, journalRoleMismatch)
+                    });
+                }
+
+                // Saran karier spesifik
+                topics.push({
+                    label: `🗺️ Saran Karier & Langkah Selanjutnya`,
+                    content: buildCareerAdvice(p, role, day, year, season, isBalanced, dominant, weakest),
+                    action:  buildCareerAction(p, role, day, hasMajor, scholarship, jobStatus, jobLevel)
+                });
+
+                // ── SARAN KARIER UNTUK FULL REPORT ───────────────────────
+                const careerAdvice = buildCareerAdvice(p, role, day, year, season, isBalanced, dominant, weakest);
+
+                // ── INSIGHT JURNAL UNTUK FULL REPORT ─────────────────────
+                const journalInsight = buildJournalInsightList(journals, journalScore, journalDominant, isStressed, isSemangat, name);
+
+                return { name, roleLabel, alerts, topics, dominant, weakest, isBalanced,
+                         careerAdvice, journalInsight, statMap, money, energy, hp,
+                         journals, day, year, season, role, isStressed, isSemangat };
+            }
+
+            // ─── PEMBUAT KONTEN EVALUASI ──────────────────────────────────
+
+            function buildStatEval(p, dominant, weakest, isBalanced, role) {
+                const str=p.str||1, int=p.int||1, biz=p.biz||1, rep=p.reputation||1;
+                let text = `📊 Statistik kamu saat ini:\n💪 STR: ${str}  🧠 INT: ${int}  📈 BIZ: ${biz}  ❤️ REP: ${rep}\n\n`;
+
+                if (isBalanced) {
+                    text += `Stat-mu cukup seimbang. Ini karakter serbabisa, tapi belum ada spesialisasi yang menonjol.\n`;
+                } else {
+                    text += `Stat terkuatmu: ${dominant[0].toUpperCase()} (${dominant[1]}) — ini adalah identitas karaktermu.\nStat terlemahmu: ${weakest[0].toUpperCase()} (${weakest[1]}) — perlu ditingkatkan agar tidak jadi kelemahan.\n`;
+                }
+
+                const roleStatMap = { worker:'STR', student:'INT', entrepreneur:'BIZ', family:'REP' };
+                const primaryStat = roleStatMap[role];
+                if (primaryStat) {
+                    const primaryVal = p[primaryStat.toLowerCase()] || p['reputation'] || 1;
+                    if (primaryVal < 5) text += `\n⚠️ Stat utama jalurmu (${primaryStat}) masih rendah (${primaryVal}). Fokuskan aktivitas yang meningkatkan ${primaryStat}!`;
+                    else if (primaryVal >= 15) text += `\n🌟 ${primaryStat}-mu sudah sangat kuat (${primaryVal})! Kamu sudah di jalur yang benar.`;
+                }
+                return text;
+            }
+
+            function buildStatAction(p, dominant, weakest, role) {
+                const tips = {
+                    str: 'Tingkatkan STR dengan: Kerja kasar di Merchant, Latihan fisik, Bertarung di Dungeon.',
+                    int: 'Tingkatkan INT dengan: Kuliah di Kampus, Baca buku di Perpustakaan, Kerjakan tugas akademik.',
+                    biz: 'Tingkatkan BIZ dengan: Jual-beli barang di Merchant, Ikut event Viral, Buka usaha.',
+                    reputation: 'Tingkatkan REP dengan: Sapa warga setiap hari, Bantu NPC, Hadiri acara sosial desa.'
+                };
+                return `Fokus tingkatkan stat terkuatmu dulu agar jadi keunggulan nyata.\n\n${tips[dominant[0]] || ''}\n\nStat lemah (${weakest[0].toUpperCase()}) bisa dinaikkan sedikit demi sedikit:\n${tips[weakest[0]] || ''}`;
+            }
+
+            function buildMoneyAnalysis(money, role, day, p) {
+                let text = `💰 Saldo saat ini: ${money.toLocaleString('id-ID')} Gold\n\n`;
+                if      (money < 2000)  text += `🔴 KRITIS! Kamu hampir bangkrut. Di dunia nyata, ini setara orang yang tidak punya tabungan dan tagihan menumpuk. Sangat berbahaya.\n`;
+                else if (money < 8000)  text += `🟡 Uangmu terbatas. Cukup untuk hari ini, tapi tidak ada buffer kalau ada kejadian tak terduga (sakit, barang rusak, dll).\n`;
+                else if (money < 30000) text += `🟢 Keuanganmu stabil. Kamu punya cadangan yang cukup untuk kebutuhan rutin.\n`;
+                else if (money < 100000)text += `💎 Kamu cukup kaya! Sudah waktunya berpikir investasi, bukan hanya menyimpan.\n`;
+                else                    text += `👑 Kekayaanmu luar biasa! Di dunia nyata, ini level orang yang sudah bisa "uang bekerja untuk mereka".\n`;
+
+                if (role === 'entrepreneur') {
+                    text += `\nSebagai Wirausaha, modal adalah segalanya. Jangan simpan uang terlalu lama — putar!\n`;
+                    if (money > 20000) text += `Dengan ${money.toLocaleString('id-ID')} G, kamu bisa buka usaha baru atau beli barang viral untuk dijual kembali.`;
+                } else if (role === 'student') {
+                    text += `\nJangan lupa: UKT tahunan 600.000 G (atau GRATIS kalau dapat beasiswa). Siapkan dari sekarang!`;
+                } else if (role === 'worker') {
+                    const dailyGaji = 5000 + ((p.jobLevel||1) * 2000);
+                    text += `\nGajimu per hari kerja: ±${dailyGaji.toLocaleString('id-ID')} G (naik seiring Job Level).`;
+                }
+                return text;
+            }
+
+            function buildMoneyAction(money, role, p) {
+                if (money < 3000) return `Darurat! Segera cari penghasilan:\n1. Kerja harian di Merchant (tanpa syarat apapun)\n2. Jual item dari inventory yang tidak terpakai\n3. Cari item di alam bebas dan jual ke pedagang`;
+                if (role === 'entrepreneur' && money > 20000) return `Strategi Wirausaha:\n1. Cek event Viral di HP — beli barang yang harganya lagi naik\n2. Beli item langka dari Merchant, simpan, jual saat harga naik 3x\n3. Reputasi tinggi = harga jual lebih baik`;
+                if (role === 'student') return `Manajemen Keuangan Pelajar:\n1. Hemat — hindari beli item yang tidak penting\n2. Kerjakan Quest harian untuk bonus Gold\n3. Kalau bisa dapat beasiswa, UKT gratis dan dapat uang saku!`;
+                return `Tips Menabung:\n1. Sisihkan 30% penghasilan setiap hari\n2. Jangan jajan berlebihan (Energi bisa dipulihkan gratis dengan tidur)\n3. Fokus kegiatan yang memberi Gold + EXP sekaligus`;
+            }
+
+            function buildJournalAdvice(journals, day, isStressed, isSemangat) {
+                if (journals.length === 0) {
+                    return `Kamu sudah ${day-1} hari di sini tapi belum menulis satu pun jurnal refleksi.\n\nDi dunia nyata, orang yang tidak pernah merefleksikan pengalamannya cenderung tidak berkembang — mereka melakukan kesalahan yang sama berulang kali tanpa sadar.\n\nJurnal bukan hanya soal dapat reward Gold & AP. Ini adalah latihan berpikir kritis tentang hidupmu sendiri.`;
+                }
+                let text = `Kamu sudah menulis ${journals.length} jurnal. `;
+                if (isStressed) text += `\n\nAku membaca kata-kata seperti "capek", "sulit", "menyerah" dalam tulisanmu. Itu wajar — semua orang merasakannya. Tapi penting untuk menyadari apakah ini kelelahan sementara atau tanda kamu perlu mengubah strategi.`;
+                if (isSemangat) text += `\n\nSemangat dan optimisme terasa kuat dalam tulisanmu. Pertahankan mindset ini!`;
+                return text;
+            }
+
+            function buildJournalDeepAnalysis(journals, jScore, jDominant, role, name) {
+                let text = `Aku sudah membaca ${journals.length} jurnalmu, ${name}.\n\n`;
+                if (jDominant.length > 0) {
+                    const top = jDominant[0];
+                    const catNames = {mandiri:'kemandirian & bisnis', akademik:'akademik & keilmuan', kerja:'kerja keras & karier', sosial:'hubungan sosial & keluarga', stress:'kelelahan & tekanan', semangat:'semangat & optimisme'};
+                    text += `Tema terkuat dalam tulisanmu: **${catNames[top[0]] || top[0]}**\n\n`;
+                }
+                if (jScore.stress >= 2 && jScore.semangat < 2) text += `Aku khawatir — banyak tekanan terdeteksi dalam jurnalmu. Jangan pendam sendiri. Ceritakan ke NPC yang kamu percaya, atau tidur lebih awal.\n\n`;
+                if (jScore.mandiri >= 2 && role !== 'entrepreneur') text += `Menarik — kamu sering bicara soal "mandiri" dan "usaha" di jurnal, tapi jalurmu bukan Wirausaha. Apakah ada bagian dirimu yang ingin lebih bebas dan mandiri secara finansial?\n\n`;
+                if (jScore.akademik >= 2 && role !== 'student') text += `Jurnalmu penuh kata-kata "belajar" dan "ilmu". Sepertinya kamu punya jiwa pelajar yang kuat meski tidak di jalur Akademisi.\n\n`;
+                if (jDominant.length === 0) text += `Jurnalmu belum menunjukkan tema yang kuat. Coba tulis lebih spesifik tentang apa yang kamu rasakan dan pelajari hari ini.\n`;
+                return text;
+            }
+
+            function buildJournalNextStep(jScore, role, mismatch) {
+                if (mismatch) return `${mismatch}\n\nLanjutkan menulis jurnal dengan lebih spesifik:\n- Apa yang kamu pelajari hari ini?\n- Apa keputusan terbesar yang kamu buat?\n- Apakah kamu puas dengan jalurmu sekarang?`;
+                return `Teruskan menulis jurnal setiap hari.\n\nTantangan: Di jurnal berikutnya, coba jawab: "Jika aku bisa mengulang 3 hari terakhir, apa yang akan aku lakukan berbeda?"`;
+            }
+
+            function buildCareerAdvice(p, role, day, year, season, isBalanced, dominant, weakest) {
+                const str=p.str||1, int=p.int||1, biz=p.biz||1, rep=p.reputation||1;
+                let text = `📅 Kamu di Tahun ${year} (${season}), Hari ke-${day}.\n\n`;
+
+                if (role === 'worker') {
+                    text += `Jalur Pekerja cocok untukmu ${str >= int && str >= biz ? '✅ — STR-mu mendukung' : '⚠️ — tapi STR-mu masih perlu ditingkatkan'}.\n\n`;
+                    text += `Di dunia nyata Jawa Timur: Pekerja terampil dengan sertifikasi (las, listrik, konstruksi) bisa bergaji Rp 4-8 juta/bulan. Naik ke manajemen = Rp 10-15 juta.\n`;
+                    if (p.jobStatus === 'unemployed') text += `\n⚠️ Kamu belum bekerja! Ini setara pengangguran. Segera lamar pekerjaan.`;
+                    else text += `\nJob Level-mu: ${p.jobLevel||1}. ${(p.jobLevel||1) >= 3 ? 'Sudah cukup senior untuk naik jabatan!' : 'Terus tingkatkan performa agar dapat promosi.'}`;
+                } else if (role === 'student') {
+                    text += `Jalur Pelajar ${int >= 8 ? '✅ sangat cocok' : int >= 5 ? '🟡 cukup cocok' : '⚠️ menantang'} dengan INT-mu (${int}).\n\n`;
+                    text += `Di dunia nyata: Lulusan perguruan tinggi di Indonesia rata-rata bergaji 30-50% lebih tinggi dari lulusan SMA. Beasiswa = menghemat ratusan juta!\n`;
+                    if (!p.major) text += `\n⚠️ Belum daftar jurusan! Pergi ke Kampus segera.`;
+                    else text += `\nJurusan: ${p.major.toUpperCase()}. ${p.scholarship ? '🏆 Kamu penerima beasiswa — pertahankan!' : 'Belum beasiswa. Tingkatkan INT untuk membuka jalur beasiswa.'}`;
+                } else if (role === 'entrepreneur') {
+                    text += `Jalur Wirausaha ${biz >= int && biz >= str ? '✅ — BIZ-mu mendukung' : '⚠️ — BIZ-mu perlu ditingkatkan'}.\n\n`;
+                    text += `Di dunia nyata: UMKM menyumbang 61% GDP Indonesia. Modal kecil bisa jadi besar dengan strategi yang tepat. Kuncinya: modal, jaringan, dan timing.\n`;
+                    text += `\nSaldo saat ini: ${(p.money||0).toLocaleString('id-ID')} G. ${p.money > 30000 ? 'Modal cukup untuk ekspansi!' : 'Akumulasikan modal dulu sebelum ekspansi besar.'}`;
+                } else if (role === 'family') {
+                    text += `Jalur Keluarga ${rep >= 8 ? '✅ — REP-mu solid' : '⚠️ — REP-mu perlu lebih tinggi'}.\n\n`;
+                    text += `Di dunia nyata: Keluarga yang sehat butuh financial planning yang matang. Di Indonesia, biaya pernikahan rata-rata Rp 50-150 juta. Setelah menikah, biaya hidup naik drastis.\n`;
+                    text += `\n${p.isMarried ? '✅ Sudah menikah. Fokus stabilitas finansial keluargamu.' : `Belum menikah. Siapkan REP tinggi dan uang yang cukup.`}`;
+                } else {
+                    text += `Kamu belum memilih jalur! Ini sangat penting.\n\nBerdasarkan stat-mu:\n`;
+                    const sorted = [{k:'worker',v:str},{k:'student',v:int},{k:'entrepreneur',v:biz},{k:'family',v:rep}].sort((a,b)=>b.v-a.v);
+                    text += sorted.map((s,i) => `${i+1}. ${['⚔️ Pekerja','🎓 Pelajar','🏪 Wirausaha','🏠 Keluarga'][['worker','student','entrepreneur','family'].indexOf(s.k)]} (${s.k === 'family'?'REP':s.k.toUpperCase().replace('WORKER','STR').replace('STUDENT','INT').replace('ENTREPRENEUR','BIZ')}: ${s.v})`).join('\n');
+                }
+                return text;
+            }
+
+            function buildCareerAction(p, role, day, hasMajor, scholarship, jobStatus, jobLevel) {
+                const year = Math.floor((day-1)/(30*4)) + 1;
+                if (role === 'worker') {
+                    if (jobStatus === 'unemployed') return `PRIORITAS SEKARANG:\n1. Pergi ke Merchant atau Blacksmith\n2. Lamar pekerjaan (opsi "Lamar Kerja")\n3. Setelah diterima, kerja konsisten setiap hari untuk naik level\n\nTarget: Capai Job Level 3 sebelum akhir Tahun 1.`;
+                    return `Target saat ini (Job Lv.${jobLevel}):\n1. Kerja setiap hari tanpa absen\n2. Jangan sampai dipecat (jaga relasi dengan Bos)\n3. Target promosi: Job Level ${jobLevel+1}\n\nJangka panjang: Job Level 5 = Penghasilan maksimal + bonus AP besar.`;
+                }
+                if (role === 'student') {
+                    if (!hasMajor) return `DARURAT: Daftar jurusan di Kampus hari ini!\n\nLangkah:\n1. Pergi ke Kampus (buka dari 07:00-18:00)\n2. Temui Prof. Wahyu\n3. Pilih jurusan sesuai minat\n4. Ikut tes beasiswa untuk UKT gratis!`;
+                    return `Rutinitas ideal pelajar:\n1. Kuliah di Kampus setiap pagi\n2. Tulis jurnal refleksi tiap malam\n3. Buat karya portofolio secara rutin\n4. ${scholarship ? 'Pertahankan prestasi untuk beasiswa!' : 'Tingkatkan INT untuk buka jalur beasiswa'}`;
+                }
+                if (role === 'entrepreneur') return `Strategi Wirausaha Optimal:\n1. Pantau event Viral via HP — beli saat murah, jual saat mahal\n2. Bangun relasi dengan Merchant dan Pedagang kaya\n3. Jangan habiskan modal untuk konsumsi\n4. Target: Modal 50.000 G di akhir Tahun ${year}`;
+                if (role === 'family') return `Langkah Keluarga Ideal:\n1. Sapa warga setiap hari (+REP)\n2. Hadiri event sosial desa\n3. Bantu NPC yang membutuhkan\n4. Nabung untuk biaya pernikahan\n5. ${p.isMarried ? 'Jaga komunikasi dengan pasangan dan stabilitas finansial.' : 'Dekati NPC yang kamu suka dan bangun hubungan.'}`;
+                return `Pilih jalur karier dulu dengan berbicara ke aku (Mentor)!`;
+            }
+
+            function buildFullReport(p, analysis) {
+                const str=p.str||1, int=p.int||1, biz=p.biz||1, rep=p.reputation||1;
+                let report = `👤 ${analysis.name} | Level ${p.level||1} | Hari ke-${analysis.day}\n`;
+                report += `Jalur: ${analysis.roleLabel} | Tahun ${analysis.year} (${analysis.season})\n`;
+                report += `─────────────────────────\n`;
+                report += `📊 STAT: STR${str} INT${int} BIZ${biz} REP${rep}\n`;
+                report += `❤️ HP: ${Math.floor(p.hp||100)}/${p.maxHp||100} | ⚡ Energi: ${Math.floor(p.energy||100)}%\n`;
+                report += `💰 Gold: ${(p.money||0).toLocaleString('id-ID')} | 🏅 AP: ${p.achievementPoints||0}\n`;
+                report += `📖 Jurnal: ${analysis.journals.length} entri | 📁 Portofolio: ${(p.portfolioItems||[]).length}\n`;
+                report += `─────────────────────────\n`;
+                if (analysis.alerts.length > 0) {
+                    report += `⚠️ PERHATIAN:\n`;
+                    analysis.alerts.forEach(a => { report += `${a.icon} ${a.msg}\n`; });
+                    report += `─────────────────────────\n`;
+                }
+                report += `💪 Stat Dominan: ${analysis.dominant[0].toUpperCase()} (${analysis.dominant[1]})\n`;
+                report += `📈 Perlu Ditingkatkan: ${analysis.weakest[0].toUpperCase()} (${analysis.weakest[1]})`;
+                return report;
+            }
+
+            function buildJournalInsightList(journals, jScore, jDominant, isStressed, isSemangat, name) {
+                if (journals.length === 0) return [];
+                const insights = [];
+                const catNames = {mandiri:'Kemandirian & Bisnis', akademik:'Akademik & Ilmu', kerja:'Kerja Keras', sosial:'Sosial & Keluarga', stress:'Tekanan & Kelelahan', semangat:'Semangat & Optimisme'};
+                if (jDominant.length > 0) {
+                    insights.push(`📊 TEMA DOMINAN JURNALMU:\n` + jDominant.slice(0,3).map(([k,v]) => `• ${catNames[k]||k}: ${v} kemunculan`).join('\n'));
+                }
+                if (isStressed) insights.push(`💜 DETEKSI TEKANAN:\nKata-kata yang menunjukkan stres/kelelahan ditemukan ${jScore.stress} kali. Jangan abaikan sinyal ini.`);
+                if (isSemangat) insights.push(`⭐ SEMANGAT TERDETEKSI:\nOptimisme dan semangat muncul ${jScore.semangat} kali dalam tulisanmu. Pertahankan!`);
+                const last = journals[journals.length-1];
+                if (last) insights.push(`📝 JURNAL TERAKHIR (Hari ${last.day}):\n"${(last.text||'').substring(0,200)}${(last.text||'').length > 200 ? '...' : ''}"`);
+                return insights;
             }
 
             function normalInteractNPC(npc) {
@@ -22056,80 +23161,55 @@ ${reward.tip}`,
                                                                             spawnFloatingText(STATE.player.x - 40, STATE.player.y - 40, "SAH!", "#ffffff", 15);
                                                                             spawnFloatingText(STATE.player.x + 40, STATE.player.y - 40, "SAH!", "#ffffff", 15);
 
-                                                                            // Cutscene
+                                                                            // 🎬 CINEMATIC WEDDING
                                                                             STATE.screen = 'cutscene';
                                                                             STATE.cutsceneOverride = true;
+                                                                            playCutsceneWedding(targetName, null);
 
-                                                                            let panCount = 0;
-                                                                            const panInterval = setInterval(() => {
-                                                                                STATE.camera.y -= 1;
-                                                                                panCount++;
-                                                                                if (panCount > 200) clearInterval(panInterval);
-                                                                            }, 20);
-
-                                                                            setTimeout(() => {
-                                                                                const layer = document.getElementById('cutscene-layer');
-                                                                                const txt = document.getElementById('cutscene-text');
-                                                                                const sub = document.getElementById('cutscene-sub');
-                                                                                txt.innerText = "MENIKAH DENGAN BAHAGIA";
-                                                                                sub.innerText = `Selamat menempuh hidup baru bersama ${targetName}.\nSemoga cinta kalian abadi selamanya.`;
-                                                                                layer.style.display = 'flex';
-                                                                                requestAnimationFrame(() => layer.style.opacity = 1);
-                                                                            }, 1000);
-
-                                                                            setTimeout(() => {
-                                                                                const layer = document.getElementById('cutscene-layer');
-                                                                                layer.style.opacity = 0;
+                                                                            // Cinematic selesai → restore game (via callback playCutsceneWedding)
+                                                                            // Override callback untuk restore state
+                                                                            const _restoreAfterWedding = () => {
+                                                                                STATE.cutsceneOverride = false;
+                                                                                STATE.day++;
+                                                                                STATE.time = 600;
+                                                                                STATE.player.energy = 100;
+                                                                                STATE.player.hp = STATE.player.maxHp;
+                                                                                if (STATE.player.role === 'entrepreneur') {
+                                                                                    STATE.location = 'player_shop_interior';
+                                                                                    STATE.player.x = 5 * TILE_SIZE;
+                                                                                    STATE.player.y = 3 * TILE_SIZE;
+                                                                                } else {
+                                                                                    STATE.location = 'house';
+                                                                                    STATE.player.x = 3 * TILE_SIZE;
+                                                                                    STATE.player.y = 2 * TILE_SIZE;
+                                                                                }
+                                                                                STATE.player.direction = 'right';
+                                                                                regenerateHouseMap();
+                                                                                STATE.screen = 'play';
+                                                                                manualSave();
+                                                                                showToast("Keesokan paginya... ☀️");
                                                                                 setTimeout(() => {
-                                                                                    layer.style.display = 'none';
-                                                                                    STATE.cutsceneOverride = false;
-
-                                                                                    // Ganti hari & reset status
-                                                                                    STATE.day++;
-                                                                                    STATE.time = 600;
-                                                                                    STATE.player.energy = 100;
-                                                                                    STATE.player.hp = STATE.player.maxHp;
-
-                                                                                    // Pindah ke rumah (sesuai role)
-                                                                                    if (STATE.player.role === 'entrepreneur') {
-                                                                                        STATE.location = 'player_shop_interior';
-                                                                                        STATE.player.x = 5 * TILE_SIZE;
-                                                                                        STATE.player.y = 3 * TILE_SIZE;
-                                                                                    } else {
-                                                                                        STATE.location = 'house';
-                                                                                        STATE.player.x = 3 * TILE_SIZE;
-                                                                                        STATE.player.y = 2 * TILE_SIZE;
+                                                                                    const spouse = maps['house'].npcs.find(n => n.id === targetId);
+                                                                                    if (spouse) {
+                                                                                        createParticle(spouse.x * TILE_SIZE, spouse.y * TILE_SIZE, '#ec4899');
+                                                                                        createParticle(STATE.player.x, STATE.player.y, '#ec4899');
+                                                                                        if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                                                                        showDialogue(spouse.name,
+                                                                                            "Selamat pagi sayang! ❤️\n\nRasanya seperti mimpi kita sudah tinggal serumah.\nAku sangat bahagia bisa melihat wajahmu saat bangun tidur.\n\nSemoga hari ini menyenangkan ya!",
+                                                                                            [{
+                                                                                                text: "Pagi juga cintaku! (Cium Kening)",
+                                                                                                action: () => {
+                                                                                                    createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+                                                                                                    closeDialogue();
+                                                                                                }
+                                                                                            }],
+                                                                                            spouse.imgSrc
+                                                                                        );
                                                                                     }
-                                                                                    STATE.player.direction = 'right';
-
-                                                                                    regenerateHouseMap();
-                                                                                    STATE.screen = 'play';
-                                                                                    manualSave();
-                                                                                    showToast("Keesokan paginya... ☀️");
-
-                                                                                    // Dialog pagi dari pasangan
-                                                                                    setTimeout(() => {
-                                                                                        const spouse = maps['house'].npcs.find(n => n.id === targetId);
-                                                                                        if (spouse) {
-                                                                                            createParticle(spouse.x * TILE_SIZE, spouse.y * TILE_SIZE, '#ec4899');
-                                                                                            createParticle(STATE.player.x, STATE.player.y, '#ec4899');
-                                                                                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                                                                                            showDialogue(spouse.name,
-                                                                                                "Selamat pagi sayang! ❤️\n\nRasanya seperti mimpi kita sudah tinggal serumah.\nAku sangat bahagia bisa melihat wajahmu saat bangun tidur.\n\nSemoga hari ini menyenangkan ya!",
-                                                                                                [{
-                                                                                                    text: "Pagi juga cintaku! (Cium Kening)",
-                                                                                                    action: () => {
-                                                                                                        createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
-                                                                                                        closeDialogue();
-                                                                                                    }
-                                                                                                }],
-                                                                                                spouse.imgSrc
-                                                                                            );
-                                                                                        }
-                                                                                    }, 1500);
-
-                                                                                }, 2000);
-                                                                            }, 7000);
+                                                                                }, 1500);
+                                                                            };
+                                                                            // Inject callback ke cinematic yang sudah jalan
+                                                                            setTimeout(_restoreAfterWedding, 15500); // ~15.5 detik = durasi 3 slide
                                                                         }
                                                                     },
                                                                     {
@@ -22314,6 +23394,7 @@ ${reward.tip}`,
                             }
                         },
 
+                        { text: "🤖 Minta Analisis AI", action: () => openAIMentor(npc) },
                         { text: "Tutup", action: closeDialogue }
                     ], npc.imgSrc);
                 }
@@ -22911,84 +23992,52 @@ ${reward.tip}`,
                                                             spawnFloatingText(STATE.player.x - 40, STATE.player.y - 40, "SAH!", "#ffffff", 15);
                                                             spawnFloatingText(STATE.player.x + 40, STATE.player.y - 40, "SAH!", "#ffffff", 15);
 
-                                                            // --- START CUTSCENE CINEMATIC ---
+                                                            // 🎬 CINEMATIC WEDDING (Family Route)
                                                             closeDialogue();
                                                             STATE.screen = 'cutscene';
                                                             STATE.cutsceneOverride = true;
-
-                                                            // Pan kamera ke atas
-                                                            let panCount = 0;
-                                                            const panInterval = setInterval(() => {
-                                                                STATE.camera.y -= 1;
-                                                                panCount++;
-                                                                if (panCount > 200) clearInterval(panInterval);
-                                                            }, 20);
-
-                                                            // Layar gelap & teks muncul
+                                                            playCutsceneWedding(targetName, null);
+                                                            // Restore state setelah cinematic selesai (~15.5s)
                                                             setTimeout(() => {
-                                                                const layer = document.getElementById('cutscene-layer');
-                                                                const txt = document.getElementById('cutscene-text');
-                                                                const sub = document.getElementById('cutscene-sub');
-                                                                txt.innerText = "MENIKAH DENGAN BAHAGIA";
-                                                                sub.innerText = `Selamat menempuh hidup baru bersama ${targetName}.\nSemoga cinta kalian abadi selamanya.`;
-                                                                layer.style.display = 'flex';
-                                                                requestAnimationFrame(() => layer.style.opacity = 1);
-                                                            }, 1000);
-
-                                                            // Selesai Cutscene
-                                                            setTimeout(() => {
-                                                                const layer = document.getElementById('cutscene-layer');
-                                                                layer.style.opacity = 0;
+                                                                STATE.cutsceneOverride = false;
+                                                                STATE.day++;
+                                                                STATE.time = 600;
+                                                                STATE.player.energy = 100;
+                                                                STATE.player.hp = STATE.player.maxHp;
+                                                                if (STATE.player.role === 'entrepreneur') {
+                                                                    STATE.location = 'player_shop_interior';
+                                                                    STATE.player.x = 5 * TILE_SIZE;
+                                                                    STATE.player.y = 3 * TILE_SIZE;
+                                                                } else {
+                                                                    STATE.location = 'house';
+                                                                    STATE.player.x = 3 * TILE_SIZE;
+                                                                    STATE.player.y = 2 * TILE_SIZE;
+                                                                }
+                                                                STATE.player.direction = 'right';
+                                                                regenerateHouseMap();
+                                                                STATE.screen = 'play';
+                                                                manualSave();
+                                                                showToast("Keesokan paginya... ☀️");
                                                                 setTimeout(() => {
-                                                                    layer.style.display = 'none';
-                                                                    STATE.cutsceneOverride = false;
-
-                                                                    // Ganti hari & reset status
-                                                                    STATE.day++;
-                                                                    STATE.time = 600;
-                                                                    STATE.player.energy = 100;
-                                                                    STATE.player.hp = STATE.player.maxHp;
-
-                                                                    // Pindah lokasi ke rumah
-                                                                    if (STATE.player.role === 'entrepreneur') {
-                                                                        STATE.location = 'player_shop_interior';
-                                                                        STATE.player.x = 5 * TILE_SIZE;
-                                                                        STATE.player.y = 3 * TILE_SIZE;
-                                                                    } else {
-                                                                        STATE.location = 'house';
-                                                                        STATE.player.x = 3 * TILE_SIZE;
-                                                                        STATE.player.y = 2 * TILE_SIZE;
+                                                                    const spouse = maps['house'].npcs.find(n => n.id === targetId);
+                                                                    if (spouse) {
+                                                                        createParticle(spouse.x * TILE_SIZE, spouse.y * TILE_SIZE, '#ec4899');
+                                                                        createParticle(STATE.player.x, STATE.player.y, '#ec4899');
+                                                                        if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                                                        showDialogue(spouse.name,
+                                                                            "Selamat pagi sayang! ❤️ \n\nRasanya seperti mimpi kita sudah tinggal serumah.\nAku sangat bahagia bisa melihat wajahmu saat bangun tidur.\n\nSemoga hari ini menyenangkan ya!",
+                                                                            [{
+                                                                                text: "Pagi juga cintaku! (Cium Kening)",
+                                                                                action: () => {
+                                                                                    createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
+                                                                                    closeDialogue();
+                                                                                }
+                                                                            }],
+                                                                            spouse.imgSrc
+                                                                        );
                                                                     }
-
-                                                                    STATE.player.direction = 'right';
-                                                                    regenerateHouseMap();
-                                                                    STATE.screen = 'play';
-                                                                    manualSave();
-                                                                    showToast("Keesokan paginya... ☀️");
-
-                                                                    // Dialog sapaan dari pasangan
-                                                                    setTimeout(() => {
-                                                                        const spouse = maps['house'].npcs.find(n => n.id === targetId);
-                                                                        if (spouse) {
-                                                                            createParticle(spouse.x * TILE_SIZE, spouse.y * TILE_SIZE, '#ec4899');
-                                                                            createParticle(STATE.player.x, STATE.player.y, '#ec4899');
-                                                                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                                                                            showDialogue(spouse.name,
-                                                                                "Selamat pagi sayang! ❤️ \n\nRasanya seperti mimpi kita sudah tinggal serumah.\nAku sangat bahagia bisa melihat wajahmu saat bangun tidur.\n\nSemoga hari ini menyenangkan ya!",
-                                                                                [{
-                                                                                    text: "Pagi juga cintaku! (Cium Kening)",
-                                                                                    action: () => {
-                                                                                        createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
-                                                                                        closeDialogue();
-                                                                                    }
-                                                                                }],
-                                                                                spouse.imgSrc
-                                                                            );
-                                                                        }
-                                                                    }, 1500);
-
-                                                                }, 2000);
-                                                            }, 7000);
+                                                                }, 1500);
+                                                            }, 15500);
                                                         }
                                                     },
                                                     {
@@ -25616,20 +26665,28 @@ Pilih masakan:
                     showToast(`LEVEL UP! LV ${STATE.player.level} (All Stats+1, ${bonusText}) 🆙`);
                     createParticle(STATE.player.x, STATE.player.y, '#6366f1');
 
-                    // --- NEW: POPUP UNLOCK KOSTUM SPESIAL (LEVEL 10) ---
-                    if (STATE.player.level === 10) {
+                    // 🎬 MILESTONE CUTSCENE (level 10, 20, 30, 50)
+                    const _milestones = [10, 20, 30, 50];
+                    if (_milestones.includes(STATE.player.level)) {
+                        const _mlvl = STATE.player.level;
                         setTimeout(() => {
-                            showDialogue("HADIAH LEVEL 10! ✨",
-                                "Selamat! Kamu telah mencapai Level 10.\n\nSebagai penghargaan, **KOSTUM SPESIAL** kini telah terbuka di Lemari Pakaianmu!\n\n(Cek Lemari di Rumah untuk memakainya)",
-                                [{ text: "Keren! Terima Kasih!", action: closeDialogue }],
-                                'images/lemari.png'
-                            );
-                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                        }, 1000);
+                            playCutsceneLevelUp(_mlvl, () => {
+                                showToast(`🌟 MILESTONE LEVEL ${_mlvl} DIRAIH!`);
+                                // Level 10: buka kostum spesial
+                                if (_mlvl === 10) {
+                                    setTimeout(() => {
+                                        showDialogue("HADIAH LEVEL 10! ✨",
+                                            "Selamat! Kamu telah mencapai Level 10.\n\nSebagai penghargaan, **KOSTUM SPESIAL** kini telah terbuka di Lemari Pakaianmu!\n\n(Cek Lemari di Rumah untuk memakainya)",
+                                            [{ text: "Keren! Terima Kasih!", action: closeDialogue }],
+                                            'images/lemari.png'
+                                        );
+                                    }, 500);
+                                }
+                            });
+                        }, 600);
+                    } else if (typeof AudioService !== 'undefined') {
+                        AudioService.playSFX('item');
                     }
-
-                    // Play SFX Level Up (Reuse Item SFX or add new one)
-                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
 
                     // Update HUD langsung
                     updateHUDInfo();
@@ -25825,7 +26882,17 @@ Pilih masakan:
 
                     // Penalty
                     const penalty = 500;
+                    const moneyBefore = STATE.player.money;
                     STATE.player.money = Math.max(0, STATE.player.money - penalty);
+
+                    // 🎬 BANGKRUT: cek apakah money jatuh ke 0
+                    if (moneyBefore > 0 && STATE.player.money === 0 && !STATE.player._bangkrutCutscenePlayed) {
+                        STATE.player._bangkrutCutscenePlayed = true;
+                        setTimeout(() => playCutsceneBangkrut(() => {
+                            showToast("💸 BANGKRUT! Cari cara untuk mendapatkan Gold segera!");
+                            STATE.player._bangkrutCutscenePlayed = false; // Reset untuk bisa trigger lagi nanti
+                        }), 2500);
+                    }
 
                     // Respawn at Clinic (UPDATE: DI DALAM KLINIK - SAMPING KASUR)
                     // Posisi Baru: clinic_interior -> Tile (10, 8) (Samping Bed Kanan, Area Kosong)
@@ -25984,6 +27051,9 @@ Pilih masakan:
 
                             // --- NEW: RESPAWN BUNGA LIAR SETIAP PAGI ---
                             spawnWildFlowers();
+
+                            // --- MENTOR MORNING TRIGGER ---
+                            setTimeout(() => triggerMorningMentor(), 2200);
 
                             // --- LOGIKA NAFKAH HARIAN & DRAMA NIKAH MUDA ---
                             if (STATE.player.married && STATE.player.spouseId) {
@@ -26223,17 +27293,754 @@ Pilih masakan:
                 });
             }
 
+
+            // ═══════════════════════════════════════════════════════════
+            // 🎬 CINEMATIC ENGINE — Visual Storytelling System
+            // ═══════════════════════════════════════════════════════════
+
+            const CinematicEngine = {
+                _rafId: null,
+                _particleCtx: null,
+                _particles: [],
+                _theme: {},
+
+                // ── TEMA VISUAL PER MOMEN ────────────────────────────────
+                themes: {
+                    wedding: {
+                        bg: 'linear-gradient(135deg, #1a0533 0%, #3b0764 40%, #7c2d92 100%)',
+                        color: '#f9a8d4',
+                        chapter: '— Momen Paling Sakral —',
+                        particleColors: ['#fce7f3','#f9a8d4','#e879f9','#fbbf24','#ffffff'],
+                        particleType: 'hearts',
+                    },
+                    jobAccepted: {
+                        bg: 'linear-gradient(135deg, #0c1445 0%, #1e3a8a 50%, #1d4ed8 100%)',
+                        color: '#93c5fd',
+                        chapter: '— Babak Baru Dimulai —',
+                        particleColors: ['#93c5fd','#bfdbfe','#ffffff','#fbbf24'],
+                        particleType: 'stars',
+                    },
+                    divorce: {
+                        bg: 'linear-gradient(135deg, #1c0000 0%, #450a0a 50%, #7f1d1d 100%)',
+                        color: '#fca5a5',
+                        chapter: '— Akhir yang Menyakitkan —',
+                        particleColors: ['#fca5a5','#ef4444','#78716c','#44403c'],
+                        particleType: 'rain',
+                    },
+                    graduation: {
+                        bg: 'linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%)',
+                        color: '#86efac',
+                        chapter: '— Hasil Perjuangan —',
+                        particleColors: ['#86efac','#fbbf24','#ffffff','#34d399'],
+                        particleType: 'stars',
+                    },
+                    scholarship: {
+                        bg: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #0369a1 100%)',
+                        color: '#38bdf8',
+                        chapter: '— Kerja Keras Terbayar —',
+                        particleColors: ['#38bdf8','#7dd3fc','#fbbf24','#ffffff','#bae6fd'],
+                        particleType: 'stars',
+                    },
+                    wisuda: {
+                        bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #533483 100%)',
+                        color: '#fbbf24',
+                        chapter: '— Puncak Perjuangan —',
+                        particleColors: ['#fbbf24','#fde68a','#ffffff','#86efac','#f9a8d4'],
+                        particleType: 'confetti',
+                    },
+                    bossDefeated: {
+                        bg: 'linear-gradient(135deg, #0a0a0a 0%, #1c0533 40%, #6b21a8 80%, #be185d 100%)',
+                        color: '#e879f9',
+                        chapter: '— Monster Ditaklukkan —',
+                        particleColors: ['#e879f9','#fbbf24','#f43f5e','#ffffff','#a855f7'],
+                        particleType: 'stars',
+                    },
+                    gameWin: {
+                        bg: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+                        color: '#fde68a',
+                        chapter: '— Lima Tahun Berlalu —',
+                        particleColors: ['#fde68a','#fbbf24','#ffffff','#86efac','#93c5fd','#f9a8d4'],
+                        particleType: 'confetti',
+                    },
+                    gameOver: {
+                        bg: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0f172a 100%)',
+                        color: '#94a3b8',
+                        chapter: '— Perjalanan Terhenti —',
+                        particleColors: ['#475569','#334155','#1e293b','#64748b'],
+                        particleType: 'rain',
+                    },
+                    levelUp: {
+                        bg: 'linear-gradient(135deg, #1c1917 0%, #292524 40%, #44403c 70%, #78716c 100%)',
+                        color: '#fbbf24',
+                        chapter: '— Kamu Semakin Kuat —',
+                        particleColors: ['#fbbf24','#fde68a','#ffffff','#fb923c'],
+                        particleType: 'stars',
+                    },
+                    dungeonEnter: {
+                        bg: 'linear-gradient(135deg, #000000 0%, #0f0f1a 40%, #1a0a2e 70%, #2d1b4e 100%)',
+                        color: '#a78bfa',
+                        chapter: '— Zona Berbahaya —',
+                        particleColors: ['#a78bfa','#6d28d9','#1e1b4b','#4c1d95'],
+                        particleType: 'rain',
+                    },
+                    legendaryDrop: {
+                        bg: 'linear-gradient(135deg, #1a0a00 0%, #431407 40%, #7c2d12 70%, #c2410c 100%)',
+                        color: '#fb923c',
+                        chapter: '— Item Langka Ditemukan! —',
+                        particleColors: ['#fb923c','#fbbf24','#fde68a','#ffffff','#fed7aa'],
+                        particleType: 'confetti',
+                    },
+                    bangkrut: {
+                        bg: 'linear-gradient(135deg, #000000 0%, #111827 40%, #1f2937 70%, #374151 100%)',
+                        color: '#9ca3af',
+                        chapter: '— Titik Terendah —',
+                        particleColors: ['#6b7280','#4b5563','#374151','#9ca3af'],
+                        particleType: 'rain',
+                    }
+                },
+
+                // ── INIT PARTICLE CANVAS ─────────────────────────────────
+                initCanvas() {
+                    const canvas = document.getElementById('cs-particles');
+                    if (!canvas) return;
+                    canvas.width  = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    this._particleCtx = canvas.getContext('2d');
+                },
+
+                // ── SPAWN PARTICLES ──────────────────────────────────────
+                spawnParticles(type, colors) {
+                    this._particles = [];
+                    const count = type === 'rain' ? 80 : 60;
+                    for (let i = 0; i < count; i++) {
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        if (type === 'hearts') {
+                            this._particles.push({
+                                x: Math.random() * window.innerWidth,
+                                y: window.innerHeight + 20,
+                                vx: (Math.random() - 0.5) * 1.5,
+                                vy: -(1.5 + Math.random() * 2.5),
+                                size: 8 + Math.random() * 14,
+                                alpha: 0.7 + Math.random() * 0.3,
+                                color, type: 'heart',
+                                delay: Math.random() * 120
+                            });
+                        } else if (type === 'stars') {
+                            this._particles.push({
+                                x: Math.random() * window.innerWidth,
+                                y: Math.random() * window.innerHeight,
+                                vx: (Math.random() - 0.5) * 0.4,
+                                vy: (Math.random() - 0.5) * 0.4,
+                                size: 2 + Math.random() * 5,
+                                alpha: Math.random(),
+                                dAlpha: 0.01 + Math.random() * 0.02,
+                                color, type: 'star',
+                                delay: 0
+                            });
+                        } else if (type === 'rain') {
+                            this._particles.push({
+                                x: Math.random() * window.innerWidth,
+                                y: -10 - Math.random() * window.innerHeight,
+                                vx: 0.5 + Math.random() * 1,
+                                vy: 4 + Math.random() * 5,
+                                size: 1 + Math.random() * 2,
+                                alpha: 0.3 + Math.random() * 0.5,
+                                color, type: 'rain',
+                                delay: 0
+                            });
+                        } else if (type === 'confetti') {
+                            this._particles.push({
+                                x: Math.random() * window.innerWidth,
+                                y: -20 - Math.random() * 200,
+                                vx: (Math.random() - 0.5) * 3,
+                                vy: 2 + Math.random() * 4,
+                                size: 6 + Math.random() * 8,
+                                rotation: Math.random() * Math.PI * 2,
+                                rotSpeed: (Math.random() - 0.5) * 0.2,
+                                alpha: 0.8 + Math.random() * 0.2,
+                                color, type: 'confetti',
+                                delay: Math.random() * 60
+                            });
+                        }
+                    }
+                },
+
+                // ── RENDER LOOP ──────────────────────────────────────────
+                renderParticles() {
+                    const ctx = this._particleCtx;
+                    if (!ctx) return;
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+                    this._particles.forEach(p => {
+                        if (p.delay > 0) { p.delay--; return; }
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, p.alpha);
+
+                        if (p.type === 'heart') {
+                            ctx.fillStyle = p.color;
+                            ctx.font = `${p.size}px serif`;
+                            ctx.fillText('♥', p.x, p.y);
+                            p.x += p.vx;
+                            p.y += p.vy;
+                            if (p.y < -20) { p.y = window.innerHeight + 10; p.x = Math.random() * window.innerWidth; }
+                        } else if (p.type === 'star') {
+                            ctx.fillStyle = p.color;
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                            ctx.fill();
+                            p.alpha += (Math.random() > 0.5 ? 1 : -1) * p.dAlpha;
+                            p.alpha = Math.max(0.05, Math.min(1, p.alpha));
+                            p.x += p.vx; p.y += p.vy;
+                        } else if (p.type === 'rain') {
+                            ctx.strokeStyle = p.color;
+                            ctx.lineWidth = p.size;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p.x + p.vx * 3, p.y + p.vy * 3);
+                            ctx.stroke();
+                            p.x += p.vx; p.y += p.vy;
+                            if (p.y > window.innerHeight + 10) { p.y = -10; p.x = Math.random() * window.innerWidth; }
+                        } else if (p.type === 'confetti') {
+                            ctx.save();
+                            ctx.translate(p.x, p.y);
+                            ctx.rotate(p.rotation);
+                            ctx.fillStyle = p.color;
+                            ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+                            ctx.restore();
+                            p.x += p.vx; p.y += p.vy;
+                            p.rotation += p.rotSpeed;
+                            p.vy += 0.05; // gravitasi tipis
+                            if (p.y > window.innerHeight + 20) {
+                                p.y = -20; p.x = Math.random() * window.innerWidth; p.vy = 2 + Math.random() * 4;
+                            }
+                        }
+                        ctx.restore();
+                    });
+
+                    this._rafId = requestAnimationFrame(() => this.renderParticles.bind(this)());
+                },
+
+                // ── TYPEWRITER NARASI ────────────────────────────────────
+                typewrite(el, text, speed = 28, cb) {
+                    el.style.opacity = '1';
+                    el.innerText = '';
+                    let i = 0;
+                    const t = setInterval(() => {
+                        el.innerText += text[i] || '';
+                        i++;
+                        if (i >= text.length) { clearInterval(t); if (cb) cb(); }
+                    }, speed);
+                },
+
+                // ── MAIN PLAY ────────────────────────────────────────────
+                play(themeName, slides, onDone) {
+                    const theme = this.themes[themeName] || this.themes.wedding;
+                    this._theme = theme;
+                    this.initCanvas();
+                    this.spawnParticles(theme.particleType, theme.particleColors);
+
+                    const layer    = document.getElementById('cutscene-layer');
+                    const csBg     = document.getElementById('cs-bg');
+                    const csBarT   = document.getElementById('cs-bar-top');
+                    const csBarB   = document.getElementById('cs-bar-bottom');
+                    const csChapter= document.getElementById('cs-chapter');
+                    const csTitle  = document.getElementById('cutscene-text');
+                    const csDivider= document.getElementById('cs-divider');
+                    const csSub    = document.getElementById('cutscene-sub');
+                    const csNarasi = document.getElementById('cs-narasi');
+
+                    if (!layer) { if (onDone) onDone(); return; }
+
+                    // Reset semua elemen
+                    [csTitle, csSub, csNarasi, csChapter].forEach(el => {
+                        if (el) { el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; el.innerText = ''; }
+                    });
+                    if (csDivider) { csDivider.style.width = '0'; csDivider.style.opacity = '0'; }
+
+                    // Set warna tema ke elemen
+                    if (csTitle)   csTitle.style.color   = theme.color;
+                    if (csDivider) csDivider.style.background = theme.color;
+
+                    // Tampilkan layer
+                    layer.style.display = 'flex';
+                    csBg.style.background = theme.bg;
+                    requestAnimationFrame(() => { layer.style.opacity = '1'; });
+
+                    // Cinematic bars masuk
+                    setTimeout(() => {
+                        csBarT.style.height = '60px';
+                        csBarB.style.height = '60px';
+                    }, 200);
+
+                    // Mulai partikel
+                    this.renderParticles();
+
+                    // Jalankan slide sequence
+                    this._runSlides(slides, theme, csChapter, csTitle, csDivider, csSub, csNarasi, () => {
+                        this._close(layer, csBarT, csBarB, onDone);
+                    });
+                },
+
+                _runSlides(slides, theme, csChapter, csTitle, csDivider, csSub, csNarasi, onDone) {
+                    let idx = 0;
+                    const showSlide = () => {
+                        if (idx >= slides.length) { onDone(); return; }
+                        const slide = slides[idx++];
+                        const dur   = slide.dur || 4000;
+
+                        // Chapter label
+                        if (csChapter && slide.chapter !== undefined) {
+                            csChapter.innerText = slide.chapter || theme.chapter;
+                            csChapter.style.opacity = '1';
+                        }
+
+                        // Judul (animate in)
+                        if (csTitle && slide.title) {
+                            csTitle.innerText  = slide.title;
+                            csTitle.style.transform = 'translateY(20px)';
+                            csTitle.style.opacity   = '0';
+                            requestAnimationFrame(() => {
+                                csTitle.style.transform = 'translateY(0)';
+                                csTitle.style.opacity   = '1';
+                            });
+                        }
+
+                        // Divider expand
+                        setTimeout(() => {
+                            if (csDivider) { csDivider.style.width = '180px'; csDivider.style.opacity = '0.6'; }
+                        }, 400);
+
+                        // Sub (animate in)
+                        if (csSub && slide.sub) {
+                            csSub.innerText  = '';
+                            csSub.style.transform = 'translateY(10px)';
+                            csSub.style.opacity   = '0';
+                            setTimeout(() => {
+                                csSub.innerText  = slide.sub;
+                                csSub.style.transform = 'translateY(0)';
+                                csSub.style.opacity   = '1';
+                            }, 600);
+                        }
+
+                        // Narasi typewriter
+                        if (csNarasi && slide.narasi) {
+                            csNarasi.innerText = '';
+                            csNarasi.style.opacity = '0';
+                            setTimeout(() => {
+                                this.typewrite(csNarasi, slide.narasi, 30);
+                            }, 1000);
+                        } else if (csNarasi) {
+                            csNarasi.style.opacity = '0';
+                            csNarasi.innerText = '';
+                        }
+
+                        setTimeout(() => {
+                            // Fade out konten sebelum slide berikutnya
+                            [csTitle, csSub, csNarasi].forEach(el => {
+                                if (el) { el.style.opacity = '0'; el.style.transform = 'translateY(-10px)'; }
+                            });
+                            if (csDivider) csDivider.style.width = '0';
+                            setTimeout(showSlide, 600);
+                        }, dur);
+                    };
+                    showSlide();
+                },
+
+                _close(layer, csBarT, csBarB, onDone) {
+                    // Tutup bars
+                    csBarT.style.height = '0';
+                    csBarB.style.height = '0';
+                    // Fade out layer
+                    setTimeout(() => {
+                        layer.style.opacity = '0';
+                        setTimeout(() => {
+                            layer.style.display = 'none';
+                            // Stop particles
+                            if (this._rafId) cancelAnimationFrame(this._rafId);
+                            this._particles = [];
+                            if (this._particleCtx) this._particleCtx.clearRect(0, 0, 9999, 9999);
+                            if (onDone) onDone();
+                        }, 1500);
+                    }, 400);
+                }
+            };
+
+            // ── CUTSCENE PERNIKAHAN (pengganti cutscene lama) ─────────────
+            function playCutsceneWedding(targetName, onDone) {
+                const slides = [
+                    {
+                        chapter: '— Hari yang Paling Ditunggu —',
+                        title:   'AKAD NIKAH',
+                        sub:     `Dua jiwa, satu ikrar.\nHari ini langit menjadi saksi.`,
+                        narasi:  `Di tengah keheningan balai, suara penghulu bergema pelan...\n"Saya terima nikah dan kawinnya..."`,
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Momen yang Tak Terlupakan —',
+                        title:   'SAH!',
+                        sub:     `${targetName} menggenggam tanganmu.\nAir mata bahagia tak tertahankan.`,
+                        narasi:  `Sorak sorai memenuhi ruangan. Bunga-bunga bertaburan dari langit-langit.\nIni bukan akhir — ini adalah awal dari segalanya.`,
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Babak Baru Kehidupan —',
+                        title:   'SELAMAT MENEMPUH HIDUP BARU',
+                        sub:     `Pernikahan bukan puncak cerita,\nmelainkan halaman pertama babak berikutnya.`,
+                        narasi:  `Di dunia nyata, membangun rumah tangga butuh komitmen, komunikasi,\ndan kesiapan finansial. Semoga perjalananmu menjadi inspirasi.`,
+                        dur: 5000
+                    }
+                ];
+                CinematicEngine.play('wedding', slides, onDone);
+            }
+
+            // ── CUTSCENE DITERIMA KERJA ──────────────────────────────────
+            function playCutsceneJobAccepted(onDone) {
+                const name  = DataService.user ? DataService.user.name : 'Kamu';
+                const slides = [
+                    {
+                        chapter: '— Keringat yang Terbayar —',
+                        title:   'LAMARAN DITERIMA!',
+                        sub:     `Kerja keras dan persiapanmu\ntidak sia-sia.`,
+                        narasi:  `"${name}, kami terkesan dengan kesungguhanmu."\nSuara Pak Hendra, sang Bos, terdengar tegas namun penuh apresiasi.`,
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Langkah Pertama Karier —',
+                        title:   'KARYAWAN BARU',
+                        sub:     `Setiap karier besar\ndimulai dari hari pertama kerja.`,
+                        narasi:  `Di Indonesia, mendapat pekerjaan pertama adalah pencapaian besar.\nJaga reputasimu, tingkatkan skill, dan buktikan nilaimu setiap hari.`,
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Tantangan Menanti —',
+                        title:   'SELAMAT BERGABUNG!',
+                        sub:     `Jalur Pekerja terbuka lebar.\nPromosi, kenaikan gaji, dan kepercayaan — semua menunggumu.`,
+                        narasi:  `Ingat: pekerjaan bukan hanya tentang gaji,\nmelainkan tentang bagaimana kamu tumbuh sebagai manusia.`,
+                        dur: 4500
+                    }
+                ];
+                CinematicEngine.play('jobAccepted', slides, onDone);
+            }
+
+            // ── CUTSCENE CERAI / KANDAS ──────────────────────────────────
+            function playCutsceneDivorce(spouseName, onDone) {
+                const slides = [
+                    {
+                        chapter: '— Saat Cinta Tak Lagi Cukup —',
+                        title:   'BERPISAH',
+                        sub:     `Ada luka yang tidak bisa\ndisembuhkan dengan waktu saja.`,
+                        narasi:  `${spouseName} menatapmu untuk terakhir kali.\nTidak ada kata-kata yang cukup untuk momen ini.`,
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— Pelajaran Berharga —',
+                        title:   'SETIAP AKHIR ADALAH AWAL',
+                        sub:     `Pernikahan butuh lebih dari sekadar cinta.\nKomunikasi, kepercayaan, dan komitmen adalah pondasinya.`,
+                        narasi:  `Di dunia nyata, perceraian adalah salah satu putusan terberat.\nSemoga dari sini, kamu belajar apa yang benar-benar penting.`,
+                        dur: 5000
+                    }
+                ];
+                CinematicEngine.play('divorce', slides, onDone);
+            }
+
+
+            // ── CUTSCENE BOSS DUNGEON DIKALAHKAN ─────────────────────────
+            function playCutsceneBossDefeated(bossLevel, onDone) {
+                const name   = DataService.user ? DataService.user.name : 'Kamu';
+                const titles = ['', 'Penjaga Gerbang', 'Raja Kegelapan', 'Iblis Kuno', 'Titan Keabadian', 'RAJA DUNGEON'];
+                const bossName = titles[Math.min(bossLevel, 5)] || 'Boss Dungeon';
+                const slides = [
+                    {
+                        chapter: `— Lantai ${bossLevel} Dibersihkan —`,
+                        title:   `${bossName.toUpperCase()} DIKALAHKAN!`,
+                        sub:     `Deru angin dingin berhenti.\nKegelapan Lantai ${bossLevel} akhirnya tunduk di hadapanmu.`,
+                        narasi:  `Nafasmu tersengal. Tanganmu gemetar.\nNamun di matamu — tidak ada ketakutan. Hanya tekad.`,
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Kekuatan Baru —',
+                        title:   'SEMUA STAT +5 · MAX HP +50',
+                        sub:     `Energi boss menyatu dengan dirimu.\nKamu bukan lagi orang yang sama seperti saat masuk.`,
+                        narasi:  `Di dunia nyata, menghadapi tantangan besar dan bertahan\nadalah cara terkuat untuk tumbuh melampaui batas dirimu.`,
+                        dur: 4000
+                    },
+                    {
+                        chapter: '— Lantai Berikutnya Menanti —',
+                        title:   bossLevel >= 5 ? 'DUNGEON TELAH DITAKLUKKAN!' : `LANTAI ${bossLevel + 1} TERBUKA`,
+                        sub:     bossLevel >= 5
+                            ? 'Kamu adalah petarung terkuat yang pernah menjejakkan kaki\ndi kedalaman Dungeon Nusantara Arsa.'
+                            : `Kegelapan yang lebih dalam menunggumu.\nApakah kamu siap turun lebih jauh?`,
+                        narasi:  bossLevel >= 5
+                            ? 'Namamu akan dikenang di setiap sudut pulau ini.\nLegenda hidup — bukan karena takdir, tapi karena pilihan.'
+                            : `Setiap lantai lebih ganas dari sebelumnya.\nTapi kamu sudah membuktikan: kamu lebih ganas dari mereka semua.`,
+                        dur: 5000
+                    }
+                ];
+                CinematicEngine.play('bossDefeated', slides, onDone);
+            }
+
+            // ── CUTSCENE GAME WIN — TAMAT 5 TAHUN ────────────────────────
+            function playCutsceneGameWin(onDone) {
+                const name = DataService.user ? DataService.user.name : 'Kamu';
+                const role = STATE.player ? STATE.player.role : 'none';
+                const roleEnding = {
+                    worker:       { title: 'KARIER YANG MEMBANGGAKAN',   sub: 'Dari nol tanpa pengalaman\nhingga karyawan terbaik — ini perjalananmu.' },
+                    student:      { title: 'ILMU YANG TAK TERNILAI',     sub: 'Lima tahun menimba ilmu.\nKini saatnya mengabdi pada dunia.' },
+                    entrepreneur: { title: 'BISNIS YANG BERKEMBANG',     sub: 'Modal kecil, tekad besar.\nKamu membuktikan impian bisa jadi kenyataan.' },
+                    family:       { title: 'KELUARGA YANG BAHAGIA',      sub: 'Cinta, kepercayaan, dan komitmen.\nItulah warisan terbesar yang kamu bangun.' },
+                    none:         { title: 'PERJALANAN YANG BERMAKNA',   sub: 'Setiap langkah punya cerita.\nSetiap hari punya pelajaran.' }
+                }[role] || { title: 'TAMAT', sub: '' };
+
+                const slides = [
+                    {
+                        chapter: '— Lima Tahun di Pulau Arsa —',
+                        title:   'PERJALANAN TELAH SELESAI',
+                        sub:     `${name}, kamu telah menjalani 5 tahun penuh\nkeputusan, perjuangan, dan pertumbuhan.`,
+                        narasi:  `Setiap pilihan yang kamu buat meninggalkan jejak.\nSetiap kegagalan mengajarkan sesuatu yang tidak ada di buku teks.`,
+                        dur: 5000
+                    },
+                    {
+                        chapter: `— Jalur ${role.toUpperCase()} —`,
+                        title:   roleEnding.title,
+                        sub:     roleEnding.sub,
+                        narasi:  `Di Pulau Arsa, waktu adalah mata uang.\nKamu telah menggunakannya dengan caramu sendiri — dan itulah yang paling berharga.`,
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— Pesan dari Pulau Arsa —',
+                        title:   'HIDUP ADALAH PILIHAN',
+                        sub:     `Simulasi ini berakhir.\nKehidupan nyatamu — baru saja dimulai.`,
+                        narasi:  `Apa yang kamu pelajari di sini — tentang kerja keras, tentang uang,\ntentang hubungan — bawalah ke dunia nyata.\nDunia membutuhkan versimu yang terbaik.`,
+                        dur: 6000
+                    }
+                ];
+                CinematicEngine.play('gameWin', slides, onDone);
+            }
+
+            // ── CUTSCENE GAME OVER — DRAMATIS ─────────────────────────────
+            function playCutsceneGameOver(onDone) {
+                const role = STATE.player ? STATE.player.role : 'none';
+                const day  = STATE.day || 1;
+                const roleMsg = {
+                    worker:       `Sebagai Pekerja, kamu telah mencurahkan keringat\nhingga titik terakhir. Itu bukan kegagalan — itu keberanian.`,
+                    student:      `Perjalanan akademismu penuh liku.\nNamun ilmu yang sempat kamu serap tidak akan pernah hilang.`,
+                    entrepreneur: `Bisnis itu jatuh bangun.\nPebisnis terbesar dunia pun pernah bangkrut sebelum berhasil.`,
+                    family:       `Membangun hubungan itu tidak mudah.\nNamun mencoba, itu sudah berarti lebih dari sekadar diam.`,
+                    none:         `Kamu sempat ragu menentukan arah.\nDi kehidupan berikutnya — percayalah pada pilihanmu.`
+                }[role] || `Petualanganmu berakhir di sini.`;
+
+                const slides = [
+                    {
+                        chapter: `— Hari ke-${day} —`,
+                        title:   'PERJALANAN TERHENTI',
+                        sub:     `Kadang bukan soal kalah atau menang.\nTapi seberapa jauh kamu berani melangkah.`,
+                        narasi:  `Layar menggelap perlahan...\nSuara langkah kakimu masih bergema di koridor waktu.`,
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— Refleksi —',
+                        title:   'APA YANG KAMU PELAJARI?',
+                        sub:     roleMsg,
+                        narasi:  `Kegagalan bukan akhir cerita.\nItu adalah halaman pertama dari babak yang lebih kuat.`,
+                        dur: 5500
+                    },
+                    {
+                        chapter: '— Untuk Percobaan Berikutnya —',
+                        title:   'BANGKIT LEBIH KUAT',
+                        sub:     `"Bukan seberapa sering kamu jatuh,\ntapi seberapa cepat kamu bangkit." — Unknown`,
+                        narasi:  `Coba lagi. Kali ini dengan semua pelajaran\nyang sudah kamu bawa dari perjalanan ini.`,
+                        dur: 5000
+                    }
+                ];
+                CinematicEngine.play('gameOver', slides, onDone);
+            }
+
+            // ── CUTSCENE LEVEL MILESTONE ──────────────────────────────────
+            function playCutsceneLevelUp(newLevel, onDone) {
+                const name = DataService.user ? DataService.user.name : 'Kamu';
+                const milestones = {
+                    10: { title: 'LEVEL 10 — PETUALANG SEJATI',  sub: 'Sepuluh level sudah kamu lewati.\nKamu bukan lagi pendatang baru di pulau ini.',     narasi: `Penduduk desa mulai mengenal namamu.\nLangkahmu lebih mantap dari hari pertama kamu tiba.` },
+                    20: { title: 'LEVEL 20 — PEJUANG PULAU ARSA', sub: 'Dua puluh level menempa dirimu.\nKekuatan, kecerdasan, dan reputasimu sudah terbukti.', narasi: `Mentor Budi menatapmu dengan bangga dari kejauhan.\n"Ini bukan level biasa," bisiknya.` },
+                    30: { title: 'LEVEL 30 — LEGENDA BERJALAN',   sub: 'Di level ini, namamu sudah dikenal\nhingga ke sudut-sudut terpencil Pulau Arsa.',       narasi: `Di dunia nyata, konsistensi selama 30 hari\nlebih berharga dari bakat tanpa latihan.` },
+                    50: { title: 'LEVEL 50 — SANG MAESTRO',        sub: 'Puncak kekuatan telah kamu capai.\nSedikit sekali yang berhasil sejauh ini.',           narasi: `Kamu telah melampaui apa yang dianggap mungkin.\nIni bukan batas — ini titik mulai dari sesuatu yang lebih besar.` }
+                };
+                const m = milestones[newLevel] || {
+                    title: `LEVEL ${newLevel} DICAPAI!`,
+                    sub:   `Setiap level adalah bukti\nbahwa kamu tidak pernah berhenti tumbuh.`,
+                    narasi: `Terus melangkah. Setiap langkah kecil\nmenumpuk menjadi perubahan yang luar biasa.`
+                };
+                const slides = [
+                    {
+                        chapter: '— Pertumbuhan Tanpa Henti —',
+                        title:   m.title,
+                        sub:     m.sub,
+                        narasi:  m.narasi,
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Teruslah Bergerak —',
+                        title:   'DUNIA MENONTONMU BERKEMBANG',
+                        sub:     `${name}, setiap keputusan yang kamu buat\nmembentuk siapa kamu hari ini.`,
+                        narasi:  `Level hanyalah angka. Yang sesungguhnya bertumbuh\nadalah cara pikirmu, keberanianmu, dan kebijaksanaanmu.`,
+                        dur: 4000
+                    }
+                ];
+                CinematicEngine.play('levelUp', slides, onDone);
+            }
+
+
+            // ── CUTSCENE FIRST DUNGEON ENTER ─────────────────────────────
+            function playCutsceneDungeonEnter(onDone) {
+                const slides = [
+                    {
+                        chapter: '— Gerbang Kegelapan —',
+                        title:   'DUNGEON NUSANTARA ARSA',
+                        sub:     `Aroma batu lembab dan gelap yang tak berujung\nmenyambutmu di ambang pintu.`,
+                        narasi:  `Suara langkahmu bergema di keheningan.\nDi sini, tidak ada tempat bagi yang ragu.`,
+                        dur: 4000
+                    },
+                    {
+                        chapter: '— Bertahan atau Jatuh —',
+                        title:   'DUNIA DI BAWAH PULAU',
+                        sub:     `Monster menunggu di setiap sudut kegelapan.\nSatu kesalahan bisa mengakhiri segalanya.`,
+                        narasi:  `Ingat: gunakan serangan (⚔️) untuk melawan,\ndan Ultimate (🔥) saat dikepung. Energimu adalah nyawamu.`,
+                        dur: 4500
+                    }
+                ];
+                CinematicEngine.play('dungeonEnter', slides, onDone);
+            }
+
+            // ── CUTSCENE LEGENDARY ITEM DROP ─────────────────────────────
+            function playCutsceneLegendaryDrop(itemName, itemDesc, onDone) {
+                const slides = [
+                    {
+                        chapter: '— Harta Sang Boss —',
+                        title:   '✨ LEGENDARY DROP!',
+                        sub:     `Cahaya oranye memenuhi ruangan dungeon.\nSesuatu yang tidak semua orang berhasil dapatkan.`,
+                        narasi:  `Tangan gemetar saat mengambilnya dari tanah.\nBenda ini bukan sekadar item — ini adalah legenda.`,
+                        dur: 4000
+                    },
+                    {
+                        chapter: '— Item Terkuat —',
+                        title:   itemName.toUpperCase(),
+                        sub:     itemDesc,
+                        narasi:  `Di dunia nyata, kerja keras dan ketekunan menghasilkan\nsesuatu yang tidak bisa dibeli dengan uang biasa.\nKamu baru saja membuktikannya.`,
+                        dur: 5000
+                    }
+                ];
+                CinematicEngine.play('legendaryDrop', slides, onDone);
+            }
+
+            // ── CUTSCENE BANGKRUT ─────────────────────────────────────────
+            function playCutsceneBangkrut(onDone) {
+                const role  = STATE.player ? STATE.player.role : 'none';
+                const day   = STATE.day || 1;
+                const msg   = role === 'entrepreneur'
+                    ? `Modal habis, utang menumpuk.\nTapi ingat — setiap pengusaha besar pernah di titik ini.`
+                    : `Uangmu ludes hingga ke sen terakhir.\nIni bukan akhir — ini pelajaran paling mahal yang pernah kamu dapat.`;
+
+                const slides = [
+                    {
+                        chapter: `— Hari ke-${day} —`,
+                        title:   'BANGKRUT',
+                        sub:     msg,
+                        narasi:  `Dompetmu kosong. Layar HP tinggal seiprit.\nAngin malam terasa lebih dingin dari biasanya.`,
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— Dari Nol Lagi —',
+                        title:   'BANGKIT DARI TITIK NOL',
+                        sub:     `Sejarah mencatat: Walt Disney, Steve Jobs, dan Elon Musk\npernah bangkrut sebelum mencapai puncak.`,
+                        narasi:  `Bangkrut bukan aib — itu data.\nData bahwa strategi yang kamu pakai perlu diubah.\nSekarang kamu lebih tahu dari sebelumnya.`,
+                        dur: 5000
+                    }
+                ];
+                CinematicEngine.play('bangkrut', slides, onDone);
+            }
+
+            // ── CUTSCENE BEASISWA DITERIMA ────────────────────────────────
+            function playCutsceneScholarship(major, onDone) {
+                const name = DataService.user ? DataService.user.name : 'Kamu';
+                const majorLabel = major === 'teknologi' ? 'Teknologi Informasi' : 'Humaniora & Sejarah';
+                const slides = [
+                    {
+                        chapter: '— Nilai Sempurna! —',
+                        title:   'BEASISWA PENUH DIRAIH!',
+                        sub:     `${name} membuktikan bahwa kerja keras\ntidak pernah mengkhianati hasil.`,
+                        narasi:  `Jari-jarimu gemetar saat membaca hasilnya...\n"Skor: 10/10. Selamat, kamu lolos jalur beasiswa!"`,
+                        dur: 4500
+                    },
+                    {
+                        chapter: `— Jurusan ${majorLabel} —`,
+                        title:   'MAHASISWA BERPRESTASI',
+                        sub:     `UKT gratis. Uang saku bulanan.\nSemua ini hasil dari satu keputusan: belajar sungguh-sungguh.`,
+                        narasi:  `Di Indonesia, beasiswa adalah tiket emas bagi anak-anak berprestasi\ntanpa memandang latar belakang ekonomi keluarga.`,
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Amanah Besar Menantimu —',
+                        title:   'JAGA PRESTASI INI',
+                        sub:     `Beasiswa bukan hadiah — ini kepercayaan.\nBuktikan kamu layak sampai wisuda.`,
+                        narasi:  `Setiap bulan, uang saku beasiswamu akan masuk otomatis.\nGunakan dengan bijak — ini investasi negara untukmu.`,
+                        dur: 4500
+                    }
+                ];
+                CinematicEngine.play('scholarship', slides, onDone);
+            }
+
+            // ── CUTSCENE WISUDA (PUNCAK JALUR PELAJAR) ───────────────────
+            function playCutsceneWisuda(major, isScholar, onDone) {
+                const name = DataService.user ? DataService.user.name : 'Kamu';
+                const gelar = major === 'teknologi' ? 'S.Kom' : 'S.Hum';
+                const majorLabel = major === 'teknologi' ? 'Sarjana Komputer' : 'Sarjana Humaniora';
+                const scholarLine = isScholar
+                    ? 'Kamu wisuda sebagai penerima beasiswa penuh.\nBanggakan orang tuamu!'
+                    : 'Kamu membuktikan tekad bisa mengalahkan keterbatasan.';
+
+                const slides = [
+                    {
+                        chapter: '— Hari yang Dinantikan —',
+                        title:   'SIDANG SKRIPSI: LULUS!',
+                        sub:     `Semua malam begadang, semua coretan di kertas,\nsemua itu terbayar hari ini.`,
+                        narasi:  `"Dengan ini, saya nyatakan kamu LULUS dengan nilai memuaskan."\nSuara dosen pembimbing bergema di ruang sidang yang hening.`,
+                        dur: 5000
+                    },
+                    {
+                        chapter: `— ${majorLabel} —`,
+                        title:   `SELAMAT, ${gelar}!`,
+                        sub:     `${name}, kamu kini resmi bergelar **${gelar}**.\n${scholarLine}`,
+                        narasi:  `Toga hitam, topi persegi, dan senyum orang tua di kursi belakang.\nIni bukan akhir belajar — ini awal dari segalanya.`,
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— Pesan untuk Masa Depan —',
+                        title:   'DUNIA MENUNGGUMU',
+                        sub:     `Di Indonesia, hanya ~${major === 'teknologi' ? '12%' : '9%'} penduduk yang berhasil meraih gelar sarjana.\nKamu bagian dari mereka.`,
+                        narasi:  `Ilmu tanpa pengamalan adalah pohon tanpa buah.\nBawa ilmumu pulang, dan jadikan kebanggaan daerahmu.`,
+                        dur: 5500
+                    }
+                ];
+                CinematicEngine.play('wisuda', slides, onDone);
+            }
+
+
+
             function checkJobApp() {
                 const sentence = jobSelected.join(" ");
                 if (sentence.includes("Saya Ingin Melamar Kerja") && sentence.includes("Terima Kasih")) {
                     STATE.player.jobStatus = 'employed';
                     STATE.player.bossReputation = 50;
-                    alert("SELAMAT! Lamaran diterima. Datanglah besok jam 08:00.");
-
-                    // Reward EXP for getting job
                     gainExp(50);
-
                     closeMinigame();
+
+                    // 🎬 CINEMATIC JOB ACCEPTED
+                    setTimeout(() => {
+                        playCutsceneJobAccepted(() => {
+                            // Setelah cutscene selesai, toast dan mentor bubble update
+                            showToast("✅ Selamat datang di dunia kerja! Datang jam 08:00 besok.");
+                            if (typeof updateMentorBubble === 'function') updateMentorBubble();
+                        });
+                    }, 300);
                 } else {
                     alert("Lamaran ditolak! Susunan kalimat kurang sopan. Coba lagi.");
                     openJobMinigame();
@@ -29003,6 +30810,40 @@ Pilih masakan:
 
                 // Indikator Quest/Interaksi (Tanda Seru) jika dekat
                 // Opsional: Bisa ditambahkan logika jarak jika ingin
+
+                // ─── MENTOR NOTIFICATION BUBBLE ─────────────────────────
+                if (n.id === 'mentor' && window._mentorBubble) {
+                    const bx = x + dw / 2;
+                    const by = visualY - dh - 14;
+                    const pulse = 0.85 + Math.sin(Date.now() / 350) * 0.15; // denyut
+                    ctx.save();
+                    ctx.translate(bx, by);
+                    ctx.scale(pulse, pulse);
+
+                    // Balon
+                    ctx.fillStyle   = window._mentorBubble.color || '#fbbf24';
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth   = 1.5;
+                    ctx.beginPath();
+                    ctx.roundRect(-14, -14, 28, 22, 6);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Ekor balon kecil ke bawah
+                    ctx.beginPath();
+                    ctx.moveTo(-4, 8); ctx.lineTo(0, 16); ctx.lineTo(4, 8);
+                    ctx.closePath(); ctx.fill();
+
+                    // Ikon teks
+                    ctx.font      = 'bold 12px serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = 'white';
+                    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                    ctx.shadowBlur  = 3;
+                    ctx.fillText(window._mentorBubble.icon || '!', 0, 2);
+
+                    ctx.restore();
+                }
             }
 
             // --- FIX: MENAMBAHKAN FUNGSI DRAW ENEMY YANG HILANG (INI PENYEBAB MONSTER INVISIBLE) ---
@@ -29508,7 +31349,13 @@ Pilih masakan:
                     STATE.player.maxHp += 50;
                     STATE.player.hp = STATE.player.maxHp;
                     STATE.player.energy = 100;
-                    showToast("👹 KEKUATAN BOSS DISERAP! (ALL STATS +5, MAX HP +50)");
+                    // 🎬 CINEMATIC BOSS DEFEATED
+                    const _bossLvl = STATE.dungeonLevel || 1;
+                    setTimeout(() => {
+                        playCutsceneBossDefeated(_bossLvl, () => {
+                            showToast(`👹 BOSS LV.${_bossLvl} TAKLUK! ALL STATS +5 · MAX HP +50`);
+                        });
+                    }, 600);
                 }
 
                 gainExp(exp);
@@ -29541,11 +31388,20 @@ Pilih masakan:
 
                         if (rareDrop === 'zirah_legend') {
                             setTimeout(() => {
-                                showDialogue("LEGENDARY ITEM! 🛡️",
-                                    "LUAR BIASA! Kamu mendapatkan ZIRAH ABADI dari Boss!\n\nPakaian pertahanan terkuat.\n(Pasif: Damage musuh berkurang drastis)\n\nCek Lemari Pakaian di rumah!",
-                                    [{ text: "Mantap!", action: closeDialogue }], 'images/lemari.png');
-                                if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                            }, 1500);
+                                playCutsceneLegendaryDrop(
+                                    'ZIRAH ABADI 🛡️',
+                                    'Armor terkuat di seluruh Dungeon.\nPasif: Damage musuh berkurang drastis.\n\n(Cek Lemari Pakaian di rumahmu!)',
+                                    () => { if (typeof AudioService !== 'undefined') AudioService.playSFX('item'); }
+                                );
+                            }, 1200);
+                        } else if (rareDrop === 'cincin_legend') {
+                            setTimeout(() => {
+                                playCutsceneLegendaryDrop(
+                                    'CINCIN RAJA 💍',
+                                    'Cincin keabadian milik penguasa dungeon.\nPasif: Setiap membunuh musuh, Gold yang didapat 2x lipat.',
+                                    () => { if (typeof AudioService !== 'undefined') AudioService.playSFX('item'); }
+                                );
+                            }, 1200);
                         }
                         if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                     } else {
