@@ -234,28 +234,35 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(34, 20, 5, 0.88);
             z-index: 3000;
             display: none;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             flex-direction: column;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(6px);
             pointer-events: auto;
-            /* Agar bisa diklik */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px 12px 32px;
+            box-sizing: border-box;
         }
 
         .prompt-box {
-            background: #1e293b;
-            border: 2px solid var(--secondary);
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
+            background: linear-gradient(160deg, #fef9ee 0%, #fdf3d4 70%, #f5e6b8 100%);
+            border: 4px solid #92400e;
+            outline: 2px solid #d97706;
+            outline-offset: 3px;
+            padding: 24px 22px;
+            border-radius: 18px;
+            width: 92%;
+            max-width: 420px;
             text-align: center;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 0 #78350f, 0 14px 30px rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
+            color: #422006;
+            margin: auto;
         }
 
         /* HUD TOP REDESIGN */
@@ -1282,19 +1289,21 @@
         }
 
         #inventory-screen {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(34, 20, 5, 0.88);
             z-index: 1500;
             display: none;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 20px 12px 32px;
             box-sizing: border-box;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(6px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .inv-grid {
@@ -1369,13 +1378,16 @@
         }
 
         .work-card {
-            background: #1e293b;
-            border: 2px solid var(--secondary);
-            border-radius: 12px;
-            padding: 20px;
+            background: linear-gradient(160deg, #fef9ee 0%, #fdf3d4 70%, #f5e6b8 100%);
+            border: 4px solid #92400e;
+            outline: 2px solid #d97706;
+            outline-offset: 3px;
+            border-radius: 18px;
+            padding: 22px;
             width: 300px;
             text-align: center;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 0 #78350f, 0 14px 30px rgba(0,0,0,0.4);
+            color: #422006;
         }
 
         .work-item-display {
@@ -3061,64 +3073,96 @@
 
         /* Modal Journal Siswa */
         #journal-modal {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(34, 20, 5, 0.88);
             z-index: 500;
             display: none;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             pointer-events: auto;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(6px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px 12px 32px;
+            box-sizing: border-box;
         }
 
-        /* FIX: Tambahkan Class Overlay yang Hilang agar Popup Terlihat */
+        /* ══════════════════════════════════════════════════
+           🌿 REDESIGN MODAL — TEMA FARM / NUSANTARA ARSA
+        ══════════════════════════════════════════════════ */
         .minigame-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(34, 20, 5, 0.88);
             z-index: 2000;
             display: none;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(6px);
             pointer-events: auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 12px;
+            box-sizing: border-box;
         }
 
+        /* Journal box = papan kayu / kertas perkamen */
         .journal-box {
-            background: #fffbeb;
+            background: linear-gradient(160deg, #fef9ee 0%, #fdf3d4 60%, #f5e6b8 100%);
             color: var(--text);
-            padding: 30px;
-            border-radius: 20px;
-            width: 80%;
+            padding: 24px 22px 28px;
+            border-radius: 18px;
+            width: 92%;
             max-width: 500px;
-            border: 4px solid var(--border-ui);
-            box-shadow: 0 10px 0 rgba(0, 0, 0, 0.2);
-            max-height: 90vh;
+            /* Bingkai kayu tebal */
+            border: 4px solid #92400e;
+            outline: 2px solid #d97706;
+            outline-offset: 3px;
+            box-shadow: 0 8px 0 #78350f, 0 14px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.7);
+            max-height: 88dvh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            position: relative;
+            /* Texture garis halus kertas */
+            background-image: linear-gradient(160deg, #fef9ee 0%, #fdf3d4 60%, #f5e6b8 100%),
+                              repeating-linear-gradient(0deg, transparent, transparent 26px, rgba(161,98,7,0.07) 26px, rgba(161,98,7,0.07) 27px);
         }
 
-        /* FIX: Pastikan scrollbar tidak menutupi konten terlalu banyak */
+        /* Header journal-box jika ada */
+        .journal-box > h2:first-child,
+        .journal-box > h3:first-child {
+            font-family: 'Fredoka', sans-serif;
+            color: #78350f;
+            text-align: center;
+            border-bottom: 2px dashed #d97706;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+
+        /* FIX: Scrollbar kayu */
         .journal-box::-webkit-scrollbar {
-            width: 6px;
+            width: 7px;
         }
 
         .journal-box::-webkit-scrollbar-thumb {
-            background: var(--secondary);
-            border-radius: 3px;
+            background: #a16207;
+            border-radius: 4px;
         }
 
         .journal-box::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(161,98,7,0.15);
+            border-radius: 4px;
         }
 
         /* FIX: STYLE INPUT TEXTAREA AGAR LEBIH KONTRAS */
@@ -4416,14 +4460,16 @@
             display: flex;
         }
         .konsekuensi-box {
-            background: #0f172a;
-            border: 2px solid #f59e0b;
+            background: linear-gradient(160deg, #fef9ee 0%, #fdf3d4 70%, #f5e6b8 100%);
+            border: 4px solid #92400e;
+            outline: 2px solid #d97706;
+            outline-offset: 3px;
             border-radius: 20px;
             width: 100%;
             max-width: 420px;
             padding: 0;
             overflow: hidden;
-            box-shadow: 0 0 60px rgba(245,158,11,0.3);
+            box-shadow: 0 8px 0 #78350f, 0 16px 40px rgba(0,0,0,0.45);
             animation: konsekuensiPopIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes konsekuensiPopIn {
@@ -4468,29 +4514,30 @@
         }
         .konsekuensi-body {
             padding: 20px;
+            color: #422006;
         }
         .konsekuensi-fact {
-            background: rgba(245,158,11,0.08);
-            border-left: 3px solid #f59e0b;
+            background: rgba(161,98,7,0.10);
+            border-left: 4px solid #d97706;
             border-radius: 0 12px 12px 0;
             padding: 12px 14px;
             margin-bottom: 14px;
             font-size: 13px;
-            color: #fcd34d;
+            color: #78350f;
             line-height: 1.6;
             font-weight: 600;
         }
         .konsekuensi-fact .fact-label {
             font-size: 9px;
             letter-spacing: 2px;
-            color: #f59e0b;
+            color: #a16207;
             font-weight: 800;
             margin-bottom: 4px;
             display: block;
         }
         .konsekuensi-question {
             font-size: 14px;
-            color: #e2e8f0;
+            color: #422006;
             font-weight: 700;
             margin-bottom: 10px;
             line-height: 1.5;
@@ -4501,10 +4548,10 @@
         #konsekuensi-textarea {
             width: 100%;
             min-height: 90px;
-            background: #1e293b;
-            border: 2px solid #334155;
+            background: #fffdf5;
+            border: 2px solid #a16207;
             border-radius: 10px;
-            color: #e2e8f0;
+            color: #422006;
             font-size: 13px;
             padding: 10px 12px;
             font-family: 'Nunito', sans-serif;
@@ -4515,27 +4562,28 @@
             line-height: 1.5;
         }
         #konsekuensi-textarea:focus {
-            border-color: #f59e0b;
+            border-color: #65a30d;
         }
         #konsekuensi-textarea::placeholder {
-            color: #475569;
+            color: #a16207;
             font-style: italic;
         }
         .konsekuensi-char-count {
             text-align: right;
             font-size: 10px;
-            color: #64748b;
+            color: #a16207;
             margin-top: 4px;
             margin-bottom: 12px;
         }
-        .konsekuensi-char-count.ok { color: #4ade80; }
+        .konsekuensi-char-count.ok { color: #65a30d; }
         #konsekuensi-submit-btn {
             width: 100%;
             padding: 13px;
-            background: linear-gradient(135deg, #d97706, #f59e0b);
+            background: linear-gradient(135deg, #65a30d, #84cc16);
             border: none;
+            border-bottom: 4px solid #3f6212;
             border-radius: 10px;
-            color: #0f172a;
+            color: #fff;
             font-size: 14px;
             font-weight: 900;
             letter-spacing: 1px;
@@ -4543,16 +4591,17 @@
             transition: all 0.2s;
             font-family: 'Fredoka', sans-serif;
         }
-        #konsekuensi-submit-btn:active { transform: scale(0.97); }
+        #konsekuensi-submit-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
         #konsekuensi-submit-btn:disabled {
-            background: #334155;
-            color: #64748b;
+            background: #d1d5db;
+            border-bottom-color: #9ca3af;
+            color: #6b7280;
             cursor: not-allowed;
         }
         .konsekuensi-min-hint {
             text-align: center;
             font-size: 10px;
-            color: #64748b;
+            color: #a16207;
             margin-top: 8px;
         }
 
@@ -4577,16 +4626,20 @@
         #career-check-modal.active { display: flex; }
 
         .crc-box {
-            background: #0f172a;
+            background: linear-gradient(160deg, #fef9ee 0%, #fdf3d4 70%, #f5e6b8 100%);
+            border: 4px solid #92400e;
+            outline: 2px solid #d97706;
+            outline-offset: 3px;
             border-radius: 20px;
             width: 100%;
             max-width: 420px;
             overflow-y: visible;
             -webkit-overflow-scrolling: touch;
-            box-shadow: 0 0 80px rgba(0,0,0,0.8);
+            box-shadow: 0 8px 0 #78350f, 0 16px 40px rgba(0,0,0,0.5);
             animation: crcPopIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             margin: auto;
             touch-action: pan-y !important;
+            color: #422006;
         }
         @keyframes crcPopIn {
             0% { opacity:0; transform: scale(0.8) translateY(40px); }
@@ -4625,7 +4678,7 @@
             font-weight: 600;
         }
 
-        .crc-body { padding: 12px 16px 16px; }
+        .crc-body { padding: 12px 16px 16px; color: #422006; }
 
         /* Baris statistik */
         .crc-stats-grid {
@@ -4635,8 +4688,8 @@
             margin-bottom: 14px;
         }
         .crc-stat-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(161,98,7,0.08);
+            border: 2px solid rgba(161,98,7,0.25);
             border-radius: 12px;
             padding: 10px 12px;
         }
@@ -4646,11 +4699,12 @@
             font-weight: 800;
             margin-bottom: 4px;
             text-transform: uppercase;
+            color: #92400e;
         }
         .crc-stat-value {
             font-size: 13px;
             font-weight: 700;
-            color: #f1f5f9;
+            color: #422006;
             line-height: 1.4;
         }
         .crc-stat-card.highlight {
@@ -4694,6 +4748,7 @@
             width: 100%;
             padding: 14px;
             border: none;
+            border-bottom: 4px solid #3f6212;
             border-radius: 12px;
             font-size: 14px;
             font-weight: 900;
@@ -4703,17 +4758,18 @@
             transition: transform 0.15s, box-shadow 0.15s;
             margin-bottom: 8px;
         }
-        .crc-btn-confirm:active { transform: scale(0.97); }
+        .crc-btn-confirm:active { transform: translateY(2px); border-bottom-width: 2px; }
         .crc-btn-back {
             width: 100%;
             padding: 10px;
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.15);
+            border: 2px solid rgba(161,98,7,0.4);
             border-radius: 10px;
-            color: rgba(255,255,255,0.5);
+            color: #78350f;
             font-size: 12px;
             cursor: pointer;
             font-family: 'Nunito', sans-serif;
+            font-weight: 700;
         }
         .crc-btn-back:active { opacity: 0.6; }
 
@@ -4981,6 +5037,111 @@
             #potret-card { box-shadow: none; border-radius: 0; }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           🌿 GLOBAL MOBILE MODAL FIX — SEMUA MODAL BISA SCROLL
+        ═══════════════════════════════════════════════════════ */
+
+        /* Override inspect-modal, message-archive-modal, daily-quest-popup */
+        #inspect-modal,
+        #message-archive-modal,
+        #daily-quest-popup,
+        #calendar-modal,
+        #about-screen {
+            position: fixed !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            align-items: flex-start !important;
+            padding: 12px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Pastikan journal-box di dalam overlay tidak overflow terpotong */
+        .minigame-overlay > .journal-box,
+        .minigame-overlay > div > .journal-box {
+            max-height: 88dvh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Header judul modal — konsisten gaya kayu */
+        .modal-title-farm {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #78350f;
+            text-align: center;
+            border-bottom: 2px dashed #d97706;
+            padding-bottom: 10px;
+            margin: 0 0 14px;
+            letter-spacing: 1px;
+        }
+
+        /* Tombol farm-themed */
+        .btn-farm-primary {
+            background: linear-gradient(135deg, #65a30d, #84cc16);
+            color: #fff;
+            border: none;
+            border-bottom: 4px solid #3f6212;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.1s;
+        }
+        .btn-farm-primary:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+        .btn-farm-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            border: none;
+            border-bottom: 4px solid #991b1b;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .btn-farm-danger:active { transform: translateY(2px); border-bottom-width: 2px; }
+
+        .btn-farm-secondary {
+            background: transparent;
+            color: #78350f;
+            border: 2px solid #a16207;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-farm-secondary:hover { background: rgba(161,98,7,0.08); }
+
+        /* Kelas khusus difficulty badge untuk soal ujian */
+        .difficulty-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+        .difficulty-easy { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .difficulty-medium { background: #fef9c3; color: #a16207; border: 1px solid #fde047; }
+        .difficulty-hard { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* Fix: business-modal dan modal lain yang mungkin terpotong */
+        #business-modal {
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            align-items: flex-start !important;
+        }
+
     </style>
 </head>
 
@@ -5222,31 +5383,31 @@
     <!-- MODAL: UI PASAR GROSIR (NAIK-TURUN HARGA) -->
     <!-- ================================================== -->
     <div id="pasar-modal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1060; align-items: center; justify-content: center; flex-direction: column;">
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(34,20,5,0.88); z-index: 1060; align-items: flex-start; justify-content: center; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 12px; box-sizing: border-box; backdrop-filter: blur(6px);">
         <div
-            style="background: #1e293b; border: 2px solid #eab308; border-radius: 12px; padding: 20px; width: 90%; max-width: 400px; color: white; max-height: 80vh; overflow-y: auto;">
-            <h2 style="color: #eab308; text-align: center; margin-top: 0;">🛒 Grosir Keliling</h2>
-            <p style="text-align: center; font-size: 14px; color: #cbd5e1;">Beli saat <b
-                    style="color:#ef4444;">MERAH</b>, Jual saat <b style="color:#4ade80;">HIJAU</b>!</p>
+            style="background: linear-gradient(160deg,#fef9ee,#fdf3d4,#f5e6b8); border: 4px solid #92400e; outline: 2px solid #d97706; outline-offset:3px; border-radius: 18px; padding: 22px; width: 92%; max-width: 420px; color: #422006; box-shadow: 0 8px 0 #78350f, 0 14px 30px rgba(0,0,0,0.4); overflow-y: auto; margin: auto;">
+            <h2 style="color: #78350f; text-align: center; margin-top: 0; font-family:'Fredoka',sans-serif; border-bottom: 2px dashed #d97706; padding-bottom:8px;">🛒 Grosir Keliling</h2>
+            <p style="text-align: center; font-size: 14px; color: #78350f;">Beli saat <b
+                    style="color:#ef4444;">MERAH</b>, Jual saat <b style="color:#15803d;">HIJAU</b>!</p>
 
             <div
-                style="display: flex; justify-content: space-between; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                <span>Uang: <b id="pasar-uang-player" style="color: #4ade80;">0 G</b></span>
+                style="display: flex; justify-content: space-between; align-items:center; background: rgba(161,98,7,0.1); border: 2px solid rgba(161,98,7,0.3); padding: 10px 14px; border-radius: 10px; margin-bottom: 15px;">
+                <span style="font-weight:700;">Uang: <b id="pasar-uang-player" style="color: #15803d;">0 G</b></span>
                 <button onclick="refreshPasar()"
-                    style="background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">🔄
+                    style="background: #0ea5e9; color: white; border: none; border-bottom: 3px solid #0284c7; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight:700; font-size:12px;">🔄
                     Refresh (-50 G)</button>
             </div>
 
-            <h3 style="border-bottom: 1px solid #475569; padding-bottom: 5px;">📦 Pasar (Beli)</h3>
+            <h3 style="border-bottom: 2px dashed #d97706; padding-bottom: 5px; color:#78350f; font-family:'Fredoka',sans-serif;">📦 Pasar (Beli)</h3>
             <div id="pasar-buy-list"
                 style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"></div>
 
-            <h3 style="border-bottom: 1px solid #475569; padding-bottom: 5px;">🎒 Tas Kamu (Jual)</h3>
+            <h3 style="border-bottom: 2px dashed #d97706; padding-bottom: 5px; color:#78350f; font-family:'Fredoka',sans-serif;">🎒 Tas Kamu (Jual)</h3>
             <div id="pasar-sell-list"
                 style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"></div>
 
             <button onclick="closePasar()"
-                style="width: 100%; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">Tutup
+                style="width: 100%; padding: 12px; background: linear-gradient(135deg,#ef4444,#dc2626); color: white; border: none; border-bottom: 4px solid #991b1b; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-family:'Fredoka',sans-serif; font-size:14px; letter-spacing:1px;">✕ Tutup
                 Grosir</button>
         </div>
     </div>
@@ -7121,6 +7282,7 @@
                     <button class="quest-tab-btn" onclick="switchQuestTab('weekly')" id="tab-weekly">MINGGU</button>
                     <button class="quest-tab-btn" onclick="switchQuestTab('monthly')" id="tab-monthly">BULAN</button>
                     <button class="quest-tab-btn" onclick="switchQuestTab('life')" id="tab-life">TARGET</button>
+                    <button class="quest-tab-btn" onclick="switchQuestTab('relasi')" id="tab-relasi">💞 RELASI</button>
                 </div>
 
                 <!-- CONTENT AREA -->
@@ -8338,22 +8500,149 @@
                 return condMoney && condRole && condSeason;
             }
 
-            // --- NEW HELPER: CHECK LIFE TARGET (TRIAL 3 TAHUN) ---
-            function checkLifeTrialCompletion() {
+            // ═══════════════════════════════════════════════════════════
+            // 🏆 SISTEM MILESTONE QUEST TAHUNAN (TAHUN 1 s/d 5)
+            // Setiap tahun = 120 hari (30 hari × 4 musim)
+            // ═══════════════════════════════════════════════════════════
+
+            // Helper: dapatkan tahun game saat ini
+            function getGameYear() {
+                return Math.floor((STATE.day - 1) / 120) + 1;
+            }
+
+            // --- CEK MILESTONE TAHUN 1 (Fondasi Awal) ---
+            function checkYear1Completion() {
                 const p = STATE.player;
                 const role = p.role;
                 if (role === 'none') return false;
+                const hasTalked5   = (p.totalTalkCount || p.dailyTalkCount || 0) >= 1;
+                const hasJournal   = p.reflections && p.reflections.length >= 3;
+                const hasMonster   = (p.totalMonsterKills || 0) >= 5;
+                const hasFish      = (p.totalFishingCount || 0) >= 3;
+                const levelOK      = p.level >= 5;
+                if (role === 'worker')      return levelOK && p.str >= 15 && p.money >= 20000 && hasJournal && hasMonster;
+                if (role === 'student')     return levelOK && p.int >= 15 && hasJournal && hasFish;
+                if (role === 'entrepreneur')return levelOK && p.biz >= 15 && p.money >= 25000 && hasJournal;
+                if (role === 'family')      return levelOK && p.reputation >= 15 && Object.keys(p.relationships).length >= 2 && hasJournal;
+                return false;
+            }
 
-                if (role === 'worker') return p.str >= 50 && p.money >= 100000;
-                // UPDATE: Syarat Student disesuaikan (Evaluasi Studi Tahun ke-3)
-                // Tidak butuh tesis, tapi butuh buku referensi & INT cukup
+            // --- CEK MILESTONE TAHUN 2 (Berkembang) ---
+            function checkYear2Completion() {
+                const p = STATE.player;
+                const role = p.role;
+                if (role === 'none') return false;
+                const hasJournal5  = p.reflections && p.reflections.length >= 10;
+                const hasMonster10 = (p.totalMonsterKills || 0) >= 20;
+                const levelOK      = p.level >= 10;
+                const hasFarmed    = p.farming && Object.values(p.farming).some(c => c && c.harvested);
+                if (role === 'worker')       return levelOK && p.str >= 30 && p.money >= 60000 && p.bossReputation >= 50 && hasJournal5;
+                if (role === 'student')      return levelOK && p.int >= 30 && p.major && hasJournal5 && hasFarmed;
+                if (role === 'entrepreneur') return levelOK && p.biz >= 30 && p.money >= 80000 && (p.houseLevel || 1) >= 2 && hasJournal5;
+                if (role === 'family')       return levelOK && p.reputation >= 30 && Object.keys(p.relationships).length >= 4 && hasJournal5;
+                return false;
+            }
+
+            // --- CEK MILESTONE TAHUN 3 (Ujian Nyata — LEBIH SULIT) ---
+            function checkLifeTrialCompletion() {
+                return checkYear3Completion();
+            }
+            function checkYear3Completion() {
+                const p = STATE.player;
+                const role = p.role;
+                if (role === 'none') return false;
+                const hasJournal15 = p.reflections && p.reflections.length >= 20;
+                const hasMonster30 = (p.totalMonsterKills || 0) >= 50;
+                const levelOK      = p.level >= 18;
+                const hasFish10    = (p.totalFishingCount || 0) >= 10;
+                const hasAP        = (p.achievementPoints || 0) >= 30;
+                if (role === 'worker') {
+                    return levelOK && p.str >= 50 && p.money >= 120000
+                        && p.bossReputation >= 70 && hasJournal15 && hasMonster30
+                        && (p.jobStatus === 'promoted' || p.bossReputation >= 80);
+                }
                 if (role === 'student') {
                     const hasBook = Object.keys(p.inventory).some(k => k.includes('buku') && !k.includes('tesis'));
-                    return p.int >= 50 && p.level >= 15 && hasBook;
+                    return levelOK && p.int >= 50 && hasBook && hasJournal15 && hasFish10
+                        && p.major && hasAP;
                 }
-                if (role === 'entrepreneur') return p.biz >= 50 && p.houseLevel >= 2;
-                if (role === 'family') return p.reputation >= 50 && Object.keys(p.relationships).length >= 5;
+                if (role === 'entrepreneur') {
+                    return levelOK && p.biz >= 50 && p.money >= 150000
+                        && (p.houseLevel || 1) >= 2 && hasJournal15
+                        && (p.dailySellCount || p.totalSellCount || 0) >= 10;
+                }
+                if (role === 'family') {
+                    return levelOK && p.reputation >= 50
+                        && Object.keys(p.relationships).length >= 6
+                        && hasJournal15 && hasFish10
+                        && (p.married || Object.values(p.relationships).some(r => r >= 70));
+                }
+                return false;
+            }
 
+            // --- CEK MILESTONE TAHUN 4 (Menjelang Puncak — SANGAT SULIT) ---
+            function checkYear4Completion() {
+                const p = STATE.player;
+                const role = p.role;
+                if (role === 'none') return false;
+                const hasJournal30 = p.reflections && p.reflections.length >= 35;
+                const hasAP60      = (p.achievementPoints || 0) >= 60;
+                const hasMonster60 = (p.totalMonsterKills || 0) >= 80;
+                const levelOK      = p.level >= 25;
+                if (role === 'worker') {
+                    return levelOK && p.str >= 70 && p.money >= 300000
+                        && p.bossReputation >= 90 && hasJournal30 && hasAP60
+                        && hasMonster60;
+                }
+                if (role === 'student') {
+                    const hasTesisDraft = !!(p.inventory && (p.inventory['buku_tesis'] || p.inventory['draft_tesis']));
+                    return levelOK && p.int >= 70 && hasTesisDraft
+                        && hasJournal30 && hasAP60 && p.major;
+                }
+                if (role === 'entrepreneur') {
+                    return levelOK && p.biz >= 70 && p.money >= 400000
+                        && (p.houseLevel || 1) >= 3 && hasJournal30 && hasAP60;
+                }
+                if (role === 'family') {
+                    return levelOK && p.reputation >= 70 && p.married
+                        && Object.keys(p.relationships).length >= 8
+                        && hasJournal30 && hasAP60;
+                }
+                return false;
+            }
+
+            // --- CEK MILESTONE TAHUN 5 (Kelulusan Sejati — ULTRA SULIT) ---
+            function checkYear5Completion() {
+                const p = STATE.player;
+                const role = p.role;
+                if (role === 'none') return false;
+                const hasJournal50 = p.reflections && p.reflections.length >= 50;
+                const hasAP100     = (p.achievementPoints || 0) >= 100;
+                const hasMonster   = (p.totalMonsterKills || 0) >= 120;
+                const levelOK      = p.level >= 30;
+                const hasAllFishing= (p.totalFishingCount || 0) >= 20;
+                if (role === 'worker') {
+                    return levelOK && p.str >= 90 && p.money >= 1000000
+                        && p.bossReputation >= 100 && hasJournal50 && hasAP100
+                        && hasMonster && hasAllFishing
+                        && (p.jobTitle === 'manager' || p.bossReputation >= 100);
+                }
+                if (role === 'student') {
+                    const hasTesis = !!(p.inventory && p.inventory['buku_tesis']);
+                    return levelOK && p.int >= 90 && hasTesis && p.major
+                        && hasJournal50 && hasAP100 && hasMonster && hasAllFishing;
+                }
+                if (role === 'entrepreneur') {
+                    return levelOK && p.biz >= 90 && p.money >= 1000000
+                        && (p.houseLevel || 1) >= 5 && hasJournal50 && hasAP100
+                        && hasMonster && hasAllFishing;
+                }
+                if (role === 'family') {
+                    const hasKid = p.children && p.children.length >= 1;
+                    return levelOK && p.reputation >= 90 && p.married && hasKid
+                        && Object.keys(p.relationships).length >= 10
+                        && hasJournal50 && hasAP100 && hasAllFishing;
+                }
                 return false;
             }
 
@@ -8372,13 +8661,10 @@
                         showToast("Syarat Mingguan belum terpenuhi!");
                         return;
                     }
-
-                    // Hadiah Mingguan
                     p.lastWeeklyClaim = currentWeek;
                     p.money += 5000;
                     gainExp(200);
-                    addItem('tonic_stamina', 1); // Bonus Item
-
+                    addItem('tonic_stamina', 1);
                     showToast("🎁 WEEKLY REWARD: 5000G + 200EXP + Tonic!");
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                     createParticle(p.x, p.y, '#a855f7');
@@ -8395,42 +8681,114 @@
                         showToast("Syarat Bulanan belum terpenuhi!");
                         return;
                     }
-
-                    // Hadiah Bulanan (Besar)
                     p.lastMonthlyClaim = currentMonth;
                     p.money += 20000;
                     gainExp(1000);
-                    addItem('permata', 2); // Bonus Item Mahal
-
+                    addItem('permata', 2);
                     showToast("🎁 MONTHLY REWARD: 20.000G + 1000EXP + 2 Berlian!");
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                     createParticle(p.x, p.y, '#22d3ee');
                 }
 
-                // --- LIFE (TRIAL TARGET) ---
-                else if (type === 'life_trial') {
-                    if (p.claimedLifeTrial) {
-                        showToast("Hadiah Target Jangka Panjang sudah diambil!");
-                        return;
-                    }
-                    if (!checkLifeTrialCompletion()) {
-                        showToast("Target Trial 3 Tahun belum tercapai!");
-                        return;
-                    }
+                // --- MILESTONE TAHUN 1 ---
+                else if (type === 'year1') {
+                    if (p.claimedYear1) { showToast("Milestone Tahun 1 sudah diklaim!"); return; }
+                    if (!checkYear1Completion()) { showToast("Syarat Milestone Tahun 1 belum terpenuhi!"); return; }
+                    p.claimedYear1 = true;
+                    p.money += 30000;
+                    gainExp(1500);
+                    addItem('tonic_stamina', 2);
+                    p.achievementPoints = (p.achievementPoints || 0) + 15;
+                    showToast("🌱 MILESTONE TAHUN 1: 30.000G + 1500EXP + 2 Tonic + 15AP!");
+                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    createParticle(p.x, p.y, '#4ade80');
+                }
 
-                    // Hadiah Pencapaian Hidup
+                // --- MILESTONE TAHUN 2 ---
+                else if (type === 'year2') {
+                    if (p.claimedYear2) { showToast("Milestone Tahun 2 sudah diklaim!"); return; }
+                    if (!checkYear2Completion()) { showToast("Syarat Milestone Tahun 2 belum terpenuhi!"); return; }
+                    p.claimedYear2 = true;
+                    p.money += 60000;
+                    gainExp(2500);
+                    addItem('tonic_kebal', 1);
+                    addItem('permata', 2);
+                    p.achievementPoints = (p.achievementPoints || 0) + 25;
+                    showToast("🌿 MILESTONE TAHUN 2: 60.000G + 2500EXP + Tonic Kebal + 2 Berlian + 25AP!");
+                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    createParticle(p.x, p.y, '#22d3ee');
+                }
+
+                // --- MILESTONE TAHUN 3 (life_trial alias) ---
+                else if (type === 'life_trial' || type === 'year3') {
+                    if (p.claimedLifeTrial) { showToast("Milestone Tahun 3 sudah diklaim!"); return; }
+                    if (!checkYear3Completion()) { showToast("Syarat Trial 3 Tahun belum tercapai! Masih banyak yang harus diselesaikan."); return; }
                     p.claimedLifeTrial = true;
-                    p.money += 100000;
+                    p.claimedYear3 = true;
+                    p.money += 120000;
                     gainExp(5000);
-                    addItem('tonic_kebal', 3); // Item Langka
-
-                    showToast("🏆 LIFE ACHIEVEMENT: 100.000G + 5000EXP + 3 Tonic Kebal!");
-                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item'); // Reuse sound or new fanfare
+                    addItem('tonic_kebal', 3);
+                    addItem('permata', 3);
+                    p.achievementPoints = (p.achievementPoints || 0) + 50;
+                    showToast("🏆 MILESTONE 3 TAHUN: 120.000G + 5000EXP + 3 Tonic Kebal + 3 Berlian + 50AP!");
+                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                     createParticle(p.x, p.y, '#e11d48');
+                }
+
+                // --- MILESTONE TAHUN 4 ---
+                else if (type === 'year4') {
+                    if (p.claimedYear4) { showToast("Milestone Tahun 4 sudah diklaim!"); return; }
+                    if (!checkYear4Completion()) { showToast("Syarat Milestone Tahun 4 belum terpenuhi! Kamu perlu lebih keras lagi!"); return; }
+                    p.claimedYear4 = true;
+                    p.money += 250000;
+                    gainExp(8000);
+                    addItem('tonic_kebal', 5);
+                    addItem('permata', 5);
+                    p.achievementPoints = (p.achievementPoints || 0) + 80;
+                    // Bonus spesial: naikkan semua stat +5
+                    p.str = (p.str || 0) + 5;
+                    p.int = (p.int || 0) + 5;
+                    p.biz = (p.biz || 0) + 5;
+                    p.reputation = (p.reputation || 0) + 5;
+                    showToast("💎 MILESTONE 4 TAHUN: 250.000G + 8000EXP + All Stat+5 + 80AP!");
+                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    createParticle(p.x, p.y, '#a855f7');
+                }
+
+                // --- MILESTONE TAHUN 5 (TAMAT SEJATI) ---
+                else if (type === 'year5') {
+                    if (p.claimedYear5) { showToast("Milestone Tahun 5 sudah diklaim!"); return; }
+                    if (!checkYear5Completion()) { showToast("Syarat Kelulusan 5 Tahun belum terpenuhi! Ini ujian terberat — kamu harus sempurna!"); return; }
+                    p.claimedYear5 = true;
+                    p.money += 500000;
+                    gainExp(15000);
+                    addItem('tonic_kebal', 10);
+                    addItem('permata', 10);
+                    p.achievementPoints = (p.achievementPoints || 0) + 200;
+                    // Bonus: Gelar Kehormatan
+                    const honorTitles = {
+                        worker: 'Manajer Senior Berprestasi',
+                        student: 'Sarjana Teladan Nusantara',
+                        entrepreneur: 'Pengusaha Sukses Pulau Arsa',
+                        family: 'Tokoh Masyarakat Terpuji'
+                    };
+                    p.honorTitle = honorTitles[p.role] || 'Warga Teladan';
+                    showToast(`👑 LULUS 5 TAHUN! 500.000G + 15.000EXP + Gelar: ${p.honorTitle}!`);
+                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    createParticle(p.x, p.y, '#fbbf24');
+                    // Trigger game ending cinematic
+                    setTimeout(() => {
+                        showDialogue("🌟 SELAMAT! KAMU TELAH LULUS!", 
+                            `"${p.name}, kamu telah menjalani 5 tahun penuh keputusan, perjuangan, dan pertumbuhan.\n\nKamu bukan lagi pemuda yang datang dengan tangan kosong. Kamu adalah ${p.honorTitle}.\n\nPerjuanganmu menginspirasi generasi berikutnya di Pulau Arsa."\n\n— Mentor Budi`,
+                            [{ text: "🏆 Lihat Potret Masa Depanku", action: () => { closeDialogue(); openPotretModal(); } },
+                             { text: "Lanjutkan Petualangan (Free Roam)", action: closeDialogue }],
+                            'images/mentorbudi.png');
+                    }, 1500);
                 }
 
                 // Refresh UI
                 showDailyQuestPopup();
+                manualSave();
             }
 
             // --- CLAIM DAILY REWARD (UPGRADE: Skala naik + bonus quest reward) ---
@@ -8908,41 +9266,174 @@
 
                 // --- TAB 4: JANGKA PANJANG (LIFE TARGETS) ---
                 else if (tabType === 'life') {
-                    html += section('🏆 Target Jangka Panjang', '#e11d48');
+                    const currentYear = getGameYear();
+                    const totalMonsterKills = (p.totalMonsterKills || 0);
+                    const totalFishing      = (p.totalFishingCount || 0);
+                    const totalJournals     = p.reflections ? p.reflections.length : 0;
+                    const totalAP           = p.achievementPoints || 0;
 
-                    // Trial 3 Tahun
-                    html += `<strong>[Trial 3 Tahun - Masa Percobaan]</strong><br>`;
+                    // ─── MILESTONE TAHUN 1 ───────────────────────────────────────
+                    const y1Done     = p.claimedYear1;
+                    const y1Complete = checkYear1Completion();
+                    html += section('🌱 MILESTONE TAHUN 1 — Fondasi Awal', y1Done ? '#4ade80' : '#65a30d');
+                    html += `<div style="font-size:10px; color:#78350f; margin-bottom:6px; background:rgba(101,163,13,0.08); padding:6px 8px; border-radius:6px; border-left:3px solid #65a30d;">
+                        Buktikan kamu bisa bertahan di Pulau Arsa. Selesaikan misi dasar sebelum tahun pertama berakhir.
+                    </div>`;
+                    html += `${check(p.level >= 5)} Level 5+ ${prog(p.level, 5)}<br>`;
+                    html += `${check(totalJournals >= 3)} Tulis 3 Jurnal Refleksi ${prog(totalJournals, 3)}<br>`;
+                    html += `${check(totalMonsterKills >= 5)} Kalahkan 5 Monster ${prog(totalMonsterKills, 5)}<br>`;
+                    if (role === 'worker') {
+                        html += `${check(p.str >= 15)} STR 15+ ${prog(p.str, 15)}<br>`;
+                        html += `${check(p.money >= 20000)} Tabung 20.000G ${prog((p.money/1000).toFixed(1)+'k', '20k')}<br>`;
+                    } else if (role === 'student') {
+                        html += `${check(p.int >= 15)} INT 15+ ${prog(p.int, 15)}<br>`;
+                        html += `${check(totalFishing >= 3)} Pancing 3x ${prog(totalFishing, 3)}<br>`;
+                    } else if (role === 'entrepreneur') {
+                        html += `${check(p.biz >= 15)} BIZ 15+ ${prog(p.biz, 15)}<br>`;
+                        html += `${check(p.money >= 25000)} Tabung 25.000G ${prog((p.money/1000).toFixed(1)+'k', '25k')}<br>`;
+                    } else if (role === 'family') {
+                        html += `${check(p.reputation >= 15)} REP 15+ ${prog(p.reputation, 15)}<br>`;
+                        html += `${check(Object.keys(p.relationships).length >= 2)} Punya 2 Teman ${prog(Object.keys(p.relationships).length, 2)}<br>`;
+                    }
+                    html += createClaimBtn("TAHUN 1", "claimReward('year1')", y1Complete, y1Done, "🌱 Reward: 30.000G + 1500EXP + 2 Tonic + 15AP");
+
+                    // ─── MILESTONE TAHUN 2 ───────────────────────────────────────
+                    const y2Done     = p.claimedYear2;
+                    const y2Complete = checkYear2Completion();
+                    const hasFarmed  = p.farming && Object.values(p.farming).some(c => c && c.harvested);
+                    html += section('🌿 MILESTONE TAHUN 2 — Mulai Berkembang', y2Done ? '#4ade80' : '#0ea5e9');
+                    html += `<div style="font-size:10px; color:#78350f; margin-bottom:6px; background:rgba(14,165,233,0.08); padding:6px 8px; border-radius:6px; border-left:3px solid #0ea5e9;">
+                        Sudah setahun berlalu. Kini saatnya membuktikan dirimu bisa berkembang lebih jauh dari rata-rata.
+                    </div>`;
+                    html += `${check(p.level >= 10)} Level 10+ ${prog(p.level, 10)}<br>`;
+                    html += `${check(totalJournals >= 10)} Tulis 10 Jurnal Refleksi ${prog(totalJournals, 10)}<br>`;
+                    html += `${check(totalMonsterKills >= 20)} Kalahkan 20 Monster ${prog(totalMonsterKills, 20)}<br>`;
+                    html += `${check(hasFarmed)} Berhasil Panen Tanaman 1x<br>`;
+                    if (role === 'worker') {
+                        html += `${check(p.str >= 30)} STR 30+ ${prog(p.str, 30)}<br>`;
+                        html += `${check(p.money >= 60000)} Tabung 60.000G ${prog((p.money/1000).toFixed(1)+'k', '60k')}<br>`;
+                        html += `${check(p.bossReputation >= 50)} Reputasi Bos 50+ ${prog(p.bossReputation || 0, 50)}<br>`;
+                    } else if (role === 'student') {
+                        html += `${check(p.int >= 30)} INT 30+ ${prog(p.int, 30)}<br>`;
+                        html += `${check(!!p.major)} Sudah Daftar Jurusan<br>`;
+                    } else if (role === 'entrepreneur') {
+                        html += `${check(p.biz >= 30)} BIZ 30+ ${prog(p.biz, 30)}<br>`;
+                        html += `${check(p.money >= 80000)} Tabung 80.000G ${prog((p.money/1000).toFixed(1)+'k', '80k')}<br>`;
+                        html += `${check((p.houseLevel||1) >= 2)} Upgrade Rumah Lv 2 ${prog(p.houseLevel||1, 2)}<br>`;
+                    } else if (role === 'family') {
+                        html += `${check(p.reputation >= 30)} REP 30+ ${prog(p.reputation, 30)}<br>`;
+                        html += `${check(Object.keys(p.relationships).length >= 4)} Punya 4 Teman ${prog(Object.keys(p.relationships).length, 4)}<br>`;
+                    }
+                    html += createClaimBtn("TAHUN 2", "claimReward('year2')", y2Complete, y2Done, "🌿 Reward: 60.000G + 2500EXP + Tonic Kebal + 2 Berlian + 25AP");
+
+                    // ─── MILESTONE TAHUN 3 ───────────────────────────────────────
+                    const y3Done     = p.claimedLifeTrial || p.claimedYear3;
+                    const y3Complete = checkYear3Completion();
+                    html += section('⚔️ MILESTONE TAHUN 3 — Ujian Nyata (SULIT)', y3Done ? '#4ade80' : '#f59e0b');
+                    html += `<div style="font-size:10px; color:#7c3a0e; margin-bottom:6px; background:rgba(245,158,11,0.12); padding:6px 8px; border-radius:6px; border-left:3px solid #f59e0b;">
+                        ⚠️ Ini bukan sekadar bertahan — kamu harus benar-benar membuktikan diri. Semua jalur punya syarat keras di tahun ini.
+                    </div>`;
+                    html += `${check(p.level >= 18)} Level 18+ ${prog(p.level, 18)}<br>`;
+                    html += `${check(totalJournals >= 20)} Tulis 20 Jurnal Refleksi ${prog(totalJournals, 20)}<br>`;
+                    html += `${check(totalMonsterKills >= 50)} Kalahkan 50 Monster ${prog(totalMonsterKills, 50)}<br>`;
+                    html += `${check(totalFishing >= 10)} Pancing 10x ${prog(totalFishing, 10)}<br>`;
+                    html += `${check(totalAP >= 30)} Achievement Points 30+ ${prog(totalAP, 30)}<br>`;
                     if (role === 'worker') {
                         html += `${check(p.str >= 50)} STR 50+ ${prog(p.str, 50)}<br>`;
-                        html += `${check(p.money >= 100000)} Uang 100k<br>`;
+                        html += `${check(p.money >= 120000)} Tabung 120.000G ${prog((p.money/1000).toFixed(1)+'k','120k')}<br>`;
+                        html += `${check(p.bossReputation >= 70)} Reputasi Bos 70+ ${prog(p.bossReputation||0, 70)}<br>`;
+                        html += `${check((p.jobStatus==='promoted'||p.bossReputation>=80))} Naik Jabatan / Rep ≥80<br>`;
                     } else if (role === 'student') {
-                        // UPDATE: Deskripsi agar jelas ini adalah Evaluasi Tahun ke-3 (Bukan Lulus)
-                        html += `<span style="font-size:10px; color:#94a3b8;">(Syarat Lanjut ke Tahun 4)</span><br>`;
-                        html += `${check(p.int >= 50)} INT 50+ (IPK Aman) ${prog(p.int, 50)}<br>`;
-                        html += `${check(p.level >= 15)} Level 15 (Soft Skill)<br>`;
-                        html += `${check(Object.keys(p.inventory).some(k => k.includes('buku') && !k.includes('tesis')))} Punya Buku Referensi<br>`;
+                        const hasBook = Object.keys(p.inventory).some(k => k.includes('buku') && !k.includes('tesis'));
+                        html += `${check(p.int >= 50)} INT 50+ ${prog(p.int, 50)}<br>`;
+                        html += `${check(!!p.major)} Sudah Pilih Jurusan<br>`;
+                        html += `${check(hasBook)} Punya Buku Referensi<br>`;
                     } else if (role === 'entrepreneur') {
+                        const totalSell = p.totalSellCount || p.dailySellCount || 0;
                         html += `${check(p.biz >= 50)} BIZ 50+ ${prog(p.biz, 50)}<br>`;
-                        html += `${check(p.houseLevel >= 2)} Upgrade Rumah Lv 2<br>`;
+                        html += `${check(p.money >= 150000)} Tabung 150.000G ${prog((p.money/1000).toFixed(1)+'k','150k')}<br>`;
+                        html += `${check((p.houseLevel||1) >= 2)} Rumah Lv 2+ ${prog(p.houseLevel||1, 2)}<br>`;
+                        html += `${check(totalSell >= 10)} Total 10x Jual Barang ${prog(totalSell, 10)}<br>`;
                     } else if (role === 'family') {
+                        const hasLove = Object.values(p.relationships||{}).some(r => r >= 70);
                         html += `${check(p.reputation >= 50)} REP 50+ ${prog(p.reputation, 50)}<br>`;
-                        html += `${check(Object.keys(p.relationships).length >= 5)} 5 Sahabat<br>`;
+                        html += `${check(Object.keys(p.relationships).length >= 6)} Punya 6 Teman ${prog(Object.keys(p.relationships).length, 6)}<br>`;
+                        html += `${check(p.married || hasLove)} Menikah / Relasi Cinta ≥70<br>`;
                     }
+                    html += createClaimBtn("TAHUN 3", "claimReward('year3')", y3Complete, y3Done, "⚔️ Reward: 120.000G + 5000EXP + 3 Tonic Kebal + 3 Berlian + 50AP");
 
-                    // --- REWARD BUTTON LIFE TRIAL ---
-                    const isComplete = checkLifeTrialCompletion();
-                    const isClaimed = p.claimedLifeTrial;
-                    html += createClaimBtn("ACHIEVEMENT", "claimReward('life_trial')", isComplete, isClaimed, "Reward: 100k G + 5000 XP + 3 Tonic Kebal");
+                    // ─── MILESTONE TAHUN 4 ───────────────────────────────────────
+                    const y4Done     = p.claimedYear4;
+                    const y4Complete = checkYear4Completion();
+                    html += section('💎 MILESTONE TAHUN 4 — Menjelang Puncak (SANGAT SULIT)', y4Done ? '#4ade80' : '#8b5cf6');
+                    html += `<div style="font-size:10px; color:#4c1d95; margin-bottom:6px; background:rgba(139,92,246,0.10); padding:6px 8px; border-radius:6px; border-left:3px solid #8b5cf6;">
+                        🔥 Hampir sampai. Tapi jalan menuju puncak adalah yang paling terjal. Hanya yang benar-benar siap yang bisa melangkah lebih jauh.
+                    </div>`;
+                    html += `${check(p.level >= 25)} Level 25+ ${prog(p.level, 25)}<br>`;
+                    html += `${check(totalJournals >= 35)} Tulis 35 Jurnal Refleksi ${prog(totalJournals, 35)}<br>`;
+                    html += `${check(totalMonsterKills >= 80)} Kalahkan 80 Monster ${prog(totalMonsterKills, 80)}<br>`;
+                    html += `${check(totalAP >= 60)} Achievement Points 60+ ${prog(totalAP, 60)}<br>`;
+                    if (role === 'worker') {
+                        html += `${check(p.str >= 70)} STR 70+ ${prog(p.str, 70)}<br>`;
+                        html += `${check(p.money >= 300000)} Tabung 300.000G ${prog((p.money/1000).toFixed(1)+'k','300k')}<br>`;
+                        html += `${check(p.bossReputation >= 90)} Reputasi Bos 90+ ${prog(p.bossReputation||0, 90)}<br>`;
+                    } else if (role === 'student') {
+                        const hasTesisDraft = !!(p.inventory && (p.inventory['buku_tesis'] || p.inventory['draft_tesis']));
+                        html += `${check(p.int >= 70)} INT 70+ ${prog(p.int, 70)}<br>`;
+                        html += `${check(hasTesisDraft)} Punya Draft / Buku Tesis<br>`;
+                        html += `${check(!!p.major)} Jurusan Aktif<br>`;
+                    } else if (role === 'entrepreneur') {
+                        html += `${check(p.biz >= 70)} BIZ 70+ ${prog(p.biz, 70)}<br>`;
+                        html += `${check(p.money >= 400000)} Tabung 400.000G ${prog((p.money/1000).toFixed(1)+'k','400k')}<br>`;
+                        html += `${check((p.houseLevel||1) >= 3)} Rumah Lv 3+ ${prog(p.houseLevel||1, 3)}<br>`;
+                    } else if (role === 'family') {
+                        html += `${check(p.reputation >= 70)} REP 70+ ${prog(p.reputation, 70)}<br>`;
+                        html += `${check(p.married)} Sudah Menikah<br>`;
+                        html += `${check(Object.keys(p.relationships).length >= 8)} Punya 8 Teman ${prog(Object.keys(p.relationships).length, 8)}<br>`;
+                    }
+                    html += createClaimBtn("TAHUN 4", "claimReward('year4')", y4Complete, y4Done, "💎 Reward: 250.000G + 8000EXP + All Stat+5 + 5 Tonic + 5 Berlian + 80AP");
 
-                    // Kelulusan 5 Tahun
-                    html += `<br><strong>[Kelulusan 5 Tahun - Akhir Game]</strong><br>`;
-                    html += `${check(p.money >= 1000000)} Aset 1 Juta Gold<br>`;
-                    if (role === 'worker') html += `${check(p.bossReputation >= 100)} Jadi Manajer Toko<br>`;
-                    if (role === 'student') html += `${check(p.inventory['buku_tesis'])} Selesaikan Tesis<br>`;
-                    if (role === 'entrepreneur') html += `${check(p.houseLevel >= 5)} Rumah Mewah Lv 5<br>`;
-                    if (role === 'family') html += `${check(p.married)} Menikah Bahagia<br>`;
+                    // ─── MILESTONE TAHUN 5 ───────────────────────────────────────
+                    const y5Done     = p.claimedYear5;
+                    const y5Complete = checkYear5Completion();
+                    html += section('👑 MILESTONE TAHUN 5 — KELULUSAN SEJATI (ULTRA SULIT)', y5Done ? '#4ade80' : '#e11d48');
+                    html += `<div style="font-size:10px; color:#7f1d1d; margin-bottom:6px; background:rgba(225,29,72,0.08); padding:6px 8px; border-radius:6px; border-left:3px solid #e11d48;">
+                        🌟 Inilah momen yang kamu tunggu. 5 tahun perjalanan, keputusan, dan perjuangan berujung di sini. Tidak ada jalan pintas — hanya yang sungguh-sungguh yang layak menyandang gelar kehormatan.
+                    </div>`;
+                    html += `${check(p.level >= 30)} Level 30+ ${prog(p.level, 30)}<br>`;
+                    html += `${check(totalJournals >= 50)} Tulis 50 Jurnal Refleksi ${prog(totalJournals, 50)}<br>`;
+                    html += `${check(totalMonsterKills >= 120)} Kalahkan 120 Monster ${prog(totalMonsterKills, 120)}<br>`;
+                    html += `${check(totalFishing >= 20)} Pancing 20x ${prog(totalFishing, 20)}<br>`;
+                    html += `${check(totalAP >= 100)} Achievement Points 100+ ${prog(totalAP, 100)}<br>`;
+                    if (role === 'worker') {
+                        html += `${check(p.str >= 90)} STR 90+ ${prog(p.str, 90)}<br>`;
+                        html += `${check(p.money >= 1000000)} Aset 1.000.000G ${prog((p.money/1000).toFixed(1)+'k','1000k')}<br>`;
+                        html += `${check(p.bossReputation >= 100)} Reputasi Bos 100 (Manajer) ${prog(p.bossReputation||0, 100)}<br>`;
+                        html += `${check(p.jobTitle === 'manager' || p.bossReputation >= 100)} Gelar Manajer Senior<br>`;
+                    } else if (role === 'student') {
+                        const hasTesis = !!(p.inventory && p.inventory['buku_tesis']);
+                        html += `${check(p.int >= 90)} INT 90+ ${prog(p.int, 90)}<br>`;
+                        html += `${check(hasTesis)} Selesaikan Tesis/Skripsi<br>`;
+                        html += `${check(!!p.major)} Jurusan Aktif<br>`;
+                    } else if (role === 'entrepreneur') {
+                        html += `${check(p.biz >= 90)} BIZ 90+ ${prog(p.biz, 90)}<br>`;
+                        html += `${check(p.money >= 1000000)} Aset 1.000.000G ${prog((p.money/1000).toFixed(1)+'k','1000k')}<br>`;
+                        html += `${check((p.houseLevel||1) >= 5)} Rumah Mewah Lv 5 ${prog(p.houseLevel||1, 5)}<br>`;
+                    } else if (role === 'family') {
+                        const hasKid = p.children && p.children.length >= 1;
+                        html += `${check(p.reputation >= 90)} REP 90+ ${prog(p.reputation, 90)}<br>`;
+                        html += `${check(p.married)} Sudah Menikah<br>`;
+                        html += `${check(hasKid)} Punya Anak<br>`;
+                        html += `${check(Object.keys(p.relationships).length >= 10)} Punya 10 Teman ${prog(Object.keys(p.relationships).length, 10)}<br>`;
+                    }
+                    html += createClaimBtn("TAHUN 5 — TAMAT", "claimReward('year5')", y5Complete, y5Done,
+                        "👑 Reward MEGA: 500.000G + 15.000EXP + 10 Tonic + 10 Berlian + 200AP + GELAR KEHORMATAN");
 
-                    html += `<div style="text-align:center; font-size:9px; color:#ef4444; margin-top:5px;">(Otomatis Tamat jika Tercapai)</div>`;
+                    if (p.honorTitle) {
+                        html += `<div style="text-align:center; margin-top:8px; background:rgba(251,191,36,0.15); border:2px solid #fbbf24; border-radius:10px; padding:8px; font-size:12px; color:#78350f; font-weight:800;">
+                            👑 GELARMU: "${p.honorTitle}"
+                        </div>`;
+                    }
 
                     // ── KISAH LELUHUR (Side Quest Permanen) ──
                     const c1l = p.kilamong_c1 || false;
@@ -8960,24 +9451,19 @@
                         Temui <b>Ki Lamong</b> di dekat <b>Candi Kuno (Timur Laut)</b> untuk mendengarkan semua kisah leluhur dan meraih Keris Penjaga yang legendaris.
                     </div>`;
 
-                    // Progress bar visual
                     const pctL = Math.round((totalL / 4) * 100);
                     html += `<div style="background:#f1f5f9; border-radius:6px; height:8px; margin-bottom:6px; overflow:hidden;">
                         <div style="background:linear-gradient(90deg,#d97706,#fbbf24); width:${pctL}%; height:100%; border-radius:6px; transition:width .3s;"></div>
                     </div>`;
                     html += `<div style="text-align:right; font-size:9px; color:#92400e; margin-bottom:4px; font-weight:700;">${totalL}/4 Kisah · ${pctL}%</div>`;
 
-                    // Daftar kisah + reward tiap kisah
                     html += `${check(c1l)} <b>Kisah Mbah Lamong</b> <span style="font-size:9px; color:#4ade80;">${c1l ? '✓ INT+3' : '→ Reward: INT+3'}</span><br>`;
                     if (c1l) html += `&nbsp;&nbsp;&nbsp;${check(gulungL)} <span style="font-size:10px;">Ambil Gulungan Mbah Lamong (INT+5)</span><br>`;
-
                     html += `${check(c2l)} <b>Legenda Nelayan Brondong</b> <span style="font-size:9px; color:#4ade80;">${c2l ? '✓ REP+5' : '→ Reward: REP+5'}</span><br>`;
                     if (c2l) html += `&nbsp;&nbsp;&nbsp;${check(kalungL)} <span style="font-size:10px;">Ambil Kalung Nelayan (Mancing +10%)</span><br>`;
-
                     html += `${check(c3l)} <b>Perjalanan Joko Tingkir</b> <span style="font-size:9px; color:#4ade80;">${c3l ? '✓ STR+2,INT+2' : '→ Reward: STR+2, INT+2'}</span><br>`;
                     html += `${check(c4l)} <b>Tradisi Kupatan Lamongan</b> <span style="font-size:9px; color:#4ade80;">${c4l ? '✓ Happy+10' : '→ Reward: Happiness+10'}</span><br>`;
 
-                    // Reward akhir
                     html += `<div style="margin-top:6px; background:${allDoneL && kerisL ? 'rgba(251,191,36,0.15)' : 'rgba(241,245,249,1)'}; border:1px solid ${allDoneL ? '#fbbf24' : '#e2e8f0'}; border-radius:8px; padding:6px 8px;">`;
                     if (allDoneL && kerisL) {
                         html += `<div style="font-size:11px; font-weight:800; color:#92400e;">🏅 PENJAGA CERITA LAMONGAN</div>`;
@@ -8989,6 +9475,16 @@
                         html += `<div style="font-size:10px; color:#94a3b8;">⚔️ <b>Keris Penjaga</b> (semua stat +5) — klaim setelah semua kisah selesai</div>`;
                     }
                     html += `</div>`;
+                }
+
+                // --- TAB 5: RELASI NPC ---
+                else if (tabType === 'relasi') {
+                    html += section('💞 Status Relasi Warga Desa', '#e11d48');
+                    html += `<div style="font-size:10px; color:#78350f; margin-bottom:8px; background:rgba(225,29,72,0.07); padding:7px 9px; border-radius:8px; border-left:3px solid #e11d48; line-height:1.5;">
+                        Sapa warga secara rutin agar hubungan tidak mendingin. NPC dengan <b>kepribadian Dingin/Formal</b> butuh lebih banyak usaha untuk bersahabat.<br>
+                        <span style="color:#ef4444;">⚠️ Merah = sudah lama tidak disapa!</span>
+                    </div>`;
+                    html += getRelationPanelHTML();
                 }
 
                 return html;
@@ -16869,6 +17365,19 @@ ${reward.tip}`,
                         STATE.player.dailyMonsterKills = saved.dailyMonsterKills || 0;
                         STATE.player.dailyTalkCount = saved.dailyTalkCount || 0;
                         STATE.player.dailyHarvestCount = saved.dailyHarvestCount || 0;
+                        // NPC LAST TALK DAY
+                        STATE.player.npcLastTalkDay = saved.npcLastTalkDay || {};
+                        // TOTAL LIFETIME COUNTERS (untuk Milestone Quest Tahunan)
+                        STATE.player.totalFishingCount  = saved.totalFishingCount  || 0;
+                        STATE.player.totalMonsterKills  = saved.totalMonsterKills  || 0;
+                        STATE.player.totalSellCount     = saved.totalSellCount     || 0;
+                        // MILESTONE CLAIMS
+                        STATE.player.claimedYear1 = saved.claimedYear1 || false;
+                        STATE.player.claimedYear2 = saved.claimedYear2 || false;
+                        STATE.player.claimedYear3 = saved.claimedYear3 || false;
+                        STATE.player.claimedYear4 = saved.claimedYear4 || false;
+                        STATE.player.claimedYear5 = saved.claimedYear5 || false;
+                        STATE.player.honorTitle   = saved.honorTitle   || null;
 
                         // --- FIX: Syntax Error Diperbaiki ---
                         STATE.player.spouseWorkStatus = saved.spouseWorkStatus || 'home';
@@ -17747,45 +18256,113 @@ ${reward.tip}`,
             // Database Soal (UPDATE: DITAMBAH JADI 10 SOAL LENGKAP PER JURUSAN)
             const EXAM_DB = {
                 'teknologi': [
+                    // MUDAH
                     { q: "Otak utama komputer yang memproses semua instruksi adalah?", a: "CPU", opts: ["CPU", "GPU", "Harddisk"] },
                     { q: "Apa kepanjangan dari RAM?", a: "Random Access Memory", opts: ["Read Access Memory", "Random Access Memory", "Run All Memory"] },
                     { q: "Sistem bilangan yang hanya menggunakan angka 0 dan 1 disebut?", a: "Biner", opts: ["Desimal", "Biner", "Heksadesimal"] },
                     { q: "Mana yang termasuk perangkat OUTPUT?", a: "Monitor", opts: ["Keyboard", "Mouse", "Monitor"] },
                     { q: "Tombol pintas (shortcut) untuk menyalin data adalah?", a: "Ctrl + C", opts: ["Ctrl + V", "Ctrl + C", "Ctrl + X"] },
-                    { q: "Sistem operasi (OS) open-source yang populer berlambang pinguin adalah?", a: "Linux", opts: ["Windows", "MacOS", "Linux"] },
-                    { q: "Jaringan komputer global yang menghubungkan seluruh dunia disebut?", a: "Internet", opts: ["Intranet", "Internet", "Ethernet"] },
-                    { q: "Komponen yang berfungsi menyuplai daya listrik ke seluruh bagian PC adalah?", a: "Power Supply", opts: ["VGA Card", "Motherboard", "Power Supply"] },
+                    { q: "Sistem operasi open-source berlambang penguin adalah?", a: "Linux", opts: ["Windows", "MacOS", "Linux"] },
+                    { q: "Jaringan komputer global yang menghubungkan seluruh dunia adalah?", a: "Internet", opts: ["Intranet", "Internet", "Ethernet"] },
+                    { q: "Komponen penyuplai daya listrik ke seluruh bagian PC adalah?", a: "Power Supply", opts: ["VGA Card", "Motherboard", "Power Supply"] },
                     { q: "Perangkat lunak berbahaya yang bertujuan merusak sistem disebut?", a: "Malware", opts: ["Software", "Hardware", "Malware"] },
-                    { q: "Proses mematikan dan menghidupkan ulang komputer disebut?", a: "Restart", opts: ["Shutdown", "Sleep", "Restart"] }
+                    { q: "Proses mematikan dan menghidupkan ulang komputer disebut?", a: "Restart", opts: ["Shutdown", "Sleep", "Restart"] },
+                    // SEDANG
+                    { q: "Protokol jaringan yang mengatur pengalamatan IP versi 6 menggunakan berapa bit?", a: "128 bit", opts: ["32 bit", "64 bit", "128 bit"] },
+                    { q: "Tipe data yang hanya menyimpan nilai TRUE atau FALSE disebut?", a: "Boolean", opts: ["Integer", "Boolean", "Float"] },
+                    { q: "Metode enkripsi yang menggunakan dua kunci (publik & privat) disebut?", a: "Asymmetric Encryption", opts: ["Symmetric Encryption", "Asymmetric Encryption", "Hashing"] },
+                    { q: "Berapa nilai maksimum sebuah byte (8 bit) dalam desimal?", a: "255", opts: ["128", "255", "512"] },
+                    { q: "Format file yang digunakan untuk database relasional yang paling umum adalah?", a: "SQL", opts: ["CSV", "JSON", "SQL"] },
+                    { q: "Konsep pemrograman yang membungkus data dan fungsi dalam satu unit disebut?", a: "Encapsulation", opts: ["Inheritance", "Encapsulation", "Abstraction"] },
+                    { q: "Shortcut keyboard untuk membuka Task Manager di Windows adalah?", a: "Ctrl + Shift + Esc", opts: ["Ctrl + Alt + Del", "Ctrl + Shift + Esc", "Win + R"] },
+                    { q: "Proses mengubah kode sumber menjadi kode mesin disebut?", a: "Kompilasi", opts: ["Interpretasi", "Kompilasi", "Debugging"] },
+                    { q: "Protokol keamanan yang mengenkripsi komunikasi website (https://) adalah?", a: "TLS/SSL", opts: ["FTP", "TLS/SSL", "HTTP"] },
+                    { q: "Tipe serangan siber yang menipu pengguna agar mengklik tautan palsu disebut?", a: "Phishing", opts: ["Ransomware", "Phishing", "Brute Force"] },
+                    // SULIT
+                    { q: "Dalam konsep OOP, kemampuan kelas anak mewarisi sifat kelas induk disebut?", a: "Inheritance", opts: ["Polymorphism", "Inheritance", "Encapsulation"] },
+                    { q: "Algoritma pengurutan tercepat secara rata-rata dengan kompleksitas O(n log n) adalah?", a: "Merge Sort", opts: ["Bubble Sort", "Merge Sort", "Insertion Sort"] },
+                    { q: "Dalam jaringan, subnet mask 255.255.255.0 berarti ada berapa host yang tersedia?", a: "254 host", opts: ["256 host", "254 host", "128 host"] },
+                    { q: "Perbedaan utama antara proses dan thread dalam sistem operasi adalah?", a: "Thread berbagi memori proses induk; proses tidak", opts: ["Thread berbagi memori proses induk; proses tidak", "Proses lebih cepat dari thread", "Thread tidak bisa berjalan bersamaan"] },
+                    { q: "Teknologi virtualisasi container yang populer untuk deployment aplikasi adalah?", a: "Docker", opts: ["VMware", "Docker", "Kubernetes"] },
+                    { q: "Query SQL untuk menggabungkan dua tabel berdasarkan kolom yang sama disebut?", a: "JOIN", opts: ["UNION", "JOIN", "MERGE"] },
+                    { q: "Dalam keamanan jaringan, serangan Man-in-the-Middle (MITM) bertujuan untuk?", a: "Menyadap komunikasi dua pihak", opts: ["Membanjiri server", "Menyadap komunikasi dua pihak", "Mencuri password langsung"] },
+                    { q: "Notasi Big-O untuk algoritma yang waktu eksekusinya konstan (tidak bergantung input) adalah?", a: "O(1)", opts: ["O(n)", "O(1)", "O(log n)"] },
+                    { q: "Dalam Git, perintah untuk menggabungkan branch fitur ke branch utama adalah?", a: "git merge", opts: ["git push", "git merge", "git commit"] },
+                    { q: "Konsep keamanan '3 pilar CIA' dalam siber meliputi Confidentiality, Integrity, dan?", a: "Availability", opts: ["Authentication", "Availability", "Authorization"] }
                 ],
                 'sejarah': [
-                    { q: "Peristiwa penculikan Soekarno-Hatta oleh golongan muda ke luar kota disebut?", a: "Rengasdengklok", opts: ["Bandung Lautan Api", "Rengasdengklok", "G30S"] },
+                    // MUDAH
+                    { q: "Peristiwa penculikan Soekarno-Hatta ke luar kota disebut?", a: "Rengasdengklok", opts: ["Bandung Lautan Api", "Rengasdengklok", "G30S"] },
                     { q: "Organisasi pergerakan nasional pertama yang berdiri tahun 1908 adalah?", a: "Budi Utomo", opts: ["Sarekat Islam", "Budi Utomo", "Indische Partij"] },
                     { q: "Naskah Sumpah Pemuda dibacakan pada tanggal?", a: "28 Oktober 1928", opts: ["17 Agustus 1945", "28 Oktober 1928", "1 Juni 1945"] },
-                    { q: "Patih Kerajaan Majapahit yang terkenal dengan Sumpah Palapa adalah?", a: "Gajah Mada", opts: ["Hayam Wuruk", "Gajah Mada", "Ken Arok"] },
-                    { q: "Perusahaan dagang Belanda yang memonopoli perdagangan rempah-rempah adalah?", a: "VOC", opts: ["EIC", "VOC", "NATO"] },
+                    { q: "Patih Majapahit yang terkenal dengan Sumpah Palapa adalah?", a: "Gajah Mada", opts: ["Hayam Wuruk", "Gajah Mada", "Ken Arok"] },
+                    { q: "Perusahaan dagang Belanda yang memonopoli rempah-rempah adalah?", a: "VOC", opts: ["EIC", "VOC", "NATO"] },
                     { q: "Kerajaan Hindu tertua di Indonesia adalah?", a: "Kutai", opts: ["Tarumanegara", "Kutai", "Sriwijaya"] },
                     { q: "Perang Diponegoro berlangsung di pulau?", a: "Jawa", opts: ["Sumatera", "Jawa", "Sulawesi"] },
                     { q: "Jepang pertama kali mendarat di Indonesia pada tahun?", a: "1942", opts: ["1941", "1942", "1945"] },
                     { q: "Ibukota Indonesia pernah dipindahkan ke Yogyakarta pada tahun?", a: "1946", opts: ["1945", "1946", "1949"] },
-                    { q: "Siapakah penjahit bendera Merah Putih pertama?", a: "Fatmawati", opts: ["Kartini", "Cut Nyak Dien", "Fatmawati"] }
+                    { q: "Penjahit bendera Merah Putih pertama adalah?", a: "Fatmawati", opts: ["Kartini", "Cut Nyak Dien", "Fatmawati"] },
+                    // SEDANG
+                    { q: "Sistem tanam paksa (Cultuurstelsel) di Indonesia diterapkan oleh Gubernur Jenderal?", a: "Van den Bosch", opts: ["Daendels", "Van den Bosch", "Raffles"] },
+                    { q: "Perjanjian yang mengakui kemerdekaan Indonesia secara de jure tahun 1949 adalah?", a: "KMB (Konferensi Meja Bundar)", opts: ["Perjanjian Linggarjati", "KMB (Konferensi Meja Bundar)", "Perjanjian Renville"] },
+                    { q: "Kerajaan Sriwijaya berpusat di wilayah yang sekarang menjadi provinsi?", a: "Sumatera Selatan", opts: ["Sumatera Barat", "Sumatera Selatan", "Riau"] },
+                    { q: "Serangan Umum 1 Maret 1949 di Yogyakarta dipimpin oleh?", a: "Soeharto", opts: ["Jenderal Sudirman", "Soeharto", "Sri Sultan HB IX"] },
+                    { q: "Kebijakan 'Pintu Terbuka' (Open Door Policy) di Hindia Belanda diterapkan sejak?", a: "1870", opts: ["1830", "1870", "1900"] },
+                    { q: "Peristiwa nasionalisasi perusahaan Belanda di Indonesia terjadi pada masa Presiden?", a: "Soekarno", opts: ["Soeharto", "Soekarno", "Habibie"] },
+                    { q: "Nama asli Pangeran Diponegoro sebelum bergelar Pangeran adalah?", a: "Mustahar / Ontowiryo", opts: ["Raden Ontowiryo", "Raden Mas Said", "Raden Rangga"] },
+                    { q: "Kongres Pemuda II yang melahirkan Sumpah Pemuda diselenggarakan di kota?", a: "Batavia (Jakarta)", opts: ["Surabaya", "Batavia (Jakarta)", "Bandung"] },
+                    { q: "Armada laut Kerajaan Majapahit berhasil menguasai Nusantara di bawah pimpinan?", a: "Laksamana Nala", opts: ["Adityawarman", "Laksamana Nala", "Mpu Prapanca"] },
+                    { q: "Kebijakan Deklarasi Djuanda tahun 1957 mempertegas bahwa Indonesia adalah negara?", a: "Kepulauan (Nusantara)", opts: ["Federal", "Kepulauan (Nusantara)", "Serikat"] },
+                    // SULIT
+                    { q: "Pemberontakan PRRI/Permesta tahun 1958 terjadi karena ketidakpuasan daerah terhadap pemerintah pusat dalam hal?", a: "Distribusi kekuasaan dan keuangan", opts: ["Agama dan budaya", "Distribusi kekuasaan dan keuangan", "Kebijakan pertahanan militer"] },
+                    { q: "Konsep 'Bhinneka Tunggal Ika' berasal dari kitab kakawin karangan Mpu Tantular berjudul?", a: "Sutasoma", opts: ["Negarakertagama", "Sutasoma", "Pararaton"] },
+                    { q: "Sistem ekonomi 'Demokrasi Terpimpin' Soekarno pada 1959 menggantikan sistem ekonomi?", a: "Sistem parlementer liberal", opts: ["Ekonomi terpusat Soviet", "Sistem parlementer liberal", "Ekonomi pasar bebas Barat"] },
+                    { q: "Perjanjian Bongaya tahun 1667 yang melemahkan Kerajaan Gowa ditandatangani dengan?", a: "VOC (Belanda)", opts: ["Inggris", "VOC (Belanda)", "Portugis"] },
+                    { q: "Dalam Perang Dunia II, Konferensi Postdam 1945 memutuskan bahwa Jepang menyerah kepada?", a: "Sekutu (Allied Forces)", opts: ["Amerika Serikat saja", "Sekutu (Allied Forces)", "Soviet dan Amerika"] },
+                    { q: "Kebijakan politik luar negeri Indonesia yang 'bebas aktif' pertama kali dicetuskan oleh?", a: "Hatta (1948)", opts: ["Soekarno", "Hatta (1948)", "Agus Salim"] },
+                    { q: "Peristiwa pemberontakan komunis pertama di Indonesia yang gagal terjadi pada tahun?", a: "1926", opts: ["1948", "1926", "1965"] },
+                    { q: "Kitab Negarakertagama yang menggambarkan kejayaan Majapahit ditulis oleh?", a: "Mpu Prapanca", opts: ["Mpu Tantular", "Mpu Prapanca", "Mpu Kanwa"] },
+                    { q: "Operasi Trikora tahun 1961 bertujuan untuk merebut kembali wilayah?", a: "Irian Barat (Papua)", opts: ["Timor Timur", "Irian Barat (Papua)", "Kalimantan Utara"] },
+                    { q: "Krisis ekonomi parah yang memicu reformasi 1998 di Indonesia disebabkan utamanya oleh?", a: "Krisis moneter Asia & utang luar negeri", opts: ["Korupsi pejabat lokal", "Krisis moneter Asia & utang luar negeri", "Bencana alam besar-besaran"] }
                 ]
             };
 
             // --- NEW: DATABASE SOAL KUIS TKJ (INTERAKSI BANGKU KAMPUS) ---
             const TKJ_QUIZ_DB = [
+                // MUDAH
                 { q: "Kepanjangan dari TKJ adalah?", a: "Teknik Komputer dan Jaringan", opts: ["Teknik Komputer dan Jaringan", "Teknologi Kecepatan Jaringan", "Teknik Komunikasi Jaringan"] },
-                { q: "Perangkat yang berfungsi menghubungkan dua jaringan yang berbeda segmen adalah?", a: "Router", opts: ["Switch", "Hub", "Router"] },
+                { q: "Perangkat yang menghubungkan dua jaringan berbeda segmen adalah?", a: "Router", opts: ["Switch", "Hub", "Router"] },
                 { q: "Urutan warna kabel UTP tipe Straight pada pin 1 adalah?", a: "Putih Orange", opts: ["Putih Hijau", "Putih Orange", "Putih Biru"] },
                 { q: "Port default untuk layanan HTTP web server adalah?", a: "80", opts: ["21", "80", "443"] },
-                { q: "Perintah CLI di Windows untuk memeriksa konektivitas jaringan ke tujuan adalah?", a: "Ping", opts: ["Ping", "Ipconfig", "Tracert"] },
-                { q: "Layer OSI urutan ke-1 yang berhubungan dengan kabel dan sinyal listrik adalah?", a: "Physical Layer", opts: ["Network Layer", "Data Link Layer", "Physical Layer"] },
+                { q: "Perintah CLI di Windows untuk memeriksa konektivitas jaringan adalah?", a: "Ping", opts: ["Ping", "Ipconfig", "Tracert"] },
+                { q: "Layer OSI ke-1 yang berhubungan dengan kabel dan sinyal listrik adalah?", a: "Physical Layer", opts: ["Network Layer", "Data Link Layer", "Physical Layer"] },
                 { q: "IP Address 192.168.10.1 termasuk dalam kelas IP?", a: "C", opts: ["A", "B", "C"] },
-                { q: "Server yang berfungsi menerjemahkan nama domain (google.com) menjadi IP Address adalah?", a: "DNS Server", opts: ["DHCP Server", "DNS Server", "FTP Server"] },
+                { q: "Server yang menerjemahkan nama domain menjadi IP Address adalah?", a: "DNS Server", opts: ["DHCP Server", "DNS Server", "FTP Server"] },
                 { q: "Topologi jaringan dimana setiap node terhubung ke satu perangkat pusat disebut?", a: "Star", opts: ["Bus", "Ring", "Star"] },
                 { q: "Protokol standar untuk mengirim email adalah?", a: "SMTP", opts: ["POP3", "IMAP", "SMTP"] },
-                { q: "Alat yang digunakan untuk memasang konektor RJ45 ke kabel UTP disebut?", a: "Tang Crimping", opts: ["Tang Potong", "Tang Crimping", "Obeng"] },
-                { q: "Jenis kabel yang menggunakan serat kaca untuk mentransmisikan data via cahaya adalah?", a: "Fiber Optic", opts: ["Coaxial", "Fiber Optic", "Twisted Pair"] }
+                { q: "Alat untuk memasang konektor RJ45 ke kabel UTP disebut?", a: "Tang Crimping", opts: ["Tang Potong", "Tang Crimping", "Obeng"] },
+                { q: "Jenis kabel yang menggunakan serat kaca untuk transmisi data via cahaya adalah?", a: "Fiber Optic", opts: ["Coaxial", "Fiber Optic", "Twisted Pair"] },
+                // SEDANG
+                { q: "VLAN (Virtual LAN) digunakan untuk?", a: "Memisahkan segmen jaringan secara logis", opts: ["Mempercepat koneksi internet", "Memisahkan segmen jaringan secara logis", "Mengenkripsi data jaringan"] },
+                { q: "Perintah Linux untuk melihat daftar file dan folder di direktori aktif adalah?", a: "ls", opts: ["dir", "ls", "cd"] },
+                { q: "Berapa jumlah bit dalam satu alamat IPv4?", a: "32 bit", opts: ["16 bit", "32 bit", "64 bit"] },
+                { q: "Protokol yang digunakan untuk transfer file secara aman via SSH adalah?", a: "SFTP", opts: ["FTP", "SFTP", "HTTP"] },
+                { q: "Dalam OSI model, layer yang bertanggung jawab untuk enkripsi dan format data adalah?", a: "Presentation Layer", opts: ["Application Layer", "Presentation Layer", "Session Layer"] },
+                { q: "Tipe kabel UTP Crossover digunakan untuk menghubungkan?", a: "PC ke PC langsung (peer-to-peer)", opts: ["PC ke Switch", "PC ke PC langsung (peer-to-peer)", "Router ke Switch"] },
+                { q: "Fungsi utama DHCP Server dalam jaringan adalah?", a: "Memberikan IP address otomatis ke client", opts: ["Mengatur akses internet", "Memberikan IP address otomatis ke client", "Memfilter konten website"] },
+                { q: "Proses enkripsi dua arah yang membutuhkan kunci untuk dekripsi disebut?", a: "Encryption", opts: ["Hashing", "Encryption", "Compression"] },
+                { q: "Perintah untuk melihat konfigurasi IP di Linux adalah?", a: "ifconfig / ip addr", opts: ["ipconfig", "ifconfig / ip addr", "netstat"] },
+                { q: "Topologi jaringan yang paling toleran terhadap kegagalan node adalah?", a: "Mesh", opts: ["Bus", "Star", "Mesh"] },
+                // SULIT
+                { q: "Dalam subnetting, berapa jumlah subnet yang bisa dibuat dari network 192.168.1.0/26?", a: "4 subnet", opts: ["2 subnet", "4 subnet", "8 subnet"] },
+                { q: "Firewall yang bekerja di layer aplikasi dan dapat memfilter konten disebut?", a: "Application Layer Firewall (WAF)", opts: ["Packet Filter", "Stateful Firewall", "Application Layer Firewall (WAF)"] },
+                { q: "Protokol routing yang menggunakan algoritma Dijkstra untuk menentukan jalur terpendek adalah?", a: "OSPF", opts: ["RIP", "OSPF", "BGP"] },
+                { q: "Teknik serangan jaringan yang memalsukan ARP reply untuk menyadap traffic disebut?", a: "ARP Spoofing / Poisoning", opts: ["IP Spoofing", "ARP Spoofing / Poisoning", "DNS Hijacking"] },
+                { q: "Dalam protokol TCP, 'Three-Way Handshake' terdiri dari urutan?", a: "SYN → SYN-ACK → ACK", opts: ["SYN → ACK → FIN", "SYN → SYN-ACK → ACK", "HELLO → REPLY → CONFIRM"] },
+                { q: "Teknologi NAT (Network Address Translation) berfungsi untuk?", a: "Menerjemahkan IP privat ke publik", opts: ["Mengenkripsi paket data", "Menerjemahkan IP privat ke publik", "Mempercepat routing"] },
+                { q: "Dalam konfigurasi RAID, tipe RAID yang memberikan redundancy penuh (mirroring) adalah?", a: "RAID 1", opts: ["RAID 0", "RAID 1", "RAID 5"] },
+                { q: "Perbedaan utama antara protokol TCP dan UDP adalah?", a: "TCP connection-oriented, UDP connectionless", opts: ["TCP lebih cepat dari UDP", "TCP connection-oriented, UDP connectionless", "UDP lebih aman dari TCP"] },
+                { q: "Command 'tracert' (Windows) / 'traceroute' (Linux) digunakan untuk?", a: "Melacak jalur paket data ke tujuan", opts: ["Melihat IP aktif di jaringan", "Melacak jalur paket data ke tujuan", "Mengukur kecepatan internet"] }
             ];
 
             // --- NEW FUNCTION: START TKJ QUIZ ---
@@ -18031,29 +18608,64 @@ ${reward.tip}`,
             const THESIS_DB = {
                 'teknologi': [
                     { q: "Apa kompleksitas waktu (Big O) terbaik untuk algoritma Binary Search?", a: "O(log n)", opts: ["O(n)", "O(log n)", "O(n^2)"] },
-                    { q: "Manakah yang BUKAN merupakan prinsip dasar OOP (Object Oriented Programming)?", a: "Compilation", opts: ["Encapsulation", "Polymorphism", "Compilation"] },
+                    { q: "Manakah yang BUKAN merupakan prinsip dasar OOP?", a: "Compilation", opts: ["Encapsulation", "Polymorphism", "Compilation"] },
                     { q: "Serangan siber yang membanjiri server dengan trafik palsu disebut?", a: "DDoS", opts: ["Phishing", "DDoS", "SQL Injection"] },
-                    { q: "Dalam jaringan, protokol standar untuk transfer halaman web aman adalah?", a: "HTTPS", opts: ["FTP", "HTTP", "HTTPS"] },
-                    { q: "Teknologi database yang menyimpan data dalam format Key-Value atau Document (NoSQL) adalah?", a: "MongoDB", opts: ["MySQL", "PostgreSQL", "MongoDB"] }
+                    { q: "Protokol standar untuk transfer halaman web aman adalah?", a: "HTTPS", opts: ["FTP", "HTTP", "HTTPS"] },
+                    { q: "Database NoSQL yang menyimpan data dalam format Document adalah?", a: "MongoDB", opts: ["MySQL", "PostgreSQL", "MongoDB"] },
+                    { q: "Metode pengembangan software Agile yang menggunakan sprint 2 minggu disebut?", a: "Scrum", opts: ["Waterfall", "Scrum", "Kanban"] },
+                    { q: "Dalam desain sistem, 'Load Balancer' berfungsi untuk?", a: "Mendistribusikan traffic ke beberapa server", opts: ["Mengenkripsi data", "Mendistribusikan traffic ke beberapa server", "Menyimpan cache database"] },
+                    { q: "Teknik optimasi database yang membuat salinan kolom terindeks untuk mempercepat query disebut?", a: "Indexing", opts: ["Normalization", "Indexing", "Partitioning"] },
+                    { q: "Dalam arsitektur microservices, komponen yang mengelola autentikasi dan routing API disebut?", a: "API Gateway", opts: ["Load Balancer", "API Gateway", "Message Broker"] },
+                    { q: "Teorema CAP dalam sistem terdistribusi menyatakan bahwa sistem hanya bisa menjamin dua dari tiga: Consistency, Availability, dan?", a: "Partition Tolerance", opts: ["Performance", "Partition Tolerance", "Persistence"] },
+                    { q: "Teknik keamanan yang memisahkan data input dari perintah SQL untuk mencegah injeksi disebut?", a: "Prepared Statement / Parameterized Query", opts: ["Input Sanitization biasa", "Prepared Statement / Parameterized Query", "Firewall SQL"] },
+                    { q: "Dalam machine learning, 'overfitting' terjadi ketika model?", a: "Terlalu hafal data training, buruk di data baru", opts: ["Tidak cukup dilatih", "Terlalu hafal data training, buruk di data baru", "Dataset terlalu besar"] },
+                    { q: "Protokol WebSocket berbeda dari HTTP karena WebSocket?", a: "Koneksi persisten dua arah (full-duplex)", opts: ["Lebih cepat untuk file besar", "Koneksi persisten dua arah (full-duplex)", "Menggunakan port 443 saja"] },
+                    { q: "Dalam sistem operasi, 'deadlock' terjadi ketika?", a: "Dua proses saling menunggu resource yang dipegang lawannya", opts: ["CPU terlalu panas", "Dua proses saling menunggu resource yang dipegang lawannya", "Memori RAM habis"] },
+                    { q: "Perbedaan 'stack' dan 'heap' dalam manajemen memori adalah?", a: "Stack untuk local variables (auto-managed), heap untuk dynamic allocation (manual)", opts: ["Stack lebih besar dari heap", "Stack untuk local variables (auto-managed), heap untuk dynamic allocation (manual)", "Heap lebih cepat dari stack"] }
                 ],
                 'sejarah': [
                     { q: "Naskah asli Proklamasi Kemerdekaan Indonesia diketik oleh?", a: "Sayuti Melik", opts: ["Sukarni", "Sayuti Melik", "Laksamana Maeda"] },
                     { q: "Kerajaan Hindu tertua di Indonesia yang terletak di Kalimantan Timur adalah?", a: "Kutai", opts: ["Tarumanegara", "Kutai", "Majapahit"] },
-                    { q: "Perjanjian yang menandai berakhirnya Perang Diponegoro (1830) adalah penangkapan Pangeran Diponegoro di?", a: "Magelang", opts: ["Yogyakarta", "Magelang", "Semarang"] },
+                    { q: "Pangeran Diponegoro ditangkap di kota mana pada tahun 1830?", a: "Magelang", opts: ["Yogyakarta", "Magelang", "Semarang"] },
                     { q: "Organisasi militer bentukan Jepang untuk membantu pertahanan adalah?", a: "PETA", opts: ["Putera", "PETA", "Seinendan"] },
-                    { q: "Konferensi Meja Bundar (KMB) yang mengakui kedaulatan Indonesia diadakan di kota?", a: "Den Haag", opts: ["Jakarta", "Den Haag", "Amsterdam"] }
+                    { q: "Konferensi Meja Bundar (KMB) yang mengakui kedaulatan Indonesia diadakan di?", a: "Den Haag", opts: ["Jakarta", "Den Haag", "Amsterdam"] },
+                    { q: "Konsep 'Trisakti' yang dicetuskan Soekarno terdiri dari berdaulat dalam politik, berdikari dalam ekonomi, dan?", a: "Berkepribadian dalam kebudayaan", opts: ["Merdeka dalam militer", "Berkepribadian dalam kebudayaan", "Mandiri dalam pendidikan"] },
+                    { q: "Penyebab utama runtuhnya Kerajaan Majapahit menurut sejarawan adalah?", a: "Perang saudara Paregreg + penyebaran Islam", opts: ["Serangan dari Cina", "Perang saudara Paregreg + penyebaran Islam", "Bencana alam besar"] },
+                    { q: "Sistem Ekonomi Gerakan Benteng (1950) bertujuan untuk?", a: "Memajukan pengusaha pribumi (bumiputera)", opts: ["Menasionalisasi perusahaan asing", "Memajukan pengusaha pribumi (bumiputera)", "Mengurangi hutang luar negeri"] },
+                    { q: "Supersemar (Surat Perintah 11 Maret 1966) merupakan peralihan kekuasaan dari Soekarno kepada?", a: "Letjen Soeharto", opts: ["Sultan HB IX", "Letjen Soeharto", "Jend. A.H. Nasution"] },
+                    { q: "Dalam konteks Perang Dingin, Indonesia bergabung dengan negara-negara non-blok melalui?", a: "Konferensi Asia-Afrika Bandung 1955", opts: ["PBB 1950", "Konferensi Asia-Afrika Bandung 1955", "ASEAN 1967"] },
+                    { q: "Politik 'Devide et Impera' yang diterapkan Belanda di Nusantara artinya strategi?", a: "Adu domba untuk memecah belah persatuan", opts: ["Kerja paksa untuk pembangunan", "Adu domba untuk memecah belah persatuan", "Monopoli perdagangan rempah"] },
+                    { q: "Akar kata 'Nusantara' dalam bahasa Sansekerta terdiri dari 'Nusa' (pulau) dan 'Antara' yang artinya?", a: "Di antara / seberang", opts: ["Besar dan luas", "Di antara / seberang", "Bangsa yang mulia"] },
+                    { q: "Reformasi 1998 berhasil menumbangkan Soeharto setelah berkuasa selama?", a: "32 tahun", opts: ["20 tahun", "32 tahun", "40 tahun"] },
+                    { q: "Perbedaan mendasar antara Piagam Jakarta (22 Juni 1945) dan Pembukaan UUD 1945 yang disahkan adalah?", a: "Penghapusan kalimat '...dengan kewajiban menjalankan syariat Islam...'", opts: ["Perubahan nama negara", "Penghapusan kalimat '...dengan kewajiban menjalankan syariat Islam...'", "Penambahan sila ke-6 Pancasila"] },
+                    { q: "Masa pemerintahan Orde Baru (1966-1998) berhasil mencapai swasembada beras tahun 1984 melalui program?", a: "Revolusi Hijau (Green Revolution)", opts: ["REPELITA (Rencana Lima Tahun)", "Revolusi Hijau (Green Revolution)", "BIMAS dan INMAS"] }
                 ]
             };
 
             // --- NEW: DATABASE UJIAN KOMPETENSI MANAJER (WORKER ROLE) ---
             const MANAGER_EXAM_DB = [
+                // MUDAH
                 { q: "Apa prinsip dasar manajemen stok barang agar tidak kadaluarsa?", a: "FIFO (First In First Out)", opts: ["LIFO (Last In First Out)", "FIFO (First In First Out)", "Random Selection"] },
                 { q: "Jika pelanggan marah karena barang rusak, apa tindakan profesional pertama?", a: "Meminta maaf & dengarkan", opts: ["Meminta maaf & dengarkan", "Menyalahkan ekspedisi", "Mengusir pelanggan"] },
                 { q: "Rumus dasar menghitung Laba (Profit) adalah?", a: "Pendapatan - Beban", opts: ["Aset + Hutang", "Pendapatan - Beban", "Modal x Bunga"] },
                 { q: "Apa kunci utama dalam memimpin tim gudang?", a: "Komunikasi & Delegasi", opts: ["Otoriter & Keras", "Komunikasi & Delegasi", "Mengerjakan semua sendiri"] },
-                { q: "Jika stok fisik tidak sesuai dengan catatan komputer, apa yang terjadi?", a: "Selisih Stok (Shrinkage)", opts: ["Surplus Anggaran", "Selisih Stok (Shrinkage)", "Keuntungan Ganda"] },
+                { q: "Jika stok fisik tidak sesuai catatan komputer, apa yang terjadi?", a: "Selisih Stok (Shrinkage)", opts: ["Surplus Anggaran", "Selisih Stok (Shrinkage)", "Keuntungan Ganda"] },
                 { q: "Etika kerja: Apa yang harus dilakukan jika melihat rekan kerja mencuri barang?", a: "Lapor ke Atasan", opts: ["Ikut mencuri", "Diam saja", "Lapor ke Atasan"] },
-                { q: "Apa tujuan utama dari Stock Opname?", a: "Verifikasi fisik barang", opts: ["Menghabiskan anggaran", "Verifikasi fisik barang", "Liburan karyawan"] }
+                { q: "Apa tujuan utama dari Stock Opname?", a: "Verifikasi fisik barang", opts: ["Menghabiskan anggaran", "Verifikasi fisik barang", "Liburan karyawan"] },
+                // SEDANG
+                { q: "Apa yang dimaksud dengan KPI (Key Performance Indicator)?", a: "Tolok ukur capaian kinerja karyawan/tim", opts: ["Jenis bonus gaji karyawan", "Tolok ukur capaian kinerja karyawan/tim", "Sistem absensi digital"] },
+                { q: "Dalam manajemen risiko, apa prioritas pertama yang harus dilakukan?", a: "Identifikasi dan analisis risiko", opts: ["Langsung mitigasi semua risiko", "Identifikasi dan analisis risiko", "Asuransikan semua aset"] },
+                { q: "Metode pengambilan keputusan yang melibatkan seluruh tim untuk mendapat konsensus disebut?", a: "Brainstorming / musyawarah mufakat", opts: ["Voting mayoritas", "Brainstorming / musyawarah mufakat", "Keputusan sepihak atasan"] },
+                { q: "Dalam laporan keuangan, 'Arus Kas' (Cash Flow) penting karena?", a: "Menunjukkan likuiditas usaha secara nyata", opts: ["Menunjukkan nilai aset total perusahaan", "Menunjukkan likuiditas usaha secara nyata", "Digunakan untuk promosi ke bank"] },
+                { q: "Teknik manajemen waktu yang membagi tugas jadi: Penting-Mendesak, Penting-Tidak Mendesak, dll disebut?", a: "Matriks Eisenhower", opts: ["Metode Pomodoro", "Matriks Eisenhower", "Sistem GTD (Getting Things Done)"] },
+                // SULIT
+                { q: "Dalam negosiasi bisnis, strategi 'BATNA' (Best Alternative To Negotiated Agreement) berarti?", a: "Alternatif terbaik jika negosiasi gagal — batas bawah kita", opts: ["Penawaran terbaik yang bisa kita buat", "Alternatif terbaik jika negosiasi gagal — batas bawah kita", "Teknik menekan lawan agar setuju"] },
+                { q: "Pemutusan Hubungan Kerja (PHK) oleh perusahaan wajib memberikan pesangon sesuai?", a: "UU Ketenagakerjaan (UU No.13/2003 atau UU Cipta Kerja)", opts: ["Kebijakan internal perusahaan saja", "UU Ketenagakerjaan (UU No.13/2003 atau UU Cipta Kerja)", "Keputusan langsung HRD"] },
+                { q: "Analisis SWOT perusahaan mempertimbangkan Strengths, Weaknesses, Opportunities, dan?", a: "Threats", opts: ["Targets", "Threats", "Trends"] },
+                { q: "Dalam manajemen rantai pasok (Supply Chain), 'Just-In-Time' (JIT) bertujuan untuk?", a: "Meminimalkan stok berlebih dengan produksi tepat waktu", opts: ["Mempercepat pengiriman ke konsumen akhir", "Meminimalkan stok berlebih dengan produksi tepat waktu", "Menambah buffer stok sebagai cadangan"] },
+                { q: "Biaya yang tidak berubah meski volume produksi naik/turun disebut?", a: "Biaya Tetap (Fixed Cost)", opts: ["Biaya Variabel", "Biaya Tetap (Fixed Cost)", "Biaya Marginal"] },
+                { q: "Pemimpin yang memberi kebebasan penuh kepada tim tanpa arahan disebut gaya kepemimpinan?", a: "Laissez-Faire", opts: ["Demokratis", "Laissez-Faire", "Transformasional"] },
+                { q: "Dalam konteks ISO 9001, dokumen 'SOP' (Standard Operating Procedure) berfungsi untuk?", a: "Menjamin konsistensi proses kerja yang terstandarisasi", opts: ["Menggantikan peran manajer", "Menjamin konsistensi proses kerja yang terstandarisasi", "Syarat administrasi pinjaman bank"] }
             ];
 
             // --- NEW: LOGIKA UJIAN MANAJER ---
@@ -20340,6 +20952,9 @@ ${reward.tip}`,
                 if (STATE.time >= 2400) {
                     STATE.time = 0;
                     STATE.day++;
+
+                    // 💔 RELATIONSHIP DECAY: NPC menjauh jika lama tidak disapa
+                    try { applyRelationshipDecay(); } catch(e) {}
 
                     // --- TUTUP FESTIVAL SAAT HARI BERGANTI ---
                     if (STATE.festivalActive) {
@@ -24528,31 +25143,231 @@ ${reward.tip}`,
                 );
             }
 
+            // ═══════════════════════════════════════════════════════════════
+            // 🧠 SISTEM KEPRIBADIAN & RELASI NPC — NUSANTARA ARSA
+            // ═══════════════════════════════════════════════════════════════
+
+            const NPC_PERSONALITY = {
+                'mentor':           { type: 'ramah',   startVal: 20, decayRate: 0,   warmBonus: 1.5, greetCold: ["Hmm, belum ada kabar dari kamu?", "Sibuk ya? Aku menunggumu."], greetWarm: ["Ah, kamu datang! Aku selalu senang bertemu muridku.", "Bagaimana perkembanganmu? Ceritakan!"], greetNeutral: ["Selamat datang. Ada yang bisa kubantu?", "Kalau perlu panduan, jangan malu bertanya."] },
+                'boss_merchant':    { type: 'formal',  startVal: 10, decayRate: 0,   warmBonus: 1.0, greetCold: ["Bisnis tidak kenal perasaan. Ada urusan?", "Langsung saja ke intinya."], greetWarm: ["Pelanggan setia selalu punya tempat di sini.", "Kamu sudah kupercaya. Masuk saja!"], greetNeutral: ["Ada keperluan apa?", "Ada yang bisa kubantu?"] },
+                'lover1girl':       { type: 'pemalu',  startVal: 5,  decayRate: 1,   warmBonus: 1.2, greetCold: ["A-aku kira kamu sudah lupa padaku...", "Kamu jarang menyapaku belakangan ini."], greetWarm: ["Eh! K-kamu datang lagi... hehe. >///<", "Aku... senang kamu ada di sini. Beneran!"], greetNeutral: ["O, halo. Mau ngobrol?", "Ada yang perlu dibantu kah?"] },
+                'lover2girl':       { type: 'dingin',  startVal: 0,  decayRate: 2,   warmBonus: 1.0, greetCold: ["Kamu pikir kamu siapa, tiba-tiba muncul?", "Hmph. Lama sekali baru muncul."], greetWarm: ["...Aku mengakuimu sekarang. Jangan bangga dulu.", "Mungkin kamu tidak terlalu buruk."], greetNeutral: ["Ada keperluan?", "Bicara saja kalau mau ngomong."] },
+                'lover1boy':        { type: 'cerewet', startVal: 15, decayRate: 1,   warmBonus: 1.3, greetCold: ["Halo halo! Kemana aja kamu? Aku kangen tau!", "Lho, baru nongol? Banyak cerita nih!"], greetWarm: ["Nah ini dia! Teman terbaikku datang! 🎉", "Wah kebetulan! Aku mau cerita sesuatu!"], greetNeutral: ["Hei! Ada apa?", "Mau ngobrol? Aku siap nih!"] },
+                'lover2boy':        { type: 'formal',  startVal: 5,  decayRate: 2,   warmBonus: 1.0, greetCold: ["Kamu tidak menghormati waktuku dengan absen lama.", "Hubungan butuh konsistensi. Kamu kurang itu."], greetWarm: ["Kamu membuktikan dirimu layak dipercaya.", "Selamat datang. Aku menghargai kehadiranmu."], greetNeutral: ["Ada perlu?", "Aku sedang sibuk, tapi ada waktu untukmu."] },
+                'nelayan':          { type: 'ramah',   startVal: 20, decayRate: 0,   warmBonus: 1.5, greetCold: ["Wah lama tidak melihatmu di dermaga!", "Kemana aja, kawan lama?"], greetWarm: ["Hahaha! Semangat muda! Ikut mancing yuk!", "Kamu sudah seperti anakku sendiri!"], greetNeutral: ["Hei nak, mau mancing?", "Laut sedang bagus hari ini!"] },
+                'lecture':          { type: 'formal',  startVal: 10, decayRate: 0,   warmBonus: 1.0, greetCold: ["IPmu menurun. Serius belajarlah.", "Sudah lama tidak kujumpai di kelas."], greetWarm: ["Mahasiswa teladan memang beda! Lanjutkan.", "Kamu kebanggaan jurusan ini."], greetNeutral: ["Ada pertanyaan akademik?", "Persiapkan dirimu untuk ujian."] },
+                'blacksmith':       { type: 'cuek',    startVal: 5,  decayRate: 1,   warmBonus: 1.1, greetCold: ["Aku sibuk. Singkat saja.", "Mau apa? Lagi banyak order."], greetWarm: ["Oh, kamu. Masuk saja, pintu selalu terbuka.", "Kubilang sudah, kamu boleh mampir kapan saja."], greetNeutral: ["Perlu diperbaiki apa?", "Ngomong aja."] },
+                'guild_master':     { type: 'formal',  startVal: 5,  decayRate: 0,   warmBonus: 1.0, greetCold: ["Adventurer tanpa rekam jejak tidak menarik perhatianku.", "Buktikan dirimu sebelum bicara."], greetWarm: ["Rank-mu berbicara keras. Hormat dariku.", "Guild bangga memilikimu."], greetNeutral: ["Ada misi yang ingin diambil?", "Silakan."] },
+                'librarian':        { type: 'pemalu',  startVal: 10, decayRate: 0,   warmBonus: 1.2, greetCold: ["Sst... k-kamu jarang ke sini...", "Koleksinya berdebu menunggumu..."], greetWarm: ["Oh! K-kamu datang lagi! Ada buku yang menarik hari ini...", "Senang kamu suka membaca!"], greetNeutral: ["Cari buku apa?", "Tolong jaga ketenangan ya."] },
+                'peer1':            { type: 'cerewet', startVal: 15, decayRate: 1,   warmBonus: 1.3, greetCold: ["Bro, kamu ghost aku yah?! Gak asik!", "Lama banget gak keliatan, kemana aja?"], greetWarm: ["Bro/Sis! Kita harus belajar bareng lagi kapan-kapan!", "Kamu teman terbaik yang pernah ada!"], greetNeutral: ["Hei! Ada tugas baru nih.", "Santai dulu, capek belajar."] },
+                'trader_outside':   { type: 'ramah',   startVal: 15, decayRate: 0,   warmBonus: 1.4, greetCold: ["Wah pelanggan lama! Kangen deh!", "Kemana aja? Dagangan bagus lho!"], greetWarm: ["Nah, ini pelanggan VIP-ku!", "Buat kamu, ada diskon rahasia~"], greetNeutral: ["Mau lihat dagangan?", "Barang fresh hari ini!"] },
+                'seniman':          { type: 'cuek',    startVal: 5,  decayRate: 1,   warmBonus: 1.2, greetCold: ["Jiwa seni tidak bisa dipaksakan. Kamu belum siap.", "Hmm, belum bisa kubaca auramu hari ini."], greetWarm: ["Ah, jiwa yang memahami seni! Aku terinspirasi!", "Karya terbaikku terinspirasi oleh kehadiranmu."], greetNeutral: ["Ada sesuatu yang ingin kamu lihat?", "Seni adalah bahasa universal."] },
+                'penyanyi':         { type: 'ramah',   startVal: 20, decayRate: 1,   warmBonus: 1.3, greetCold: ["Tidak ada penonton, suaraku terasa hampa...", "Aku nyanyi untukmu tapi kamu jarang datang."], greetWarm: ["Penonton setiaku datang! Mau request lagu?", "Kamu bikin aku semangat tampil!"], greetNeutral: ["Mau dengar lagu apa?", "Hari ini aku sedang bersuara bagus!"] },
+                'senior_kaia':      { type: 'dingin',  startVal: 0,  decayRate: 2,   warmBonus: 1.0, greetCold: ["Junior harus membuktikan diri dulu.", "Aku tidak bicara dengan sembarang orang."], greetWarm: ["Kamu sudah layak kupanggil teman.", "Langka ada junior sepertimu."], greetNeutral: ["Ada keperluan?", "Jangan buang waktuku."] },
+                'cewek_islam':      { type: 'pemalu',  startVal: 10, decayRate: 1,   warmBonus: 1.2, greetCold: ["A-aku kira kamu tidak akan menyapaku lagi...", "Lama ya tidak ketemu..."], greetWarm: ["Alhamdulillah, kamu datang lagi! ☺️", "Senang ada yang mau mengobrol denganku."], greetNeutral: ["Halo, ada yang bisa dibantu?", "Mau ngobrol?"] },
+                'cewek_kristen':    { type: 'ramah',   startVal: 15, decayRate: 0,   warmBonus: 1.3, greetCold: ["Heyyy, sudah lama! Kangen nih!", "Ke mana aja? Kukirimkan doa buat kamu!"], greetWarm: ["God bless! Senang ketemu kamu lagi!", "Kamu selalu membawa semangat!"], greetNeutral: ["Halo! Ada apa?", "Mau cerita apa hari ini?"] },
+                'istrinelayan':     { type: 'ramah',   startVal: 20, decayRate: 0,   warmBonus: 1.4, greetCold: ["Sudah lama tidak mampir ke sini, Nak.", "Ibu kangen kamu datang!"], greetWarm: ["Nah ini dia! Mau masakan Ibu?", "Kamu sudah kuanggap anak sendiri!"], greetNeutral: ["Ada apa Nak?", "Mampir saja dulu!"] },
+                'child_blacksmith': { type: 'cerewet', startVal: 25, decayRate: 0,   warmBonus: 1.5, greetCold: ["Kemana aja kak? Lina nungguin!","Kak jahat, lama gak muncul!"], greetWarm: ["KAK! Akhirnya dateng! Lina mau cerita!","Kak, teman Lina mau diajak main dong!"], greetNeutral: ["Hei kak!","Kak mau main gak?"] },
+                'aya_twin':         { type: 'cuek',    startVal: 5,  decayRate: 1,   warmBonus: 1.1, greetCold: ["...kamu ada di sini.", "Kukira kamu sudah pergi."], greetWarm: ["Kamu berbeda dari yang lain. Aku suka itu.", "Hmm. Kurasa kita memang cocok berteman."], greetNeutral: ["Ada perlu?", "...Iya?"] },
+                'dewi_roro':        { type: 'formal',  startVal: 0,  decayRate: 3,   warmBonus: 0.8, greetCold: ["Kehadiran tanpa persiapan itu tidak sopan.", "Buktikan layaknya dirimu berbicara denganku."], greetWarm: ["Langkah formalmu kini kuakui, Sahabat.", "Kamu telah melewati ujianku."], greetNeutral: ["Apa keperluanmu?", "Berbicara dengan sopan."] },
+                'penjagadungeon':   { type: 'cuek',    startVal: 5,  decayRate: 0,   warmBonus: 1.0, greetCold: ["Dungeon tidak mengenal basa-basi.", "Siap bertarung? Atau tidak?"], greetWarm: ["Petarung sejati! Selamat datang, Bro.", "Kamu sudah kuanggap saudara seperjuangan!"], greetNeutral: ["Mau masuk dungeon?", "Bersiaplah."] },
+            };
+
+            function getNPCPersonality(npcId) {
+                return NPC_PERSONALITY[npcId] || { type: 'ramah', startVal: 10, decayRate: 0, warmBonus: 1.0, greetCold: ["Sudah lama ya kita tidak ngobrol."], greetWarm: ["Senang bertemu lagi!"], greetNeutral: ["Ada yang bisa kubantu?"] };
+            }
+
+            function getRelationLabel(val, npcId) {
+                const pers = getNPCPersonality(npcId);
+                const type = pers.type;
+                let thresholds;
+                if (type === 'dingin' || type === 'formal') {
+                    thresholds = [
+                        { min: 85, label: 'Sahabat Sejati', emoji: '💞', color: '#e11d48' },
+                        { min: 65, label: 'Teman Dekat',    emoji: '❤️',  color: '#f97316' },
+                        { min: 40, label: 'Kenalan Baik',   emoji: '💛',  color: '#eab308' },
+                        { min: 20, label: 'Kenalan',        emoji: '🤝',  color: '#84cc16' },
+                        { min: 5,  label: 'Asing',          emoji: '🖤',  color: '#94a3b8' },
+                        { min: 0,  label: 'Cuek / Dingin',  emoji: '🧊',  color: '#64748b' },
+                    ];
+                } else if (type === 'pemalu') {
+                    thresholds = [
+                        { min: 80, label: 'Sahabat Sejati', emoji: '💞', color: '#e11d48' },
+                        { min: 60, label: 'Teman Dekat',    emoji: '❤️',  color: '#f97316' },
+                        { min: 35, label: 'Teman',          emoji: '💛',  color: '#eab308' },
+                        { min: 15, label: 'Mulai Kenal',    emoji: '🤍',  color: '#84cc16' },
+                        { min: 1,  label: 'Malu-malu',      emoji: '🫣',  color: '#a3e635' },
+                        { min: 0,  label: 'Tidak Kenal',    emoji: '🖤',  color: '#94a3b8' },
+                    ];
+                } else if (type === 'ramah' || type === 'cerewet') {
+                    thresholds = [
+                        { min: 75, label: 'Sahabat Sejati', emoji: '💞', color: '#e11d48' },
+                        { min: 50, label: 'Teman Dekat',    emoji: '❤️',  color: '#f97316' },
+                        { min: 25, label: 'Teman',          emoji: '💛',  color: '#eab308' },
+                        { min: 10, label: 'Kenalan',        emoji: '🤝',  color: '#84cc16' },
+                        { min: 1,  label: 'Baru Kenal',     emoji: '🤍',  color: '#a3e635' },
+                        { min: 0,  label: 'Belum Kenal',    emoji: '😶',  color: '#94a3b8' },
+                    ];
+                } else {
+                    thresholds = [
+                        { min: 80, label: 'Sahabat Sejati', emoji: '💞', color: '#e11d48' },
+                        { min: 60, label: 'Teman Dekat',    emoji: '❤️',  color: '#f97316' },
+                        { min: 40, label: 'Teman',          emoji: '💛',  color: '#eab308' },
+                        { min: 20, label: 'Kenalan',        emoji: '🤝',  color: '#84cc16' },
+                        { min: 5,  label: 'Cuek',           emoji: '😑',  color: '#6b7280' },
+                        { min: 0,  label: 'Tidak Peduli',   emoji: '🖤',  color: '#4b5563' },
+                    ];
+                }
+                for (const t of thresholds) { if (val >= t.min) return t; }
+                return thresholds[thresholds.length - 1];
+            }
+
+            function renderRelationBar(npcId, val) {
+                const rel  = getRelationLabel(val, npcId);
+                const pers = getNPCPersonality(npcId);
+                const pct  = Math.min(100, val);
+                let barColor = '#94a3b8';
+                if (val >= 75)      barColor = '#e11d48';
+                else if (val >= 50) barColor = '#f97316';
+                else if (val >= 25) barColor = '#facc15';
+                else if (val >= 10) barColor = '#84cc16';
+                const persColors = { ramah:'#22c55e', cuek:'#6b7280', dingin:'#60a5fa', pemalu:'#f472b6', formal:'#a78bfa', cerewet:'#fb923c' };
+                const persColor = persColors[pers.type] || '#94a3b8';
+                const persLabel = pers.type.charAt(0).toUpperCase() + pers.type.slice(1);
+                return `<div style="margin:8px 0;background:rgba(255,253,245,0.95);border:2px solid #d97706;border-radius:10px;padding:8px 10px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                        <span style="font-size:12px;font-weight:800;color:${rel.color};">${rel.emoji} ${rel.label}</span>
+                        <div style="display:flex;gap:4px;align-items:center;">
+                            <span style="font-size:9px;background:${persColor}22;color:${persColor};border:1px solid ${persColor}55;border-radius:10px;padding:1px 6px;font-weight:700;">${persLabel}</span>
+                            <span style="font-size:11px;color:#78350f;font-weight:700;">${val}/100</span>
+                        </div>
+                    </div>
+                    <div style="background:#e5e7eb;border-radius:99px;height:10px;overflow:hidden;border:1px solid #d1d5db;">
+                        <div style="background:linear-gradient(90deg,${barColor},${barColor}cc);width:${pct}%;height:100%;border-radius:99px;transition:width 0.4s ease;"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:#92400e;opacity:0.7;">
+                        <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+                    </div>
+                </div>`;
+            }
+
+            function getNPCGreeting(npc, val) {
+                const pers = getNPCPersonality(npc.id);
+                let pool;
+                if (val >= 50)      pool = pers.greetWarm;
+                else if (val >= 15) pool = pers.greetNeutral;
+                else                pool = pers.greetCold;
+                if (!pool || pool.length === 0) pool = ["..."];
+                return pool[Math.floor(Math.random() * pool.length)];
+            }
+
+            function applyRelationshipDecay() {
+                const p = STATE.player;
+                const lastTalkDays = p.npcLastTalkDay || {};
+                const today = STATE.day;
+                Object.entries(NPC_PERSONALITY).forEach(([npcId, pers]) => {
+                    if (pers.decayRate <= 0) return;
+                    const lastDay = lastTalkDays[npcId] || 0;
+                    const daysSince = today - lastDay;
+                    if (daysSince >= 3) {
+                        const currentVal = p.relationships[npcId];
+                        if (currentVal > 0) {
+                            const decayAmt = pers.decayRate * Math.floor(daysSince / 3);
+                            const oldLabel = getRelationLabel(currentVal, npcId);
+                            p.relationships[npcId] = Math.max(0, currentVal - decayAmt);
+                            const newLabel = getRelationLabel(p.relationships[npcId], npcId);
+                            if (newLabel.label !== oldLabel.label) {
+                                const nNames = {mentor:'Mentor Budi',lover1girl:'Ayu',lover2girl:'Putri',peer1:'Raka',blacksmith:'Bang Joko',nelayan:'Pak Suryo',seniman:'Aryo',penyanyi:'Nadia',senior_kaia:'Kaia',lover1boy:'Dr. Budi',lover2boy:'Reza'};
+                                const nm = nNames[npcId] || npcId;
+                                showToast(`💔 ${nm} menjauh... (${oldLabel.label} → ${newLabel.label})`);
+                            }
+                        }
+                    }
+                });
+            }
+
+            function initNPCRelationship(npcId) {
+                const p = STATE.player;
+                if (p.relationships[npcId] !== undefined) return;
+                const pers = getNPCPersonality(npcId);
+                p.relationships[npcId] = pers.startVal;
+            }
+
+            function getRelationPanelHTML() {
+                const p = STATE.player;
+                const rels = p.relationships || {};
+                const npcLastTalkDay = p.npcLastTalkDay || {};
+                const today = STATE.day;
+                const allKnown = Object.keys(rels).filter(id => rels[id] !== undefined);
+                if (allKnown.length === 0) {
+                    return `<div style="text-align:center;color:#94a3b8;font-size:11px;padding:12px;">Belum ada NPC yang dikenal. Jelajahi desa dan sapa warganya!</div>`;
+                }
+                allKnown.sort((a, b) => (rels[b] || 0) - (rels[a] || 0));
+                const npcDisplayNames = { mentor:'Mentor Budi', boss_merchant:'Bos Merchant', lover1girl:'Ayu', lover2girl:'Putri', lover1boy:'Dr. Budi', lover2boy:'Reza', nelayan:'Pak Suryo', lecture:'Bu/Pak Dosen', blacksmith:'Bang Joko', guild_master:'Guild Master', librarian:'Bu Perpus', peer1:'Raka (Teman Kelas)', trader_outside:'Pedagang Keliling', seniman:'Aryo Seniman', penyanyi:'Nadia Penyanyi', senior_kaia:'Kaia (Senior)', cewek_islam:'Aisyah', cewek_kristen:'Maria', istrinelayan:'Bu Tini', child_blacksmith:'Lina', aya_twin:'Aya', dewi_roro:'Dewi Roro', penjagadungeon:'Penjaga Dungeon' };
+                const persColors = { ramah:'#22c55e', cuek:'#6b7280', dingin:'#60a5fa', pemalu:'#f472b6', formal:'#a78bfa', cerewet:'#fb923c' };
+                let html = '';
+                allKnown.forEach(npcId => {
+                    const val = rels[npcId] || 0;
+                    const rel = getRelationLabel(val, npcId);
+                    const pers = getNPCPersonality(npcId);
+                    const lastDay = npcLastTalkDay[npcId] || 0;
+                    const daysSince = lastDay > 0 ? (today - lastDay) : null;
+                    const pct = Math.min(100, val);
+                    let barColor = '#94a3b8';
+                    if (val >= 75) barColor = '#e11d48';
+                    else if (val >= 50) barColor = '#f97316';
+                    else if (val >= 25) barColor = '#facc15';
+                    else if (val >= 10) barColor = '#84cc16';
+                    const persColor = persColors[pers.type] || '#94a3b8';
+                    const displayName = npcDisplayNames[npcId] || npcId;
+                    html += `<div style="background:rgba(255,253,245,0.9);border:1px solid #d97706;border-radius:8px;padding:7px 9px;margin-bottom:6px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                            <div><span style="font-size:11px;font-weight:800;color:#422006;">${displayName}</span><span style="font-size:9px;margin-left:4px;background:${persColor}22;color:${persColor};border:1px solid ${persColor}55;border-radius:8px;padding:1px 5px;font-weight:700;">${pers.type}</span></div>
+                            <span style="font-size:11px;font-weight:800;color:${rel.color};">${rel.emoji} ${rel.label}</span>
+                        </div>
+                        <div style="background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;">
+                            <div style="background:linear-gradient(90deg,${barColor},${barColor}bb);width:${pct}%;height:100%;border-radius:99px;transition:width .4s;"></div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-top:3px;">
+                            <span style="font-size:9px;color:#92400e;">${val}/100</span>
+                            <span style="font-size:9px;color:${daysSince !== null && daysSince >= 5 ? '#ef4444' : '#94a3b8'};">${daysSince !== null ? (daysSince === 0 ? '💬 Hari ini' : daysSince + 'h lalu') : '—'}</span>
+                        </div>
+                        ${pers.decayRate > 0 && daysSince !== null && daysSince >= 3 ? '<div style="font-size:9px;color:#ef4444;margin-top:2px;">⚠️ Menjauh! Sapa sebelum lebih jauh...</div>' : ''}
+                    </div>`;
+                });
+                return html;
+            }
+
             // --- NEW: FUNGSI UPDATE RELATIONSHIP YANG HILANG ---
             function updateRelationship(npc, amount, label) {
                 if (!STATE.player.relationships[npc.id]) STATE.player.relationships[npc.id] = 0;
 
                 // Tambah nilai
-                STATE.player.relationships[npc.id] += amount;
+                // Terapkan bonus kepribadian NPC
+                const _pers = getNPCPersonality(npc.id);
+                const _oldVal = STATE.player.relationships[npc.id];
+                const _oldLabel = getRelationLabel(_oldVal, npc.id);
+                const _actualAmount = amount > 0 ? Math.round(amount * (_pers.warmBonus || 1.0)) : amount;
 
-                // Batasi (Cap) nilai 0 - 100
-                if (STATE.player.relationships[npc.id] > 100) STATE.player.relationships[npc.id] = 100;
-                if (STATE.player.relationships[npc.id] < 0) STATE.player.relationships[npc.id] = 0;
-
-                // Tampilkan Notifikasi dengan Ikon Hati yang sesuai level
+                STATE.player.relationships[npc.id] = Math.max(0, Math.min(100, _oldVal + _actualAmount));
                 const val = STATE.player.relationships[npc.id];
-                let icon = '🖤'; // Asing/Musuh
-                if (val >= 20) icon = '🤍'; // Teman
-                if (val >= 50) icon = '💛'; // Dekat
-                if (val >= 80) icon = '❤️'; // Cinta
 
-                // Tentukan pesan toast
-                let msg = label ? `${label} (${amount > 0 ? '+' : ''}${amount})` : `Hubungan (${amount > 0 ? '+' : ''}${amount})`;
+                // Catat hari terakhir bicara dengan NPC ini
+                if (!STATE.player.npcLastTalkDay) STATE.player.npcLastTalkDay = {};
+                STATE.player.npcLastTalkDay[npc.id] = STATE.day;
 
-                showToast(`${msg} - Total: ${val} ${icon}`);
-
-                // Efek partikel hati
-                if (amount > 0) createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#ec4899');
+                // Cek naik tier (milestone relasi)
+                const _newLabel = getRelationLabel(val, npc.id);
+                if (_newLabel.label !== _oldLabel.label && amount > 0) {
+                    showToast(`${_newLabel.emoji} Hubungan dengan ${npc.name} naik jadi "${_newLabel.label}"!`);
+                    createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, _newLabel.color || '#ec4899');
+                } else {
+                    // Toast biasa dengan bar mini
+                    const _sign = _actualAmount > 0 ? '+' : '';
+                    const _msg = label ? `${label} (${_sign}${_actualAmount})` : `Hubungan (${_sign}${_actualAmount})`;
+                    showToast(`${_msg} — ${_newLabel.emoji} ${_newLabel.label} (${val}/100)`);
+                    if (amount > 0) createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#ec4899');
+                }
             }
 
             function interactNPC(npc) {
@@ -24561,6 +25376,13 @@ ${reward.tip}`,
 
                 // NEW: INCREMENT DAILY TALK COUNTER
                 STATE.player.dailyTalkCount = (STATE.player.dailyTalkCount || 0) + 1;
+
+                // 🧠 INISIALISASI RELASI SESUAI KEPRIBADIAN (jika pertama kali bertemu)
+                initNPCRelationship(npc.id);
+
+                // Catat hari terakhir bicara (untuk decay detection)
+                if (!STATE.player.npcLastTalkDay) STATE.player.npcLastTalkDay = {};
+                STATE.player.npcLastTalkDay[npc.id] = STATE.day;
 
                 // ─── FESTIVAL NPC DIALOGUE CHECK ────────────────────────────
                 // Saat festival aktif, NPC berbicara seputar festival
@@ -25189,7 +26011,8 @@ ${reward.tip}`,
 
             function normalInteractNPC(npc) {
                 const p = STATE.player;
-                if (!p.relationships[npc.id]) p.relationships[npc.id] = 0;
+                // Init relasi sesuai kepribadian NPC jika belum pernah bertemu
+                initNPCRelationship(npc.id);
                 const love = p.relationships[npc.id];
 
                 // --- INTERAKSI BOS MERCHANT (UPDATE BARU) ---
@@ -25449,13 +26272,10 @@ ${reward.tip}`,
                     if (p.gender === 'boy' && npc.id.includes('girl')) isRomanceTarget = true;
                     if (p.gender === 'girl' && npc.id.includes('boy')) isRomanceTarget = true;
 
-                    // Helper untuk Judul Dialog dengan Indikator Hati
+                    // Helper judul dialog dengan status relasi baru
                     const getLoveTitle = (name, val) => {
-                        let icon = '🖤';
-                        if (val >= 80) icon = '❤️';
-                        else if (val >= 50) icon = '💛';
-                        else if (val >= 20) icon = '🤍';
-                        return `${name} [${icon} ${val}]`;
+                        const _rl = getRelationLabel(val, npc.id);
+                        return `${name} [${_rl.emoji} ${val}]`;
                     };
 
                     if (isRomanceTarget) {
@@ -25538,7 +26358,9 @@ ${reward.tip}`,
                         } else {
                             // --- UPDATE: MAIN MENU INTERAKSI (BELUM NIKAH) ---
 
-                            const randomGreeting = getRandomChat(npc.id, love);
+                            // Greeting sesuai kepribadian NPC
+                            const _personalityGreet = getNPCGreeting(npc, love);
+                            const randomGreeting = _personalityGreet || getRandomChat(npc.id, love);
 
                             // Cek Clue Cincin Raja (Hanya muncul sekali-sekali saat High Level)
                             let mainText = randomGreeting;
@@ -25550,6 +26372,10 @@ ${reward.tip}`,
                                 else if (npc.id === 'lover1girl') mainText = "Konon katanya, ada 'Cincin Raja' yang indah banget di Dungeon dalam. Kalau ada cowok yang ngasih itu ke aku... wah, aku pasti langsung bilang IYES! Hehe! ❤️";
                                 // ... existing clues ...
                             }
+
+                            // Tambahkan bar relasi ke teks dialogue
+                            const _relBarLover = renderRelationBar(npc.id, love);
+                            const _mainWithBar = mainText + '\n\n' + _relBarLover;
 
                             const dialogueOpts = [
                                 { text: "Beri Hadiah 🎁", action: () => openGiftMenu(npc) },
@@ -25989,7 +26815,7 @@ ${reward.tip}`,
 
                             dialogueOpts.push({ text: "Dah", action: closeDialogue });
 
-                            showDialogue(getLoveTitle(npc.name, love), mainText, dialogueOpts, npc.imgSrc);
+                            showDialogue(getLoveTitle(npc.name, love), _mainWithBar, dialogueOpts, npc.imgSrc);
                         }
                     } else {
                         // --- NEW: INTERAKSI DOKTER BUDI UNTUK SESAMA COWOK (PASIEN) ---
@@ -30778,6 +31604,7 @@ Pilih masakan:
 
                 if (STATE.fishing.barX >= STATE.fishing.targetStart && STATE.fishing.barX <= (STATE.fishing.targetStart + STATE.fishing.targetWidth)) {
                     STATE.player.dailyFishingCount = (STATE.player.dailyFishingCount || 0) + 1;
+                    STATE.player.totalFishingCount = (STATE.player.totalFishingCount || 0) + 1; // TOTAL LIFETIME
 
                     // Pilih pool ikan berdasarkan musim
                     const season = STATE.season || 'spring';
@@ -30996,6 +31823,19 @@ Pilih masakan:
                     dailyMonsterKills: STATE.player.dailyMonsterKills || 0,
                     dailyTalkCount: STATE.player.dailyTalkCount || 0,
                     dailyHarvestCount: STATE.player.dailyHarvestCount || 0,
+                    // TOTAL LIFETIME COUNTERS
+                    totalFishingCount: STATE.player.totalFishingCount || 0,
+                    totalMonsterKills: STATE.player.totalMonsterKills || 0,
+                    totalSellCount:    STATE.player.totalSellCount    || 0,
+                    // NPC RELATIONSHIP TRACKING
+                    npcLastTalkDay: STATE.player.npcLastTalkDay || {},
+                    // MILESTONE YEAR CLAIMS
+                    claimedYear1: STATE.player.claimedYear1 || false,
+                    claimedYear2: STATE.player.claimedYear2 || false,
+                    claimedYear3: STATE.player.claimedYear3 || false,
+                    claimedYear4: STATE.player.claimedYear4 || false,
+                    claimedYear5: STATE.player.claimedYear5 || false,
+                    honorTitle:   STATE.player.honorTitle   || null,
 
                     // 10. Pesan & Jurnal & MATERI KULIAH
                     reflections: STATE.player.reflections,
@@ -37069,6 +37909,7 @@ Pilih masakan:
                 STATE.player.money += gold;
                 STATE.player.reputation += 1;
                 STATE.player.dailyMonsterKills = (STATE.player.dailyMonsterKills || 0) + 1;
+                STATE.player.totalMonsterKills = (STATE.player.totalMonsterKills || 0) + 1; // TOTAL LIFETIME
 
                 // --- QUEST DROP ---
                 if (en.isQuestTarget) {
@@ -39700,6 +40541,7 @@ Pilih masakan:
                     STATE.player.tradeInventory[itemId] -= 1;
                     STATE.player.money += price;
                     STATE.player.dailySellCount = (STATE.player.dailySellCount || 0) + 1; // Track bonus quest
+                    STATE.player.totalSellCount = (STATE.player.totalSellCount || 0) + 1; // TOTAL LIFETIME
                                     // Entrepreneur dapat AP dari penjualan (1 AP per 3 jual)
                                     if (STATE.player.role === 'entrepreneur') {
                                         const sells = STATE.player.dailySellCount || 0;
