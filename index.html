@@ -14118,7 +14118,7 @@
             for (let y = 0; y < RUINS_H; y++) { ruinsTiles[y * RUINS_W + 0] = 2; ruinsTiles[y * RUINS_W + (RUINS_W - 1)] = 2; }
 
             // ══════════════════════════════════════════════════════════════════
-            // 🧚 SYLVARIA — DUNIA PERI TERSEMBUNYI (Breath of Fire style)
+            // 🧚‍♀️ KAHYANGAN WILIS — DUNIA WIDADARI TERSEMBUNYI (Lereng Gunung Wilis)
             // Akses: Keris Penjaga + Rafflesia mekar + Ethics ≥ 60
             // ══════════════════════════════════════════════════════════════════
             const SYLVARIA_W = 32;
@@ -14292,7 +14292,7 @@
                         /* REMOVED: job/mercenary npc */
                         /* MOVED: Trader menggantikan posisi job (x:25, y:27) */
                         /* UPDATE: DIGESER KE BAWAH DAN KANAN (x:31, y:29) AGAR TIDAK MENGHALANGI PINTU MERCHANT */
-                        { id: 'trader_outside', x: 31, y: 29, name: 'Pedagang Keliling', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day', w: 40, h: 60 },
+                        { id: 'trader_outside', x: 31, y: 29, name: 'Bu Lastri (Pedagang Keliling)', imgSrc: 'images/merchant.png', type: 'service', schedule: 'day', w: 40, h: 60 },
 
                         /* UPDATE: KEPALA BENGKEL PINDAH KE DALAM, DIGANTI ANAKNYA DI LUAR */
                         /* UPDATE: Ukuran Lina disamakan dengan Player (w:40, h:60) */
@@ -14330,7 +14330,7 @@
                         /* UPDATE: DIGESER KE BAWAH (Y:38) AGAR LEBIH DI PUCUK */
                         /* UPDATE: UKURAN DIUBAH SESUAI REQUEST (SAMA DENGAN PLAYER 40x60) */
                         /* UPDATE TERBARU: POSISI DIGESER TURUN KE Y:37 SESUAI REQUEST */
-                        { id: 'pemancing_misterius', x: 47, y: 37, name: 'Pemancing Senja', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening', w: 40, h: 60 },
+                        { id: 'pemancing_misterius', x: 47, y: 37, name: 'Mbah Karto (Pemancing Senja)', imgSrc: 'images/pemancing.png', type: 'service', schedule: 'evening', w: 40, h: 60 },
 
                         /* NEW: PUTRI DUYUNG (Pinggir Laut - Selatan Kiri Dermaga) */
                         /* UPDATE: Posisi dipindah ke sebelah kiri dermaga (x:38) di air (y:36) */
@@ -14357,21 +14357,21 @@
 
                         /* NEW: PERI PANEN (EVENT PESTA ANGGUR - MUSIM GUGUR HARI 15) */
                         /* FIX: Dipindah ke x:40 agar tidak tumpuk dengan Kurcaci Tani */
-                        { id: 'peripanen', x: 40, y: 6, name: 'Sylva (Peri Panen)', imgSrc: 'images/peripanen.png', type: 'static', schedule: 'custom_grape_harvest', w: 32, h: 32 },
+                        { id: 'peripanen', x: 40, y: 6, name: 'Ratih (Peri Panen)', imgSrc: 'images/peripanen.png', type: 'static', schedule: 'custom_grape_harvest', w: 32, h: 32 },
 
                         /* === FARM HELPERS: Muncul di ladang SETELAH di-hire, setiap hari ===
                            Koordinat di area ladang (beda dari event NPC di atas) */
                         { id: 'kurcaci_farm', x: 30, y: 7, name: 'Gorki (Kurcaci Tani)', imgSrc: 'images/kurcacitani.png', type: 'static', schedule: 'if_hired_dwarf', w: 28, h: 28 },
-                        { id: 'peri_farm',    x: 32, y: 7, name: 'Sylva (Peri Panen)',  imgSrc: 'images/peripanen.png',  type: 'static', schedule: 'if_hired_fairy',  w: 28, h: 28 },
+                        { id: 'peri_farm',    x: 32, y: 7, name: 'Ratih (Peri Panen)',  imgSrc: 'images/peripanen.png',  type: 'static', schedule: 'if_hired_fairy',  w: 28, h: 28 },
 
                         /* NEW: NPC ANAK-ANAK (BERMAIN DI DEKAT KAMPUS) */
                         /* UPDATE: Bocah Nakal dipindah ke Dermaga (Bawah Laut Pinggir) */
                         /* Koordinat Dermaga sekitar x:43-50, y:34-39 */
-                        { id: 'child_boy_1', x: 46, y: 37, name: 'Bocah Nakal', imgSrc: 'images/anakkecil1.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 32, h: 48 },
+                        { id: 'child_boy_1', x: 46, y: 37, name: 'Bimo (Bocah Nakal)', imgSrc: 'images/anakkecil1.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 32, h: 48 },
 
                         /* UPDATE: Gadis Kecil dipindah ke Halaman Rumah Mentor (Area Kosong) */
                         /* Koordinat x:30, y:18 (Dekat pintu masuk Rumah Mentor) */
-                        { id: 'child_girl_1', x: 30, y: 18, name: 'Gadis Kecil', imgSrc: 'images/anakkecil2.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 32, h: 48 },
+                        { id: 'child_girl_1', x: 30, y: 18, name: 'Rini (Gadis Kecil)', imgSrc: 'images/anakkecil2.png', type: 'wander', vx: 0, vy: 0, schedule: 'day', w: 32, h: 48 },
 
                         /* NEW: KAIA (SENIOR PSIKOLOGI - GUIDE ADAPTASI) */
                         /* UPDATE: Dipindah ke PAS BELAKANG KAMPUS (Area Rumput Baru) */
@@ -14488,7 +14488,7 @@
 
                         /* NEW: ISTRI BOS (PEDAGANG KELILING) PINDAH KE DALAM SAAT MALAM */
                         /* Muncul hanya saat 'night' (18:00 ke atas) */
-                        { id: 'trader_wife_inside', x: 10, y: 4, name: 'Istri Bos', imgSrc: 'images/merchant.png', type: 'static', schedule: 'night', w: 40, h: 60 }
+                        { id: 'trader_wife_inside', x: 10, y: 4, name: 'Bu Lastri (Istri Pedagang)', imgSrc: 'images/merchant.png', type: 'static', schedule: 'night', w: 40, h: 60 }
                     ],
                     objects: [
                         /* UPDATE: Meja Kasir dengan gambar images/mejakasir.png */
@@ -14897,9 +14897,9 @@
                     tiles: candiTiles,
                     buildings: [
                         { id: 'candi_exit', x: 6, y: 15, w: 3, h: 1, type: 'trigger', entrance: { x: 7, y: 15 }, name: "Keluar Candi" },
-                        // Portal Rahasia ke Sylvaria (hanya muncul jika syarat terpenuhi, cek saat interaksi)
+                        // Portal Rahasia ke Kahyangan Wilis (hanya muncul jika syarat terpenuhi, cek saat interaksi)
                         { id: 'portal_sylvaria', x: 6, y: 0, w: 5, h: 2, type: 'trigger',
-                          entrance: { x: 8, y: 1 }, name: '🌀 Portal Sylvaria', open24h: true }
+                          entrance: { x: 8, y: 1 }, name: '🌀 Portal Kahyangan Wilis', open24h: true }
                     ],
                     npcs: [
                         /* NEW: DEWI RORO (PENJAGA CANDI) */
@@ -14931,7 +14931,7 @@
                         { x: 7, y: 7, w: 2, h: 2, type: 'table', icon: '💐', text: "Altar Persembahan", img: 'images/mejaaltar.png' },
 
                         { x: 7, y: 15, type: 'door_out', icon: '🚪' },
-                        // Portal ke Sylvaria (terlihat seperti arca/altar tambahan di sisi utara)
+                        // Portal ke Kahyangan Wilis (terlihat seperti arca/altar tambahan di sisi utara)
                         { x: 6, y: 0, w: 5, h: 2, type: 'sign', icon: '🌀',
                           text: 'Retakan Dimensi — Terasa ada angin hangat dari celah ini. Ada sesuatu di baliknya...' }
                     ]
@@ -15003,7 +15003,7 @@
                 },
 
                 // ══════════════════════════════════════════════════════════
-                // 🧚 SYLVARIA — DUNIA PERI TERSEMBUNYI (Secret Area)
+                // 🧚‍♀️ KAHYANGAN WILIS — AREA RAHASIA
                 // Akses: Keris Penjaga + Rafflesia mekar + Ethics ≥ 60
                 // ══════════════════════════════════════════════════════════
                 'sylvaria': {
@@ -15016,28 +15016,28 @@
                           img: null, entrance: { x: 15, y: 8 }, name: '✨ Altar Peri Agung', open24h: true }
                     ],
                     npcs: [
-                        { id: 'sylva_peri', x: 15, y: 7, name: 'Sylva (Ratu Peri)',
+                        { id: 'sylva_peri', x: 15, y: 7, name: 'Rara Wilis (Ratu Widadari)',
                           imgSrc: 'images/peripanen.png', type: 'static', schedule: 'always', w: 40, h: 55 },
-                        { id: 'peri_kecil_1', x: 7, y: 14, name: 'Fern (Peri Hutan)',
+                        { id: 'peri_kecil_1', x: 7, y: 14, name: 'Wening (Widadari Wilis)',
                           imgSrc: 'images/peripanen.png', type: 'wander', vx: 0.4, vy: 0, schedule: 'always', w: 28, h: 42 },
-                        { id: 'peri_kecil_2', x: 24, y: 14, name: 'Lily (Peri Bunga)',
+                        { id: 'peri_kecil_2', x: 24, y: 14, name: 'Sekar (Widadari Bunga)',
                           imgSrc: 'images/peripanen.png', type: 'wander', vx: -0.4, vy: 0, schedule: 'always', w: 28, h: 42 },
-                        { id: 'peri_kecil_3', x: 15, y: 19, name: 'Moss (Peri Air)',
+                        { id: 'peri_kecil_3', x: 15, y: 19, name: 'Bening (Widadari Air)',
                           imgSrc: 'images/peripanen.png', type: 'static', schedule: 'always', w: 28, h: 42 }
                     ],
                     objects: [
                         { x: 13, y: 5, w: 6, h: 3, type: 'sign', icon: '🌸',
-                          text: 'Altar Peri Agung — Pusat kekuatan Sylvaria. Retak dan hampir padam.' },
+                          text: 'Altar Widadari Agung — Pusat kekuatan Kahyangan Wilis. Retak dan hampir padam.' },
                         { x: 14, y: 2, w: 4, h: 3, type: 'sign', icon: '🌳',
-                          text: 'Pohon Jiwa Sylvaria — Sumber kehidupan dunia peri. Daunnya menghitam, kekuatannya memudar...' },
+                          text: 'Pohon Beringin Agung Kahyangan Wilis — Sumber kehidupan para Widadari. Daunnya menghitam, kekuatannya memudar...' },
                         { x: 4, y: 13, w: 2, h: 2, type: 'shelf', icon: '💎',
-                          text: 'Kristal Peri — Dulu bersinar terang, kini retak dan kusam.' },
+                          text: 'Kristal Brantas — Dulu bersinar terang, kini retak dan kusam.' },
                         { x: 25, y: 13, w: 2, h: 2, type: 'shelf', icon: '💎',
-                          text: 'Kristal Peri — Pecahannya masih mengandung sedikit sihir.' },
+                          text: 'Kristal Brantas — Pecahannya masih mengandung sedikit sihir.' },
                         { x: 4, y: 5, w: 2, h: 2, type: 'sign', icon: '📜',
-                          text: '"Sylvaria ada karena keseimbangan alam dan hati manusia. Saat keserakahan merajalela di dunia atas, dunia kami ikut memudar." — Kronik Peri Pertama' },
+                          text: '"Kahyangan Wilis ada karena keseimbangan alam dan hati manusia Jawa. Saat keserakahan merajalela di dunia bawah, Kahyangan kami ikut memudar." — Kronik Widadari Pertama' },
                         { x: 26, y: 5, w: 2, h: 2, type: 'sign', icon: '📜',
-                          text: '"Hanya manusia yang membawa Cahaya Tiga — Keberanian Leluhur, Ketulusan Alam, dan Kebijaksanaan Jiwa — yang dapat membangunkan Pohon Jiwa kami." — Ramalan Sylva Pertama' },
+                          text: '"Mung wong kang nggawa Cahaya Telu — Wani, Tresna Alam, lan Kawicaksanan — kang bisa nggugah Pohon Beringin Agung iki." (Hanya manusia yang membawa Tiga Cahaya yang dapat membangkitkan Beringin Agung.) — Serat Widadari Pertama' },
                         { x: 14, y: SYLVARIA_H-2, type: 'door_out', icon: '🚪' }
                     ]
                 },
@@ -15257,7 +15257,7 @@
                 'lover2boy':        { season: 'summer',  day: 15, name: 'Satria (Ksatria)',     img: 'images/lover2boy.png' },
                 'lover_matre_girl': { season: 'summer',  day: 9,  name: 'Siska (Sosialita)',    img: 'images/lover_matre_girl.png' },
                 'lover_matre_boy':  { season: 'spring',  day: 20, name: 'Rendi (Anak Sultan)',  img: 'images/lover_matre_boy.png' },
-                'trader_outside':   { season: 'summer',  day: 3,  name: 'Pedagang Keliling',    img: 'images/merchant.png' },
+                'trader_outside':   { season: 'summer',  day: 3,  name: 'Bu Lastri',    img: 'images/merchant.png' },
                 'blacksmith':       { season: 'autumn',  day: 12, name: 'Kepala Bengkel',       img: 'images/blacksmith.png' },
                 'librarian':        { season: 'winter',  day: 18, name: 'Bu Ratna (Pustakawan)',           img: 'images/penjagaperpus.png' },
                 'guild_master':     { season: 'spring',  day: 28, name: 'Guild Master',         img: 'images/masterguild.png' },
@@ -15530,7 +15530,7 @@ ${reward.tip}`,
                 },
                 'summer': {
                     1:  { name: "Buka Giling (Panen Raya)", type: "festival", icon: "☀️" },
-                    3:  { name: "🎂 Ultah Pedagang Keliling", type: "birthday", icon: "🎂", npcId: "trader_outside" },
+                    3:  { name: "🎂 Ultah Bu Lastri (Pedagang Keliling)", type: "birthday", icon: "🎂", npcId: "trader_outside" },
                     5:  { name: "🏅 Gempita Season: Pendaftaran Dibuka!", type: "special", icon: "🏅", desc: "Event Gempita Awards resmi dibuka! Siswa dengan role Akademisi, portofolio lengkap, dan 50+ AP dapat mendaftar. Raih Poin Prestasi sebanyaknya sebelum hari ke-25!" },
                     7:  { name: "Festival Ayam", type: "festival", icon: "🐔" },
                     9:  { name: "🎂 Ultah Siska (Sosialita)", type: "birthday", icon: "🎂", npcId: "lover_matre_girl" },
@@ -16701,7 +16701,10 @@ ${reward.tip}`,
                                 { x: 7, y: 0, w: 2, h: 3, type: 'shelf', icon: '👗', text: "Lemari Pakaian", img: 'images/lemari.png' },
                                 { x: w - 2, y: 0, type: 'calendar', icon: '📅', img: 'images/kalender.png' },
                                 { x: 2, y: 6, w: 2, h: 2, type: 'catalog', icon: '☎️', img: 'images/mejatelpon.png', name: "Meja Telepon" },
-                                { x: 9, y: 0, w: 1, h: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Merah", img: 'images/vasmerah.png' }
+                                { x: 9, y: 0, w: 1, h: 1, type: 'bookshelf', icon: '🏺', text: "Vas Bunga Merah", img: 'images/vasmerah.png' },
+                                // 🧹 PAPAN AKTIVITAS RUMAH — selalu bisa diakses untuk masak/bersih/dll
+                                { x: 1, y: 5, w: 1, h: 1, type: 'chores', icon: '🧹',
+                                  name: "Papan Aktivitas", text: "Tekan untuk membuka menu aktivitas rumah tangga (masak, bersih-bersih, cuci baju, rawat kebun)." }
                             ];
                             if (level >= 3) {
                                 baseObjs.push({
@@ -18182,7 +18185,7 @@ ${reward.tip}`,
                 }
 
                 if (!p.shiftStarted) {
-                    showDialogue("MERCHANT", "Kamu belum absen masuk shift! Lapor ke saya dulu baru kerja.", [{ text: "Siap Bos", action: closeDialogue }], 'images/job.png');
+                    showDialogue("Pak Hendra (Merchant)", "Kamu belum absen masuk shift! Lapor ke saya dulu baru kerja.", [{ text: "Siap Bos", action: closeDialogue }], 'images/job.png');
                     return;
                 }
 
@@ -20816,6 +20819,7 @@ ${reward.tip}`,
                                 else if (obj.type === 'bookshelf') actionIcon = '📖';
                                 else if (obj.type === 'bed') actionIcon = '🛏️';
                                 else if (obj.type === 'kitchen') actionIcon = '🍳';
+                                else if (obj.type === 'chores') actionIcon = '🧹';
                                 else actionIcon = '🖐️';
                                 break;
                             }
@@ -21570,6 +21574,7 @@ ${reward.tip}`,
                         // Ambil gambar pasangan
                         let sImg = 'images/girl.png';
                         const sId = STATE.player.spouseId;
+                        const sName = SPOUSE_NAMES[sId] || 'Pasangan';
                         if (sId === 'lover1girl') sImg = "images/lover1girl.png";
                         else if (sId === 'lover2girl') sImg = "images/lover2girl.png";
                         else if (sId === 'lover1boy') sImg = "images/lover1boy.png";
@@ -21600,12 +21605,20 @@ ${reward.tip}`,
                                     choresBonusMsg += "\nRumah juga bersih banget. Kamu rajin sekali! ✨";
                                     choresBonusRep += 2;
                                 }
+                                if (STATE.player.dailyChores.laundry) {
+                                    choresBonusMsg += "\nBaju-bajuku sudah dicuci! Terima kasih ya sayang~ 👔";
+                                    choresBonusRep += 1;
+                                }
+                                if (STATE.player.dailyChores.garden) {
+                                    choresBonusMsg += "\nTanaman di kebun juga sudah disiram, bagus banget! 🌱";
+                                    choresBonusRep += 1;
+                                }
                                 // Reset chores harian
                                 STATE.player.dailyChores = {};
                             }
                             // -------------------------------------------
 
-                            showDialogue("PASANGAN",
+                            showDialogue(sName,
                                 "Aku pulang! 🏠\nSenang sekali melihatmu sudah di rumah menyambutku." + choresBonusMsg + "\n\n(Hubungan Makin Harmonis ❤️)",
                                 [{ text: "Selamat datang kembali!", action: closeDialogue }],
                                 sImg
@@ -21643,7 +21656,7 @@ ${reward.tip}`,
                             createParticle(STATE.player.x, STATE.player.y, '#ec4899');
                             if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                             const spouseNpc = maps['house']?.npcs?.find(n => n.id === STATE.player.spouseId);
-                            const spouseName2 = spouseNpc ? spouseNpc.name : 'PASANGAN';
+                            const spouseName2 = SPOUSE_NAMES[sId2] || (spouseNpc ? spouseNpc.name : 'Pasangan');
                             showDialogue(spouseName2,
                                 "Akhirnya pulang juga! ❤️\nAku sudah tunggu dari tadi sambil masak kesukaanmu.\n\nSyukurlah kamu tepat waktu. Ayo makan malam bareng! 🍽️\n\n(Hubungan Makin Harmonis ❤️)",
                                 [{ text: "Makasih sayang, masakan kamu pasti enak!", action: closeDialogue }],
@@ -22655,58 +22668,373 @@ ${reward.tip}`,
                 );
             }
 
+            // ═══════════════════════════════════════════════════════════════
+            // MENU AKTIVITAS RUMAH TANGGA — Believable & Kontekstual
+            // Dipanggil dari: pagi otomatis, papan 🧹, kasur, meja jurnal
+            // ═══════════════════════════════════════════════════════════════
             function showDailyHousekeepingMenu() {
-                // Tentukan gambar player untuk dialog (monolog dalam hati)
-                const pImg = STATE.player.gender === 'boy' ? 'images/boy.png' : 'images/girl.png';
+                const p       = STATE.player;
+                const pImg    = p.gender === 'boy' ? 'images/boy.png' : 'images/girl.png';
+                const chores  = p.dailyChores || {};
+                const hl      = p.houseLevel || 1;          // rumah level
+                const married = !!(p.married && p.spouseId);
+                const spouseOut = p.spouseWorkStatus === 'working';
+                const hasFarm = p.farming && Object.values(p.farming).some(c => c && c.type);
+                const hasKitchen = hl >= 3;   // dapur baru ada di rumah Lv.3+
+                const hasGarden  = hl >= 2;   // halaman kecil mulai Lv.2
 
-                showDialogue("RENCANA HARIAN", "Suami/Istri sudah berangkat kerja.\nApa yang ingin aku kerjakan dulu ya?", [
-                    {
-                        text: "🍳 Masak Siang & Malam (Energi -20)",
+                // ── Greeting kontekstual ──
+                const done   = [chores.cleaning, chores.cooking, chores.laundry, chores.garden || !hasFarm].filter(Boolean).length;
+                const total  = [true, hasKitchen, true, hasFarm].filter(Boolean).length;
+                let greeting = spouseOut && married
+                    ? `Suami/Istri sudah berangkat kerja.\nApa yang mau dikerjakan sekarang?`
+                    : `Ada waktu luang. Mau ngapain?`;
+                greeting += `\n\n📋 Progress hari ini: ${done}/${total} selesai\n`;
+                greeting += `${chores.cleaning ? '✅' : '⬜'} Bersih-bersih\n`;
+                if (hasKitchen) greeting += `${chores.cooking  ? '✅' : '⬜'} Masak\n`;
+                else            greeting += `🔒 Masak (butuh dapur — Lv.3)\n`;
+                greeting += `${chores.laundry  ? '✅' : '⬜'} Cuci baju\n`;
+                if (hasFarm)    greeting += `${chores.garden   ? '✅' : '⬜'} Siram tanaman`;
+
+                const opts = [];
+
+                // ════════════════════════════════════
+                //  🧹 BERSIH-BERSIH — selalu tersedia
+                // ════════════════════════════════════
+                if (!chores.cleaning) {
+                    opts.push({
+                        text: '🧹 Bersih-bersih Rumah (Energi -25)',
                         action: () => {
-                            if (STATE.player.energy >= 20) {
-                                STATE.player.energy -= 20;
-                                if (!STATE.player.dailyChores) STATE.player.dailyChores = {};
-                                STATE.player.dailyChores.cooking = true;
-
-                                showToast("Masakan lezat siap! (Pasangan akan senang)");
-                                if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                                closeDialogue();
-                            } else {
-                                showToast("Terlalu lelah untuk memasak...");
+                            if (p.energy < 25) {
+                                showDialogue('😓 TERLALU LELAH',
+                                    'Badanmu terlalu lelah untuk beres-beres sekarang.\n\nIstirahat sebentar atau makan dulu biar pulih.',
+                                    [{ text: 'Oke...', action: closeDialogue }], pImg);
+                                return;
                             }
+                            p.energy -= 25;
+                            if (!p.dailyChores) p.dailyChores = {};
+                            p.dailyChores.cleaning = true;
+                            p.reputation = (p.reputation||0) + 2;
+                            p.ethics = Math.min(100, (p.ethics||0) + 1);
+                            createParticle(p.x, p.y, '#ffffff');
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                            const narasi = [
+                                'Lantai disapu sampai bersih, debu dilap, bantal dirapikan.\n\nRumah kinclong! Rasanya puas banget. ✨\n\n📈 REP+2 | Ethics+1',
+                                'Semua sudut dibersihkan. Jendela dilap hingga bening.\n\nPasangan pasti senang pulang ke rumah yang rapi. ✨\n\n📈 REP+2 | Ethics+1',
+                                'Kamar mandi disikat, lantai dipel sampai ngkilap.\n\nCapek, tapi puas — ini namanya tanggung jawab. ✨\n\n📈 REP+2 | Ethics+1',
+                            ];
+                            showDialogue('✨ BERES-BERES SELESAI!',
+                                narasi[Math.floor(Math.random()*narasi.length)],
+                                [{ text: 'Alhamdulillah~', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}],
+                                pImg);
                         }
-                    },
-                    {
-                        text: "🧹 Bersih-bersih Rumah (Energi -30)",
-                        action: () => {
-                            if (STATE.player.energy >= 30) {
-                                STATE.player.energy -= 30;
-                                if (!STATE.player.dailyChores) STATE.player.dailyChores = {};
-                                STATE.player.dailyChores.cleaning = true;
+                    });
+                } else {
+                    opts.push({ text: '✅ Rumah sudah bersih hari ini',
+                        action: () => showToast('Rumah sudah rapi! Kerja bagus.') });
+                }
 
-                                createParticle(STATE.player.x, STATE.player.y, '#ffffff'); // Partikel kilau
-                                showToast("Rumah kinclong! ✨");
-                                closeDialogue();
-                            } else {
-                                showToast("Energi kurang untuk bersih-bersih.");
+                // ════════════════════════════════════════════════════════
+                //  🍳 MASAK — hanya jika rumah Lv.3+ (ada dapur)
+                //  Jika belum ada dapur → alternatif: beli makanan jadi
+                // ════════════════════════════════════════════════════════
+                if (hasKitchen) {
+                    if (!chores.cooking) {
+                        opts.push({
+                            text: '🍳 Masak untuk Keluarga (Energi -20)',
+                            action: () => {
+                                if (p.energy < 20) {
+                                    showDialogue('😓 TERLALU LELAH', 'Energi kurang untuk memasak.\n\nMakan camilan dulu atau istirahat sebentar.',
+                                        [{ text: 'Oke', action: closeDialogue }], pImg);
+                                    return;
+                                }
+                                // Sub-menu pilihan masakan berdasarkan level rumah & bahan
+                                const hasIkan  = (p.inventory?.['ikan_segar'] || 0) > 0;
+                                const hasTelor = (p.inventory?.['telor'] || 0) > 0;
+                                const subOpts  = [];
+
+                                // Nasi goreng — selalu bisa (bahan dapur standar)
+                                subOpts.push({
+                                    text: '🍳 Nasi Goreng (bahan dapur standar)',
+                                    action: () => {
+                                        p.energy -= 20;
+                                        if (!p.dailyChores) p.dailyChores = {};
+                                        p.dailyChores.cooking = true;
+                                        p.reputation = (p.reputation||0) + 2;
+                                        p.energy = Math.min(100, p.energy + 8);
+                                        if (married && p.spouseId) updateRelationship({ id: p.spouseId }, 2, 'Masak untuk Pasangan');
+                                        if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                        showDialogue('🍳 NASI GORENG SIAP!',
+                                            'Bumbunya harum, nasinya pulen.\n\nKamu bungkus sebagian untuk pasangan, sisanya makan siang sendiri.\n\n❤️ Pasangan pulang ke rumah yang ada masakan hangat.\n\nREP+2 | Hubungan+2',
+                                            [{ text: 'Enak!', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}], pImg);
+                                    }
+                                });
+
+                                // Telor ceplok — jika ada telor di inventory
+                                if (hasTelor) {
+                                    subOpts.push({
+                                        text: '🍳 Telor Ceplok + Nasi (pakai telor)',
+                                        action: () => {
+                                            p.energy -= 15;
+                                            p.inventory['telor'] = Math.max(0, (p.inventory['telor']||0) - 1);
+                                            if (!p.dailyChores) p.dailyChores = {};
+                                            p.dailyChores.cooking = true;
+                                            p.reputation = (p.reputation||0) + 2;
+                                            showDialogue('🍳 TELOR CEPLOK SIAP!',
+                                                'Simpel tapi bergizi. Telor ceplok gurih dengan nasi putih hangat.\n\n-1 Telor | REP+2',
+                                                [{ text: 'Yum!', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}], pImg);
+                                        }
+                                    });
+                                }
+
+                                // Ikan goreng — jika ada ikan di inventory
+                                if (hasIkan) {
+                                    subOpts.push({
+                                        text: '🐟 Ikan Goreng + Sayur (pakai ikan segar)',
+                                        action: () => {
+                                            p.energy -= 20;
+                                            p.inventory['ikan_segar'] = Math.max(0, (p.inventory['ikan_segar']||0) - 1);
+                                            if (!p.dailyChores) p.dailyChores = {};
+                                            p.dailyChores.cooking = true;
+                                            p.reputation = (p.reputation||0) + 3;
+                                            p.energy = Math.min(100, p.energy + 12);
+                                            if (married && p.spouseId) updateRelationship({ id: p.spouseId }, 3, 'Masak Ikan Segar');
+                                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                            showDialogue('🐟 IKAN GORENG SIAP!',
+                                                'Ikan segar digoreng garing, lalapan timun segar di samping.\n\nMakanan bergizi untuk keluarga sehat! 🌿\n\n-1 Ikan Segar | REP+3 | Hubungan+3',
+                                                [{ text: 'Mantap!', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}], pImg);
+                                        }
+                                    });
+                                }
+
+                                // Sayur lodeh — mulai Lv.4
+                                if (hl >= 4) {
+                                    subOpts.push({
+                                        text: '🍲 Sayur Lodeh Spesial (Rumah Lv.4)',
+                                        action: () => {
+                                            p.energy -= 25;
+                                            if (!p.dailyChores) p.dailyChores = {};
+                                            p.dailyChores.cooking = true;
+                                            p.reputation = (p.reputation||0) + 4;
+                                            if (married && p.spouseId) updateRelationship({ id: p.spouseId }, 5, 'Masak Spesial');
+                                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                            showDialogue('🍲 SAYUR LODEH SIAP!',
+                                                'Masakan rumahan yang bikin rindu kampung halaman.\n\nSantan gurih, sayur segar, tahu tempe. Sempurna!\n\nREP+4 | Hubungan pasangan +5',
+                                                [{ text: 'Lezat sekali!', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}], pImg);
+                                        }
+                                    });
+                                }
+
+                                // Rendang — mulai Lv.5
+                                if (hl >= 5) {
+                                    subOpts.push({
+                                        text: '🥩 Rendang (Rumah Lv.5 — masak 2 jam)',
+                                        action: () => {
+                                            p.energy -= 35;
+                                            if (!p.dailyChores) p.dailyChores = {};
+                                            p.dailyChores.cooking = true;
+                                            p.reputation = (p.reputation||0) + 6;
+                                            p.str = (p.str||0) + 1;
+                                            if (married && p.spouseId) updateRelationship({ id: p.spouseId }, 8, 'Rendang Spesial');
+                                            showDialogue('🥩 RENDANG SIAP!',
+                                                'Rendang daging dengan bumbu rempah yang meresap sempurna.\n\nMasak 2 jam penuh tapi hasilnya luar biasa.\n\nTetangga sampai bisa cium baunya dari luar! 😄\n\nREP+6 | STR+1 | Hubungan+8',
+                                                [{ text: 'Ini level sultan!', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}], pImg);
+                                        }
+                                    });
+                                }
+
+                                subOpts.push({ text: '← Kembali', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }});
+                                showDialogue('🍳 PILIH MASAKAN',
+                                    `Dapur siap! Mau masak apa hari ini?\n⚡ Energimu: ${Math.floor(p.energy)}/100\n\n${hasIkan ? '🐟 Ada ikan segar di inventory!' : ''}${hasTelor ? '\n🥚 Ada telor di inventory!' : ''}`,
+                                    subOpts, pImg);
                             }
-                        }
-                    },
-                    {
-                        text: "🛒 Belanja Kebutuhan Dapur",
-                        action: () => {
-                            showToast("Pergilah ke Toko Merchant atau Pedagang Keliling!");
-                            closeDialogue();
-                        }
-                    },
-                    {
-                        text: "🛋️ Santai Dulu Aja",
-                        action: () => {
-                            showToast("Menikmati waktu luang...");
-                            closeDialogue();
-                        }
+                        });
+                    } else {
+                        opts.push({ text: '✅ Sudah masak hari ini',
+                            action: () => showToast('Masakan sudah siap! Pasangan pasti senang pulang.') });
                     }
-                ], pImg);
+                } else {
+                    // ── Belum ada dapur → alternatif believable ──
+                    opts.push({
+                        text: `🍱 Makan Hari Ini (Belum ada dapur — Rumah Lv.${hl})`,
+                        action: () => {
+                            const hasMakananJadi = (p.inventory?.['nasi_bungkus'] || 0) > 0
+                                                || (p.inventory?.['gandum'] || 0) > 0;
+                            if (hasMakananJadi) {
+                                // Punya makanan di inventory
+                                const item = (p.inventory?.['nasi_bungkus']||0) > 0 ? 'nasi_bungkus' : 'gandum';
+                                const namaItem = item === 'nasi_bungkus' ? 'Nasi Bungkus' : 'Roti Gandum';
+                                showDialogue('🍱 MAKAN DARI STOK',
+                                    `Kamu punya ${namaItem} di tas.\n\nMakan dari bungkusan dulu — ini wajar banget untuk rumah sederhana.\n\nKalau mau masak sendiri, nabung buat upgrade rumah ke Lv.3 ya!\n\n⚡ +20 Energi`,
+                                    [{
+                                        text: `Makan ${namaItem}`,
+                                        action: () => {
+                                            p.inventory[item] = Math.max(0, (p.inventory[item]||0) - 1);
+                                            p.energy = Math.min(100, p.energy + 20);
+                                            p.hp = Math.min(p.maxHp||100, (p.hp||100) + 10);
+                                            if (!p.dailyChores) p.dailyChores = {};
+                                            p.dailyChores.cooking = true; // tandai sudah "makan" hari ini
+                                            showToast(`😋 ${namaItem} dimakan. Energi +20, HP +10`);
+                                            closeDialogue();
+                                        }
+                                    },
+                                    { text: 'Simpan dulu', action: closeDialogue }],
+                                    pImg);
+                            } else {
+                                showDialogue('🍱 BELUM ADA DAPUR',
+                                    `Rumahmu (Lv.${hl}) belum punya dapur, jadi belum bisa masak di rumah.\n\nIni wajar banget untuk awal-awal!\n\nAlternatif makan hari ini:\n🏪 Beli nasi bungkus di Merchant\n🍜 Makan di warung dekat pasar\n🐟 Mancing → makan ikan bakar di luar\n\nMau masak sendiri di rumah?\n→ Upgrade ke Rumah Lv.3 (1.500.000 G)`,
+                                    [
+                                        { text: '🏪 Pergi ke Merchant', action: () => { closeDialogue(); showToast('Pergi ke Merchant untuk beli makanan...'); }},
+                                        { text: '← Kembali', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}
+                                    ], pImg);
+                            }
+                        }
+                    });
+                }
+
+                // ════════════════════════════════════
+                //  👔 CUCI BAJU — selalu tersedia
+                // ════════════════════════════════════
+                if (!chores.laundry) {
+                    opts.push({
+                        text: '👔 Cuci & Jemur Baju (Energi -15)',
+                        action: () => {
+                            if (p.energy < 15) {
+                                showToast('Energi kurang untuk cuci baju sekarang...');
+                                return;
+                            }
+                            p.energy -= 15;
+                            if (!p.dailyChores) p.dailyChores = {};
+                            p.dailyChores.laundry = true;
+                            p.reputation = (p.reputation||0) + 1;
+                            const narasi = [
+                                '👔 Baju dicuci dengan sabun, dibilas bersih, dijemur di bawah matahari.\n\nBau segar! Kehidupan sederhana yang penuh rasa syukur. ☀️\n\nREP+1',
+                                '👔 Tumpukan baju kotor akhirnya beres!\n\nDijemur rapi di tali, angin siang bertiup semilir. ☀️\n\nREP+1',
+                            ];
+                            showDialogue('👔 CUCI BAJU SELESAI',
+                                narasi[Math.floor(Math.random()*narasi.length)],
+                                [{ text: 'Beres!', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}],
+                                pImg);
+                        }
+                    });
+                } else {
+                    opts.push({ text: '✅ Baju sudah dicuci hari ini',
+                        action: () => showToast('Baju sudah bersih dan dijemur!') });
+                }
+
+                // ════════════════════════════════════════════════════
+                //  🌱 SIRAM TANAMAN — hanya jika punya lahan aktif
+                // ════════════════════════════════════════════════════
+                if (hasFarm) {
+                    const unwatered = Object.values(p.farming).filter(c => c && c.type && !c.watered).length;
+                    if (!chores.garden) {
+                        const cost = Math.max(10, unwatered * 3);
+                        opts.push({
+                            text: `🌱 Siram Tanaman (${unwatered} belum disiram, Energi -${cost})`,
+                            action: () => {
+                                if (unwatered === 0) { showToast('Semua tanaman sudah disiram hari ini!'); return; }
+                                if (p.energy < cost) {
+                                    showToast(`Energi kurang. Butuh ${cost} untuk siram ${unwatered} tanaman.`);
+                                    return;
+                                }
+                                p.energy -= cost;
+                                let count = 0;
+                                for (const key in p.farming) {
+                                    if (p.farming[key] && p.farming[key].type && !p.farming[key].watered) {
+                                        p.farming[key].watered = true;
+                                        count++;
+                                    }
+                                }
+                                if (!p.dailyChores) p.dailyChores = {};
+                                p.dailyChores.garden = true;
+                                showDialogue('🌱 KEBUN SUDAH DISIRAM',
+                                    `${count} tanaman berhasil disiram dengan penuh sayang.\n\nTanaman yang terawat = sumber penghasilan tambahan keluarga. 🌿\n\nEnergi -${cost}`,
+                                    [{ text: 'Ayo tumbuh subur!', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}],
+                                    pImg);
+                            }
+                        });
+                    } else {
+                        opts.push({ text: '✅ Tanaman sudah disiram hari ini',
+                            action: () => showToast('Kebun sudah terawat. Tinggal tunggu panen!') });
+                    }
+                }
+
+                // ════════════════════════════════════════════════════
+                //  💊 JAGA KESEHATAN KELUARGA — muncul jika menikah
+                // ════════════════════════════════════════════════════
+                if (married && !chores.health_check) {
+                    opts.push({
+                        text: '💊 Cek Kebutuhan Keluarga (Obat/Vitamin)',
+                        action: () => {
+                            const hasObat = (p.inventory?.['obat'] || p.inventory?.['tonic_kebal'] || 0) > 0;
+                            if (hasObat) {
+                                showDialogue('💊 STOK KESEHATAN',
+                                    'Kamu punya obat/vitamin di stok.\n\nBagus! Keluarga siap hadapi hari.\n\n✅ Kesehatan keluarga terjaga.',
+                                    [{ text: 'Syukurlah!', action: () => {
+                                        if (!p.dailyChores) p.dailyChores = {};
+                                        p.dailyChores.health_check = true;
+                                        p.ethics = Math.min(100, (p.ethics||0) + 1);
+                                        closeDialogue();
+                                    }}], pImg);
+                            } else {
+                                showDialogue('💊 STOK HABIS',
+                                    'Obat dan vitamin keluarga habis.\n\nPergi ke Klinik atau Merchant untuk beli sebelum ada yang sakit.\n\n💡 Sediakan selalu: Obat dasar, vitamin, plester.',
+                                    [
+                                        { text: '🏥 Pergi ke Klinik', action: () => { closeDialogue(); showToast('Pergi ke Klinik...'); }},
+                                        { text: 'Nanti saja', action: closeDialogue }
+                                    ], pImg);
+                            }
+                        }
+                    });
+                }
+
+                // ════════════════════════════════════
+                //  🛋️ SANTAI + tawari lanjut
+                // ════════════════════════════════════
+                opts.push({
+                    text: '🛋️ Santai Sejenak (Pulihkan +15 Energi)',
+                    action: () => {
+                        const gain = Math.min(15, 100 - p.energy);
+                        p.energy = Math.min(100, p.energy + gain);
+                        const santaiTeks = [
+                            `Kamu duduk di kursi favorit sambil menyeduh teh.\n\nSuasana rumah yang tenang terasa seperti hadiah kecil.\n\n⚡ +${gain} Energi`,
+                            `Kamu berbaring sebentar di kasur.\n\nMata terpejam, pikiran bersih. Sungguh segar!\n\n⚡ +${gain} Energi`,
+                            `Kamu membuka jendela dan menghirup udara pagi.\n\nAngin sepoi masuk, pikiran jadi jernih.\n\n⚡ +${gain} Energi`,
+                            `Kamu melamun sambil memandang halaman kecil.\n\nAda kupu-kupu di tanaman. Damai sekali.\n\n⚡ +${gain} Energi`,
+                        ];
+                        showDialogue('🛋️ ISTIRAHAT SEJENAK',
+                            santaiTeks[Math.floor(Math.random()*santaiTeks.length)],
+                            [{ text: 'Ah, segar~', action: () => {
+                                closeDialogue();
+                                // Langsung balik ke menu setelah santai
+                                setTimeout(() => showDailyHousekeepingMenu(), 300);
+                            }}], pImg);
+                    }
+                });
+
+                // ════════════════════════════════════
+                //  😴 TIDUR SIANG — opsional
+                // ════════════════════════════════════
+                opts.push({
+                    text: '😴 Tidur Siang (Energi +40, waktu +2 jam)',
+                    action: () => {
+                        showDialogue('😴 TIDUR SIANG?',
+                            'Tidur siang memulihkan energi lebih banyak, tapi waktu harian berkurang 2 jam.\n\nYakin mau tidur siang sekarang?',
+                            [
+                                { text: '😴 Tidur siang sekarang', action: () => {
+                                    p.energy = Math.min(100, p.energy + 40);
+                                    STATE.time = Math.min(STATE.time + 200, 1550);
+                                    showToast('😴 Tidur siang... ⚡ Energi +40. Waktu berlalu 2 jam.');
+                                    closeDialogue();
+                                }},
+                                { text: '← Kembali', action: () => { closeDialogue(); showDailyHousekeepingMenu(); }}
+                            ], pImg);
+                    }
+                });
+
+                opts.push({ text: '🚪 Tutup Menu', action: closeDialogue });
+
+                showDialogue('🏠 AKTIVITAS RUMAH TANGGA', greeting, opts, pImg);
             }
 
             // --- NEW: UPDATE PERGERAKAN BOT HANTU (AGAR TERLIHAT HIDUP) ---
@@ -23075,12 +23403,36 @@ ${reward.tip}`,
                     }
                     if (!p.sylvariaFirstVisit) {
                         p.sylvariaFirstVisit = true;
-                        showDialogue("PORTAL TERBUKA!", "Keris Penjagamu bersinar terang!\nRafflesia merekah memancarkan cahaya zamrud!\nKebijaksanaan jiwamu membuka segel kuno...\n\nKamu melangkah ke dalam dimensi lain — dunia peri Sylvaria yang hampir punah, menunggu satu manusia yang benar-benar tulus.", [{ text: "Masuk ke Sylvaria...", action: () => { closeDialogue(); STATE.location = 'sylvaria'; STATE.player.x = 15 * TILE_SIZE; STATE.player.y = (SYLVARIA_H - 4) * TILE_SIZE; showToast("Memasuki Sylvaria — Dunia Peri"); }}], null);
+                        STATE.screen = 'cutscene';
+                        STATE.cutsceneOverride = true;
+                        CinematicEngine.play('portalWilis', [
+                            {
+                                chapter: '— Retakan Dimensi Terbuka —',
+                                title: 'Keris Penjaga Bersinar!',
+                                sub: 'Rafflesia merekah · Kebijaksanaan membuka segel kuno...',
+                                narasi: 'Tiga kekuatan bersatu: pusaka leluhur, bunga langka dari alam, dan jiwa yang bijaksana. Retakan di dinding candi melebar memancarkan cahaya zamrud.',
+                                dur: 5000
+                            },
+                            {
+                                chapter: '— Menuju Lereng Gunung Wilis —',
+                                title: '🌀 Kahyangan Wilis',
+                                sub: 'Dunia Para Widadari — tersembunyi selama berabad-abad',
+                                narasi: 'Kamu melangkah menembus retakan. Udara berubah wangi kenanga dan tanah hujan. Di kejauhan, lereng Gunung Wilis tampak bersinar lembut keemasan...',
+                                dur: 5500
+                            },
+                        ], () => {
+                            STATE.screen = 'play';
+                            STATE.cutsceneOverride = false;
+                            STATE.location = 'sylvaria';
+                            STATE.player.x = 15 * TILE_SIZE;
+                            STATE.player.y = (SYLVARIA_H - 4) * TILE_SIZE;
+                            showToast('✨ Memasuki Kahyangan Wilis — Dunia Para Widadari!');
+                        });
                     } else {
                         STATE.location = 'sylvaria';
                         STATE.player.x = 15 * TILE_SIZE;
                         STATE.player.y = (SYLVARIA_H - 4) * TILE_SIZE;
-                        showToast("Kembali ke Sylvaria");
+                        showToast('✨ Kembali ke Kahyangan Wilis...');
                     }
                 }
                 else if (b.id === 'sylvaria_exit') {
@@ -24850,11 +25202,23 @@ ${reward.tip}`,
 
                     if (p.role !== 'worker' && currentYear < 4 && !STATE.freeRoamMode && p.jobStatus !== 'employed') {
                         let restrictedOpts = [
+                            { text: "🍱 Beli Sembako & Makanan", action: () => {
+                                showDialogue("SEMBAKO 🛒",
+                                    "Kebutuhan makan sehari-hari tersedia di sini:",
+                                    [
+                                        { text: "🍱 Nasi Bungkus (300 G) — Energi +30", action: () => buyItem('nasi_bungkus', 300) },
+                                        { text: "🥚 Telur Ayam (100 G)", action: () => buyItem('telor', 100) },
+                                        { text: "🟫 Tempe (150 G)", action: () => buyItem('tempe', 150) },
+                                        { text: "🍞 Roti Gandum (200 G) — Energi +20", action: () => buyItem('gandum', 200) },
+                                        { text: "💊 Obat Generik (500 G) — HP +30", action: () => buyItem('obat', 500) },
+                                        { text: "← Kembali", action: () => interactNPC(npc) }
+                                    ], npc.imgSrc);
+                            }},
                             { text: "Lihat Pasar Komoditas (Jual/Beli)", action: () => openPasar() },
                             { text: "🪪 Beli Dokumen (KTP/Foto/SKCK)", action: () => openDocumentShop(npc) },
                             {
                                 text: "Ngobrol Bisnis", action: () => {
-                                    showDialogue("MERCHANT", "Harga barang di sini berfluktuasi setiap hari tergantung supply dan demand.", [{ text: "Mengerti", action: closeDialogue }], npc.imgSrc);
+                                    showDialogue(npc.name, "Harga barang di sini berfluktuasi setiap hari tergantung supply dan demand.", [{ text: "Mengerti", action: closeDialogue }], npc.imgSrc);
                                 }
                             },
                             { text: "Tutup", action: closeDialogue }
@@ -24863,7 +25227,7 @@ ${reward.tip}`,
                         // INJECT VIRAL JIKA ADA
                         if (viralOpt) restrictedOpts.unshift(viralOpt);
 
-                        showDialogue("MERCHANT",
+                        showDialogue(npc.name,
                             "Selamat datang! Silakan lihat-lihat barang dagangan kami.\n\n(Catatan: Bos Merchant hanya membuka lowongan kerja untuk Role **Fighter/Pekerja** selama masa Trial 3 Tahun ini. Kamu bisa melamar setelah lulus Trial.)",
                             restrictedOpts,
                             npc.imgSrc
@@ -24884,7 +25248,7 @@ ${reward.tip}`,
                     const currentTitle = JOB_TIERS[currentLvl] ? JOB_TIERS[currentLvl].title : "Magang";
 
                     if (jobStatus === 'fired') {
-                        showDialogue("MERCHANT", "Kamu sudah saya pecat! Kinerjamu buruk sekali.", [
+                        showDialogue(npc.name, "Kamu sudah saya pecat! Kinerjamu buruk sekali.", [
                             {
                                 text: "Saya mohon maaf! (Energy 50)", action: () => {
                                     if (p.energy >= 50) {
@@ -24928,25 +25292,25 @@ ${reward.tip}`,
                         let unemployedOpts = [
                             { text: "📨 Serahkan Surat Lamaran", action: () => submitAmplop('merchant') },
                             { text: "📝 Belum punya? Buat di Meja Belajar", action: () => {
-                                showDialogue("MERCHANT", "Surat lamaran bisa dibuat di **Meja Belajar** di rumahmu.\n\nYang perlu kamu siapkan:\n📄 Ijazah SMA/SMK\n📋 CV\n📸 Pas Foto 3×4\n🪪 KTP\n\nSetelah selesai, bawa amplopnya kemari!", [{text:"Mengerti!", action:closeDialogue}], npc.imgSrc);
+                                showDialogue(npc.name, "Surat lamaran bisa dibuat di **Meja Belajar** di rumahmu.\n\nYang perlu kamu siapkan:\n📄 Ijazah SMA/SMK\n📋 CV\n📸 Pas Foto 3×4\n🪪 KTP\n\nSetelah selesai, bawa amplopnya kemari!", [{text:"Mengerti!", action:closeDialogue}], npc.imgSrc);
                             }},
                             { text: "Saya lihat-lihat dulu", action: closeDialogue }
                         ];
                         if (viralOpt) unemployedOpts.unshift(viralOpt);
 
-                        showDialogue("MERCHANT", "Kami mencari pekerja disiplin. Shift 08:00 - 16:00. (Senin - Sabtu)\n\n📋 SYARAT MELAMAR:\n• Surat Lamaran + Ijazah SMA/SMK\n• CV, Pas Foto 3×4, KTP\n\n💡 Buat surat lamaran dulu di Meja Belajar di rumahmu, lalu bawa amplopnya kemari!", unemployedOpts, npc.imgSrc);
+                        showDialogue(npc.name, "Kami mencari pekerja disiplin. Shift 08:00 - 16:00. (Senin - Sabtu)\n\n📋 SYARAT MELAMAR:\n• Surat Lamaran + Ijazah SMA/SMK\n• CV, Pas Foto 3×4, KTP\n\n💡 Buat surat lamaran dulu di Meja Belajar di rumahmu, lalu bawa amplopnya kemari!", unemployedOpts, npc.imgSrc);
 
                     } else if (jobStatus === 'employed') {
                         // --- CEK FESTIVAL (LIBUR FESTIVAL) ---
                         if (isFestivalDayToday()) {
                             const fest = getTodayFestivalData();
-                            showDialogue("MERCHANT", `${fest ? fest.icon : '🎉'} Hari ini **${fest ? fest.name : 'Festival Desa'}**! Toko tutup untuk festival.\n\n"Kita semua warga desa wajib hadir merayakan bersama. Nikmati festivalnya ya!"\n\n${fest ? fest.suasana : ''}`, [{ text: `${fest ? fest.icon : '🎉'} Asyik! Pergi ke festival!`, action: () => { closeDialogue(); STATE.player.x = 24 * TILE_SIZE; STATE.player.y = 22 * TILE_SIZE; showToast(`${fest ? fest.icon : '🎉'} Menuju alun-alun festival!`); }}], npc.imgSrc);
+                            showDialogue(npc.name, `${fest ? fest.icon : '🎉'} Hari ini **${fest ? fest.name : 'Festival Desa'}**! Toko tutup untuk festival.\n\n"Kita semua warga desa wajib hadir merayakan bersama. Nikmati festivalnya ya!"\n\n${fest ? fest.suasana : ''}`, [{ text: `${fest ? fest.icon : '🎉'} Asyik! Pergi ke festival!`, action: () => { closeDialogue(); STATE.player.x = 24 * TILE_SIZE; STATE.player.y = 22 * TILE_SIZE; showToast(`${fest ? fest.icon : '🎉'} Menuju alun-alun festival!`); }}], npc.imgSrc);
                             return;
                         }
                         // --- CEK HARI LIBUR (MINGGU) ---
                         const dayIndex = (STATE.day - 1) % 7;
                         if (dayIndex === 6) {
-                            showDialogue("MERCHANT", `Halo ${currentTitle}. Hari ini **MINGGU**, gudang libur operasional. \nIstirahatlah!`, [{ text: "Siap Bos!", action: closeDialogue }], npc.imgSrc);
+                            showDialogue(npc.name, `Halo ${currentTitle}. Hari ini **MINGGU**, gudang libur operasional. \nIstirahatlah!`, [{ text: "Siap Bos!", action: closeDialogue }], npc.imgSrc);
                             return;
                         }
 
@@ -25031,7 +25395,7 @@ ${reward.tip}`,
                                                     const promoAP = p.jobLevel * 20;
                                                     p.achievementPoints = (p.achievementPoints || 0) + promoAP;
                                                     showToast(`🏆 NAIK JABATAN! +${promoAP} AP`);
-                                                    showDialogue("MERCHANT", `Selamat! Kamu resmi menjadi **${nextTitle}**.
+                                                    showDialogue(npc.name, `Selamat! Kamu resmi menjadi **${nextTitle}**.
 
 🏅 +${promoAP} Achievement Points sebagai bukti prestasimu!`, [{ text: "Terima kasih!", action: closeDialogue }], npc.imgSrc);
                                                 }
@@ -25075,7 +25439,7 @@ ${reward.tip}`,
                         }
 
                         if (menuOptions.length === 0) menuOptions.push({ text: "Tutup", action: closeDialogue });
-                        showDialogue("MERCHANT", bossText, menuOptions, npc.imgSrc);
+                        showDialogue(npc.name, bossText, menuOptions, npc.imgSrc);
                     }
                 }
 
@@ -25944,6 +26308,27 @@ ${reward.tip}`,
                     // 1. Siapkan Menu Standar (Toko)
                     let opts = [
                         {
+                            text: "🍱 Beli Sembako & Makanan", action: () => {
+                                showDialogue("SEMBAKO 🛒",
+                                    "Belanja kebutuhan makan sehari-hari:\n\n🍱 Nasi Bungkus — sudah matang, langsung makan\n🥚 Telur Ayam — bahan masak serba guna\n🟫 Tempe — protein murah dan bergizi\n🍞 Roti Gandum — camilan mengenyangkan",
+                                    [
+                                        { text: "🍱 Nasi Bungkus (300 G) — Energi +30", action: () => buyItem('nasi_bungkus', 300) },
+                                        { text: "🥚 Telur Ayam (100 G) — bahan masak", action: () => buyItem('telor', 100) },
+                                        { text: "🥚 Telur 6 biji (500 G) — hemat!", action: () => {
+                                            if (STATE.player.money < 500) { showToast('Uang kurang!'); return; }
+                                            STATE.player.money -= 500;
+                                            STATE.player.inventory['telor'] = (STATE.player.inventory['telor']||0) + 6;
+                                            showToast('🥚 Dapat 6 Telur Ayam! (500G)');
+                                            closeDialogue();
+                                        }},
+                                        { text: "🟫 Tempe (150 G) — bahan masak", action: () => buyItem('tempe', 150) },
+                                        { text: "🍞 Roti Gandum (200 G) — Energi +20", action: () => buyItem('gandum', 200) },
+                                        { text: "🐟 Ikan Segar (150 G)", action: () => buyItem('ikan_segar', 150) },
+                                        { text: "← Kembali", action: () => interactNPC(npc) }
+                                    ], npc.imgSrc);
+                            }
+                        },
+                        {
                             text: "🌱 Beli Bibit & Pupuk", action: () => {
                                 showDialogue("TOKO BIBIT", "Silakan pilih bibit unggul (Panen 2-3 Hari):", [
                                     { text: "Bibit Padi (500 G) 🌾", action: () => buyItem('bibit_padi', 500) },
@@ -26004,10 +26389,10 @@ ${reward.tip}`,
 
                     if (npc.id === 'trader_outside') {
                         // Dialog Suami (Luar)
-                        greetingText = "Permisi! Saya membawa perlengkapan tani terbaik.\nLahan di belakang rumahmu sayang kalau dibiarkan kosong lho.";
+                        greetingText = "Selamat pagi! Saya Bu Lastri, pedagang keliling. Ada bibit, sembako, dan pupuk segar hari ini!\nLahan di belakang rumahmu sayang kalau dibiarkan kosong lho.";
                     } else {
                         // Dialog Istri (Dalam) - Ini yang Anda cari!
-                        greetingText = "Eh nak, cari suami saya? Dia sedang keliling desa jualan.\nTapi kalau kamu butuh bibit atau barang viral, ibu bisa ambilkan stok di gudang.";
+                        greetingText = "Sudah malam nak, Bu Lastri baru pulang keliling. Tapi masih ada stok di gudang kalau kamu butuh sesuatu!";
                     }
 
                     // Tampilkan Dialog Utama dengan Sapaan yang Benar
@@ -26460,7 +26845,7 @@ ${reward.tip}`,
                                                             applyFolktalePassives();
                                                             setTimeout(() => {
                                                                 showDialogue("KI LAMONG — PESAN TERAKHIR",
-                                                                    "Sekarang... pergilah ke Candi Kuno.\n\nAda retakan di sisi utara candi yang sudah lama menunggu.\n\nKeris itu akan membantumu. Tapi keris saja tidak cukup — kamu butuh sesuatu dari alam dan sesuatu dari jiwa.\n\nBicaralah dengan Dewi Roro tentang Rafflesia. Bicaralah dengan Dewi Arsa tentang kebijaksanaan.\n\nDan ketika ketiganya bersatu... retakan itu akan terbuka.",
+                                                                    "Sekarang... pergilah ke Candi Kuno.\n\nAda retakan di sisi utara candi — itu pintu menuju Kahyangan Wilis yang lama tertutup.\n\nKeris itu akan membantumu. Tapi keris saja tidak cukup — kamu butuh sesuatu dari alam dan sesuatu dari jiwa.\n\nBicaralah dengan Dewi Roro tentang Rafflesia. Bicaralah dengan Dewi Arsa tentang kebijaksanaan.\n\nDan ketika ketiganya bersatu... retakan itu akan terbuka.",
                                                                     [{text:"Aku mengerti. Terima kasih, Ki Lamong. 🙏", action: closeDialogue}], npc.imgSrc);
                                                             }, 500);
                                                         }
@@ -26592,7 +26977,7 @@ ${reward.tip}`,
                                 p.ethics = (p.ethics||0)+5;
                                 showToast("Quest Selesai! +20 Hubungan, REP +10, Skill Renang terbuka!");
                                 showDialogue("PUTRI DUYUNG — HARU",
-                                    "...ini... kalung itu sungguh.\n\nAku tidak percaya kamu benar-benar menemukannya. Aku sudah mengira ini hilang selamanya.\n\nKalung ini adalah warisan nenek moyang para peri laut — ia menghubungkan kami dengan Sylvaria, dunia peri di atas...\n\nKamu sudah melakukan sesuatu yang sangat berarti. Aku tidak tahu bagaimana cara membalasnya. Tapi aku bisa mengajarimu sesuatu.\n\nAku ajarkan teknik renang leluhur peri laut — yang akan membantumu di lomba apapun.",
+                                    "...ini... kalung itu sungguh.\n\nAku tidak percaya kamu benar-benar menemukannya. Aku sudah mengira ini hilang selamanya.\n\nKalung ini adalah warisan nenek moyang para peri laut — ia menghubungkan kami dengan Kahyangan Wilis di atas...\n\nKamu sudah melakukan sesuatu yang sangat berarti. Aku tidak tahu bagaimana cara membalasnya. Tapi aku bisa mengajarimu sesuatu.\n\nAku ajarkan teknik renang leluhur peri laut — yang akan membantumu di lomba apapun.",
                                     [{text:"Terima kasih, Putri Duyung... (Skill Renang +)", action:closeDialogue}], npc.imgSrc);
                             }});
                         } else {
@@ -26601,8 +26986,8 @@ ${reward.tip}`,
                             });
                         }
                     } else if (duyungQ === 2) {
-                        dOpts.push({ text: "🧜‍♀️ Tentang Sylvaria...", action: () =>
-                            showDialogue("PUTRI DUYUNG", "Kamu sudah ke sana?\n\nSylvaria... itu adalah dunia kakak-kakak paraku. Para peri darat dan peri udara.\n\nDahulu kami sering berkunjung melalui jalur bawah laut. Tapi sejak Sylvaria mulai memudar, jalur itu tertutup.\n\nJika kamu bisa membantu memulihkan Pohon Jiwa mereka... mungkin jalur itu bisa terbuka lagi. Dan lautku juga akan ikut sehat.", [{text:"Aku akan berusaha.", action:closeDialogue}], npc.imgSrc)
+                        dOpts.push({ text: "🧜‍♀️ Tentang Kahyangan Wilis...", action: () =>
+                            showDialogue("PUTRI DUYUNG", "Kamu sudah ke sana?\n\nKahyangan Wilis... itu adalah dunia kakak-kakak paraku. Para peri darat dan peri udara.\n\nDahulu kami sering berkunjung melalui jalur bawah laut. Tapi sejak Kahyangan Wilis mulai memudar, jalur itu tertutup.\n\nJika kamu bisa membantu memulihkan Pohon Beringin Agung mereka... mungkin jalur itu bisa terbuka lagi. Dan lautku juga akan ikut sehat.", [{text:"Aku akan berusaha.", action:closeDialogue}], npc.imgSrc)
                         });
                     }
 
@@ -27162,9 +27547,9 @@ ${reward.tip}`,
                         }});
                     }
 
-                    // Kebijaksanaan 3 — butuh sudah kunjungi Sylvaria
+                    // Kebijaksanaan 3 — butuh sudah kunjungi Kahyangan Wilis
                     if (gotWisdom2 && !gotWisdom3 && p.sylvariaFirstVisit) {
-                        opts.push({ text: "Aku sudah ke Sylvaria...", action: () => {
+                        opts.push({ text: "Aku sudah ke Kahyangan Wilis...", action: () => {
                             p.arsaWisdom3 = true;
                             p.ethics = (p.ethics || 0) + 20;
                             p.reputation = (p.reputation || 0) + 15;
@@ -27172,7 +27557,7 @@ ${reward.tip}`,
                             addItem('cahaya_arsa', 1);
                             showToast("✨ Restu Dewi Arsa: Ethics +20, REP +15, EXP +300, Dapat Cahaya Arsa!");
                             showDialogue("DEWI ARSA — RESTU TERAKHIR",
-                                "Kau sudah bertemu mereka.\n\nKau tahu sekarang — bahwa ada dunia yang bergantung pada pilihan-pilihan kecilmu. Setiap keputusan baik yang kau buat di dunia atas... memberi energi bagi Sylvaria untuk bertahan.\n\nIni adalah inti dari semua kebijaksanaan:\n\"Kebaikan sejati bukan yang dilakukan agar dilihat. Ia adalah kebaikan yang tetap kau lakukan bahkan saat tidak ada yang menonton.\"\n\nTerimalah Cahaya Arsa — sinarnya akan membantumu di saat tergelap.",
+                                "Kau sudah sampai ke Kahyangan Wilis.\n\nKau tahu sekarang — bahwa ada dunia yang bergantung pada pilihan-pilihan kecilmu. Setiap keputusan baik yang kau buat di dunia atas... memberi energi bagi Kahyangan Wilis untuk bertahan.\n\nIni adalah inti dari semua kebijaksanaan:\n\"Kebaikan sejati bukan yang dilakukan agar dilihat. Ia adalah kebaikan yang tetap kau lakukan bahkan saat tidak ada yang menonton.\"\n\nTerimalah Cahaya Arsa — sinarnya akan membantumu di saat tergelap.",
                                 [{text:"Aku tidak akan melupakan ini. (Restu Dewi +3 semua stat)", action: () => {
                                     p.str = (p.str||0)+3; p.int = (p.int||0)+3;
                                     p.spd = (p.spd||0)+3; p.biz = (p.biz||0)+3;
@@ -27181,7 +27566,7 @@ ${reward.tip}`,
                                 }}], npc.imgSrc);
                         }});
                     } else if (gotWisdom2 && !gotWisdom3) {
-                        opts.push({ text: "🔒 [Kunjungi Sylvaria dulu] Restu Terakhir", action: () => showDialogue("DEWI ARSA", "Kau belum sampai ke sana.\n\nCari retakan dimensi di sisi utara candi. Buka dengan Keris Penjaga, Rafflesia, dan hati yang bersih.", [{text:"Baiklah...", action:closeDialogue}], npc.imgSrc) });
+                        opts.push({ text: "🔒 [Kunjungi Kahyangan Wilis dulu] Restu Terakhir", action: () => showDialogue("DEWI ARSA", "Kau belum sampai ke Kahyangan Wilis.\n\nCari retakan dimensi di sisi utara candi. Buka dengan Keris Penjaga, Rafflesia, dan hati yang bersih.", [{text:"Baiklah...", action:closeDialogue}], npc.imgSrc) });
                     }
 
                     opts.push({ text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) });
@@ -27189,7 +27574,7 @@ ${reward.tip}`,
                     showDialogue("DEWI ARSA", greeting, opts, npc.imgSrc);
                 }
                 else if (npc.id === 'dewi_roro') {
-                    // ═══ DEWI RORO — Quest Rafflesia + Follow-Up + Sylvaria Hint ═══
+                    // ═══ DEWI RORO — Quest Rafflesia + Follow-Up + Kahyangan Wilis Hint ═══
                     const p = STATE.player;
                     const hasBibit = !!(p.inventory && p.inventory['bibit_rafflesia']);
                     const hasBunga = !!(p.inventory && p.inventory['bunga_rafflesia']) || p.rafflesiaBloomed;
@@ -27286,33 +27671,33 @@ ${reward.tip}`,
 
                     let sylvaGreet = "";
                     if (stage === 0) {
-                        sylvaGreet = "...Seorang manusia?\n\nSudah berabad-abad tidak ada manusia yang berhasil menjejakkan kaki di Sylvaria.\n\nAku Sylva, Ratu terakhir dunia peri ini. Jika kamu bisa melihat kami... berarti hatimu masih murni.\n\nTapi seperti yang kamu lihat... kami hampir punah.";
+                        sylvaGreet = "...Seorang manusia?\n\nSudah berabad-abad tidak ada manusia yang berhasil menjejakkan kaki di Kahyangan Wilis.\n\nAku Rara Wilis, Ratu terakhir para Widadari. Jika kamu bisa melihat kami... berarti hatimu masih murni.\n\nTapi seperti yang kamu lihat... kami hampir punah.";
                     } else if (stage === 1) {
                         const done = [task1Done,task2Done,task3Done,task4Done].filter(Boolean).length;
-                        sylvaGreet = `Kamu kembali! ✨\n\nPohon Jiwa kami masih berjuang untuk bertahan.\n\nProgress Pemulihan: ${done}/4 tugas selesai.\n\nBantuan apa yang sudah kamu lakukan?`;
+                        sylvaGreet = `Kamu kembali! ✨\n\nPohon Beringin Agung kami masih berjuang untuk bertahan.\n\nProgress Pemulihan: ${done}/4 tugas selesai.\n\nBantuan apa yang sudah kamu lakukan?`;
                     } else if (hasPohonJiwa) {
-                        sylvaGreet = "Sylvaria hidup kembali... berkat kamu. 🌳✨\n\nPohon Jiwa telah mekar sempurna. Para peri kecil kembali bermain di antara dedaunan.\n\nKamu bukan sekadar tamu. Kamu adalah Pelindung Sylvaria.";
+                        sylvaGreet = "Kahyangan Wilis... hidup kembali! 🌳✨\n\nPohon Beringin Agung telah mekar sempurna. Para Widadari kembali menari di antara dedaunan Gunung Wilis.\n\nKamu bukan sekadar tamu. Kamu adalah Pelindung Kahyangan Wilis — Bhayangkara Wilis.";
                     }
 
                     const sOpts = [];
 
                     if (stage === 0) {
-                        sOpts.push({ text: "Ceritakan tentang Sylvaria...", action: () => {
-                            showDialogue("SYLVA — RATU PERI",
-                                "Sylvaria dulunya adalah dunia peri terbesar di kawasan ini.\n\nRibuan peri hidup harmonis — peri hutan menjaga pohon-pohon, peri bunga merawat ladang manusia, peri air membersihkan sungai dan laut.\n\nTapi ratusan tahun lalu, manusia mulai melupakan alam. Penebangan hutan, polusi, keserakahan.\n\nDunia kami membutuhkan keseimbangan antara alam dan manusia. Saat manusia melupakan alam... kami memudar.\n\nKini tinggal aku dan beberapa peri kecil yang tersisa. Pohon Jiwa kami — sumber kehidupan Sylvaria — hampir padam.",
-                                [{text:"Apakah ada cara menyelamatkan Sylvaria?", action: () => {
-                                    showDialogue("SYLVA", "Ada.\n\nSylvaria bisa pulih jika ada manusia yang benar-benar tulus membantu — bukan karena mau mendapat hadiah, tapi karena benar-benar peduli.\n\nDibutuhkan empat hal:\n\n1. Kristal Tanah — energi bumi murni\n2. Keberanian menembus kegelapan\n3. Cahaya Kebijaksanaan jiwa manusia\n4. Benih kehidupan yang ditanam dengan cinta\n\nMaukah kamu mencoba?", [
-                                        { text: "Aku akan membantu Sylvaria!", action: () => {
+                        sOpts.push({ text: "Ceritakan tentang Kahyangan Wilis...", action: () => {
+                            showDialogue("RARA WILIS — RATU WIDADARI",
+                                "Kahyangan Wilis dulunya adalah tempat tinggal para Widadari terbesar di Tanah Jawa.\n\nRibuan peri hidup harmonis — peri hutan menjaga pohon-pohon, peri bunga merawat ladang manusia, peri air membersihkan sungai dan laut.\n\nTapi ratusan tahun lalu, manusia mulai melupakan alam. Penebangan hutan, polusi, keserakahan.\n\nDunia kami membutuhkan keseimbangan antara alam dan manusia. Saat manusia melupakan alam... kami memudar.\n\nKini tinggal aku dan beberapa Widadari muda yang tersisa. Pohon Beringin Agung kami — sumber kehidupan Kahyangan Wilis — hampir padam.",
+                                [{text:"Apakah ada cara menyelamatkan Kahyangan Wilis?", action: () => {
+                                    showDialogue("RARA WILIS", "Ada.\n\nKahyangan Wilis bisa pulih jika ada manusia yang benar-benar tulus membantu — bukan karena mau mendapat hadiah, tapi karena benar-benar peduli.\n\nDibutuhkan empat hal:\n\n1. Kristal Tanah — energi bumi murni\n2. Keberanian menembus kegelapan\n3. Cahaya Kebijaksanaan jiwa manusia\n4. Benih kehidupan yang ditanam dengan cinta\n\nMaukah kamu mencoba?", [
+                                        { text: "Aku akan membantu Kahyangan Wilis!", action: () => {
                                             p.sylvariaQuest = { stage: 1, task1:false, task2:false, task3:false, task4:false };
-                                            showToast("Quest Sylvaria dimulai! Bantu pulihkan dunia peri!");
-                                            showDialogue("SYLVA", "...Terima kasih.\n\nDalam hati kecilku, aku tahu ada manusia seperti kamu yang akan datang.\n\nKamu tidak perlu terburu-buru. Pohon Jiwa akan bertahan selama ada harapan. Dan kehadiranmu di sini sudah memberikan kami harapan itu.", [{text:"Aku berjanji.", action:closeDialogue}], npc.imgSrc);
+                                            showToast("Quest Kahyangan Wilis dimulai! Bantu pulihkan dunia Widadari Gunung Wilis!");
+                                            showDialogue("RARA WILIS", "...Terima kasih.\n\nDalam hati kecilku, aku tahu ada manusia seperti kamu yang akan datang.\n\nKamu tidak perlu terburu-buru. Pohon Beringin Agung akan bertahan selama ada harapan. Dan kehadiranmu di sini sudah memberikan kami harapan itu.", [{text:"Aku berjanji.", action:closeDialogue}], npc.imgSrc);
                                         }},
                                         { text: "Aku butuh waktu untuk berpikir...", action: closeDialogue }
                                     ], npc.imgSrc);
                                 }}], npc.imgSrc);
                         }});
                         sOpts.push({ text: "Siapa peri-peri kecil di sini?", action: () =>
-                            showDialogue("SYLVA", "Mereka adalah yang tersisa.\n\nFern, peri hutan — dulu menjaga ribuan pohon, kini hanya bisa menjaga satu.\nLily, peri bunga — energinya hampir habis, tapi masih mencoba tersenyum.\nMoss, peri air — dia yang paling muda. Lahir saat Sylvaria sudah mulai memudar, belum pernah tahu Sylvaria yang sesungguhnya.\n\nMereka bertahan karena aku bilang akan ada manusia yang datang suatu hari.", [{text:"Aku tidak akan mengecewakan mereka.", action:closeDialogue}], npc.imgSrc)
+                            showDialogue("RARA WILIS", "Mereka adalah yang tersisa.\n\nWening, Widadari hutan — dulu menjaga ribuan pohon Wilis, kini hanya bisa menjaga satu.\nSekar, Widadari bunga — energinya hampir habis, tapi masih mencoba tersenyum.\nBening, Widadari air — dia yang paling muda. Lahir saat Kahyangan Wilis sudah mulai memudar, belum pernah tahu Kahyangan yang sesungguhnya.\n\nMereka bertahan karena aku bilang akan ada manusia yang datang suatu hari.", [{text:"Aku tidak akan mengecewakan mereka.", action:closeDialogue}], npc.imgSrc)
                         });
                     }
 
@@ -27326,10 +27711,10 @@ ${reward.tip}`,
                                 if (p.inventory['permata'] <= 0) delete p.inventory['permata'];
                                 p.sylvariaQuest.task1 = true;
                                 createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#4ade80');
-                                showToast("Kristal Tanah diserahkan! Pohon Jiwa sedikit bersinar...");
-                                showDialogue("SYLVA", "Kristal Tanah... energi bumi murni!\n\nAku bisa merasakannya — Pohon Jiwa kami menyerap energinya. Daunnya yang hitam mulai sedikit memucat menjadi hijau...\n\nTerima kasih. Ini langkah pertama.", [{text:"Tiga lagi!", action:closeDialogue}], npc.imgSrc);
+                                showToast("Kristal Tanah diserahkan! Pohon Beringin Agung sedikit bersinar...");
+                                showDialogue("RARA WILIS", "Kristal Tanah... energi bumi murni!\n\nAku bisa merasakannya — Pohon Beringin Agung kami menyerap energinya. Daunnya yang hitam mulai sedikit memucat menjadi hijau...\n\nTerima kasih. Ini langkah pertama.", [{text:"Tiga lagi!", action:closeDialogue}], npc.imgSrc);
                             }});
-                        } else sOpts.push({ text: "✅ Kristal Tanah — Selesai", action: () => showDialogue("SYLVA", "Terima kasih atas Kristal Tanah yang kamu berikan. Pohon Jiwa menyerapnya dengan baik.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
+                        } else sOpts.push({ text: "✅ Kristal Tanah — Selesai", action: () => showDialogue("RARA WILIS", "Terima kasih atas Kristal Brantas yang kamu berikan. Pohon Beringin Agung menyerapnya dengan baik.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
 
                         // Task 2: Selesaikan Dungeon Lt.4+
                         const dungeonOk = (STATE.dungeonLevel || 1) >= 4 || (p.dungeonMaxLevel || 0) >= 4;
@@ -27339,24 +27724,24 @@ ${reward.tip}`,
                                 p.sylvariaQuest.task2 = true;
                                 p.dungeonMaxLevel = Math.max(p.dungeonMaxLevel || 0, STATE.dungeonLevel || 1);
                                 createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#f59e0b');
-                                showToast("Keberanian terbukti! Pohon Jiwa semakin menguat...");
-                                showDialogue("SYLVA", "Kamu menembus kegelapan dan bertahan.\n\nPohon Jiwa merasakan energi keberanian dari jiwamu. Monster-monster di Dungeon itu adalah manifestasi kegelapan yang sama yang menghancurkan Sylvaria.\n\nKamu sudah membuktikan: manusia bisa melawan kegelapan dari dalam dirinya sendiri.", [{text:"Dua lagi!", action:closeDialogue}], npc.imgSrc);
+                                showToast("Keberanian terbukti! Pohon Beringin Agung semakin menguat...");
+                                showDialogue("RARA WILIS", "Kamu menembus kegelapan dan bertahan.\n\nPohon Beringin merasakan energi keberanian dari jiwamu. Monster-monster di Dungeon itu adalah manifestasi kegelapan yang sama yang menghancurkan Kahyangan Wilis.\n\nKamu sudah membuktikan: manusia bisa melawan kegelapan dari dalam dirinya sendiri.", [{text:"Dua lagi!", action:closeDialogue}], npc.imgSrc);
                             }});
-                        } else sOpts.push({ text: "✅ Keberanian Dungeon — Selesai", action: () => showDialogue("SYLVA", "Keberanianmu sudah diakui Pohon Jiwa.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
+                        } else sOpts.push({ text: "✅ Keberanian Dungeon — Selesai", action: () => showDialogue("RARA WILIS", "Keberanianmu sudah diakui Pohon Beringin Agung.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
 
                         // Task 3: Cahaya Arsa
                         const hasCahaya = !!(p.inventory && p.inventory['cahaya_arsa']);
                         if (!task3Done) {
                             sOpts.push({ text: hasCahaya ? "✨ Serahkan Cahaya Arsa" : "✨ [Butuh Cahaya Arsa] Kebijaksanaan Jiwa", action: () => {
-                                if (!hasCahaya) { showToast("Dapatkan Cahaya Arsa dari Dewi Arsa (setelah kunjungan ke-3 Sylvaria)!"); return; }
+                                if (!hasCahaya) { showToast("Dapatkan Cahaya Arsa dari Dewi Arsa (setelah kunjungan ke-3 Kahyangan Wilis)!"); return; }
                                 delete p.inventory['cahaya_arsa'];
                                 p.sylvariaQuest.task3 = true;
                                 createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#fbbf24');
                                 createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#fff');
-                                showToast("Cahaya Arsa! Pohon Jiwa bergetar hebat...");
-                                showDialogue("SYLVA", "...CAHAYA INI!\n\nIni adalah cahaya kebijaksanaan murni dari Dewi Arsa — sumber kehidupan tertinggi di pulau ini.\n\nPohon Jiwa kami menangisinya... senang. Daunnya mulai berwarna hijau cerah!\n\nSatu langkah lagi...", [{text:"Aku pasti bisa!", action:closeDialogue}], npc.imgSrc);
+                                showToast("Cahaya Arsa! Pohon Beringin Agung bergetar hebat...");
+                                showDialogue("RARA WILIS", "...CAHAYA INI!\n\nIni adalah cahaya kebijaksanaan murni dari Dewi Arsa — sumber kehidupan tertinggi di pulau ini.\n\nPohon Beringin Agung kami menangisinya... senang. Daunnya mulai berwarna hijau cerah!\n\nSatu langkah lagi...", [{text:"Aku pasti bisa!", action:closeDialogue}], npc.imgSrc);
                             }});
-                        } else sOpts.push({ text: "✅ Cahaya Arsa — Selesai", action: () => showDialogue("SYLVA", "Cahaya Dewi Arsa telah menyatu dengan Pohon Jiwa.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
+                        } else sOpts.push({ text: "✅ Cahaya Arsa — Selesai", action: () => showDialogue("RARA WILIS", "Cahaya Arsa telah menyatu dengan Pohon Beringin Agung.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
 
                         // Task 4: Benih kehidupan (ladang sudah ada 3+ tanaman)
                         const farmCount = Object.values(p.farming || {}).filter(c => c && c.type).length;
@@ -27366,48 +27751,58 @@ ${reward.tip}`,
                                 if (!farmOk) { showToast("Tanam minimal 3 jenis tanaman di ladangmu!"); return; }
                                 p.sylvariaQuest.task4 = true;
                                 createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#86efac');
-                                showToast("Benih Kehidupan terbukti! Sylvaria mulai berdenyut...");
-                                showDialogue("SYLVA", "Kamu adalah petani juga?\n\nBenih yang kamu tanam dengan tanganmu sendiri — cinta dan kesabaranmu dalam merawat tanaman — itu adalah bentuk kehidupan paling murni yang bisa manusia berikan.\n\nPohon Jiwa menyerap energi itu...\n\nSemua syarat sudah terpenuhi. Saatnya ritual pemulihan.", [{text:"LAKUKAN RITUAL!", action: () => {
-                                    if (allDone || (task1Done && task2Done && task3Done)) {
+                                showToast("Benih Kehidupan terbukti! Kahyangan Wilis mulai berdenyut...");
+                                showDialogue("RARA WILIS", "Kamu adalah petani juga?\n\nBenih yang kamu tanam dengan tanganmu sendiri — cinta dan kesabaranmu dalam merawat tanaman — itu adalah bentuk kehidupan paling murni yang bisa manusia berikan.\n\nPohon Beringin Agung menyerap energi itu...\n\nSemua syarat sudah terpenuhi. Saatnya ritual pemulihan.", [{text:"LAKUKAN RITUAL!", action: () => {
+                                    // Cek ulang semua task setelah task4 baru di-set
+                                    const allTasksDone = !!p.sylvariaQuest.task1 && !!p.sylvariaQuest.task2 && !!p.sylvariaQuest.task3 && !!p.sylvariaQuest.task4;
+                                    if (allTasksDone) {
                                         startSylvariaRitual(npc);
-                                    } else { closeDialogue(); }
+                                    } else { closeDialogue(); showToast("Selesaikan semua 4 syarat dulu!"); }
                                 }}], npc.imgSrc);
                             }});
                         } else if (allDone) {
                             sOpts.push({ text: "🌳 SEMUA SIAP — RITUAL PEMULIHAN!", action: () => startSylvariaRitual(npc) });
                         } else {
-                            sOpts.push({ text: "✅ Benih Kehidupan — Selesai", action: () => showDialogue("SYLVA", "Benih kehidupanmu terbukti nyata.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
+                            sOpts.push({ text: "✅ Benih Kehidupan — Selesai", action: () => showDialogue("RARA WILIS", "Benih kehidupanmu terbukti nyata.", [{text:"Siap.", action:closeDialogue}], npc.imgSrc) });
                         }
                     }
 
                     if (hasPohonJiwa) {
-                        sOpts.push({ text: "🌳 Lihat Pohon Jiwa yang sudah pulih", action: () =>
-                            showDialogue("SYLVA — SELAMAT", "Pohon Jiwa kami bersinar lebih terang dari yang pernah aku ingat!\n\nPara peri kecil sudah kembali bermain. Fern merawat pohon-pohon. Lily membuat taman bunga baru. Moss membersihkan kolam kristal.\n\nSylvaria hidup lagi.\n\nSetiap hari, aku mengucap syukur karena ada manusia seperti kamu yang datang.", [{text:"Ini indah sekali...", action:closeDialogue}], npc.imgSrc)
+                        sOpts.push({ text: "🌳 Lihat Pohon Beringin Agung yang sudah pulih", action: () =>
+                            showDialogue("RARA WILIS — SELAMAT DATANG DI KAHYANGAN WILIS", "Pohon Beringin Agung bersinar lebih terang dari yang pernah aku ingat!\n\nPara Widadari sudah kembali menari. Wening merawat hutan-hutan Wilis. Sekar membuat kebun kenanga baru. Bening membersihkan sendang suci.\n\nKahyangan Wilis hidup lagi.\n\nSetiap hari, aku mengucap syukur karena ada manusia tulus seperti kamu yang datang ke lereng Wilis ini.", [{text:"Ini indah sekali...", action:closeDialogue}], npc.imgSrc)
                         });
-                        sOpts.push({ text: "✨ Minta Berkah Sylvaria (Harian)", action: () => {
+                        sOpts.push({ text: "✨ Minta Berkah Wilis (Harian)", action: () => {
                             const today = STATE.day;
-                            if (p.sylvariaBlessed === today) { showToast("Berkah Sylvaria sudah diterima hari ini!"); return; }
+                            if (p.sylvariaBlessed === today) { showToast("Berkah Kahyangan Wilis sudah diterima hari ini!"); return; }
                             p.sylvariaBlessed = today;
                             p.hp = p.maxHp; p.energy = 100;
                             p.str = (p.str||0)+1; p.int = (p.int||0)+1;
                             if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                            showToast("Berkah Sylvaria: Full Heal + STR/INT +1 (sementara)!");
+                            showToast("Berkah Wilis: Full Heal + STR/INT +1 (sementara)! Matur nuwun!");
                             closeDialogue();
                         }});
                     }
 
+                    sOpts.push({ text: "🧚‍♀️ Kelola Kahyangan Wilis", action: () => { closeDialogue(); openFairyVillage(); } });
+                    sOpts.push({ text: "💎 Terima Kristal Brantas (Harian)", action: () => {
+                        const today = STATE.day;
+                        if (p.sylvariaKristalDay === today) { showToast('Kristal sudah diambil hari ini!'); return; }
+                        p.sylvariaKristalDay = today;
+                        earnFairyKristal(1);
+                        closeDialogue();
+                    }});
                     sOpts.push({ text: "🎁 Beri Hadiah", action: () => openGiftMenu(npc) });
                     sOpts.push({ text: "Pamit dulu...", action: closeDialogue });
-                    showDialogue("SYLVA — RATU PERI SYLVARIA", sylvaGreet, sOpts, npc.imgSrc);
+                    showDialogue("RARA WILIS — RATU WIDADARI KAHYANGAN WILIS", sylvaGreet, sOpts, npc.imgSrc);
                 }
 
                 else if (npc.id === 'peri_kecil_1') {
                     const p = STATE.player;
                     const done = p.sylvariaQuestComplete;
-                    showDialogue("FERN — PERI HUTAN",
-                        done ? "Lihatlah pohon-pohon ini! Daunnya hijau lagi! 🌳\nAku sudah menanam 47 bibit pohon sejak Pohon Jiwa pulih.\nKamu yang membuat ini semua mungkin, manusia!"
+                    showDialogue("WENING — WIDADARI WILIS",
+                        done ? "Lihatlah pohon-pohon ini! Daunnya hijau lagi! 🌳\nAku sudah menanam 47 bibit pohon sejak Pohon Beringin Agung pulih.\nKamu yang membuat ini semua mungkin, manusia!"
                              : "Aku... aku bisa merasakannya. Energimu hangat. 🍃\nBelum pernah ada manusia yang sampai ke sini.\nTolong bantu kami... pohon-pohon di sini hampir semuanya layu.",
-                        [{ text: "Info Pohon Jiwa", action: () => showDialogue("FERN", "Pohon Jiwa adalah sumber kehidupan Sylvaria.\nSeluruh kekuatan kami mengalir dari sana.\nBila Pohon Jiwa padam... semua peri akan menghilang.\nBicaralah dengan Ratu Sylva untuk tahu cara membantunya.", [{text:"Terima kasih Fern.", action:closeDialogue}], npc.imgSrc) },
+                        [{ text: "Info Pohon Beringin Agung", action: () => showDialogue("WENING", "Pohon Beringin Agung adalah sumber kehidupan Kahyangan Wilis.\nSeluruh kekuatan kami mengalir dari sana.\nBila Pohon Beringin Agung padam... semua Widadari akan menghilang.\nBicaralah dengan Ratu Rara Wilis untuk tahu cara membantunya.", [{text:"Terima kasih Wening.", action:closeDialogue}], npc.imgSrc) },
                          { text: "Semangat ya Fern!", action: () => { updateRelationship(npc, 2, "Menyemangati"); showToast("Fern tersenyum..."); closeDialogue(); }}
                         ], npc.imgSrc);
                 }
@@ -27415,16 +27810,16 @@ ${reward.tip}`,
                 else if (npc.id === 'peri_kecil_2') {
                     const p = STATE.player;
                     const done = p.sylvariaQuestComplete;
-                    showDialogue("LILY — PERI BUNGA",
-                        done ? "Seemuanya indah! 🌸 Taman bungaku sudah penuh lagi!\nKamu tahu tidak, bunga-bunga di Sylvaria bisa berbicara?\nMereka bilang terima kasih karena kamu datang!"
-                             : "Hai... 🌸 Aku Lily. Energiku tinggal sedikit.\nDunia bunga kami sudah lama tidak mekar.\nRatu Sylva masih percaya ada manusia yang bisa membantu.",
-                        [{ text: "Apa favoritmu di Sylvaria?", action: () => showDialogue("LILY", "Favoritku adalah saat hujan.\nDi Sylvaria, hujan berwarna-warni — tetes airnya memancarkan pelangi kecil.\nSudah lama kami tidak melihat hujan seperti itu...\nSemoga Pohon Jiwa bisa memulihkannya.", [{text:"Aku ingin melihat itu suatu hari.", action:closeDialogue}], npc.imgSrc) },
+                    showDialogue("SEKAR — WIDADARI BUNGA",
+                        done ? "Seemuanya indah! 🌸 Taman bungaku sudah penuh lagi!\nKamu tahu tidak, bunga-bunga di Kahyangan Wilis bisa berbicara?\nMereka bilang terima kasih karena kamu datang!"
+                             : "Hai... 🌸 Aku Sekar. Energiku tinggal sedikit.\nDunia bunga kami sudah lama tidak mekar.\nRatu Rara Wilis masih percaya ada manusia yang bisa membantu.",
+                        [{ text: "Apa favoritmu di Kahyangan Wilis?", action: () => showDialogue("SEKAR", "Favoritku adalah saat hujan.\nDi Kahyangan Wilis, hujan berwarna-warni — tetes airnya memancarkan pelangi kecil.\nSudah lama kami tidak melihat hujan seperti itu...\nSemoga Pohon Beringin Agung bisa pulih.", [{text:"Aku ingin melihat itu suatu hari.", action:closeDialogue}], npc.imgSrc) },
                          { text: "🎁 Beri Bunga", action: () => {
                             if (p.inventory && p.inventory['bunga'] > 0) {
                                 p.inventory['bunga']--;
                                 updateRelationship(npc, 5, "Memberi Bunga");
                                 showToast("Lily sangat bahagia! Hubungan +5");
-                                showDialogue("LILY", "BUNGA! Kamu membawakanku bunga dari dunia manusia?\nBunganya cantik sekali! Berbeda dari bunga Sylvaria tapi tetap indah!\nTerima kasih, terima kasih, terima kasih! 🌸🌸🌸", [{text:"Sama-sama Lily!", action:closeDialogue}], npc.imgSrc);
+                                showDialogue("SEKAR", "BUNGA! Kamu membawakanku bunga dari dunia manusia?\nBunganya cantik sekali! Berbeda dari bunga Kahyangan tapi tetap indah!\nTerima kasih, terima kasih, terima kasih! 🌸🌸🌸", [{text:"Sama-sama, Sekar!", action:closeDialogue}], npc.imgSrc);
                             } else showToast("Kamu tidak punya bunga. Cari bunga liar di desa!");
                          }}
                         ], npc.imgSrc);
@@ -27433,11 +27828,11 @@ ${reward.tip}`,
                 else if (npc.id === 'peri_kecil_3') {
                     const p = STATE.player;
                     const done = p.sylvariaQuestComplete;
-                    showDialogue("MOSS — PERI AIR",
-                        done ? "Air kolam kristal sudah jernih! 💧✨\nAku bisa berenang lagi!\nKamu tahu tidak, di bawah kolam ini ada terowongan yang terhubung ke laut?\nPutri Duyung saudariku bilang jalurnya sudah terbuka lagi!"
-                             : "Halo... 💧 Namaku Moss. Aku peri air termuda di sini.\nAku lahir saat Sylvaria sudah mulai pudar, jadi aku tidak pernah tahu Sylvaria yang sesungguhnya.\nTapi Ratu Sylva sering bercerita betapa indahnya dahulu kala...",
-                        [{ text: "Apakah kamu takut Sylvaria punah?", action: () => showDialogue("MOSS", "Takut?\n\nDahulu iya. Tapi sejak kamu datang...\n\nAku melihat Ratu Sylva tersenyum untuk pertama kalinya. Fern lebih bersemangat. Lily menyanyikan lagu yang belum pernah kudengar sebelumnya.\n\nKamu membawa sesuatu yang belum pernah ada di sini sejak lama — harapan.", [{text:"Aku akan terus berusaha.", action: () => { updateRelationship(npc, 3, "Memberi Harapan"); closeDialogue(); }}], npc.imgSrc) },
-                         { text: "Tentang Putri Duyung di laut", action: () => showDialogue("MOSS", "Putri Duyung adalah saudara jauhku! Peri air bisa berada di laut atau di danau.\nDahulu kami sering bermain bersama melalui terowongan bawah laut.\nTapi sekarang terowongan itu tersumbat karena Pohon Jiwa melemah.\nKalau Sylvaria pulih... mungkin kita bisa bermain lagi!", [{text:"Semangat ya Moss!", action:closeDialogue}], npc.imgSrc) }
+                    showDialogue("BENING — WIDADARI AIR",
+                        done ? "Air kolam kristal sudah jernih! 💧✨\nAku bisa berenang lagi!\nKamu tahu tidak, di bawah kolam ini ada terowongan yang terhubung ke laut?\nSang Putri Duyung saudariku bilang jalurnya sudah terbuka lagi!"
+                             : "Halo... 💧 Namaku Bening. Aku peri air termuda di sini.\nAku lahir saat Kahyangan Wilis sudah mulai pudar, jadi aku tidak pernah tahu Kahyangan Wilis yang sesungguhnya.\nTapi Ratu Rara Wilis sering bercerita betapa indahnya dahulu kala...",
+                        [{ text: "Apakah kamu takut Kahyangan Wilis punah?", action: () => showDialogue("BENING", "Takut?\n\nDahulu iya. Tapi sejak kamu datang...\n\nAku melihat Ratu Rara Wilis tersenyum untuk pertama kalinya. Wening lebih bersemangat. Sekar menyanyikan tembang yang belum pernah kudengar sebelumnya.\n\nKamu membawa sesuatu yang belum pernah ada di sini sejak lama — harapan.", [{text:"Aku akan terus berusaha.", action: () => { updateRelationship(npc, 3, "Memberi Harapan"); closeDialogue(); }}], npc.imgSrc) },
+                         { text: "Tentang Putri Duyung di laut", action: () => showDialogue("BENING", "Putri Duyung adalah saudara jauhku! Peri air bisa berada di laut atau di danau.\nDahulu kami sering bermain bersama melalui terowongan bawah laut.\nTapi sekarang terowongan itu tersumbat karena Pohon Beringin Agung melemah.\nKalau Kahyangan Wilis pulih... mungkin kita bisa bermain lagi!", [{text:"Semangat ya Bening!", action:closeDialogue}], npc.imgSrc) }
                         ], npc.imgSrc);
                 }
 
@@ -27498,9 +27893,9 @@ ${reward.tip}`,
                         "Peri tidak tidur, jadi panenmu tidak pernah terlambat! ✨"][Math.floor(Math.random()*4)];
 
                     const statusMsg = matang > 0
-                        ? `🌾 Ada **${matang} tanaman** siap panen malam ini — Sylva akan mengurusnya!`
+                        ? `🌾 Ada **${matang} tanaman** siap panen malam ini — Ratih akan mengurusnya!`
                         : totalPlants > 0
-                            ? "Belum ada yang matang malam ini, tapi Sylva tetap jaga ladang~ 🌙"
+                            ? "Belum ada yang matang malam ini, tapi Ratih tetap jaga ladang~ 🌙"
                             : "Ladang masih kosong. Tanam benih dulu ya!";
 
                     showDialogue("🧚‍♀️ SYLVA — PERI PANEN", `"${greeting}"\n\n${statusMsg}`,
@@ -27527,7 +27922,7 @@ ${reward.tip}`,
                                     closeDialogue();
                                 }
                             },
-                            { text: "Terima kasih, Sylva~", action: closeDialogue }
+                            { text: "Terima kasih, Ratih~", action: closeDialogue }
                         ], npc.imgSrc);
                 }
                 else if (npc.id === 'kurcaci_tani') {
@@ -27587,16 +27982,16 @@ ${reward.tip}`,
                         }
                     } else {
                         const hasKurcaci = STATE.player.hiredDwarf;
-                        showDialogue("SYLVA — PERI PANEN", `Wangi anggur musim gugur memanggilku~ 🍇\nNama saya Sylva, Peri Panen dari Hutan Timur!\n\nAku bisa **memanen semua tanaman matangmu otomatis** setiap malam.\n\n${hasKurcaci ? '✅ Bagus! Gorki si Kurcaci sudah bekerja di ladangmu. Dengan aku, lahanmu akan jalan 100% otomatis!' : '⚠️ Tip: Ajak Gorki si Kurcaci Tani dulu di Festival Panen Raya (Summer hari 1) agar ladang makin optimal!'}\n\nAku hanya muncul **setahun sekali** di Festival Anggur ini!`, [
+                        showDialogue("RATIH — PERI PANEN", `Wangi anggur musim gugur memanggilku~ 🍇\nNama saya Ratih, Peri Panen dari Lereng Wilis!\n\nAku bisa **memanen semua tanaman matangmu otomatis** setiap malam.\n\n${hasKurcaci ? '✅ Bagus! Gorki si Kurcaci sudah bekerja di ladangmu. Dengan aku, lahanmu akan jalan 100% otomatis!' : '⚠️ Tip: Ajak Gorki si Kurcaci Tani dulu di Festival Panen Raya (Summer hari 1) agar ladang makin optimal!'}\n\nAku hanya muncul **setahun sekali** di Festival Anggur ini!`, [
                             {
-                                text: "✅ Ajak Sylva Bergabung! (2000G)", action: () => {
+                                text: "✅ Ajak Ratih Bergabung! (2000G)", action: () => {
                                     if (STATE.player.money >= 2000) {
                                         STATE.player.money -= 2000;
                                         STATE.player.hiredFairy = true;
                                         createParticle(npc.x * TILE_SIZE, npc.y * TILE_SIZE, '#f472b6');
                                         createParticle(npc.x * TILE_SIZE - 15, npc.y * TILE_SIZE - 15, '#c084fc');
                                         manualSave();
-                                        showDialogue("SYLVA BERGABUNG! 🧚‍♀️", "Yeay! Aku resmi bergabung bersamamu!\nMulai malam ini, semua tanaman yang matang (Stage 3) akan kupanen otomatis sebelum fajar!\n\nHasil panen akan masuk ke tasmu. Jangan lupa tanam bibit baru ya~", [{ text: "Siap, Sylva! 🍇", action: closeDialogue }], npc.imgSrc);
+                                        showDialogue("RATIH BERGABUNG! 🧚‍♀️", "Hore! Ratih resmi bergabung bersamamu!\nMulai malam ini, semua tanaman yang matang (Stage 3) akan kupanen otomatis sebelum fajar!\n\nHasil panen akan masuk ke tasmu. Jangan lupa tanam bibit baru ya~", [{ text: "Siap, Ratih! 🍇", action: closeDialogue }], npc.imgSrc);
                                     } else showToast("Uang kurang! Butuh 2000 Gold.");
                                 }
                             },
@@ -27797,7 +28192,7 @@ ${reward.tip}`,
                             friendlyText = `Haiii! Ciee pengantin baru~ Auramu beda banget, makin glowing! ✨\n\nSelamat ya! Dulu aku sempet sebel karena takut kamu ambil perhatian ${targetLoverName}. Tapi sekarang sadar, kamu temen yang baik kok.\n\nLanggeng terus sama pasanganmu! 💕`;
                             friendlyOpts = [
                                 { text: `Makasih Bella! Kamu semangat kejar ${targetLoverName} ya!`, action: () => showDialogue(fakeName, `"Pasti dong! Sainganku udah berkurang satu, peluangku makin besar hihihi~\nKapan-kapan kita belanja bareng yuk!"`, [{text:'Boleh tuh!', action:closeDialogue}], npc.imgSrc) },
-                                { text: '🗣️ Tukar Gosip', action: () => showDialogue(fakeName, `"Tau nggak? Pedagang Keliling itu ternyata naksir anak Blacksmith lho! Desa ini kecil tapi dramanya banyak banget. Seru abis! 😂"`, [{text:'Walah...',action:closeDialogue}], npc.imgSrc) },
+                                { text: '🗣️ Tukar Gosip', action: () => showDialogue(fakeName, `"Tau nggak? Bu Lastri itu ternyata naksir anak Blacksmith lho! Desa ini kecil tapi dramanya banyak banget. Seru abis! 😂"`, [{text:'Walah...',action:closeDialogue}], npc.imgSrc) },
                                 { text: 'Dah Bella 👋', action: closeDialogue }
                             ];
                         }
@@ -28368,14 +28763,14 @@ ${reward.tip}`,
                     else dialogueText = "Makasih ya~ Mela seneng dikasih hadiah~";
                 }
                 else if (npc.id === 'trader_outside') {
-                    if (reactionType === 'love') dialogueText = "Lho! Ini komoditas bagus! Bisa aku jual lagi nih! Hehe, makasih ya! 📦";
-                    else if (reactionType === 'hate') dialogueText = "Wah, ini susah dijual. Tapi niatmu baik, terima kasih.";
-                    else dialogueText = "Terima kasih! Ini pasti berguna untuk dagangan.";
+                    if (reactionType === 'love') dialogueText = "Wah, ini bisa Bu Lastri jual lagi nih! Makasih ya nak! 📦";
+                    else if (reactionType === 'hate') dialogueText = "Wah, ini susah dijual. Tapi niatmu baik, makasih ya nak.";
+                    else dialogueText = "Makasih! Pasti berguna untuk dagangan Bu Lastri.";
                 }
                 else if (npc.id === 'trader_wife_inside') {
-                    if (reactionType === 'love') dialogueText = "Aduh, Ibu senang sekali! Kamu baik banget nak. Titip salam buat suami Ibu ya!";
-                    else if (reactionType === 'hate') dialogueText = "Hmm, kurang cocok selera Ibu. Tapi makasih ya sudah mau ngasih.";
-                    else dialogueText = "Makasih nak! Ibu simpan ya.";
+                    if (reactionType === 'love') dialogueText = "Aduh, Bu Lastri senang sekali! Kamu baik banget nak! 🥰";
+                    else if (reactionType === 'hate') dialogueText = "Hmm, kurang cocok selera Bu Lastri. Tapi makasih ya sudah mau ngasih.";
+                    else dialogueText = "Makasih nak! Bu Lastri simpan ya.";
                 }
                 else if (npc.id === 'pemancing_misterius') {
                     if (reactionType === 'love') dialogueText = "...ini langka. Kamu tahu cara memenangkan hati pemancing. 🎣";
@@ -28815,54 +29210,111 @@ ${reward.tip}`,
             }
 
             // ══════════════════════════════════════════════════════════════
-            // 🧚 RITUAL PEMULIHAN SYLVARIA — Climax Quest
+            // 🧚‍♀️ RITUAL PEMULIHAN KAHYANGAN WILIS — Climax Quest
             // ══════════════════════════════════════════════════════════════
             function startSylvariaRitual(npc) {
                 const p = STATE.player;
-                showDialogue("SYLVA — RITUAL PEMULIHAN",
-                    "Saat ini telah tiba.\n\nKeempat kekuatan sudah terkumpul:\n✅ Kristal Tanah — Energi Bumi\n✅ Keberanian Menembus Kegelapan\n✅ Cahaya Kebijaksanaan Arsa\n✅ Benih Kehidupan dari Tanganmu\n\nBerdirilah di depan Pohon Jiwa. Aku akan memimpinmu.",
-                    [{ text: "Aku siap. Mulai ritual!", action: () => {
-                        closeDialogue();
-                        setTimeout(() => {
-                            showDialogue("RITUAL SYLVARIA — FASE 1",
-                                "Sylva mengangkat tangannya. Cahaya hijau mengalir dari jari-jarinya ke arah Pohon Jiwa.\n\nFern, Lily, dan Moss bergabung, membentuk lingkaran di sekitar pohon.\n\n\"Letakkan tanganmu di batang Pohon Jiwa. Biarkan energi hatimu mengalir,\" bisik Sylva.",
-                                [{ text: "(Aku meletakkan tangan ke pohon...)", action: () => {
-                                    for(let i=0; i<8; i++) setTimeout(() => createParticle(npc.x*TILE_SIZE + Math.random()*60-30, npc.y*TILE_SIZE + Math.random()*60-30, i%2===0 ? '#4ade80' : '#fbbf24'), i*200);
-                                    setTimeout(() => {
-                                        showDialogue("RITUAL SYLVARIA — FASE 2",
-                                            "...Pohon Jiwa bergetar.\n\nKamu merasakan sesuatu yang hangat mengalir dari telapak tanganmu — seperti semua kenangan baik yang pernah kamu lakukan mengalir keluar.\n\nFern menangis terharu. Lily menyanyikan lagu kuno peri. Moss menari di kolam kristal yang mulai bersinar.\n\nSylva menatapmu dengan mata yang berkaca-kaca.\n\n\"Ini... ini sedang terjadi. Pohon Jiwa menerima energimu!\"",
-                                            [{ text: "(Teruskan...)", action: () => {
-                                                setTimeout(() => {
-                                                    showDialogue("RITUAL SYLVARIA — KLIMAKS",
-                                                        "KRAAAAAK!\n\nCabang-cabang Pohon Jiwa yang hitam mulai memutih, lalu hijau, lalu memancarkan cahaya emas.\n\nDaun-daun baru tumbuh dalam hitungan detik. Bunga-bunga bermekaran. Kolam kristal penuh dengan air bening berkilauan.\n\nSuara tawa peri kecil terdengar dari segala arah — para peri yang sudah lama menghilang, kembali!\n\nSylvaria...\n\n...hidup kembali.",
-                                                        [{ text: "...(Aku tidak bisa berkata-kata.)", action: () => {
-                                                            p.sylvariaQuestComplete = true;
-                                                            p.sylvariaQuest = p.sylvariaQuest || {};
-                                                            p.sylvariaQuest.stage = 99;
+                closeDialogue();
+                STATE.screen = 'cutscene';
+                STATE.cutsceneOverride = true;
 
-                                                            // HADIAH BESAR
-                                                            p.str = (p.str||0)+10; p.int = (p.int||0)+10;
-                                                            p.spd = (p.spd||0)+5; p.biz = (p.biz||0)+5;
-                                                            p.ethics = (p.ethics||0)+30;
-                                                            p.reputation = (p.reputation||0)+25;
-                                                            gainExp(1000);
-                                                            addItem('mahkota_sylvaria', 1);
+                const slides = [
+                    {
+                        chapter: '— Kahyangan Wilis · Ritual Pemulihan —',
+                        title: 'Wektune Wis Teko',
+                        sub: 'Saatnya telah tiba...',
+                        narasi: 'Rara Wilis menutup matanya perlahan. Angin dari lereng Gunung Wilis berhenti. Semuanya hening. Bahkan daun-daun kenanga tidak bergerak.',
+                        dur: 4500
+                    },
+                    {
+                        chapter: '— Babak I — Lingkaran Widadari —',
+                        title: 'Para Widadari Berkumpul',
+                        sub: 'Wening · Sekar · Bening',
+                        narasi: 'Satu per satu mereka muncul dari balik semak kenanga. Wening dengan sayap hijaunya, Sekar membawa bunga melati, Bening meninggalkan jejak air di tanah kering.',
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— Babak II — Kristal Brantas —',
+                        title: '💎 Energi Bumi Mengalir',
+                        sub: 'Kristal Brantas melebur ke akar Pohon Beringin Agung',
+                        narasi: 'Cahaya biru mengalir dari tanah — seperti urat sungai Brantas yang menembus akar-akar tua. Pohon Beringin Agung bergetar pelan.',
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— Babak III — Keberanian Jiwa —',
+                        title: '⚔️ Kenangan Dungeon Mengalir',
+                        sub: 'Setiap pertempuran yang kamu menangkan... tersimpan di sini',
+                        narasi: 'Rara Wilis menyentuh dadamu. Cahaya merah membara mengalir keluar — energi keberanian semua pertempuranmu menyatu dengan Pohon Beringin.',
+                        dur: 5200
+                    },
+                    {
+                        chapter: '— Babak IV — Cahaya Arsa —',
+                        title: '✨ Kebijaksanaan Dewi Arsa',
+                        sub: '"Kebaikan yang dilakukan tanpa pamrih... adalah cahaya abadi"',
+                        narasi: 'Cahaya emas meledak dari pohon. Sekar menangis. Bening tertawa kecil. Wening memeluk batang pohon yang mulai menghijau.',
+                        dur: 5500
+                    },
+                    {
+                        chapter: '— Babak V — Benih Kehidupan —',
+                        title: '🌱 Cintamu pada Alam Terbukti',
+                        sub: 'Setiap benih yang kamu tanam... adalah doa',
+                        narasi: 'Gambar ladangmu muncul di udara seperti ilusi — padi, jagung, tomat yang kamu rawat sendiri. Pohon Beringin Agung menyerapnya dengan rakus.',
+                        dur: 5000
+                    },
+                    {
+                        chapter: '— K L I M A K S —',
+                        title: 'POHON BERINGIN AGUNG BANGKIT!',
+                        sub: 'Kahyangan Wilis... wis urip maneh!',
+                        narasi: 'Cabang-cabang hitam meledak menjadi hijau. Bunga kenanga bermekaran. Tembang Widadari terdengar dari seluruh lereng Wilis. Langit berubah jingga keemasan.',
+                        dur: 6500
+                    },
+                    {
+                        chapter: '— Epilog —',
+                        title: '🌳 Kahyangan Wilis Hidup Kembali',
+                        sub: '"Gunung Wilis ora bakal lali marang wong kang tresna alam."',
+                        narasi: 'Rara Wilis berbalik padamu, matanya berkaca-kaca. Para Widadari menari di antara kenanga dan beringin yang kini rimbun. Untuk pertama kalinya dalam berabad-abad... Kahyangan Wilis bersinar.',
+                        dur: 7000
+                    },
+                ];
 
-                                                            showToast("🌳 SYLVARIA PULIH! STR/INT +10, SPD/BIZ +5, Ethics +30, REP +25, EXP +1000, Mahkota Sylvaria!");
-                                                            manualSave();
+                CinematicEngine.play('kahyangan', slides, () => {
+                    STATE.screen = 'play';
+                    STATE.cutsceneOverride = false;
 
-                                                            setTimeout(() => {
-                                                                showDialogue("SYLVA — UCAPAN TERIMA KASIH",
-                                                                    "Aku tidak punya kata-kata yang cukup untuk mengucap terima kasih.\n\nSelama berabad-abad aku menunggu. Dan kamu datang — bukan sebagai pahlawan berbaju baja, tapi sebagai seseorang yang benar-benar peduli.\n\nTerimamu ini:\n🌟 Semua stat meningkat\n👑 Mahkota Sylvaria — simbol Pelindung Dunia Peri\n\nSylvaria akan selalu terbuka untukmu, Pelindung kami.",
-                                                                    [{text:"Sampai jumpa lagi, Sylva.", action:closeDialogue}], npc.imgSrc);
-                                                            }, 500);
-                                                        }}], null);
-                                                }, 1500);
-                                            }}], null);
-                                    }, 1600);
-                                }}], null);
-                        }, 400);
-                    }}], npc ? npc.imgSrc : null);
+                    p.sylvariaQuestComplete = true;
+                    p.sylvariaQuest = p.sylvariaQuest || {};
+                    p.sylvariaQuest.stage = 99;
+                    p.str = (p.str||0)+10; p.int = (p.int||0)+10;
+                    p.spd = (p.spd||0)+5;  p.biz = (p.biz||0)+5;
+                    p.ethics = (p.ethics||0)+30;
+                    p.reputation = (p.reputation||0)+25;
+                    gainExp(1000);
+                    addItem('mahkota_wilis', 1);
+                    const fv = getFairyVillage();
+                    fv.resources.debu    = (fv.resources.debu    || 0) + 50;
+                    fv.resources.kristal = (fv.resources.kristal || 0) + 3;
+                    manualSave();
+
+                    setTimeout(() => {
+                        showDialogue('SYLVA — RATU WIDADARI KAHYANGAN WILIS',
+                            'Matur nuwun... seribu terima kasih.\n\n' +
+                            'Selama berabad-abad aku menunggu di lereng Wilis ini. Dan kamu datang — bukan sebagai ksatria berbaju baja, tapi seseorang yang tulus mencintai alam.\n\n' +
+                            '🌟 STR/INT +10 · SPD/BIZ +5 · Ethics +30 · REP +25\n' +
+                            '👑 Mahkota Wilis — lambang Bhayangkara Kahyangan\n' +
+                            '✨ +50 Serbuk Wilis · +3 Kristal Brantas\n\n' +
+                            '"Gunung Wilis ora bakal lali marang wong kang tresna alam."',
+                            [{
+                                text: '🧚\u200d♀️ Kelola Kahyangan Wilis!',
+                                action: () => { closeDialogue(); openFairyVillage(); }
+                            }, {
+                                text: 'Sampai jumpa lagi, Rara Wilis...',
+                                action: closeDialogue
+                            }],
+                            npc ? npc.imgSrc : null
+                        );
+                        showToast('🌳 KAHYANGAN WILIS PULIH! Bhayangkara Wilis diakui! EXP +1000!');
+                    }, 600);
+                });
             }
 
             // ══════════════════════════════════════════════════════════════
@@ -29432,27 +29884,28 @@ ${reward.tip}`,
                 else if (obj.type === 'bed') {
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
 
-                    // UPDATE: Dialog Tidur yang lebih langsung sesuai request
-                    // UPDATE: Ganti gambar potret dialog ke images/bed.png
+                    const extraOpts = [];
+                    // Jika role family atau married — tambah tombol aktivitas rumah
+                    if (STATE.player.role === 'family' || STATE.player.married) {
+                        extraOpts.push({
+                            text: '🏠 Cek Aktivitas Rumah (Masak/Bersih)',
+                            action: () => { closeDialogue(); showDailyHousekeepingMenu(); }
+                        });
+                    }
+
                     showDialogue("KASUR EMPUK", "Apakah kamu mau tidur sekarang?", [
                         {
                             text: "Ya, Tidur (Save & Next Day) 🛌", action: () => {
-                                // Cek apakah sudah nulis jurnal hari ini?
                                 const hasJournalToday = STATE.player.reflections.some(r => r.day === STATE.day);
-
                                 if (hasJournalToday) {
                                     closeDialogue();
                                     handleSleep();
                                 } else {
-                                    // UPDATE: Prompt Jurnal sebelum tidur
                                     showDialogue("REFLEKSI HARIAN",
                                         "Sebelum tidur, mari refleksikan harimu sejenak di Jurnal.\n\n(Hadiah: +500 Gold & +50 EXP)",
                                         [{
                                             text: "✍️ Tulis Jurnal",
-                                            action: () => {
-                                                closeDialogue();
-                                                openJournalModal(true); // true = mode tidur setelah simpan
-                                            }
+                                            action: () => { closeDialogue(); openJournalModal(true); }
                                         }, {
                                             text: "Batal Tidur",
                                             action: closeDialogue
@@ -29462,6 +29915,7 @@ ${reward.tip}`,
                                 }
                             }
                         },
+                        ...extraOpts,
                         { text: "Belum ngantuk", action: closeDialogue }
                     ], 'images/bed.png');
                 }
@@ -29511,8 +29965,18 @@ ${reward.tip}`,
                             }
                         },
 
+                        // 🏠 AKTIVITAS RUMAH (khusus role family / sudah menikah)
+                        ...(STATE.player.role === 'family' || STATE.player.married ? [{
+                            text: "🏠 Aktivitas Rumah (Masak/Bersih/dll)",
+                            action: () => { closeDialogue(); showDailyHousekeepingMenu(); }
+                        }] : []),
+
                         { text: "Tutup", action: closeDialogue }
                     ], 'images/buku.png');
+                }
+                else if (obj.type === 'chores') {
+                    if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                    showDailyHousekeepingMenu();
                 }
                 else if (obj.type === 'kitchen') {
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
@@ -32421,6 +32885,20 @@ Pilih masakan:
                         chapter: '— Titik Terendah —',
                         particleColors: ['#6b7280','#4b5563','#374151','#9ca3af'],
                         particleType: 'rain',
+                    },
+                    kahyangan: {
+                        bg: 'linear-gradient(135deg, #030712 0%, #052e16 25%, #14532d 55%, #0f4c2e 75%, #1a3a2e 100%)',
+                        color: '#86efac',
+                        chapter: '— Kahyangan Wilis —',
+                        particleColors: ['#4ade80','#86efac','#fbbf24','#ffffff','#bfdbfe','#d8b4fe','#6ee7b7'],
+                        particleType: 'stars',
+                    },
+                    portalWilis: {
+                        bg: 'linear-gradient(135deg, #0c0a20 0%, #1a0f3d 30%, #2d1b69 60%, #1e3a3a 85%, #052e16 100%)',
+                        color: '#a78bfa',
+                        chapter: '— Retakan Dimensi —',
+                        particleColors: ['#a78bfa','#7c3aed','#4ade80','#ffffff','#86efac'],
+                        particleType: 'stars',
                     }
                 },
 
@@ -34799,7 +35277,7 @@ Pilih masakan:
                     ctx.font = 'bold 14px monospace';
                     ctx.fillStyle = pComp ? '#fff' : '#86efac';
                     ctx.textAlign = 'center';
-                    ctx.fillText(pComp ? '🌳 SYLVARIA — Dunia Peri yang Telah Pulih ✨' : '🌒 SYLVARIA — Dunia Peri yang Sekarat...', GAME_WIDTH / 2, 21);
+                    ctx.fillText(pComp ? '🌳 KAHYANGAN WILIS — Hidup Kembali! ✨' : '🌒 KAHYANGAN WILIS — Mohon bantuanmu, Bhayangkara...', GAME_WIDTH / 2, 21);
                     ctx.restore();
 
                     // Partikel cahaya mengambang
@@ -34833,7 +35311,7 @@ Pilih masakan:
                     ctx.globalAlpha = 1;
                     ctx.restore();
 
-                    // Glow pada Pohon Jiwa (pojok atas tengah)
+                    // Glow pada Pohon Beringin Agung (pojok atas tengah)
                     const treeX = (14 - (STATE.player.x/TILE_SIZE - GAME_WIDTH/TILE_SIZE/2)) * TILE_SIZE;
                     const treeY = (2 - (STATE.player.y/TILE_SIZE - GAME_HEIGHT/TILE_SIZE/2)) * TILE_SIZE;
                     const glowColor = pComp ? 'rgba(74,222,128,' : 'rgba(120,53,15,';
@@ -36151,6 +36629,12 @@ Pilih masakan:
                     'gandum': { name: 'Roti Gandum', icon: '🍞', type: 'consumable', action: 'eat_bread', desc: 'Makan: Energi +20' },
                     'coklat': { name: 'Coklat Bar', icon: '🍫', type: 'consumable', action: 'eat_choco', desc: 'Ngemil: Energi +10' },
 
+                    // --- MAKANAN SIAP MAKAN (Beli di pedagang / merchant) ---
+                    'nasi_bungkus': { name: 'Nasi Bungkus', icon: '🍱', type: 'consumable', action: 'eat_nasi_bungkus', desc: 'Makan: Energi +30. Nasi hangat dari warung.' },
+                    'telor': { name: 'Telur Ayam', icon: '🥚', type: 'consumable', action: 'eat_telor', desc: 'Bahan masak atau dimakan langsung: Energi +12.' },
+                    'tempe': { name: 'Tempe Mentah', icon: '🟫', type: 'consumable', action: 'eat_tempe', desc: 'Bahan masak bergizi. Protein nabati murah meriah.' },
+                    'obat': { name: 'Obat Generik', icon: '💊', type: 'consumable', action: 'use_obat', desc: 'Sembuhkan HP +30 saat sakit.' },
+
                     'kain': { name: 'Kain Sutra', icon: '🧵', desc: 'Bahan tekstil halus.' },
                     'bunga': { name: 'Bunga', icon: '🌹', desc: 'Hadiah romantis.' },
 
@@ -36227,7 +36711,7 @@ Pilih masakan:
                     'keris_penjaga': {
                         name: 'Keris Penjaga Cerita',
                         icon: '⚔️',
-                        desc: 'Keris pusaka Ki Lamong. Reward menyelesaikan semua 4 Kisah Leluhur. Pasif: +5 semua stat. Kunci portal Sylvaria.'
+                        desc: 'Keris pusaka Ki Lamong. Reward menyelesaikan semua 4 Kisah Leluhur. Pasif: +5 semua stat. Kunci portal Kahyangan Wilis.'
                     },
                     'kalung_mutiara_laut': {
                         name: 'Kalung Mutiara Laut',
@@ -36237,13 +36721,13 @@ Pilih masakan:
                     'cahaya_arsa': {
                         name: 'Cahaya Arsa',
                         icon: '✨',
-                        desc: 'Cahaya kebijaksanaan dari Dewi Arsa. Reward kunjungan ke-3 Sylvaria. Dibutuhkan untuk Ritual Pemulihan Sylvaria.'
+                        desc: 'Cahaya kebijaksanaan dari Dewi Arsa. Reward kunjungan ke-3 Kahyangan Wilis. Dibutuhkan untuk Ritual Pemulihan Kahyangan Wilis.'
                     },
-                    'mahkota_sylvaria': {
-                        name: 'Mahkota Sylvaria',
+                    'mahkota_wilis': {
+                        name: 'Mahkota Wilis',
                         icon: '👑',
-                        desc: 'Mahkota emas-zamrud milik Ratu Peri. Diberikan sebagai tanda Pelindung Sylvaria. Pasif: semua stat +10.',
-                        use: () => { showToast("Mahkota Sylvaria bersinar hangat... Kamu adalah Pelindung Sylvaria yang diakui."); }
+                        desc: 'Mahkota emas-zamrud milik Ratu Widadari Rara Wilis. Diberikan sebagai tanda Bhayangkara Kahyangan Wilis. Pasif: semua stat +10.',
+                        use: () => { showToast("Mahkota Wilis bersinar hangat... Kamu adalah Bhayangkara Kahyangan Wilis yang diakui. Matur nuwun! ✨"); }
                     },
                     'kristal_roro': {
                         name: 'Kristal Roro',
@@ -36375,7 +36859,8 @@ Pilih masakan:
                     const energyGain = {
                         'eat_fish': 15, 'eat_bread': 20, 'eat_choco': 10,
                         'eat_fish_small': 10, 'eat_fish_medium': 25, 'eat_fish_large': 50, 'eat_fish_legend': 100,
-                        'eat_rice': 25, 'eat_corn': 20, 'eat_tomato': 15
+                        'eat_rice': 25, 'eat_corn': 20, 'eat_tomato': 15,
+                        'eat_nasi_bungkus': 30, 'eat_telor': 12, 'eat_tempe': 15
                     }[action] || 10;
 
                     if (STATE.player.energy >= 100) {
@@ -36383,9 +36868,18 @@ Pilih masakan:
                         return;
                     }
                     STATE.player.energy = Math.min(100, STATE.player.energy + energyGain);
-                    showToast(`Nyam! (+${energyGain} Energi) ⚡`);
+                    const foodNames = { 'eat_nasi_bungkus':'Nasi bungkus', 'eat_telor':'Telur', 'eat_tempe':'Tempe', 'eat_bread':'Roti', 'eat_fish':'Ikan bakar' };
+                    const fn = foodNames[action] || 'Makanan';
+                    showToast(`${fn} dimakan! (+${energyGain} Energi) ⚡`);
                     spawnFloatingText(STATE.player.x, STATE.player.y - 40, `+${energyGain} ⚡`, "#4ade80", 14);
                     if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                }
+                else if (action === 'use_obat') {
+                    consumed = true;
+                    const healAmt = 30;
+                    STATE.player.hp = Math.min(STATE.player.maxHp || 100, (STATE.player.hp || 100) + healAmt);
+                    showToast(`💊 Obat diminum. HP +${healAmt}`);
+                    spawnFloatingText(STATE.player.x, STATE.player.y - 40, `+${healAmt} HP`, "#f87171", 14);
                 }
 
 
@@ -36932,7 +37426,7 @@ Pilih masakan:
                         else if (STATE.location === 'library_interior') locName = "PERPUS";
                         else if (STATE.location === 'guild_interior') locName = "GUILD";
                         else if (STATE.location === 'candi_interior') locName = "CANDI";
-                        else if (STATE.location === 'sylvaria') locName = "🧚 SYLVARIA";
+                        else if (STATE.location === 'sylvaria') locName = "🧚‍♀️ KAHYANGAN WILIS";
                         labelEl.innerText = locName;
                     }
                 }
@@ -37158,7 +37652,7 @@ Pilih masakan:
                 opts.push({ text: "Batal", action: closeDialogue });
 
                 if (opts.length === 1) { // Cuma ada tombol Batal
-                    showDialogue("TIDAK ADA BIBIT", "Tas kamu kosong!\nBeli bibit di **Pedagang Keliling** atau dapatkan Bibit Langka dari Quest.", [{ text: "Oke", action: closeDialogue }], 'images/lahan-liar.png');
+                    showDialogue("TIDAK ADA BIBIT", "Tas kamu kosong!\nBeli bibit di **Bu Lastri (Pedagang Keliling)** atau dapatkan Bibit Langka dari Quest.", [{ text: "Oke", action: closeDialogue }], 'images/lahan-liar.png');
                 } else {
                     showDialogue("PILIH BIBIT", "Mau tanam apa di petak ini?", opts, 'images/lahan-liar.png');
                 }
@@ -39667,7 +40161,7 @@ Pilih masakan:
                 else {
                     return {
                         text: `🔥 Info Tren Viral (Peluang Cuan!)`,
-                        action: () => showDialogue("PAK ADI — BOS MERCHANT", `Dengar-dengar **${trend.itemName}** lagi viral banget hari ini di Sosmed!\n\nGudang saya kosong, tapi permintaannya gila-gilaan.\n\nSiapapun kamu (Mahasiswa/Pekerja/Warga), kalau bisa dapat barangnya dari **Pedagang Keliling**, bawa ke sini. Saya beli 3x lipat!`, [{ text: "Siap Bos, saya carikan!", action: closeDialogue }], 'images/job.png')
+                        action: () => showDialogue("PAK ADI — BOS MERCHANT", `Dengar-dengar **${trend.itemName}** lagi viral banget hari ini di Sosmed!\n\nGudang saya kosong, tapi permintaannya gila-gilaan.\n\nSiapapun kamu (Mahasiswa/Pekerja/Warga), kalau bisa dapat barangnya dari **Bu Lastri (Pedagang Keliling)**, bawa ke sini. Saya beli 3x lipat!`, [{ text: "Siap Bos, saya carikan!", action: closeDialogue }], 'images/job.png')
                     };
                 }
             }
@@ -40748,7 +41242,550 @@ ${document.getElementById('pr-rekom').innerText.substring(0,180)}...
                 });
             }
 
+
+            // ═══════════════════════════════════════════
+            // 🧚 FAIRY VILLAGE MINIGAME
+            // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// 🧚‍♀️ KAHYANGAN WILIS MINIGAME
+// ═══════════════════════════════════════════════════════════════
+
+// ── KATALOG BANGUNAN ──────────────────────────────────────────
+const FAIRY_BUILDINGS = {
+    // TIER 1 — Pondasi Desa
+    pondok_peri: {
+        name: '🏚️ Padepokan Cilik', tier: 1,
+        desc: 'Padepokan kecil untuk 1 Widadari. Pondasi awal Kahyangan Wilis.',
+        cost: { debu: 20 },
+        maxFairies: 1, birthChance: 0,
+        upgradeTo: 'rumah_peri',
+        effect: 'Kapasitas +1 Widadari'
+    },
+    taman_mini: {
+        name: '🌸 Taman Bunga Wilis', tier: 1,
+        desc: 'Kebun bunga suci lereng Wilis. Menghasilkan Serbuk Wilis setiap hari.',
+        cost: { debu: 15 },
+        dustPerDay: 3,
+        upgradeTo: 'taman_mekar',
+        effect: '+3 Serbuk Wilis/hari'
+    },
+    kolam_kristal: {
+        name: '💧 Sendang Suci', tier: 1,
+        desc: 'Mata air sakral Gunung Wilis. Memancarkan berkah bagi seluruh Widadari.',
+        cost: { debu: 25 },
+        happinessBonus: 10,
+        upgradeTo: 'kolam_agung',
+        effect: 'Kebahagiaan +10'
+    },
+    // TIER 2 — Berkembang
+    rumah_peri: {
+        name: '🏠 Omah Widadari', tier: 2,
+        desc: 'Omah Jawa yang nyaman untuk 2 Widadari. Di sinilah bayi Widadari lahir.',
+        cost: { debu: 60, kristal: 1 },
+        maxFairies: 2, birthChance: 0.15,
+        upgradeTo: 'vila_peri',
+        effect: 'Kapasitas +2, peluang lahir 15%'
+    },
+    taman_mekar: {
+        name: '🌺 Kebun Kenanga', tier: 2,
+        desc: 'Kebun kenanga dan melati liar khas lereng Wilis.',
+        cost: { debu: 50, kristal: 1 },
+        dustPerDay: 8,
+        upgradeTo: 'kebun_ajaib',
+        effect: '+8 Serbuk Wilis/hari'
+    },
+    sekolah_peri: {
+        name: '📚 Padepokan Ilmu', tier: 2,
+        desc: 'Padepokan tempat Widadari belajar tembang, tari, dan ilmu kahyangan.',
+        cost: { debu: 70, kristal: 1 },
+        xpBonus: 1.5,
+        upgradeTo: 'akademi_peri',
+        effect: 'XP peri x1.5'
+    },
+    kolam_agung: {
+        name: '🌊 Sendang Agung Wilis', tier: 2,
+        desc: 'Sendang sakral yang airnya langsung dari sumber Gunung Wilis.',
+        cost: { debu: 80, kristal: 2 },
+        happinessBonus: 25, dustPerDay: 5,
+        upgradeTo: 'danau_jiwa',
+        effect: 'Kebahagiaan +25, +5 Serbuk/hari'
+    },
+    pasar_peri: {
+        name: '🛒 Pasar Kahyangan', tier: 2,
+        desc: 'Pasar ajaib — tempat Widadari berdagang dengan dunia manusia.',
+        cost: { debu: 90, kristal: 2 },
+        enableTrading: true,
+        upgradeTo: null,
+        effect: 'Aktifkan penukaran Serbuk↔Gold'
+    },
+    // TIER 3 — Makmur
+    vila_peri: {
+        name: '🏡 Dalem Widadari', tier: 3,
+        desc: 'Dalem megah bergaya Jawa Timuran untuk 4 Widadari. Bayi sering lahir di sini.',
+        cost: { debu: 150, kristal: 3, cahaya: 1 },
+        maxFairies: 4, birthChance: 0.30,
+        upgradeTo: 'istana_mini',
+        effect: 'Kapasitas +4, peluang lahir 30%'
+    },
+    kebun_ajaib: {
+        name: '🌳 Kebun Raya Wilis', tier: 3,
+        desc: 'Kebun raya seluas lereng Wilis, penuh tanaman langka dan rempah suci.',
+        cost: { debu: 130, kristal: 3 },
+        dustPerDay: 18,
+        upgradeTo: null,
+        effect: '+18 Serbuk Wilis/hari'
+    },
+    akademi_peri: {
+        name: '🎓 Sanggar Tari Kahyangan', tier: 3,
+        desc: 'Sanggar tari dan tembang Jawa tertinggi di Kahyangan Wilis.',
+        cost: { debu: 160, kristal: 3, cahaya: 1 },
+        xpBonus: 2.5,
+        upgradeTo: null,
+        effect: 'XP peri x2.5'
+    },
+    menara_cahaya: {
+        name: '✨ Menara Wilis', tier: 3,
+        desc: 'Menara pemandu cahaya di puncak Wilis. Semua produksi Serbuk +50%.',
+        cost: { debu: 200, kristal: 4, cahaya: 2 },
+        dustMultiplier: 1.5,
+        upgradeTo: null,
+        effect: 'Semua Serbuk Wilis x1.5'
+    },
+    danau_jiwa: {
+        name: '🌈 Telaga Nirmala', tier: 3,
+        desc: 'Telaga ajaib sumber kehidupan — Widadari di seluruh Kahyangan selalu bersuka cita.',
+        cost: { debu: 180, kristal: 4, cahaya: 1 },
+        happinessBonus: 50, dustPerDay: 12,
+        upgradeTo: null,
+        effect: 'Kebahagiaan +50, +12 Serbuk/hari'
+    },
+    // TIER 4 — Legenda
+    istana_mini: {
+        name: '🏰 Puri Agung Wilis', tier: 4,
+        desc: 'Puri Agung Wilis! Kahyangan yang megah — 8 Widadari, kelahiran sangat sering.',
+        cost: { debu: 400, kristal: 8, cahaya: 4 },
+        maxFairies: 8, birthChance: 0.50,
+        upgradeTo: null,
+        effect: 'Kapasitas +8, kelahiran 50%/hari'
+    },
+    pohon_kehidupan: {
+        name: '🌳✨ Pohon Beringin Agung', tier: 4,
+        desc: 'Beringin suci puncak Wilis — sumber segala kehidupan Kahyangan. Menghasilkan Cahaya Wilis tiap minggu.',
+        cost: { debu: 500, kristal: 10, cahaya: 5 },
+        dustPerDay: 30, cahayaPerWeek: 1,
+        upgradeTo: null,
+        effect: '+30 Serbuk/hari, +1 Cahaya Wilis/minggu'
+    }
+};
+
+// ── NAMA PERI RANDOM ──────────────────────────────────────────
+const FAIRY_NAMES_BOY  = ['Bagus','Rekso','Lanang','Bimo','Satrio','Wibowo','Agung','Prasetyo','Handoko','Cahyo','Danu','Fajar','Galih','Hendra','Ilham','Joko','Krisna','Lintang','Mahendra','Narendra','Okto','Prawiro','Ragil','Setyawan','Teguh','Umar','Wahyu','Yusuf','Zainal','Ardi'];
+const FAIRY_NAMES_GIRL = ['Ayu','Wulan','Sekar','Endah','Ratih','Dewi','Larasati','Kinanti','Mawar','Niken','Puspita','Rahayu','Sari','Tari','Utami','Vira','Wening','Yanti','Zuhra','Asih','Bening','Cantik','Diah','Elok','Fitriah','Gendis','Harum','Intan','Jelita','Kenanga'];
+
+// ── HELPER ────────────────────────────────────────────────────
+function getFairyVillage() {
+    if (!STATE.player.fairyVillage) {
+        STATE.player.fairyVillage = {
+            fairies: [{
+                id: 'sylva_founder',
+                name: 'Rara Wilis',
+                gender: 'girl',
+                level: 5,
+                xp: 0,
+                role: 'Ratu Widadari',
+                happiness: 100,
+                born: 1
+            }],
+            buildings: [],
+            resources: { debu: 30, kristal: 0, cahaya: 0 },
+            day: 0,
+            totalBorn: 1,
+            lastDailyDay: 0
+        };
+    }
+    return STATE.player.fairyVillage;
+}
+
+function getFairyVillageStats(fv) {
+    let totalCap = 1, totalDust = 0, totalHappy = 0, xpMult = 1, dustMult = 1, hasTrading = false;
+    let cahayaPerWeek = 0;
+    (fv.buildings || []).forEach(bid => {
+        const b = FAIRY_BUILDINGS[bid];
+        if (!b) return;
+        if (b.maxFairies) totalCap += b.maxFairies;
+        if (b.dustPerDay) totalDust += b.dustPerDay;
+        if (b.happinessBonus) totalHappy += b.happinessBonus;
+        if (b.xpBonus) xpMult = Math.max(xpMult, b.xpBonus);
+        if (b.dustMultiplier) dustMult = Math.max(dustMult, b.dustMultiplier);
+        if (b.enableTrading) hasTrading = true;
+        if (b.cahayaPerWeek) cahayaPerWeek += b.cahayaPerWeek;
+    });
+    return { totalCap, totalDust: Math.floor(totalDust * dustMult), totalHappy: Math.min(100, totalHappy), xpMult, hasTrading, cahayaPerWeek };
+}
+
+function fairyDailyTick(fv) {
+    const curDay = STATE.day;
+    if (fv.lastDailyDay === curDay) return;
+    fv.lastDailyDay = curDay;
+    fv.day = (fv.day || 0) + 1;
+
+    const stats = getFairyVillageStats(fv);
+
+    // Hasilkan Serbuk Wilis
+    fv.resources.debu = (fv.resources.debu || 0) + stats.totalDust;
+
+    // Hasilkan Cahaya tiap 7 hari
+    if (stats.cahayaPerWeek > 0 && fv.day % 7 === 0) {
+        fv.resources.cahaya = (fv.resources.cahaya || 0) + stats.cahayaPerWeek;
+    }
+
+    // Kelahiran peri baru
+    const birthBuildings = (fv.buildings || []).filter(bid => FAIRY_BUILDINGS[bid] && FAIRY_BUILDINGS[bid].birthChance > 0);
+    birthBuildings.forEach(bid => {
+        const b = FAIRY_BUILDINGS[bid];
+        if (Math.random() < (b.birthChance / 7)) { // per hari
+            if (fv.fairies.length < stats.totalCap) {
+                const gender = Math.random() < 0.5 ? 'boy' : 'girl';
+                const names = gender === 'boy' ? FAIRY_NAMES_BOY : FAIRY_NAMES_GIRL;
+                const name = names[Math.floor(Math.random() * names.length)];
+                fv.fairies.push({
+                    id: 'fairy_' + Date.now(),
+                    name, gender, level: 1, xp: 0,
+                    role: gender === 'boy' ? 'Widadara Wilis' : 'Widadari Wilis',
+                    happiness: 80 + Math.floor(Math.random() * 20),
+                    born: fv.day
+                });
+                showToast(`🎊 Widadari baru lahir di Kahyangan Wilis!\n✨ Namanya ${name}! (${gender === 'boy' ? '♂ Widadara' : '♀ Widadari'})`);
+            }
+        }
+    });
+
+    // XP peri
+    fv.fairies.forEach(f => {
+        f.xp = (f.xp || 0) + Math.floor(2 * stats.xpMult);
+        if (f.xp >= f.level * 20) { f.xp = 0; f.level++; showToast(`⬆️ ${f.name} naik ke Tingkat ${f.level}!`); }
+        f.happiness = Math.min(100, (f.happiness || 80) + Math.floor(stats.totalHappy / 10));
+    });
+}
+
+// ── UI UTAMA ──────────────────────────────────────────────────
+function openFairyVillage() {
+    if (!STATE.player.sylvariaQuestComplete) {
+        showToast('Selesaikan Quest Kahyangan Wilis dulu untuk membuka Desa Widadari!');
+        return;
+    }
+    const fv = getFairyVillage();
+    fairyDailyTick(fv);
+    STATE.screen = 'minigame';
+    document.getElementById('fairy-village-modal').style.display = 'flex';
+    renderFairyVillageUI();
+}
+
+function closeFairyVillage() {
+    document.getElementById('fairy-village-modal').style.display = 'none';
+    STATE.screen = 'play';
+    manualSave();
+}
+
+function renderFairyVillageUI() {
+    const fv = getFairyVillage();
+    const stats = getFairyVillageStats(fv);
+    const res = fv.resources;
+
+    document.getElementById('fv-res-debu').textContent = res.debu || 0;
+    document.getElementById('fv-res-kristal').textContent = res.kristal || 0;
+    document.getElementById('fv-res-cahaya').textContent = res.cahaya || 0;
+    document.getElementById('fv-stat-pop').textContent = `${fv.fairies.length}/${stats.totalCap}`;
+    document.getElementById('fv-stat-dust').textContent = `+${stats.totalDust}/hari`;
+    document.getElementById('fv-stat-happy').textContent = `${stats.totalHappy}%`;
+
+    renderFairyList(fv, stats);
+    renderBuildingList(fv, stats);
+}
+
+function renderFairyList(fv, stats) {
+    const el = document.getElementById('fv-fairy-list');
+    el.innerHTML = '';
+    fv.fairies.forEach(f => {
+        const gIcon = f.gender === 'boy' ? '♂️' : '♀️';
+        const gColor = f.gender === 'boy' ? '#93c5fd' : '#f9a8d4';
+        const card = document.createElement('div');
+        card.style.cssText = `background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:12px; padding:10px; display:flex; align-items:center; gap:10px; margin-bottom:8px; cursor:pointer;`;
+        card.innerHTML = `
+            <div style="font-size:28px;">${f.gender === 'boy' ? '🧚‍♂️' : '🧚‍♀️'}</div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#fff; font-size:13px;">${f.name} <span style="color:${gColor}; font-size:11px;">${gIcon} ${f.role}</span></div>
+                <div style="color:#d1fae5; font-size:11px;">Lv.${f.level} · ❤️ ${f.happiness}% · XP ${f.xp}/${f.level*20}</div>
+                <div style="background:rgba(0,0,0,0.3); border-radius:4px; height:5px; margin-top:4px; overflow:hidden;">
+                    <div style="background:#4ade80; height:100%; width:${Math.min(100, Math.round((f.xp/(f.level*20))*100))}%; border-radius:4px;"></div>
+                </div>
+            </div>
+            <button onclick="renameFairy('${f.id}')" style="background:rgba(255,255,255,0.15); border:none; border-radius:8px; color:#fde68a; font-size:10px; padding:4px 8px; cursor:pointer;">✏️ Ganti Nama</button>
+        `;
+        el.appendChild(card);
+    });
+    if (fv.fairies.length === 0) el.innerHTML = '<div style="color:#d1fae5; text-align:center; padding:20px;">Belum ada peri...</div>';
+}
+
+function renderBuildingList(fv, stats) {
+    const el = document.getElementById('fv-building-list');
+    el.innerHTML = '';
+    const built = fv.buildings || [];
+
+    // Tampilkan bangunan yang sudah dibangun
+    if (built.length > 0) {
+        const builtDiv = document.createElement('div');
+        builtDiv.style.cssText = 'margin-bottom:12px;';
+        builtDiv.innerHTML = '<div style="color:#fde68a; font-size:11px; font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">📍 Sudah Dibangun di Kahyangan</div>';
+        const countMap = {};
+        built.forEach(bid => { countMap[bid] = (countMap[bid]||0)+1; });
+        Object.entries(countMap).forEach(([bid, cnt]) => {
+            const b = FAIRY_BUILDINGS[bid];
+            if (!b) return;
+            const row = document.createElement('div');
+            row.style.cssText = 'background:rgba(74,222,128,0.15); border:1px solid #4ade80; border-radius:8px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;';
+            row.innerHTML = `
+                <div>
+                    <span style="font-size:12px; font-weight:700; color:#4ade80;">${b.name}</span>
+                    ${cnt > 1 ? `<span style="color:#fde68a; font-size:10px;"> x${cnt}</span>` : ''}
+                    <div style="font-size:10px; color:#d1fae5; margin-top:2px;">${b.effect}</div>
+                </div>
+                ${b.upgradeTo ? `<button onclick="upgradeFairyBuilding('${bid}')" style="background:#f59e0b; border:none; border-radius:6px; padding:4px 8px; font-size:10px; color:#422006; font-weight:700; cursor:pointer;">⬆️ Upgrade</button>` : '<span style="font-size:9px; color:#6ee7b7;">MAX</span>'}
+            `;
+            builtDiv.appendChild(row);
+        });
+        el.appendChild(builtDiv);
+    }
+
+    // Katalog bangunan tersedia
+    const catalogDiv = document.createElement('div');
+    catalogDiv.innerHTML = '<div style="color:#fde68a; font-size:11px; font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">🛒 Katalog Bangunan Kahyangan</div>';
+    const tiers = [1,2,3,4];
+    tiers.forEach(tier => {
+        const tierBuildings = Object.entries(FAIRY_BUILDINGS).filter(([,b]) => b.tier === tier);
+        const tierHeader = document.createElement('div');
+        tierHeader.style.cssText = 'color:#a78bfa; font-size:10px; font-weight:700; margin:8px 0 4px 0; text-transform:uppercase; letter-spacing:1px;';
+        tierHeader.textContent = `— Tier ${tier} —`;
+        catalogDiv.appendChild(tierHeader);
+
+        tierBuildings.forEach(([bid, b]) => {
+            const res = fv.resources;
+            const canAfford = Object.entries(b.cost).every(([k,v]) => (res[k]||0) >= v);
+            const costStr = Object.entries(b.cost).map(([k,v]) => {
+                const icon = k==='debu'?'✨':k==='kristal'?'💎':'🌟';
+                const have = res[k]||0;
+                const color = have >= v ? '#4ade80' : '#f87171';
+                return `<span style="color:${color}">${icon}${v}</span>`;
+            }).join(' ');
+            const row = document.createElement('div');
+            row.style.cssText = `background:rgba(255,255,255,${canAfford?'0.1':'0.04'}); border:1px solid rgba(255,255,255,${canAfford?'0.3':'0.1'}); border-radius:8px; padding:8px 10px; margin-bottom:5px;`;
+            row.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div style="flex:1;">
+                        <div style="font-size:12px; font-weight:700; color:${canAfford?'#fff':'#94a3b8'};">${b.name}</div>
+                        <div style="font-size:10px; color:#d1fae5; margin:2px 0;">${b.desc}</div>
+                        <div style="font-size:10px; color:#6ee7b7;">${b.effect}</div>
+                        <div style="margin-top:4px; font-size:10px;">Biaya: ${costStr}</div>
+                    </div>
+                    <button onclick="buyFairyBuilding('${bid}')" ${!canAfford?'disabled':''} style="background:${canAfford?'linear-gradient(135deg,#4ade80,#22d3ee)':'rgba(100,100,100,0.3)'}; border:none; border-radius:8px; padding:6px 12px; font-size:11px; color:${canAfford?'#052e16':'#64748b'}; font-weight:700; cursor:${canAfford?'pointer':'not-allowed'}; white-space:nowrap; min-width:60px;">
+                        ${canAfford?'🔨 Beli':'🔒'}
+                    </button>
+                </div>
+            `;
+            catalogDiv.appendChild(row);
+        });
+    });
+
+    // Trading jika ada pasar
+    if (stats.hasTrading) {
+        const tradeDiv = document.createElement('div');
+        tradeDiv.style.cssText = 'margin-top:12px; background:rgba(251,191,36,0.1); border:1px solid #fbbf24; border-radius:10px; padding:10px;';
+        tradeDiv.innerHTML = `
+            <div style="color:#fbbf24; font-size:11px; font-weight:700; margin-bottom:8px;">🛒 PASAR KAHYANGAN — Tukar Mata Uang</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button onclick="fairyTrade('debu2gold')" style="background:#4ade80; border:none; border-radius:6px; padding:6px 10px; font-size:10px; color:#052e16; font-weight:700; cursor:pointer;">✨50 Serbuk → 💰200 G</button>
+                <button onclick="fairyTrade('gold2debu')" style="background:#fbbf24; border:none; border-radius:6px; padding:6px 10px; font-size:10px; color:#422006; font-weight:700; cursor:pointer;">💰500 G → ✨30 Serbuk</button>
+                <button onclick="fairyTrade('kristal2gold')" style="background:#a78bfa; border:none; border-radius:6px; padding:6px 10px; font-size:10px; color:#fff; font-weight:700; cursor:pointer;">💎1 Kristal Brantas → 💰1500 G</button>
+            </div>
+        `;
+        catalogDiv.appendChild(tradeDiv);
+    }
+
+    el.appendChild(catalogDiv);
+}
+
+function buyFairyBuilding(bid) {
+    const b = FAIRY_BUILDINGS[bid];
+    if (!b) return;
+    const fv = getFairyVillage();
+    const res = fv.resources;
+    if (!Object.entries(b.cost).every(([k,v]) => (res[k]||0) >= v)) { showToast('Sumber daya Kahyangan tidak cukup!'); return; }
+    Object.entries(b.cost).forEach(([k,v]) => { res[k] -= v; });
+    fv.buildings.push(bid);
+    showToast(`${b.name} berhasil dibangun! 🎉`);
+    renderFairyVillageUI();
+}
+
+function upgradeFairyBuilding(bid) {
+    const b = FAIRY_BUILDINGS[bid];
+    if (!b || !b.upgradeTo) return;
+    const upgB = FAIRY_BUILDINGS[b.upgradeTo];
+    if (!upgB) return;
+    const fv = getFairyVillage();
+    const res = fv.resources;
+    if (!Object.entries(upgB.cost).every(([k,v]) => (res[k]||0) >= v)) {
+        const costStr = Object.entries(upgB.cost).map(([k,v])=>`${k==='debu'?'✨':k==='kristal'?'💎':'🌟'}${v}`).join(', ');
+        showToast(`Butuh: ${costStr}`);
+        return;
+    }
+    // Hapus bangunan lama, tambah yang baru
+    const idx = fv.buildings.indexOf(bid);
+    if (idx !== -1) fv.buildings.splice(idx, 1);
+    Object.entries(upgB.cost).forEach(([k,v]) => { res[k] -= v; });
+    fv.buildings.push(b.upgradeTo);
+    showToast(`Upgrade ke ${upgB.name} berhasil! ⬆️✨`);
+    renderFairyVillageUI();
+}
+
+function renameFairy(fairyId) {
+    const fv = getFairyVillage();
+    const fairy = fv.fairies.find(f => f.id === fairyId);
+    if (!fairy) return;
+    const newName = prompt(`Ganti nama ${fairy.name} jadi:`);
+    if (newName && newName.trim().length > 0 && newName.trim().length <= 20) {
+        fairy.name = newName.trim();
+        showToast(`Nama diganti menjadi ${fairy.name}! ✨`);
+        renderFairyVillageUI();
+    } else if (newName !== null) {
+        showToast('Nama harus 1-20 karakter!');
+    }
+}
+
+function fairyTrade(type) {
+    const fv = getFairyVillage();
+    const res = fv.resources;
+    const p = STATE.player;
+    if (type === 'debu2gold') {
+        if ((res.debu||0) < 50) { showToast('Serbuk Wilis tidak cukup! Butuh 50 ✨'); return; }
+        res.debu -= 50; p.money += 200;
+        showToast('✨50 Serbuk → 💰+200 G!'); updateMoneyUI();
+    } else if (type === 'gold2debu') {
+        if (p.money < 500) { showToast('Gold tidak cukup! Butuh 500 G'); return; }
+        p.money -= 500; res.debu = (res.debu||0) + 30;
+        showToast('💰500 G → ✨+30 Serbuk Wilis!'); updateMoneyUI();
+    } else if (type === 'kristal2gold') {
+        if ((res.kristal||0) < 1) { showToast('Kristal tidak cukup!'); return; }
+        res.kristal -= 1; p.money += 1500;
+        showToast('💎1 Kristal → 💰+1500 G!'); updateMoneyUI();
+    }
+    renderFairyVillageUI();
+}
+
+// Tambahkan Kristal lewat Quest/Event Kahyangan Wilis
+function addFairyResource(type, amount) {
+    const fv = getFairyVillage();
+    fv.resources[type] = (fv.resources[type]||0) + amount;
+    showToast(`Dapat ${amount} ${type==='debu'?'✨ Serbuk Wilis':type==='kristal'?'💎 Kristal':'🌟 Cahaya'}!`);
+}
+
+
+// ── TOMBOL INFO / PANDUAN ─────────────────────────────────────
+function showFairyVillageInfo() {
+    showDialogue('PANDUAN KAHYANGAN WILIS', 
+        '🧚 CARA MAIN:\n\n' +
+        '✨ SERBUK WILIS — mata uang utama. Dapatkan dari Taman & dikumpulkan tiap hari.\n\n' +
+        '💎 KRISTAL BRANTAS PERI — rare. Dapatkan dari quest Kahyangan Wilis, hadiah Rara Wilis, atau tukar Gold di Pasar Kahyangan.\n\n' +
+        '🌟 CAHAYA WILIS — sangat langka. Dari Pohon Kehidupan (Tier 4) atau event special.\n\n' +
+        '🏗️ Bangun bangunan untuk menambah kapasitas peri, produksi Debu, dan kebahagiaan.\n\n' +
+        '👶 Peri baru lahir otomatis tiap hari jika ada bangunan yang mendukung kelahiran.\n\n' +
+        '✏️ Kamu bisa ganti nama semua peri sesuai keinginan!\n\n' +
+        '⬆️ Upgrade bangunan untuk membuka tier lebih tinggi.',
+        [{ text: 'Mengerti!', action: closeDialogue }], null);
+}
+
+// ── KUMPULKAN DEBU MANUAL (bonus harian) ─────────────────────
+function collectFairyDust() {
+    const fv = getFairyVillage();
+    const curDay = STATE.day;
+    if (fv.lastCollectDay === curDay) { showToast('Sudah mengumpulkan Serbuk Wilis hari ini!'); return; }
+    const bonus = 5 + fv.fairies.length * 2;
+    fv.resources.debu = (fv.resources.debu || 0) + bonus;
+    fv.lastCollectDay = curDay;
+    showToast(`Mengumpulkan ✨${bonus} Serbuk Wilis dari angin lereng Wilis!`);
+    renderFairyVillageUI();
+}
+
+// ── DAPATKAN KRISTAL DARI RARA WILIS (reward quest harian Kahyangan Wilis) ─
+function earnFairyKristal(amount) {
+    const fv = getFairyVillage();
+    fv.resources.kristal = (fv.resources.kristal || 0) + amount;
+    showToast(`💎 +${amount} Kristal Brantas dari Sylva!`);
+}
+
+
         </script>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🧚 FAIRY VILLAGE MODAL                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="fairy-village-modal" class="minigame-overlay" style="display:none; background: radial-gradient(ellipse at top, #1a0533 0%, #0c1a0e 60%, #050d1a 100%); flex-direction:column; overflow:hidden;">
+
+    <!-- HEADER -->
+    <div style="background:rgba(0,0,0,0.4); border-bottom:2px solid rgba(167,139,250,0.4); padding:10px 14px; display:flex; align-items:center; gap:10px; flex-shrink:0;">
+        <div style="font-size:22px;">🧚</div>
+        <div>
+            <div style="font-family:'Fredoka',sans-serif; color:#e9d5ff; font-size:16px; font-weight:700; letter-spacing:1px;">KAHYANGAN WILIS</div>
+            <div style="color:#a78bfa; font-size:10px;">✨ Bangkitkan kembali Kahyangan Widadari di lereng Gunung Wilis</div>
+        </div>
+        <div style="flex:1;"></div>
+        <!-- Resources -->
+        <div style="display:flex; gap:8px; align-items:center;">
+            <div style="background:rgba(74,222,128,0.15); border:1px solid #4ade80; border-radius:8px; padding:4px 8px; text-align:center;">
+                <div style="color:#4ade80; font-size:9px; font-weight:700;">✨ SERBUK WILIS</div>
+                <div id="fv-res-debu" style="color:#fff; font-weight:700; font-size:14px;">0</div>
+            </div>
+            <div style="background:rgba(167,139,250,0.15); border:1px solid #a78bfa; border-radius:8px; padding:4px 8px; text-align:center;">
+                <div style="color:#a78bfa; font-size:9px; font-weight:700;">💎 KRISTAL BRANTAS</div>
+                <div id="fv-res-kristal" style="color:#fff; font-weight:700; font-size:14px;">0</div>
+            </div>
+            <div style="background:rgba(251,191,36,0.15); border:1px solid #fbbf24; border-radius:8px; padding:4px 8px; text-align:center;">
+                <div style="color:#fbbf24; font-size:9px; font-weight:700;">🌟 CAHAYA WILIS</div>
+                <div id="fv-res-cahaya" style="color:#fff; font-weight:700; font-size:14px;">0</div>
+            </div>
+        </div>
+        <button onclick="closeFairyVillage()" style="background:rgba(239,68,68,0.7); border:none; border-radius:8px; color:#fff; padding:6px 12px; font-size:13px; cursor:pointer; font-weight:700;">✕</button>
+    </div>
+
+    <!-- STATS BAR -->
+    <div style="background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.1); padding:6px 14px; display:flex; gap:16px; flex-shrink:0; flex-wrap:wrap;">
+        <div style="font-size:11px; color:#d1fae5;">👥 Populasi: <b id="fv-stat-pop" style="color:#4ade80;">0/1</b></div>
+        <div style="font-size:11px; color:#d1fae5;">⚗️ Produksi: <b id="fv-stat-dust" style="color:#4ade80;">+0/hari</b></div>
+        <div style="font-size:11px; color:#d1fae5;">😊 Kebahagiaan: <b id="fv-stat-happy" style="color:#f9a8d4;">0%</b></div>
+        <div style="flex:1;"></div>
+        <button onclick="showFairyVillageInfo()" style="background:rgba(167,139,250,0.2); border:1px solid #a78bfa; border-radius:6px; color:#e9d5ff; font-size:10px; padding:3px 8px; cursor:pointer;">❓ Panduan</button>
+    </div>
+
+    <!-- MAIN CONTENT — 2 KOLOM -->
+    <div style="display:flex; flex:1; overflow:hidden; gap:0;">
+
+        <!-- KIRI: PERI -->
+        <div style="width:45%; border-right:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; overflow:hidden;">
+            <div style="background:rgba(0,0,0,0.2); padding:8px 12px; font-family:'Fredoka',sans-serif; color:#fde68a; font-size:13px; font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
+                🧚‍♀️ Para Widadari
+            </div>
+            <div id="fv-fairy-list" style="flex:1; overflow-y:auto; padding:10px; -webkit-overflow-scrolling:touch;"></div>
+        </div>
+
+        <!-- KANAN: BANGUNAN -->
+        <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+            <div style="background:rgba(0,0,0,0.2); padding:8px 12px; font-family:'Fredoka',sans-serif; color:#fde68a; font-size:13px; font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); flex-shrink:0; display:flex; justify-content:space-between; align-items:center;">
+                <span>🏗️ Bangunan Kahyangan</span>
+                <button onclick="collectFairyDust()" style="background:linear-gradient(135deg,#4ade80,#22d3ee); border:none; border-radius:8px; padding:4px 10px; font-size:10px; color:#052e16; font-weight:700; cursor:pointer;">⚗️ Kumpulkan Serbuk</button>
+            </div>
+            <div id="fv-building-list" style="flex:1; overflow-y:auto; padding:10px; -webkit-overflow-scrolling:touch;"></div>
+        </div>
+    </div>
+</div>
+
         <!-- ONLINE NOTIFICATION POPUP -->
         <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
 
