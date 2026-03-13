@@ -27,6 +27,12 @@
     <link rel="preload" as="image" href="images/orangsawah.png">
     <!-- NEW: PRELOAD LAHAN LIAR -->
     <link rel="preload" as="image" href="images/lahan-liar.png">
+    <!-- NEW: PRELOAD FAIRY NPC -->
+    <link rel="preload" as="image" href="images/wening.png">
+    <link rel="preload" as="image" href="images/sekar.png">
+    <link rel="preload" as="image" href="images/bening.png">
+    <link rel="preload" as="image" href="images/juna.png">
+    <link rel="preload" as="image" href="images/pohonperi.png">
 
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -3082,7 +3088,7 @@
             z-index: 500;
             display: none;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             pointer-events: auto;
             backdrop-filter: blur(6px);
             overflow-y: auto;
@@ -4616,7 +4622,7 @@
             z-index: 99998;
             background: rgba(0,0,0,0.92);
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             padding: 12px;
             overflow-y: scroll;
             overflow-x: hidden;
@@ -4784,7 +4790,7 @@
             z-index: 99999;
             background: rgba(0,0,0,0.97);
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             padding: 16px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -5041,16 +5047,37 @@
            🌿 GLOBAL MOBILE MODAL FIX — SEMUA MODAL BISA SCROLL
         ═══════════════════════════════════════════════════════ */
 
-        /* Override inspect-modal, message-archive-modal, daily-quest-popup */
+        /* Modal konten panjang — scroll dari atas, tetap horizontal center */
         #inspect-modal,
         #message-archive-modal,
-        #daily-quest-popup,
-        #calendar-modal,
-        #about-screen {
+        #calendar-modal {
             position: fixed !important;
             overflow-y: auto !important;
             -webkit-overflow-scrolling: touch !important;
             align-items: flex-start !important;
+            justify-content: center !important;
+            padding: 12px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* About screen — di tengah layar */
+        #about-screen {
+            position: fixed !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 12px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Quest popup: tetap di tengah layar, konten bisa scroll */
+        #daily-quest-popup {
+            position: fixed !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            align-items: center !important;
+            justify-content: center !important;
             padding: 12px !important;
             box-sizing: border-box !important;
         }
@@ -5139,7 +5166,8 @@
         #business-modal {
             overflow-y: auto !important;
             -webkit-overflow-scrolling: touch !important;
-            align-items: flex-start !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
     </style>
@@ -5383,7 +5411,7 @@
     <!-- MODAL: UI PASAR GROSIR (NAIK-TURUN HARGA) -->
     <!-- ================================================== -->
     <div id="pasar-modal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(34,20,5,0.88); z-index: 1060; align-items: flex-start; justify-content: center; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 12px; box-sizing: border-box; backdrop-filter: blur(6px);">
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(34,20,5,0.88); z-index: 1060; align-items: center; justify-content: center; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 12px; box-sizing: border-box; backdrop-filter: blur(6px);">
         <div
             style="background: linear-gradient(160deg,#fef9ee,#fdf3d4,#f5e6b8); border: 4px solid #92400e; outline: 2px solid #d97706; outline-offset:3px; border-radius: 18px; padding: 22px; width: 92%; max-width: 420px; color: #422006; box-shadow: 0 8px 0 #78350f, 0 14px 30px rgba(0,0,0,0.4); overflow-y: auto; margin: auto;">
             <h2 style="color: #78350f; text-align: center; margin-top: 0; font-family:'Fredoka',sans-serif; border-bottom: 2px dashed #d97706; padding-bottom:8px;">🛒 Grosir Keliling</h2>
@@ -7328,20 +7356,23 @@
         </div>
 
         <!-- NEW: STUDENT PROFILE MODAL (KARTU PELAJAR) -->
-        <div id="profile-modal" class="minigame-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; align-items: flex-start; justify-content: center; padding: 16px 12px 40px; box-sizing: border-box; display: none;">
-            <!-- FIX: center on mobile, scrollable, tombol logout selalu kelihatan -->
-            <div style="width: 100%; max-width: 400px; padding: 0; border: none; background: transparent; box-shadow: none; margin: 0 auto; box-sizing: border-box;">
+        <div id="profile-modal" class="minigame-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; align-items: flex-start; justify-content: center; padding: 12px 10px 30px; box-sizing: border-box; display: none; background: rgba(0,0,0,0.85);">
+            <!-- FIX MOBILE: center on mobile, scrollable, tombol logout selalu kelihatan -->
+            <div style="width: 100%; max-width: 420px; padding: 0; border: none; background: transparent; box-shadow: none; margin: 0 auto; box-sizing: border-box;">
                 <!-- ID Card Container -->
                 <div
-                    style="background: #f8fafc; border-radius: 16px; border: 4px solid #334155; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Exo 2', sans-serif; box-sizing: border-box; width: 100%;">
+                    style="background: #f8fafc; border-radius: 16px; border: 4px solid #334155; overflow: visible; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Exo 2', sans-serif; box-sizing: border-box; width: 100%;">
 
                     <!-- Header (Warna Dinamis Sesuai Role) -->
                     <div id="profile-header"
-                        style="background: #334155; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b;">
-                        <div style="font-family: 'Fredoka', sans-serif; font-size: 20px; letter-spacing: 1px;">KARTU
-                            PELAJAR</div>
-                        <div style="font-size: 10px; opacity: 0.8; font-family: monospace;">ID: <span
-                                id="profile-id">---</span></div>
+                        style="background: #334155; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b; border-radius: 12px 12px 0 0;">
+                        <div style="font-family: 'Fredoka', sans-serif; font-size: 18px; letter-spacing: 1px;">🎓 KARTU PELAJAR</div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <!-- TOMBOL MUSIK TOGGLE -->
+                            <button id="profile-music-btn" onclick="toggleMusicFromProfile()" title="Nyalakan/Matikan Musik"
+                                style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; padding: 4px 8px; font-size: 14px; cursor: pointer; line-height: 1;">🎵</button>
+                            <div style="font-size: 10px; opacity: 0.8; font-family: monospace;">ID: <span id="profile-id">---</span></div>
+                        </div>
                     </div>
 
                     <div style="padding: 16px; display: flex; gap: 12px; flex-direction: column; background: #fff; box-sizing: border-box; width: 100%;">
@@ -7368,7 +7399,17 @@
                                     <div id="profile-role-badge"
                                         style="display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; background: #94a3b8; color: white;">
                                         NOVICE</div>
-                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">SMK Negeri 1 Brondong
+                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">SMK Negeri 1 Brondong</div>
+                                    <!-- KELAS & MENTOR EDITABLE -->
+                                    <div style="display:flex; align-items:center; gap:4px; margin-top:3px; flex-wrap:wrap;">
+                                        <span style="font-size:10px; color:#334155;">📚</span>
+                                        <span id="profile-kelas-display" style="font-size:10px; color:#0f172a; font-weight:700;">-</span>
+                                        <button onclick="editProfileKelas()" style="background:#e2e8f0; border:none; border-radius:4px; padding:1px 5px; font-size:9px; cursor:pointer; color:#334155;">✏️</button>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:4px; margin-top:2px; flex-wrap:wrap;">
+                                        <span style="font-size:10px; color:#334155;">👩‍🏫</span>
+                                        <span id="profile-mentor-display" style="font-size:10px; color:#0f172a; font-weight:700;">-</span>
+                                        <button onclick="editProfileMentor()" style="background:#e2e8f0; border:none; border-radius:4px; padding:1px 5px; font-size:9px; cursor:pointer; color:#334155;">✏️</button>
                                     </div>
                                 </div>
 
@@ -7460,11 +7501,13 @@
                         </div>
 
                         <!-- Tombol Tutup & Logout -->
-                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 8px; width: 100%; box-sizing: border-box;">
+                        <div style="display: flex; gap: 8px; margin-top: 8px; padding-bottom: 8px; width: 100%; box-sizing: border-box; flex-wrap: wrap;">
                             <button onclick="closeProfileModal()"
-                                style="flex: 1; min-width: 0; width: 0; font-size: 14px; padding: 13px 8px; margin: 0; background: #334155; border: 2px solid #475569; color: white; min-height: 50px; border-radius: 12px; cursor: pointer; font-family: 'Fredoka', sans-serif; font-weight: bold; letter-spacing: 0.5px; box-sizing: border-box;">✖ TUTUP</button>
+                                style="flex: 1; min-width: 80px; font-size: 13px; padding: 12px 6px; margin: 0; background: #334155; border: 2px solid #475569; color: white; min-height: 46px; border-radius: 12px; cursor: pointer; font-family: 'Fredoka', sans-serif; font-weight: bold; letter-spacing: 0.5px; box-sizing: border-box;">✖ TUTUP</button>
+                            <button onclick="toggleMusicFromProfile()"
+                                style="flex: 1; min-width: 80px; font-size: 13px; padding: 12px 6px; margin: 0; background: linear-gradient(135deg,#1e40af,#1d4ed8); border: 2px solid #3b82f6; color: white; min-height: 46px; border-radius: 12px; cursor: pointer; font-family: 'Fredoka', sans-serif; font-weight: bold; letter-spacing: 0.5px; box-sizing: border-box;" id="profile-music-btn2">🎵 MUSIK</button>
                             <button onclick="showLogoutConfirm();"
-                                style="flex: 1; min-width: 0; width: 0; font-size: 14px; padding: 13px 8px; margin: 0; background: linear-gradient(135deg,#991b1b,#7f1d1d); border: 2px solid #ef4444; color: white; min-height: 50px; border-radius: 12px; font-weight: bold; box-shadow: 0 3px 10px rgba(239,68,68,0.4); cursor: pointer; font-family: 'Fredoka', sans-serif; letter-spacing: 0.5px; box-sizing: border-box;">🚪 KELUAR</button>
+                                style="flex: 1; min-width: 80px; font-size: 13px; padding: 12px 6px; margin: 0; background: linear-gradient(135deg,#991b1b,#7f1d1d); border: 2px solid #ef4444; color: white; min-height: 46px; border-radius: 12px; font-weight: bold; box-shadow: 0 3px 10px rgba(239,68,68,0.4); cursor: pointer; font-family: 'Fredoka', sans-serif; letter-spacing: 0.5px; box-sizing: border-box;">🚪 KELUAR</button>
                         </div>
                     </div>
                 </div>
@@ -7630,6 +7673,11 @@
                         <div id="sync-btn" onclick="forceSync()"
                             style="margin-top:5px; cursor:pointer; font-size:9px; color:#94a3b8; background:rgba(15, 23, 42, 0.8); padding:4px 8px; border-radius:12px; border:1px solid #334155; display:flex; align-items:center; gap:4px; transition:0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
                             <span id="sync-icon">☁️</span> <span id="sync-text">Sync Data</span>
+                        </div>
+                        <!-- 🧚 TOMBOL TEST MODE DUNIA PERI -->
+                        <div id="fairy-test-btn" onclick="openFairyTestMode()"
+                            style="margin-top:4px; cursor:pointer; font-size:9px; color:#e9d5ff; background:rgba(88,28,135,0.7); padding:4px 8px; border-radius:12px; border:1px solid #a855f7; display:flex; align-items:center; gap:4px; transition:0.2s; box-shadow:0 2px 5px rgba(168,85,247,0.4);">
+                            🧚 Test Peri
                         </div>
                     </div>
                 </div>
@@ -8052,7 +8100,8 @@
                     dungeon: new Audio('audio/dungeon.mp3'),
                     boss: new Audio('audio/boss.mp3'),
                     knock: new Audio('audio/knock.mp3'),
-                    wedding: new Audio('audio/wedding.mp3')
+                    wedding: new Audio('audio/wedding.mp3'),
+                    pulauperi: new Audio('audio/pulauperi.mp3')
                 },
                 currentTrack: null,
                 currentAmbience: null, // NEW: Track Ambience (Suara Latar)
@@ -8069,6 +8118,9 @@
                         if (this.tracks.dungeon) this.tracks.dungeon.loop = true;
                         if (this.tracks.boss) this.tracks.boss.loop = true;
                         if (this.tracks.wedding) this.tracks.wedding.loop = true;
+
+                        // --- MUSIK KAHYANGAN WILIS ---
+                        if (this.tracks.pulauperi) this.tracks.pulauperi.loop = true;
 
                         // --- NEW: SETTING MUSIK MUSIM ---
                         if (this.tracks.spring) this.tracks.spring.loop = true;
@@ -8106,6 +8158,7 @@
                         if (this.tracks.boss) this.tracks.boss.volume = 0.8;
                         if (this.tracks.knock) this.tracks.knock.volume = 1.0;
                         if (this.tracks.wedding) this.tracks.wedding.volume = 0.8;
+                        if (this.tracks.pulauperi) this.tracks.pulauperi.volume = 0.55;
                     } catch (e) {
                         console.warn("Audio Init Error (Non-Fatal):", e);
                     }
@@ -8218,6 +8271,9 @@
                             } else {
                                 this.playBGM('dungeon');
                             }
+                        } else if (STATE.location === 'fairyVillage') {
+                            this.stopAmbience();
+                            this.playBGM('pulauperi');
                         } else {
                             this.stopAmbience(); // Matikan suara malam di dalam rumah
                             // Interior
@@ -11201,7 +11257,8 @@
                 // Isi dropdown guru jika siswa — fetch dari cloud dulu, fallback lokal
                 if (role === 'siswa') {
                     const guruSelect = document.getElementById('greg-guru');
-                    guruSelect.innerHTML = '<option value="">⏳ Memuat daftar guru...</option>';
+                    guruSelect.innerHTML = '<option value="">⏳ Memuat daftar guru dari server...</option>';
+                    guruSelect.disabled = true;
 
                     // Coba ambil dari Firestore dulu (paling akurat)
                     try {
@@ -11219,19 +11276,23 @@
                             }
                         });
 
+                        guruList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                         guruSelect.innerHTML = '<option value="">-- Pilih Guru Pendamping --</option>';
+                        guruSelect.disabled = false;
                         if (guruList.length === 0) {
-                            guruSelect.innerHTML += '<option value="" disabled>Belum ada guru terdaftar</option>';
+                            guruSelect.innerHTML += '<option value="" disabled>⚠️ Belum ada guru terdaftar</option>';
                         } else {
                             guruList.forEach(g => {
                                 const opt = document.createElement('option');
                                 opt.value = g.email;
-                                opt.textContent = g.name + (g.school ? ' (' + g.school + ')' : '');
+                                const sekolah = g.school && g.school !== 'Unknown School' && g.school !== 'Unknown' ? ` — ${g.school}` : '';
+                                opt.textContent = `👩‍🏫 ${g.name}${sekolah}`;
                                 guruSelect.appendChild(opt);
                             });
                         }
                     } catch(e) {
                         console.warn('Gagal fetch guru:', e);
+                        guruSelect.disabled = false;
                         guruSelect.innerHTML = '<option value="">-- Pilih Guru (Offline) --</option>';
                         const dbLocal = DataService.getDB();
                         Object.entries(dbLocal).filter(([,u]) => u.role === 'guru').forEach(([email, u]) => {
@@ -11464,17 +11525,30 @@
 
             async function populateTeacherSelect() {
                 const select = document.getElementById('siswa-guru');
-                select.innerHTML = '<option value="">Loading Mentors...</option>';
-                await DataService.init(true);
-                const teachers = await DataService.getTeachers();
-                select.innerHTML = '<option value="">Select Mentor</option>';
-                if (teachers.length === 0) select.innerHTML += '<option value="" disabled>No mentors available</option>';
-                teachers.forEach(t => {
-                    const option = document.createElement('option');
-                    option.value = t.email;
-                    option.innerText = `${t.name} (${t.school})`;
-                    select.appendChild(option);
-                });
+                select.innerHTML = '<option value="">⏳ Memuat daftar guru dari server...</option>';
+                select.disabled = true;
+                try {
+                    await DataService.init(true);
+                    const teachers = await DataService.getTeachers();
+                    select.innerHTML = '<option value="">-- Pilih Guru Pendamping --</option>';
+                    select.disabled = false;
+                    if (teachers.length === 0) {
+                        select.innerHTML += '<option value="" disabled>⚠️ Belum ada guru terdaftar</option>';
+                    } else {
+                        teachers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                        teachers.forEach(t => {
+                            const option = document.createElement('option');
+                            option.value = t.email;
+                            const sekolah = t.school && t.school !== 'Unknown School' && t.school !== 'Unknown' ? ` — ${t.school}` : '';
+                            option.innerText = `👩‍🏫 ${t.name}${sekolah}`;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch(e) {
+                    select.disabled = false;
+                    select.innerHTML = '<option value="">⚠️ Gagal memuat — coba lagi</option>';
+                    console.warn('populateTeacherSelect error:', e);
+                }
             }
 
             async function handleAuth(role, btnElement) {
@@ -15515,11 +15589,11 @@
                         { id: 'sylva_peri', x: 15, y: 7, name: 'Rara Wilis (Ratu Widadari)',
                           imgSrc: 'images/peripanen.png', type: 'static', schedule: 'always', w: 40, h: 55 },
                         { id: 'peri_kecil_1', x: 7, y: 14, name: 'Wening (Widadari Wilis)',
-                          imgSrc: 'images/peripanen.png', type: 'wander', vx: 0.4, vy: 0, schedule: 'always', w: 28, h: 42 },
+                          imgSrc: 'images/wening.png', type: 'wander', vx: 0.4, vy: 0, schedule: 'always', w: 38, h: 58, noNameTag: true },
                         { id: 'peri_kecil_2', x: 24, y: 14, name: 'Sekar (Widadari Bunga)',
-                          imgSrc: 'images/peripanen.png', type: 'wander', vx: -0.4, vy: 0, schedule: 'always', w: 28, h: 42 },
+                          imgSrc: 'images/sekar.png', type: 'wander', vx: -0.4, vy: 0, schedule: 'always', w: 38, h: 58, noNameTag: true },
                         { id: 'peri_kecil_3', x: 15, y: 19, name: 'Bening (Widadari Air)',
-                          imgSrc: 'images/peripanen.png', type: 'static', schedule: 'always', w: 28, h: 42 }
+                          imgSrc: 'images/bening.png', type: 'static', schedule: 'always', w: 38, h: 58, noNameTag: true }
                     ],
                     objects: [
                         { x: 13, y: 5, w: 6, h: 3, type: 'sign', icon: '🌸',
@@ -17092,6 +17166,96 @@ ${reward.tip}`,
                     hideJoystick();
                 });
             }
+
+
+            // ═══════════════════════════════════════════════════════════════
+            // FAIRY VILLAGE MAP — Terintegrasi ke sistem maps utama
+            // Ukuran 3× lebih besar (240×150), TANPA TEMBOK/BORDER
+            // ═══════════════════════════════════════════════════════════════
+            (function initFairyVillageMap() {
+                const FW = 240, FH = 150;
+                // Tile 20 = Lantai Peri (semua tile adalah lantai, TANPA border wall)
+                const tiles = new Array(FW * FH).fill(20);
+                // Tidak ada border/tembok — peta terbuka luas
+
+                // NPC: Rara Wilis di posisi atas tengah, Pohon Energi di bawah tengah
+                maps['fairyVillage'] = {
+                    w: FW, h: FH,
+                    tiles: tiles,
+                    // Buildings = dipakai untuk collision solid (NPC & bangunan peri)
+                    buildings: [],
+                    objects: [],
+                    npcs: [
+                        {
+                            id: 'rara_wilis',
+                            name: 'Rara Wilis',
+                            x: 114, y: 6,
+                            w: 38, h: 58,
+                            imgSrc: 'images/rarawilis.png',
+                            sprite: 'images/rarawilis.png',
+                            type: 'fairy_npc',
+                            schedule: 'always',
+                            dialogFn: 'openRaraWilisDialog',
+                            solid: true
+                        },
+                        {
+                            id: 'pohon_energi',
+                            name: 'Pohon Energi',
+                            x: 114, y: 114,
+                            w: 38, h: 58,
+                            imgSrc: 'images/pohonperi.png',
+                            sprite: 'images/pohonperi.png',
+                            type: 'static',
+                            schedule: 'always',
+                            dialogFn: 'collectFairyDust',
+                            solid: true
+                        },
+                        {
+                            id: 'fv_wening',
+                            name: 'Wening',
+                            x: 100, y: 20,
+                            w: 38, h: 58,
+                            imgSrc: 'images/wening.png',
+                            sprite: 'images/wening.png',
+                            type: 'wander', vx: 0.4, vy: 0,
+                            schedule: 'always', noNameTag: true
+                        },
+                        {
+                            id: 'fv_sekar',
+                            name: 'Sekar',
+                            x: 128, y: 20,
+                            w: 38, h: 58,
+                            imgSrc: 'images/sekar.png',
+                            sprite: 'images/sekar.png',
+                            type: 'wander', vx: -0.4, vy: 0,
+                            schedule: 'always', noNameTag: true
+                        },
+                        {
+                            id: 'fv_bening',
+                            name: 'Bening',
+                            x: 114, y: 35,
+                            w: 38, h: 58,
+                            imgSrc: 'images/bening.png',
+                            sprite: 'images/bening.png',
+                            type: 'static',
+                            schedule: 'always', noNameTag: true
+                        },
+                        {
+                            id: 'fv_juna',
+                            name: 'Juna',
+                            x: 105, y: 50,
+                            w: 38, h: 58,
+                            imgSrc: 'images/juna.png',
+                            sprite: 'images/juna.png',
+                            type: 'wander', vx: 0.3, vy: 0.3,
+                            schedule: 'always', noNameTag: true
+                        }
+                    ]
+                };
+
+                // Tambahkan bangunan sebagai kolider solid dinamis saat dibangun
+                // (akan di-refresh setiap kali openFairyVillage dipanggil)
+            })();
 
             // Panggil inisialisasi Kontrol Baru
             initTouchControls();
@@ -20497,11 +20661,161 @@ ${reward.tip}`,
                 // Show Modal
                 document.getElementById('profile-modal').style.display = 'flex';
                 STATE.screen = 'modal';
+
+                // Populate kelas & mentor
+                const kelasEl = document.getElementById('profile-kelas-display');
+                const mentorEl = document.getElementById('profile-mentor-display');
+                if (kelasEl) kelasEl.innerText = userData.details || p.customKelas || 'Kelas belum diisi';
+                if (mentorEl) {
+                    const mentorName = p.customMentor || userData.mentorName || 'Guru belum diisi';
+                    mentorEl.innerText = mentorName;
+                }
+
+                // Update tombol musik
+                updateMusicBtn();
             }
 
             function closeProfileModal() {
                 document.getElementById('profile-modal').style.display = 'none';
                 STATE.screen = 'play';
+            }
+
+            // === FUNGSI MUSIK DARI KARTU PELAJAR ===
+            function toggleMusicFromProfile() {
+                if (typeof AudioService !== 'undefined') {
+                    AudioService.enabled = !AudioService.enabled;
+                    if (!AudioService.enabled) {
+                        // Matikan semua audio
+                        Object.values(AudioService.tracks).forEach(t => { try { t.pause(); } catch(e){} });
+                        AudioService.currentTrack = null;
+                        AudioService.currentAmbience = null;
+                        showToast('🔇 Musik dimatikan');
+                    } else {
+                        // Nyalakan kembali
+                        AudioService.update();
+                        showToast('🎵 Musik dinyalakan');
+                    }
+                    updateMusicBtn();
+                    // Simpan preferensi
+                    try { localStorage.setItem('musicEnabled', AudioService.enabled ? '1' : '0'); } catch(e){}
+                }
+            }
+
+            function updateMusicBtn() {
+                const btn = document.getElementById('profile-music-btn');
+                const btn2 = document.getElementById('profile-music-btn2');
+                if (!btn) return;
+                const on = typeof AudioService !== 'undefined' ? AudioService.enabled : true;
+                btn.innerText = on ? '🎵' : '🔇';
+                btn.title = on ? 'Matikan Musik' : 'Nyalakan Musik';
+                btn.style.background = on ? 'rgba(255,255,255,0.25)' : 'rgba(239,68,68,0.4)';
+                if (btn2) {
+                    btn2.innerText = on ? '🎵 MUSIK ON' : '🔇 MUSIK OFF';
+                    btn2.style.background = on ? 'linear-gradient(135deg,#1e40af,#1d4ed8)' : 'linear-gradient(135deg,#374151,#1f2937)';
+                    btn2.style.borderColor = on ? '#3b82f6' : '#6b7280';
+                }
+            }
+
+            // === FUNGSI EDIT KELAS & MENTOR ===
+            function editProfileKelas() {
+                const userData = DataService.user || {};
+                const current = STATE.player.customKelas || userData.details || '';
+                const input = prompt('Ganti nama kelas:', current);
+                if (input !== null && input.trim().length > 0) {
+                    STATE.player.customKelas = input.trim();
+                    const el = document.getElementById('profile-kelas-display');
+                    if (el) el.innerText = input.trim();
+                    showToast('✅ Nama kelas diperbarui: ' + input.trim());
+                } else if (input !== null) {
+                    showToast('⚠️ Nama kelas tidak boleh kosong!');
+                }
+            }
+
+            // === FUNGSI EDIT MENTOR (DROPDOWN DARI FIREBASE) ===
+            async function editProfileMentor() {
+                // Buat modal overlay
+                let overlay = document.getElementById('mentor-pick-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'mentor-pick-overlay';
+                    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:99999;display:flex;align-items:center;justify-content:center;';
+                    document.body.appendChild(overlay);
+                }
+                overlay.innerHTML = `
+                    <div style="background:#fefce8;border:4px solid #a16207;border-radius:16px;padding:20px;width:90%;max-width:360px;box-shadow:0 8px 0 #78350f,0 14px 30px rgba(0,0,0,0.4);font-family:'Nunito',sans-serif;">
+                        <div style="font-family:'Fredoka',sans-serif;font-size:16px;font-weight:700;color:#422006;margin-bottom:12px;text-align:center;">👩‍🏫 Pilih Guru Pendamping</div>
+                        <select id="mentor-pick-select" style="width:100%;padding:10px;border:2px solid #a16207;border-radius:8px;font-size:13px;font-family:'Nunito',sans-serif;background:#fff;color:#422006;margin-bottom:14px;">
+                            <option value="">⏳ Memuat daftar guru...</option>
+                        </select>
+                        <div style="display:flex;gap:8px;">
+                            <button onclick="document.getElementById('mentor-pick-overlay').style.display='none'"
+                                style="flex:1;padding:10px;background:#e2e8f0;border:2px solid #cbd5e1;border-radius:8px;cursor:pointer;font-weight:700;font-family:'Fredoka',sans-serif;">✖ Batal</button>
+                            <button onclick="saveMentorChoice()"
+                                style="flex:2;padding:10px;background:linear-gradient(135deg,#065f46,#047857);border:2px solid #10b981;border-radius:8px;color:#fff;cursor:pointer;font-weight:700;font-family:'Fredoka',sans-serif;">✅ Simpan</button>
+                        </div>
+                    </div>`;
+                overlay.style.display = 'flex';
+
+                // Load guru dari Firebase
+                const sel = document.getElementById('mentor-pick-select');
+                try {
+                    const teachers = await DataService.getTeachers();
+                    teachers.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    const currentMentor = DataService.user?.mentor || '';
+                    sel.innerHTML = '<option value="">-- Pilih Guru Pendamping --</option>';
+                    if (teachers.length === 0) {
+                        sel.innerHTML += '<option value="" disabled>⚠️ Belum ada guru terdaftar</option>';
+                    } else {
+                        teachers.forEach(t => {
+                            const opt = document.createElement('option');
+                            opt.value = t.email;
+                            const sekolah = t.school && t.school !== 'Unknown School' && t.school !== 'Unknown' ? ` — ${t.school}` : '';
+                            opt.textContent = `👩‍🏫 ${t.name}${sekolah}`;
+                            if (t.email === currentMentor) opt.selected = true;
+                            sel.appendChild(opt);
+                        });
+                    }
+                } catch(e) {
+                    sel.innerHTML = '<option value="">⚠️ Gagal memuat — periksa koneksi</option>';
+                }
+            }
+
+            async function saveMentorChoice() {
+                const sel = document.getElementById('mentor-pick-select');
+                if (!sel || !sel.value) { showToast('⚠️ Pilih guru terlebih dahulu!'); return; }
+                const email = sel.value;
+                const name = sel.options[sel.selectedIndex].textContent.replace('👩‍🏫 ', '').split(' — ')[0].trim();
+
+                // Tutup modal
+                const overlay = document.getElementById('mentor-pick-overlay');
+                if (overlay) overlay.style.display = 'none';
+
+                // Update lokal
+                if (DataService.user) DataService.user.mentor = email;
+                STATE.player.customMentor = name;
+                STATE.mentorName = name;
+                const el = document.getElementById('profile-mentor-display');
+                if (el) el.innerText = name;
+
+                // Simpan ke Firebase
+                try {
+                    if (DataService.mode === 'firebase' && db && DataService.user?.email) {
+                        await db.collection('artifacts').doc('nusantara-arsa').collection('users')
+                            .doc(DataService.user.email).update({ mentor: email });
+                        showToast('✅ Mentor berhasil diperbarui: ' + name);
+                    } else {
+                        // Fallback lokal
+                        const dbLocal = DataService.getDB();
+                        if (dbLocal[DataService.user?.email]) {
+                            dbLocal[DataService.user.email].mentor = email;
+                            DataService.saveDB(dbLocal);
+                        }
+                        showToast('✅ Mentor disimpan (lokal): ' + name);
+                    }
+                } catch(e) {
+                    console.warn('Gagal simpan mentor ke Firebase:', e);
+                    showToast('⚠️ Tersimpan lokal, cek koneksi untuk sinkronisasi');
+                }
             }
 
             // --- NEW FUNCTION: UPDATE STATUS DI INVENTORY ---
@@ -21377,11 +21691,10 @@ ${reward.tip}`,
                     // --- UPDATE: Logic Deteksi NPC (Menggunakan Jarak Radial) ---
                     // Cari NPC terdekat dalam radius interaksi
                     let closestNPC = null;
-                    let minNPCDist = 50; // Radius deteksi NPC (pixel)
+                    let minNPCDist = 80; // Radius deteksi NPC
 
                     for (let npc of map.npcs) {
                         if (!isNPCActive(npc)) continue;
-                        // Hitung jarak dari tengah player ke tengah NPC
                         const pCX = STATE.player.x + (STATE.player.w / 2);
                         const pCY = STATE.player.y + (STATE.player.h / 2);
                         const nCX = (npc.x * TILE_SIZE) + ((npc.w || 40) / 2);
@@ -21390,15 +21703,16 @@ ${reward.tip}`,
                         const dist = Math.hypot(pCX - nCX, pCY - nCY);
                         if (dist < minNPCDist) {
                             closestNPC = npc;
-                            break; // Prioritaskan NPC
+                            break;
                         }
                     }
 
                     if (closestNPC) {
                         showActionButton = true;
-                        // UPDATE: Jika NPC adalah Pasangan Nikah, ganti ikon tombol jadi Hati
                         if (STATE.player.married && STATE.player.spouseId === closestNPC.id) {
                             actionIcon = '💖';
+                        } else if (closestNPC.dialogFn === 'collectFairyDust') {
+                            actionIcon = '✨';
                         } else {
                             actionIcon = '💬';
                         }
@@ -24226,6 +24540,9 @@ ${reward.tip}`,
                 const t = map.tiles[ty * map.w + tx];
 
                 // UPDATE: Izinkan jalan di air (Tile 0) jika di area Dermaga
+                if (t === 0 && STATE.location === 'fairyVillage') {
+                    return false; // Tidak ada air di fairy village
+                }
                 if (STATE.location === 'village' && t === 0) {
                     // Area Dermaga didefinisikan di map (x:43, y:34, w:7, h:5)
                     // Kita izinkan player berjalan di koordinat tile tersebut
@@ -24236,8 +24553,8 @@ ${reward.tip}`,
                     return true; // Blocked (Laut Lepas)
                 }
 
-                // UPDATE: Tambahkan ID 13 (Tembok Bawah) sebagai collision
-                return (t === 2 || t === 12 || t === 11 || t === 13);
+                // UPDATE: Tambahkan ID 13 (Tembok Bawah) dan 21 (Tembok Peri) sebagai collision
+                return (t === 2 || t === 12 || t === 11 || t === 13 || t === 21);
             }
 
             function checkObjectCollision(x, y) {
@@ -24551,6 +24868,8 @@ ${reward.tip}`,
             }
 
             function checkEntranceProximity() {
+                // Fairy village tidak punya entrance/teleport standar
+                if (STATE.location === 'fairyVillage') return null;
                 const map = maps[STATE.location];
                 if (!map.buildings) return null;
 
@@ -25371,6 +25690,12 @@ ${reward.tip}`,
             }
 
             function interactNPC(npc) {
+                // Fairy NPC: panggil fungsi spesifik (Rara Wilis, Pohon Energi dll)
+                if (npc.dialogFn) {
+                    if (npc.dialogFn === 'openRaraWilisDialog') { openRaraWilisDialog(); return; }
+                    if (npc.dialogFn === 'collectFairyDust') { collectFairyDust(); return; }
+                    if (typeof window[npc.dialogFn] === 'function') { window[npc.dialogFn](); return; }
+                }
                 // --- UPDATE: Ganti 'chat' ke 'item' agar bunyi (karena file chat mungkin error) ---
                 if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
 
@@ -34949,11 +35274,15 @@ Pilih masakan:
 
                 // SAFETY CHECK: Pastikan Map Ada
                 if (!maps[STATE.location]) {
-                    console.error("Map not found:", STATE.location);
-                    ctx.fillStyle = "white";
-                    ctx.font = "20px Arial";
-                    ctx.fillText("Error: Map Loading Failed", 50, 50);
-                    return;
+                    // Coba refresh fairyVillage map jika belum ada
+                    if (STATE.location === 'fairyVillage') refreshFairyVillageMap();
+                    if (!maps[STATE.location]) {
+                        console.error("Map not found:", STATE.location);
+                        ctx.fillStyle = "white";
+                        ctx.font = "20px Arial";
+                        ctx.fillText("Error: Map Loading Failed", 50, 50);
+                        return;
+                    }
                 }
 
                 ctx.save();
@@ -34999,17 +35328,39 @@ Pilih masakan:
                         }
                     }
                 } else if (STATE.location === 'house') {
-                    // UPDATE: Hapus Background Image Rumah agar menggunakan Tile Tembok & Lantai
-                    /*
-                    const level = STATE.player.houseLevel || 1;
-                    const bgImg = houseBgAssets['level' + level];
-                    if (bgImg && bgImg.complete && bgImg.naturalWidth !== 0) {
-                        const map = maps['house'];
-                        ctx.drawImage(bgImg, 0, 0, map.w * TILE_SIZE, map.h * TILE_SIZE);
-                        isBgLoaded = true;
-                    }
-                    */
                     isBgLoaded = false; // Paksa render sistem Tile
+                } else if (STATE.location === 'fairyVillage') {
+                    // Background gradien hijau gelap
+                    const fvGrad = ctx.createLinearGradient(0, 0, 0, maps['fairyVillage'].h * TILE_SIZE);
+                    fvGrad.addColorStop(0, '#03100a');
+                    fvGrad.addColorStop(0.5, '#051508');
+                    fvGrad.addColorStop(1, '#071a0c');
+                    ctx.fillStyle = fvGrad;
+                    ctx.fillRect(0, 0, maps['fairyVillage'].w * TILE_SIZE, maps['fairyVillage'].h * TILE_SIZE);
+
+                    // Pola grid rumput tipis
+                    ctx.strokeStyle = 'rgba(20,80,30,0.3)';
+                    ctx.lineWidth = 0.5;
+                    const fw = maps['fairyVillage'].w * TILE_SIZE;
+                    const fh = maps['fairyVillage'].h * TILE_SIZE;
+                    for (let gx = 0; gx <= fw; gx += TILE_SIZE) {
+                        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, fh); ctx.stroke();
+                    }
+                    for (let gy = 0; gy <= fh; gy += TILE_SIZE) {
+                        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(fw, gy); ctx.stroke();
+                    }
+
+                    // Bintik cahaya peri random (partikel statis)
+                    const seed = 42;
+                    ctx.fillStyle = 'rgba(200,255,200,0.15)';
+                    for (let pi = 0; pi < 80; pi++) {
+                        const px2 = ((pi * 173 + seed * 31) % fw);
+                        const py2 = ((pi * 97 + seed * 19) % fh);
+                        const ps = 1 + (pi % 3);
+                        ctx.beginPath(); ctx.arc(px2, py2, ps, 0, Math.PI*2); ctx.fill();
+                    }
+
+                    isBgLoaded = true;
                 }
 
                 for (let y = startRow; y <= endRow; y++) {
@@ -35038,6 +35389,8 @@ Pilih masakan:
                             if (t === 10) c = STATE.player.houseLevel === 2 ? '#fcd34d' : '#78350f';
                             if (t === 11) c = '#f1f5f9';
                             if (t === 8) c = '#d97706';
+                            if (t === 20) c = '#0a2010'; // Lantai Peri (Hijau Gelap)
+                            if (t === 21) c = '#0a2010'; // Tembok Peri (Transparan visual, solid secara fisik)
 
                             if (STATE.location === 'village') {
                                 if (t === 5) {
@@ -35814,6 +36167,27 @@ Pilih masakan:
                     }
                 });
 
+
+                // ── Overlay Kahyangan Wilis ──
+                if (STATE.location === 'fairyVillage') {
+                    ctx.save();
+                    // Banner atas
+                    ctx.fillStyle = 'rgba(60,10,100,0.82)';
+                    ctx.fillRect(0, 0, GAME_WIDTH, 18);
+                    ctx.font = 'bold 10px Fredoka, sans-serif';
+                    ctx.fillStyle = '#e9d5ff';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('✨ KAHYANGAN WILIS', 8, 13);
+                    // Sumber daya di pojok kanan banner
+                    const fvRes = (STATE.player.fairyVillage || {resources:{}}).resources || {};
+                    ctx.textAlign = 'right';
+                    ctx.font = '8px Fredoka, sans-serif';
+                    ctx.fillStyle = '#a7f3d0';
+                    ctx.fillText('✨'+( fvRes.debu||0)+' 💎'+(fvRes.kristal||0)+' 🌟'+(fvRes.cahaya||0), GAME_WIDTH-6, 13);
+                    ctx.textAlign = 'left';
+                    ctx.restore();
+                }
+
                 if (STATE.location === 'village') {
                     for (let y = startRow; y <= endRow; y++) {
                         for (let x = startCol; x <= endCol; x++) {
@@ -36575,6 +36949,9 @@ Pilih masakan:
             }
 
             function drawBuilding(ctx, b) {
+                // Bangunan collision-only di fairy village (sudah ada sprite NPC) — skip render
+                if (b.id === 'rara_wilis_bld' || b.id === 'pohon_energi_bld') return;
+
                 if (b.type === 'trigger') {
                     // Trigger invisible, but usually draws entrance circle below
                 } else {
@@ -37120,27 +37497,37 @@ Pilih masakan:
                 ctx.ellipse(x + dw / 2, y + dh - 5, dw / 3, 4, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // --- NEW: LOGIKA MELAYANG (FLOATING) KHUSUS DEWI RORO ---
+                // --- Floating effect untuk fairy NPCs dan dewi_roro ---
+                // Rara Wilis: efek nafas saja (tidak naik-turun), yang lain tetap melayang
                 let visualY = y;
-                if (n.id === 'dewi_roro') {
-                    // Animasi Sinusoidal: Naik turun 10px, periode 1 detik
-                    const floatOffset = Math.sin(Date.now() / 500) * 10 - 15; // -15 biar agak tinggi dari tanah
+                if (n.id === 'rara_wilis') {
+                    // Tidak ada offset Y — Rara Wilis berdiri di tanah
+                    // Efek nafas ditangani lewat alpha/scale saat render
+                } else if (n.id === 'dewi_roro' || n.type === 'fairy_npc') {
+                    const floatOffset = Math.sin(Date.now() / 500) * 5 - 8;
                     visualY = y + floatOffset;
                 }
 
                 // 3. Load & Gambar Sprite NPC
+                // Support n.sprite (fairy NPCs) sebagai alias n.imgSrc
+                if (!n.imgSrc && n.sprite) n.imgSrc = n.sprite;
                 if (!n.loadedImg) {
                     n.loadedImg = new Image();
-                    n.loadedImg.src = n.imgSrc;
+                    n.loadedImg.src = n.imgSrc || 'images/girl-idle.png';
 
                     // --- NEW: FALLBACK GAMBAR NPC JIKA GAGAL LOAD ---
                     n.loadedImg.onerror = function () {
-                        this.onerror = null; // Prevent loop
-                        // Fallback spesifik
-                        if (n.id.includes('kaia')) this.src = 'images/girl-idle.png'; // Fallback Kaia ke Girl
-                        else if (n.id.includes('child')) this.src = 'images/boy-idle.png'; // Fallback Anak ke Boy
+                        this.onerror = null;
+                        if (n.id === 'pohon_energi') this.src = 'images/pohonperi.png';
+                        else if (n.id === 'rara_wilis') this.src = 'images/rarawilis.png';
+                        else if (n.id === 'fv_wening' || n.id === 'peri_kecil_1') this.src = 'images/wening.png';
+                        else if (n.id === 'fv_sekar'  || n.id === 'peri_kecil_2') this.src = 'images/sekar.png';
+                        else if (n.id === 'fv_bening' || n.id === 'peri_kecil_3') this.src = 'images/bening.png';
+                        else if (n.id === 'fv_juna') this.src = 'images/juna.png';
+                        else if (n.id.includes('kaia')) this.src = 'images/girl-idle.png';
+                        else if (n.id.includes('child')) this.src = 'images/boy-idle.png';
                         else if (n.id.includes('lover1girl')) this.src = 'images/girl.png';
-                        else this.src = 'images/boy.png'; // Default umum
+                        else this.src = 'images/boy.png';
                         console.warn(`Fallback image loaded for NPC: ${n.name}`);
                     };
                 }
@@ -37255,15 +37642,42 @@ Pilih masakan:
                     }
 
                     // UPDATE: Logika Animasi (Static vs Moving)
+                    // --- EFEK NAFAS & AURA (KHUSUS RARA WILIS) ---
+                    if (n.id === 'rara_wilis') {
+                        const cx = x + dw / 2;
+                        const cy = visualY + dh / 2;
+                        // Denyut aura: sangat pelan seperti nafas
+                        const breathPulse = 1 + Math.sin(Date.now() / 1200) * 0.12;
+                        const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 45 * breathPulse);
+                        grad.addColorStop(0, 'rgba(216, 180, 254, 0.45)');   // Ungu lembut
+                        grad.addColorStop(0.6, 'rgba(167, 139, 250, 0.2)');
+                        grad.addColorStop(1, 'rgba(216, 180, 254, 0)');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, 50, 0, Math.PI * 2);
+                        ctx.fill();
+                        // Kilau bintang kecil sesekali
+                        if (Math.random() < 0.2) {
+                            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                            const sx3 = x + (Math.random() * dw * 1.4) - (dw * 0.2);
+                            const sy3 = visualY + (Math.random() * dh * 1.1) - (dh * 0.05);
+                            ctx.beginPath(); ctx.arc(sx3, sy3, Math.random()*2+0.5, 0, Math.PI*2); ctx.fill();
+                        }
+                        ctx.shadowColor = '#c4b5fd';
+                        ctx.shadowBlur = 18;
+                    }
+
                     // Semua NPC Darat (Static, Wander, Animal) sekarang menggunakan efek BERNAFAS yang sama
                     if (n.type !== 'swimmer') {
                         // Efek Bernapas: Scale Y berubah sedikit (1.0 hingga 1.02) agar terlihat hidup
                         const breathe = 1 + Math.sin(Date.now() / 300) * 0.02;
 
+                        // Brightness seperti player untuk peri kecil
+                        const isFairySmall = ['fv_wening','fv_sekar','fv_bening','fv_juna',
+                                              'peri_kecil_1','peri_kecil_2','peri_kecil_3'].includes(n.id);
+                        if (isFairySmall) ctx.filter = 'brightness(1.25) saturate(1.1)';
+
                         // Set Pivot ke Kaki Tengah agar tumbuh ke atas (menapak tanah)
-                        // Posisi Y dikurangi 5 (Offset Shadow)
-                        // FIX: Gunakan Math.round() untuk menghindari posisi desimal (patah-patah)
-                        // UPDATE: Menggunakan visualY untuk efek melayang
                         ctx.translate(Math.round(x + dw / 2), Math.round(visualY + dh - 5));
                         ctx.scale(1, breathe);
 
@@ -37274,6 +37688,9 @@ Pilih masakan:
 
                         // Gambar Image (Offset negatif karena pivot ada di bawah tengah)
                         ctx.drawImage(n.loadedImg, -dw / 2, -dh, dw, dh);
+
+                        // Reset filter setelah draw peri
+                        if (isFairySmall) ctx.filter = 'none';
                     }
                     else {
                         // Khusus NPC Perenang (Swimmer): Tetap mengapung (bobbing) di air
@@ -37297,7 +37714,61 @@ Pilih masakan:
                     ctx.fillRect(x + 5, y, dw - 10, dh - 10);
                 }
 
-                // 4. Nama Warga & Indikator Quest
+                // Sparkle efek di atas fairy NPC (dialogFn)
+                if (n.dialogFn && Math.random() < 0.15) {
+                    ctx.fillStyle = 'rgba(255,220,255,0.8)';
+                    const sx2 = x + Math.random() * dw;
+                    const sy2 = visualY - Math.random() * 20;
+                    ctx.beginPath(); ctx.arc(sx2, sy2, 1.5, 0, Math.PI*2); ctx.fill();
+                }
+
+                // 4. Nama NPC Fairy (Tampilkan di atas kepala) — skip jika noNameTag
+                if (n.dialogFn && !n.noNameTag) {
+                    // Nametag pakai posisi y TETAP (bukan visualY) agar tidak ikut naik-turun
+                    const nw2 = Math.max(50, (n.name || 'NPC').length * 7 + 10);
+                    const ncx = x + dw/2;
+                    const ncy2 = y + 4;  // posisi tetap, tidak ikut float
+                    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+                    ctx.beginPath();
+                    if(ctx.roundRect) ctx.roundRect(ncx-nw2/2, ncy2-12, nw2, 14, 4);
+                    else ctx.rect(ncx-nw2/2, ncy2-12, nw2, 14);
+                    ctx.fill();
+                    ctx.fillStyle = '#fde68a';
+                    ctx.font = 'bold 9px Nunito,Fredoka,sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(n.name || '', ncx, ncy2 - 5);
+                    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+                    // Tanda "!" saat player dekat
+                    const pCX2 = STATE.player.x + (STATE.player.w||38)/2;
+                    const pCY2 = STATE.player.y + (STATE.player.h||58)/2;
+                    const nDist = Math.hypot(pCX2 - (x + dw/2), pCY2 - (visualY + dh/2));
+                    if (nDist < 90) {
+                        const floatY2 = Math.sin(Date.now() / 200) * 3;
+                        ctx.fillStyle = '#fbbf24';
+                        ctx.font = 'bold 16px serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('!', ncx, ncy2 - 22 + floatY2);
+                        ctx.textAlign = 'left';
+                    }
+                } else if (n.dialogFn && n.noNameTag) {
+                    // Hanya tanda "!" saat player dekat — tanpa nametag
+                    const pCX2 = STATE.player.x + (STATE.player.w||38)/2;
+                    const pCY2 = STATE.player.y + (STATE.player.h||58)/2;
+                    const nDist = Math.hypot(pCX2 - (x + dw/2), pCY2 - (visualY + dh/2));
+                    if (nDist < 90) {
+                        const ncx = x + dw/2;
+                        const ncy2 = y + 4;
+                        const floatY2 = Math.sin(Date.now() / 200) * 3;
+                        ctx.fillStyle = '#fbbf24';
+                        ctx.font = 'bold 16px serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('!', ncx, ncy2 - 22 + floatY2);
+                        ctx.textAlign = 'left';
+                    }
+                }
+
+                // 4b. Nama Warga Biasa & Indikator Quest
                 /* UPDATE: LABEL NAMA NPC DIHILANGKAN SESUAI REQUEST (CUKUP BANGUNAN SAJA) */
                 /*
                 ctx.font = 'bold 8px "Exo 2"';
@@ -38258,6 +38729,7 @@ Pilih masakan:
                 if (labelEl) {
                     if (STATE.location === 'dungeon') labelEl.innerText = `LV ${STATE.dungeonLevel}`;
                     else if (STATE.location === 'village') labelEl.innerText = "DESA";
+                    else if (STATE.location === 'fairyVillage') labelEl.innerText = "🧚 KAHYANGAN WILIS";
                     else {
                         // Nama lokasi interior
                         let locName = "INDOOR";
@@ -38673,9 +39145,10 @@ Pilih masakan:
                         'Lihat tuh, Ayu dan cowoknya lagi berduaan di pojok sana. Imut banget!',
                         'Aku sengaja beli 10 bunga sebelum festival dimulai. Dijual lagi 3x lipat hehe!',
                         'Festival bunga itu pengingat: jangan tunjukkan cintamu cuma sekali setahun!',
+                        '🧚 HINT PERI: Widadari Kahyangan Wilis sangat menyukai bunga! Kembangkan Taman di Kahyangan untuk mengundang lebih banyak peri saat musim semi.',
                         '💡 HINT: Berikan bunga ke pasangan/calon pasangan hari ini — efek +Love DOUBLE!',
                     ],
-                    hint: '💡 Efek pemberian hadiah ke love interest hari ini 2x lipat!',
+                    hint: '💡 Efek pemberian hadiah ke love interest hari ini 2x lipat! 🧚 Peri suka bunga — kembangkan Taman di Kahyangan Wilis!',
                 },
                 'Lomba Pacuan Kuda': {
                     particles: ['🐎','💨','🏆','⚡','🌟'],
@@ -38718,9 +39191,10 @@ Pilih masakan:
                         'Kalau panennya bagus, artinya kerjasama desa kita kompak. Itu yang penting!',
                         'Gorki si kurcaci tani terlihat di utara! Katanya dia cuma muncul setahun sekali saat panen raya.',
                         'Jual hasil panen ke Kepala Desa hari ini — harganya lebih tinggi dari biasanya!',
+                        '🧚 HINT PERI: Saat panen melimpah, Widadari Kahyangan Wilis turun dari lereng Gunung Wilis! Buka menu Kahyangan untuk mengumpulkan Serbuk Wilis bonus panen hari ini.',
                         '💡 HINT: Setor minimal 5 hasil panen ke Kepala Desa untuk dapat bonus Gold dan Reputasi!',
                     ],
-                    hint: '💡 Kurcaci Gorki muncul di area utara hanya saat Panen Raya!',
+                    hint: '💡 Kurcaci Gorki muncul di area utara hanya saat Panen Raya! 🧚 Kumpulkan Serbuk Wilis bonus di Kahyangan Wilis hari ini!',
                 },
                 'Festival Ayam': {
                     particles: ['🐔','🥚','🌟','🏆','🎊'],
@@ -38748,9 +39222,10 @@ Pilih masakan:
                         'Hati-hati ombaknya! Tahun lalu ada yang kram di tengah jalan — untung tertolong.',
                         'Kalau kamu STR-nya tinggi, coba ikut lomba. Hadiahnya berlian lho!',
                         'Saya tidak bisa renang. Makanya saya hanya nonton sambil makan jagung bakar di pinggir.',
+                        '🧚 HINT PERI: Ada yang bilang pernah melihat cahaya ungu di permukaan air malam ini... mungkin itu Widadari dari Kahyangan Wilis yang ikut menyaksikan festival! Kunjungi Kahyangan-mu setelah festival.',
                         '💡 HINT: Butuh STR 15+ dan energi 50 untuk mengalahkan Pak Nelayan!',
                     ],
-                    hint: '💡 Tingkatkan STR dengan kerja keras sebelum festival berenang!',
+                    hint: '💡 Tingkatkan STR dengan kerja keras sebelum festival berenang! 🧚 Kunjungi Kahyangan Wilis setelah festival untuk kejutan dari para Widadari!',
                 },
                 'Festival Kembang Api': {
                     particles: ['🎆','🎇','✨','💥','🌟'],
@@ -38778,9 +39253,10 @@ Pilih masakan:
                         'Saya dulu bercita-cita jadi musisi. Tapi ternyata susah hidup dari musik... Tapi aku tidak menyesal mencoba!',
                         'Ada slot penampil dadakan! Kalau berani naik panggung, bisa dapat reputasi besar!',
                         'REP-mu tinggi? Coba naik panggung dan nyanyi. Kamu mungkin berbakat!',
+                        '🧚 HINT PERI: Konon suara musik festival bisa terdengar sampai ke Kahyangan Wilis di lereng Gunung Wilis! Para Widadari menari mengikuti alunan. Buka Kahyangan-mu dan kumpulkan Serbuk Wilis — ada bonus kebahagiaan peri hari ini!',
                         '💡 HINT: Butuh REP 10+ untuk naik panggung. Hadiahnya Reputasi besar!',
                     ],
-                    hint: '💡 REP tinggi membuka peluang tampil di panggung utama festival!',
+                    hint: '💡 REP tinggi membuka peluang tampil di panggung utama festival! 🧚 Cek Kahyangan Wilis — peri ikut berbahagia saat festival musik!',
                 },
                 'Pesta Panen Anggur': {
                     particles: ['🍇','🍷','🌿','✨','🌟'],
@@ -38793,9 +39269,10 @@ Pilih masakan:
                         'Jus anggur ini bisa meningkatkan energimu — minum satu gelas dan coba deh!',
                         'Dari satu pohon anggur bisa dapat puluhan buah. Pertanian itu investasi jangka panjang.',
                         'Kalau musim panen, semua warga bantu memanen. Ini gotong-royong sejati!',
+                        '🧚 HINT PERI: Para Widadari Kahyangan Wilis sangat suka Kristal Brantas yang terbentuk dari embun pagi hari panen anggur! Rajin kunjungi Kahyangan dan bangun bangunan untuk mengundang lebih banyak peri berbakat.',
                         '💡 HINT: Energi bertambah setelah minum jus anggur gratis di festival ini!',
                     ],
-                    hint: '💡 Energi +20 gratis dari jus anggur festival!',
+                    hint: '💡 Energi +20 gratis dari jus anggur festival! 🧚 Panen anggur menghasilkan Kristal Brantas langka di Kahyangan Wilis!',
                 },
                 'Festival Domba': {
                     particles: ['🐑','🌿','🎊','🌟','⭐'],
@@ -38868,9 +39345,10 @@ Pilih masakan:
                         'Malam ini adalah tentang syukur dan kebersamaan — apapun latar belakangmu.',
                         'Bintang di langit malam ini sangat terang. Katanya itu pertanda tahun depan akan baik.',
                         'Aku simpan satu kado untuk orang yang paling baik hatiku kenal. Itu kamu!',
+                        '🧚 HINT PERI: Di Malam Bintang, Cahaya Wilis — sumber daya paling langka Kahyangan — dapat turun dari bintang-bintang! Cek Pohon Kehidupan di Kahyangan Wilis malam ini jika sudah kamu bangun.',
                         '💡 HINT: Buka kado misterius di bawah pohon — hadiah berganti tiap tahun!',
                     ],
-                    hint: '💡 Buka kado tahunan misterius — hadiahnya berganti tiap tahun!',
+                    hint: '💡 Buka kado tahunan misterius — hadiahnya berganti tiap tahun! 🧚 Malam Bintang = kesempatan langka dapat Cahaya Wilis di Kahyangan!',
                 },
                 'Malam Akhir Tahun': {
                     particles: ['🎆','🎇','🕛','✨','🌟'],
@@ -42089,544 +42567,1300 @@ ${document.getElementById('pr-rekom').innerText.substring(0,180)}...
             // 🧚 FAIRY VILLAGE MINIGAME
             // ═══════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
-// 🧚‍♀️ KAHYANGAN WILIS MINIGAME
+// 🧚‍♀️ KAHYANGAN WILIS — WORLD MAP MINIGAME (BoF4 Style)
 // ═══════════════════════════════════════════════════════════════
 
-// ── KATALOG BANGUNAN ──────────────────────────────────────────
+// ── DATA BANGUNAN ─────────────────────────────────────────────
 const FAIRY_BUILDINGS = {
-    // TIER 1 — Pondasi Desa
-    pondok_peri: {
-        name: '🏚️ Padepokan Cilik', tier: 1,
-        desc: 'Padepokan kecil untuk 1 Widadari. Pondasi awal Kahyangan Wilis.',
-        cost: { debu: 20 },
-        maxFairies: 1, birthChance: 0,
-        upgradeTo: 'rumah_peri',
-        effect: 'Kapasitas +1 Widadari'
-    },
-    taman_mini: {
-        name: '🌸 Taman Bunga Wilis', tier: 1,
-        desc: 'Kebun bunga suci lereng Wilis. Menghasilkan Serbuk Wilis setiap hari.',
-        cost: { debu: 15 },
-        dustPerDay: 3,
-        upgradeTo: 'taman_mekar',
-        effect: '+3 Serbuk Wilis/hari'
-    },
-    kolam_kristal: {
-        name: '💧 Sendang Suci', tier: 1,
-        desc: 'Mata air sakral Gunung Wilis. Memancarkan berkah bagi seluruh Widadari.',
-        cost: { debu: 25 },
-        happinessBonus: 10,
-        upgradeTo: 'kolam_agung',
-        effect: 'Kebahagiaan +10'
-    },
-    // TIER 2 — Berkembang
-    rumah_peri: {
-        name: '🏠 Omah Widadari', tier: 2,
-        desc: 'Omah Jawa yang nyaman untuk 2 Widadari. Di sinilah bayi Widadari lahir.',
-        cost: { debu: 60, kristal: 1 },
-        maxFairies: 2, birthChance: 0.15,
-        upgradeTo: 'vila_peri',
-        effect: 'Kapasitas +2, peluang lahir 15%'
-    },
-    taman_mekar: {
-        name: '🌺 Kebun Kenanga', tier: 2,
-        desc: 'Kebun kenanga dan melati liar khas lereng Wilis.',
-        cost: { debu: 50, kristal: 1 },
-        dustPerDay: 8,
-        upgradeTo: 'kebun_ajaib',
-        effect: '+8 Serbuk Wilis/hari'
-    },
-    sekolah_peri: {
-        name: '📚 Padepokan Ilmu', tier: 2,
-        desc: 'Padepokan tempat Widadari belajar tembang, tari, dan ilmu kahyangan.',
-        cost: { debu: 70, kristal: 1 },
-        xpBonus: 1.5,
-        upgradeTo: 'akademi_peri',
-        effect: 'XP peri x1.5'
-    },
-    kolam_agung: {
-        name: '🌊 Sendang Agung Wilis', tier: 2,
-        desc: 'Sendang sakral yang airnya langsung dari sumber Gunung Wilis.',
-        cost: { debu: 80, kristal: 2 },
-        happinessBonus: 25, dustPerDay: 5,
-        upgradeTo: 'danau_jiwa',
-        effect: 'Kebahagiaan +25, +5 Serbuk/hari'
-    },
-    pasar_peri: {
-        name: '🛒 Pasar Kahyangan', tier: 2,
-        desc: 'Pasar ajaib — tempat Widadari berdagang dengan dunia manusia.',
-        cost: { debu: 90, kristal: 2 },
-        enableTrading: true,
-        upgradeTo: null,
-        effect: 'Aktifkan penukaran Serbuk↔Gold'
-    },
-    // TIER 3 — Makmur
-    vila_peri: {
-        name: '🏡 Dalem Widadari', tier: 3,
-        desc: 'Dalem megah bergaya Jawa Timuran untuk 4 Widadari. Bayi sering lahir di sini.',
-        cost: { debu: 150, kristal: 3, cahaya: 1 },
-        maxFairies: 4, birthChance: 0.30,
-        upgradeTo: 'istana_mini',
-        effect: 'Kapasitas +4, peluang lahir 30%'
-    },
-    kebun_ajaib: {
-        name: '🌳 Kebun Raya Wilis', tier: 3,
-        desc: 'Kebun raya seluas lereng Wilis, penuh tanaman langka dan rempah suci.',
-        cost: { debu: 130, kristal: 3 },
-        dustPerDay: 18,
-        upgradeTo: null,
-        effect: '+18 Serbuk Wilis/hari'
-    },
-    akademi_peri: {
-        name: '🎓 Sanggar Tari Kahyangan', tier: 3,
-        desc: 'Sanggar tari dan tembang Jawa tertinggi di Kahyangan Wilis.',
-        cost: { debu: 160, kristal: 3, cahaya: 1 },
-        xpBonus: 2.5,
-        upgradeTo: null,
-        effect: 'XP peri x2.5'
-    },
-    menara_cahaya: {
-        name: '✨ Menara Wilis', tier: 3,
-        desc: 'Menara pemandu cahaya di puncak Wilis. Semua produksi Serbuk +50%.',
-        cost: { debu: 200, kristal: 4, cahaya: 2 },
-        dustMultiplier: 1.5,
-        upgradeTo: null,
-        effect: 'Semua Serbuk Wilis x1.5'
-    },
-    danau_jiwa: {
-        name: '🌈 Telaga Nirmala', tier: 3,
-        desc: 'Telaga ajaib sumber kehidupan — Widadari di seluruh Kahyangan selalu bersuka cita.',
-        cost: { debu: 180, kristal: 4, cahaya: 1 },
-        happinessBonus: 50, dustPerDay: 12,
-        upgradeTo: null,
-        effect: 'Kebahagiaan +50, +12 Serbuk/hari'
-    },
-    // TIER 4 — Legenda
-    istana_mini: {
-        name: '🏰 Puri Agung Wilis', tier: 4,
-        desc: 'Puri Agung Wilis! Kahyangan yang megah — 8 Widadari, kelahiran sangat sering.',
-        cost: { debu: 400, kristal: 8, cahaya: 4 },
-        maxFairies: 8, birthChance: 0.50,
-        upgradeTo: null,
-        effect: 'Kapasitas +8, kelahiran 50%/hari'
-    },
-    pohon_kehidupan: {
-        name: '🌳✨ Pohon Beringin Agung', tier: 4,
-        desc: 'Beringin suci puncak Wilis — sumber segala kehidupan Kahyangan. Menghasilkan Cahaya Wilis tiap minggu.',
-        cost: { debu: 500, kristal: 10, cahaya: 5 },
-        dustPerDay: 30, cahayaPerWeek: 1,
-        upgradeTo: null,
-        effect: '+30 Serbuk/hari, +1 Cahaya Wilis/minggu'
-    }
+    pohon_energi:  { name:'🌳 Pohon Energi',    tier:0, emoji:'🌳', w:2,h:2, dustPerDay:5,  desc:'Sumber energi alam Wilis. Sudah ada sejak awal.', builtIn:true },
+    pondok_peri:   { name:'🏚️ Padepokan Cilik', tier:1, emoji:'🏚️',w:2,h:2, maxFairies:1,  cost:{debu:20},         desc:'Tempat tinggal 1 Widadari.', upgradeTo:'rumah_peri' },
+    taman_mini:    { name:'🌸 Taman Bunga Wilis',tier:1, emoji:'🌸',w:2,h:2, dustPerDay:3,  cost:{debu:15},         desc:'Menghasilkan Serbuk Wilis tiap hari.', upgradeTo:'taman_mekar' },
+    kolam_kristal: { name:'💧 Sendang Suci',    tier:1, emoji:'💧',w:2,h:2, happinessBonus:10, cost:{debu:25},     desc:'Memancarkan berkah kebahagiaan.', upgradeTo:'kolam_agung' },
+    rumah_peri:    { name:'🏠 Omah Widadari',   tier:2, emoji:'🏠',w:2,h:2, maxFairies:2, birthChance:0.15, cost:{debu:60,kristal:1},  desc:'Untuk 2 Widadari. Bayi bisa lahir.', upgradeTo:'vila_peri' },
+    taman_mekar:   { name:'🌺 Kebun Kenanga',   tier:2, emoji:'🌺',w:2,h:2, dustPerDay:8,  cost:{debu:50,kristal:1}, desc:'+8 Serbuk/hari.', upgradeTo:'kebun_ajaib' },
+    sekolah_peri:  { name:'📚 Padepokan Ilmu',  tier:2, emoji:'📚',w:2,h:2, xpBonus:1.5,  cost:{debu:70,kristal:1}, desc:'XP peri x1.5.', upgradeTo:'akademi_peri' },
+    kolam_agung:   { name:'🌊 Sendang Agung',   tier:2, emoji:'🌊',w:2,h:2, happinessBonus:25,dustPerDay:5, cost:{debu:80,kristal:2}, desc:'Kebahagiaan +25, +5 Serbuk/hari.', upgradeTo:'danau_jiwa' },
+    pasar_peri:    { name:'🛒 Pasar Kahyangan', tier:2, emoji:'🛒',w:2,h:2, enableTrading:true, cost:{debu:90,kristal:2}, desc:'Tukar Serbuk↔Gold.' },
+    vila_peri:     { name:'🏡 Dalem Widadari',  tier:3, emoji:'🏡',w:2,h:2, maxFairies:4, birthChance:0.30, cost:{debu:150,kristal:3,cahaya:1}, desc:'4 Widadari, lahir 30%/hari.', upgradeTo:'istana_mini' },
+    kebun_ajaib:   { name:'🌳 Kebun Raya Wilis',tier:3, emoji:'🌳',w:2,h:2, dustPerDay:18, cost:{debu:130,kristal:3}, desc:'+18 Serbuk/hari.' },
+    akademi_peri:  { name:'🎓 Sanggar Tari',    tier:3, emoji:'🎓',w:2,h:2, xpBonus:2.5,  cost:{debu:160,kristal:3,cahaya:1}, desc:'XP peri x2.5.' },
+    menara_cahaya: { name:'✨ Menara Wilis',     tier:3, emoji:'✨',w:1,h:3, dustMultiplier:1.5, cost:{debu:200,kristal:4,cahaya:2}, desc:'Semua Serbuk x1.5.' },
+    danau_jiwa:    { name:'🌈 Telaga Nirmala',  tier:3, emoji:'🌈',w:2,h:2, happinessBonus:50,dustPerDay:12, cost:{debu:180,kristal:4,cahaya:1}, desc:'Happiness +50, +12 Serbuk/hari.' },
+    istana_mini:   { name:'🏰 Puri Agung Wilis',tier:4, emoji:'🏰',w:3,h:3, maxFairies:8, birthChance:0.50, cost:{debu:400,kristal:8,cahaya:4}, desc:'8 Widadari, lahir 50%/hari.' },
+    pohon_kehidupan:{ name:'🌳✨ Pohon Beringin Agung',tier:4, emoji:'🌳',w:3,h:3, dustPerDay:30, cahayaPerWeek:1, cost:{debu:500,kristal:10,cahaya:5}, desc:'+30 Serbuk/hari, +1 Cahaya/minggu.' },
 };
 
-// ── NAMA PERI RANDOM ──────────────────────────────────────────
-const FAIRY_NAMES_BOY  = ['Bagus','Rekso','Lanang','Bimo','Satrio','Wibowo','Agung','Prasetyo','Handoko','Cahyo','Danu','Fajar','Galih','Hendra','Ilham','Joko','Krisna','Lintang','Mahendra','Narendra','Okto','Prawiro','Ragil','Setyawan','Teguh','Umar','Wahyu','Yusuf','Zainal','Ardi'];
-const FAIRY_NAMES_GIRL = ['Ayu','Wulan','Sekar','Endah','Ratih','Dewi','Larasati','Kinanti','Mawar','Niken','Puspita','Rahayu','Sari','Tari','Utami','Vira','Wening','Yanti','Zuhra','Asih','Bening','Cantik','Diah','Elok','Fitriah','Gendis','Harum','Intan','Jelita','Kenanga'];
+const FAIRY_NAMES_BOY  = ['Juna','Bagus','Rekso','Lanang','Bimo','Satrio','Wibowo','Agung','Prasetyo','Handoko','Cahyo'];
+const FAIRY_NAMES_GIRL = ['Ayu','Wulan','Sekar','Endah','Ratih','Dewi','Larasati','Kinanti','Mawar','Niken'];
 
-// ── HELPER ────────────────────────────────────────────────────
+
+// ── LAYOUT SLOT BANGUNAN DI PETA 240×150 (3× LEBIH BESAR, TANPA TEMBOK) ──
+const FW = 240, FH = 150;  // 3× dari 80×50
+const TS = 20;              // ukuran 1 tile dalam pixel (sama)
+const FV_SPEED = 2.8;
+
+// 36 slot tersebar merata di peta 240×150
+const FAIRY_SLOTS = [
+    // Baris atas (y~18)
+    {id:'s1', x:20,  y:18}, {id:'s2', x:38,  y:18}, {id:'s3', x:56,  y:18}, {id:'s4', x:74,  y:18},
+    {id:'s5', x:92,  y:18}, {id:'s6', x:110, y:18}, {id:'s7', x:128, y:18}, {id:'s8', x:148, y:18},
+    {id:'s9', x:166, y:18}, {id:'s10',x:184, y:18}, {id:'s11',x:202, y:18},
+    // Baris tengah-atas (y~42)
+    {id:'s12',x:14,  y:42}, {id:'s13',x:34,  y:42}, {id:'s14',x:54,  y:42}, {id:'s15',x:74,  y:42},
+    {id:'s16',x:94,  y:42}, {id:'s17',x:114, y:42}, {id:'s18',x:134, y:42}, {id:'s19',x:154, y:42},
+    {id:'s20',x:174, y:42}, {id:'s21',x:194, y:42}, {id:'s22',x:214, y:42},
+    // Baris tengah-bawah (y~66)
+    {id:'s23',x:20,  y:66}, {id:'s24',x:44,  y:66}, {id:'s25',x:68,  y:66}, {id:'s26',x:92,  y:66},
+    {id:'s27',x:116, y:66}, {id:'s28',x:140, y:66}, {id:'s29',x:164, y:66}, {id:'s30',x:188, y:66},
+    {id:'s31',x:210, y:66}, {id:'s32',x:230, y:66},
+    // Baris bawah (y~90)
+    {id:'s33',x:30,  y:90}, {id:'s34',x:70,  y:90}, {id:'s35',x:114, y:90}, {id:'s36',x:162, y:90},
+];
+
+// Posisi NPC & objek penting (dalam tile) — proporsional 3×
+const FV_RARA_POS  = { x:114, y:6   };   // Rara Wilis — tengah-atas
+const FV_POHON_POS = { x:114, y:114 };   // Pohon Energi — tengah-bawah
+// Pohon-pohon dekoratif tambahan (tersebar lebih luas di peta 3×)
+const FV_DECO_TREES = [
+    {x:10,y:10},{x:40,y:8},{x:80,y:6},{x:120,y:8},{x:160,y:6},{x:200,y:8},{x:230,y:10},
+    {x:8,y:40},{x:230,y:40},{x:8,y:80},{x:230,y:80},{x:8,y:120},{x:230,y:120},
+    {x:40,y:130},{x:80,y:136},{x:120,y:138},{x:160,y:136},{x:200,y:130},
+    {x:50,y:50},{x:90,y:55},{x:150,y:50},{x:190,y:55},{x:60,y:100},{x:170,y:100},
+];
+
+// ── STATE RUNTIME ──────────────────────────────────────────────
+let FVG = null;
+let fvCanvas, fvCtx;
+let fvCam = { x:0, y:0 };
+let fvPlayer = { x:114*TS, y:22*TS, facing:'down' };
+let fvKeys = {};
+let fvActiveDialog = null;
+let fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
+let fvLastTime = 0;
+let fvParticles = [];
+
+// ── HELPER DATA ────────────────────────────────────────────────
 function getFairyVillage() {
     if (!STATE.player.fairyVillage) {
         STATE.player.fairyVillage = {
-            fairies: [{
-                id: 'sylva_founder',
-                name: 'Rara Wilis',
-                gender: 'girl',
-                level: 5,
-                xp: 0,
-                role: 'Ratu Widadari',
-                happiness: 100,
-                born: 1
-            }],
-            buildings: [],
-            resources: { debu: 30, kristal: 0, cahaya: 0 },
-            day: 0,
-            totalBorn: 1,
-            lastDailyDay: 0
+            resources:    { debu:0, kristal:0, cahaya:0, makanan:20 },
+            buildings:    [],
+            buildQueue:   [],
+            fairies:      [],
+            lastTickDay:  STATE.day,
+            lastCollectDay: -1,
+            tutorialDone: false,
         };
     }
+    if (!STATE.player.fairyVillage.buildQueue) STATE.player.fairyVillage.buildQueue = [];
+    // Migrate: tambah makanan jika belum ada
+    if (STATE.player.fairyVillage.resources.makanan === undefined)
+        STATE.player.fairyVillage.resources.makanan = 20;
+    // Migrate: tambah stat peri jika belum ada
+    (STATE.player.fairyVillage.fairies||[]).forEach(f => {
+        if (f.intel  === undefined) f.intel   = _fairyStat();
+        if (f.agility=== undefined) f.agility = _fairyStat();
+        if (f.spirit === undefined) f.spirit  = _fairyStat();
+        if (f.hp     === undefined) f.hp      = 80 + Math.floor(Math.random()*20);
+        if (f.maxHp  === undefined) f.maxHp   = f.hp;
+        if (f.mood   === undefined) f.mood    = 'happy';
+    });
     return STATE.player.fairyVillage;
 }
+function _fairyStat() { return 10 + Math.floor(Math.random()*20); }
 
 function getFairyVillageStats(fv) {
-    let totalCap = 1, totalDust = 0, totalHappy = 0, xpMult = 1, dustMult = 1, hasTrading = false;
-    let cahayaPerWeek = 0;
-    (fv.buildings || []).forEach(bid => {
-        const b = FAIRY_BUILDINGS[bid];
-        if (!b) return;
-        if (b.maxFairies) totalCap += b.maxFairies;
-        if (b.dustPerDay) totalDust += b.dustPerDay;
+    let totalCap=0, totalDust=0, totalHappy=0, dustMult=1;
+    (fv.buildings||[]).forEach(({bid}) => {
+        const b = FAIRY_BUILDINGS[bid]; if (!b) return;
+        if (b.maxFairies)     totalCap   += b.maxFairies;
+        if (b.dustPerDay)     totalDust  += b.dustPerDay;
         if (b.happinessBonus) totalHappy += b.happinessBonus;
-        if (b.xpBonus) xpMult = Math.max(xpMult, b.xpBonus);
-        if (b.dustMultiplier) dustMult = Math.max(dustMult, b.dustMultiplier);
-        if (b.enableTrading) hasTrading = true;
-        if (b.cahayaPerWeek) cahayaPerWeek += b.cahayaPerWeek;
+        if (b.dustMultiplier) dustMult    = Math.max(dustMult, b.dustMultiplier);
     });
-    return { totalCap, totalDust: Math.floor(totalDust * dustMult), totalHappy: Math.min(100, totalHappy), xpMult, hasTrading, cahayaPerWeek };
+    return { totalCap: Math.max(1,totalCap), totalDust: Math.round(totalDust*dustMult), totalHappy: Math.min(100,totalHappy) };
 }
 
 function fairyDailyTick(fv) {
     const curDay = STATE.day;
-    if (fv.lastDailyDay === curDay) return;
-    fv.lastDailyDay = curDay;
-    fv.day = (fv.day || 0) + 1;
-
+    if (fv.lastTickDay === curDay) return;
+    fv.lastTickDay = curDay;
     const stats = getFairyVillageStats(fv);
+    fv.resources.debu = (fv.resources.debu||0) + stats.totalDust;
 
-    // Hasilkan Serbuk Wilis
-    fv.resources.debu = (fv.resources.debu || 0) + stats.totalDust;
+    // ── Sistem Makanan: tiap peri makan 1 porsi/hari ──────────────
+    const totalFairies = fv.fairies.length;
+    const foodNeeded = totalFairies;
+    const foodAvail  = fv.resources.makanan || 0;
 
-    // Hasilkan Cahaya tiap 7 hari
-    if (stats.cahayaPerWeek > 0 && fv.day % 7 === 0) {
-        fv.resources.cahaya = (fv.resources.cahaya || 0) + stats.cahayaPerWeek;
+    if (foodAvail >= foodNeeded) {
+        // Cukup makan — semua peri senang
+        fv.resources.makanan = foodAvail - foodNeeded;
+        fv.fairies.forEach(f => {
+            f.happiness = Math.min(100, (f.happiness||80) + Math.floor(stats.totalHappy/10) + 5);
+            f.mood = f.happiness >= 70 ? 'happy' : f.happiness >= 40 ? 'neutral' : 'sad';
+        });
+    } else {
+        // Kekurangan makan — peri lapar & bad mood
+        let remaining = foodAvail;
+        fv.resources.makanan = 0;
+        fv.fairies.forEach(f => {
+            if (remaining > 0) {
+                remaining--;
+                f.happiness = Math.min(100, (f.happiness||80) + 2);
+            } else {
+                // Tidak makan — happiness turun
+                f.happiness = Math.max(0, (f.happiness||80) - 15);
+            }
+            f.mood = f.happiness >= 70 ? 'happy' : f.happiness >= 40 ? 'neutral' : f.happiness >= 20 ? 'sad' : 'bad_mood';
+        });
+        if (totalFairies > 0) showToast('⚠️ Stok makanan di Kahyangan habis! Peri-peri mulai lapar...');
     }
 
-    // Kelahiran peri baru
-    const birthBuildings = (fv.buildings || []).filter(bid => FAIRY_BUILDINGS[bid] && FAIRY_BUILDINGS[bid].birthChance > 0);
-    birthBuildings.forEach(bid => {
+    // ── Kelahiran peri baru dari bangunan ──────────────────────────
+    (fv.buildings||[]).forEach(({bid}) => {
         const b = FAIRY_BUILDINGS[bid];
-        if (Math.random() < (b.birthChance / 7)) { // per hari
-            if (fv.fairies.length < stats.totalCap) {
-                const gender = Math.random() < 0.5 ? 'boy' : 'girl';
-                const names = gender === 'boy' ? FAIRY_NAMES_BOY : FAIRY_NAMES_GIRL;
-                const name = names[Math.floor(Math.random() * names.length)];
-                fv.fairies.push({
-                    id: 'fairy_' + Date.now(),
-                    name, gender, level: 1, xp: 0,
-                    role: gender === 'boy' ? 'Widadara Wilis' : 'Widadari Wilis',
-                    happiness: 80 + Math.floor(Math.random() * 20),
-                    born: fv.day
-                });
-                showToast(`🎊 Widadari baru lahir di Kahyangan Wilis!\n✨ Namanya ${name}! (${gender === 'boy' ? '♂ Widadara' : '♀ Widadari'})`);
-            }
+        if (b?.birthChance && Math.random()<b.birthChance && fv.fairies.length<stats.totalCap) {
+            const g = Math.random()<0.6?'girl':'boy';
+            const names = g==='girl'?FAIRY_NAMES_GIRL:FAIRY_NAMES_BOY;
+            const newFairy = {
+                id:'f_'+Date.now()+'_'+Math.random(),
+                name: names[Math.floor(Math.random()*names.length)],
+                gender: g, level:1, xp:0, happiness:80, mood:'happy',
+                intel:   _fairyStat(),
+                agility: _fairyStat(),
+                spirit:  _fairyStat(),
+                hp: 80+Math.floor(Math.random()*20),
+                maxHp: 100,
+            };
+            fv.fairies.push(newFairy);
+            showToast(`🧚 Peri baru lahir: ${newFairy.name}!`);
         }
     });
 
-    // XP peri
-    fv.fairies.forEach(f => {
-        f.xp = (f.xp || 0) + Math.floor(2 * stats.xpMult);
-        if (f.xp >= f.level * 20) { f.xp = 0; f.level++; showToast(`⬆️ ${f.name} naik ke Tingkat ${f.level}!`); }
-        f.happiness = Math.min(100, (f.happiness || 80) + Math.floor(stats.totalHappy / 10));
+    // Makanan +3/hari jika ada bangunan Taman (simulasi kebun sederhana)
+    const hasGarden = (fv.buildings||[]).some(b=>['taman_mini','taman_mekar','kebun_ajaib'].includes(b.bid));
+    if (hasGarden) fv.resources.makanan = (fv.resources.makanan||0) + 3;
+}
+
+// ── OPEN / CLOSE ───────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════
+// REFRESH FAIRY VILLAGE MAP — Perbarui bangunan solid di maps
+// ═══════════════════════════════════════════════════════════════
+function refreshFairyVillageMap() {
+    if (!maps['fairyVillage']) return;
+    const fv = getFairyVillage();
+    const TS = 30;
+
+    // Buildings: Rara Wilis & Pohon Energi selalu ada sebagai solid (posisi 3×)
+    const buildings = [
+        { id: 'rara_wilis_bld', x: 113, y: 4, w: 3, h: 3, solid: true, name: 'Rara Wilis' },
+        { id: 'pohon_energi_bld', x: 112, y: 112, w: 5, h: 5, solid: true, name: 'Pohon Energi' },
+    ];
+
+    // Tambahkan bangunan yang sudah selesai dibangun
+    (fv.buildings || []).forEach(b => {
+        if (b.slot) {
+            buildings.push({
+                id: 'fv_bld_' + b.bid,
+                x: b.slot.x || 10, y: b.slot.y || 10,
+                w: b.slot.w || 3, h: b.slot.h || 3,
+                solid: true, name: b.name || 'Bangunan'
+            });
+        }
+    });
+
+    maps['fairyVillage'].buildings = buildings;
+
+    // Update NPC agar drawNPC dan interactNPC bisa bekerja
+    maps['fairyVillage'].npcs.forEach(n => {
+        n.imgSrc = n.sprite || n.imgSrc;
+        n.schedule = 'always';
+        n.w = n.w || 38;
+        n.h = n.h || 58;
+        if (n.id === 'rara_wilis') {
+            n.type = 'fairy_npc';
+            n.dialogFn = 'openRaraWilisDialog';
+        }
+        if (n.id === 'pohon_energi') {
+            n.dialogFn = 'collectFairyDust';
+        }
+        // Wening, Sekar, Bening, Juna: pakai dialog NPC peri kecil
+        if (['fv_wening','fv_sekar','fv_bening','fv_juna'].includes(n.id)) {
+            n.type = n.type || 'wander';
+            n.dialogFn = 'openFairyNPCDialog_' + n.id;
+        }
     });
 }
 
-// ── UI UTAMA ──────────────────────────────────────────────────
 function openFairyVillage() {
     if (!STATE.player.sylvariaQuestComplete) {
-        showToast('Selesaikan Quest Kahyangan Wilis dulu untuk membuka Desa Widadari!');
-        return;
+        showToast('Selesaikan Quest Kahyangan Wilis dulu!'); return;
     }
     const fv = getFairyVillage();
     fairyDailyTick(fv);
-    STATE.screen = 'minigame';
-    document.getElementById('fairy-village-modal').style.display = 'flex';
-    renderFairyVillageUI();
+
+    // Simpan lokasi & posisi sebelumnya
+    window._fvPrevLocation = STATE.location;
+    window._fvPrevX = STATE.player.x;
+    window._fvPrevY = STATE.player.y;
+
+    // Refresh map peri (bangunan dinamis)
+    refreshFairyVillageMap();
+
+    // Pindah ke peta peri menggunakan sistem location utama
+    STATE.location = 'fairyVillage';
+    STATE.screen = 'play';
+
+    // Spawn player di bawah Rara Wilis
+    STATE.player.x = 114 * 30;  // tengah peta 3×, tile 114
+    STATE.player.y = 20 * 30;   // di bawah Rara Wilis
+
+    // Sembunyikan modal lama (jika masih ada)
+    const oldModal = document.getElementById('fairy-village-modal');
+    if (oldModal) oldModal.style.display = 'none';
+
+    // Pastikan sprite player ter-load
+    if (!STATE.player.spriteIdle) selectGender(STATE.player.gender || 'boy', true);
+    // Pastikan tidak ada guard prologue yang memblokir
+    STATE.isPrologue = false;
+    STATE.screen = 'play';
+    // Tutup dialogue jika ada
+    const _dw = document.getElementById('dialogue-wrapper');
+    if (_dw) _dw.style.display = 'none';
 }
 
 function closeFairyVillage() {
-    document.getElementById('fairy-village-modal').style.display = 'none';
+    // Tutup dialogue jika masih terbuka
+    const dw = document.getElementById('dialogue-wrapper');
+    if (dw) dw.style.display = 'none';
+    // Kembalikan ke lokasi sebelumnya
+    STATE.location = window._fvPrevLocation || 'village';
+    STATE.player.x  = window._fvPrevX !== undefined ? window._fvPrevX : 1200;
+    STATE.player.y  = window._fvPrevY !== undefined ? window._fvPrevY : 600;
     STATE.screen = 'play';
     manualSave();
+    showToast('🏝️ Kembali ke Pulau Arsa');
 }
 
-function renderFairyVillageUI() {
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+function initFairyWorld() {
+    fvCanvas = document.getElementById('fv-canvas');
+    if (!fvCanvas) return;
+    fvCtx = fvCanvas.getContext('2d');
+    resizeFairyCanvas();
+
+    fvPlayer = { x: FV_RARA_POS.x*TS+TS, y: (FV_RARA_POS.y+8)*TS, facing:'down' };
+    fvKeys = {};
+    fvActiveDialog = null;
+    fvParticles = [];
+    fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
+
     const fv = getFairyVillage();
-    const stats = getFairyVillageStats(fv);
-    const res = fv.resources;
-
-    document.getElementById('fv-res-debu').textContent = res.debu || 0;
-    document.getElementById('fv-res-kristal').textContent = res.kristal || 0;
-    document.getElementById('fv-res-cahaya').textContent = res.cahaya || 0;
-    document.getElementById('fv-stat-pop').textContent = `${fv.fairies.length}/${stats.totalCap}`;
-    document.getElementById('fv-stat-dust').textContent = `+${stats.totalDust}/hari`;
-    document.getElementById('fv-stat-happy').textContent = `${stats.totalHappy}%`;
-
-    renderFairyList(fv, stats);
-    renderBuildingList(fv, stats);
-}
-
-function renderFairyList(fv, stats) {
-    const el = document.getElementById('fv-fairy-list');
-    el.innerHTML = '';
-    fv.fairies.forEach(f => {
-        const gIcon = f.gender === 'boy' ? '♂️' : '♀️';
-        const gColor = f.gender === 'boy' ? '#93c5fd' : '#f9a8d4';
-        const card = document.createElement('div');
-        card.style.cssText = `background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); border-radius:12px; padding:10px; display:flex; align-items:center; gap:10px; margin-bottom:8px; cursor:pointer;`;
-        card.innerHTML = `
-            <div style="font-size:28px;">${f.gender === 'boy' ? '🧚‍♂️' : '🧚‍♀️'}</div>
-            <div style="flex:1;">
-                <div style="font-weight:700; color:#fff; font-size:13px;">${f.name} <span style="color:${gColor}; font-size:11px;">${gIcon} ${f.role}</span></div>
-                <div style="color:#d1fae5; font-size:11px;">Lv.${f.level} · ❤️ ${f.happiness}% · XP ${f.xp}/${f.level*20}</div>
-                <div style="background:rgba(0,0,0,0.3); border-radius:4px; height:5px; margin-top:4px; overflow:hidden;">
-                    <div style="background:#4ade80; height:100%; width:${Math.min(100, Math.round((f.xp/(f.level*20))*100))}%; border-radius:4px;"></div>
-                </div>
-            </div>
-            <button onclick="renameFairy('${f.id}')" style="background:rgba(255,255,255,0.15); border:none; border-radius:8px; color:#fde68a; font-size:10px; padding:4px 8px; cursor:pointer;">✏️ Ganti Nama</button>
-        `;
-        el.appendChild(card);
-    });
-    if (fv.fairies.length === 0) el.innerHTML = '<div style="color:#d1fae5; text-align:center; padding:20px;">Belum ada peri...</div>';
-}
-
-function renderBuildingList(fv, stats) {
-    const el = document.getElementById('fv-building-list');
-    el.innerHTML = '';
-    const built = fv.buildings || [];
-
-    // Tampilkan bangunan yang sudah dibangun
-    if (built.length > 0) {
-        const builtDiv = document.createElement('div');
-        builtDiv.style.cssText = 'margin-bottom:12px;';
-        builtDiv.innerHTML = '<div style="color:#fde68a; font-size:11px; font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">📍 Sudah Dibangun di Kahyangan</div>';
-        const countMap = {};
-        built.forEach(bid => { countMap[bid] = (countMap[bid]||0)+1; });
-        Object.entries(countMap).forEach(([bid, cnt]) => {
-            const b = FAIRY_BUILDINGS[bid];
-            if (!b) return;
-            const row = document.createElement('div');
-            row.style.cssText = 'background:rgba(74,222,128,0.15); border:1px solid #4ade80; border-radius:8px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;';
-            row.innerHTML = `
-                <div>
-                    <span style="font-size:12px; font-weight:700; color:#4ade80;">${b.name}</span>
-                    ${cnt > 1 ? `<span style="color:#fde68a; font-size:10px;"> x${cnt}</span>` : ''}
-                    <div style="font-size:10px; color:#d1fae5; margin-top:2px;">${b.effect}</div>
-                </div>
-                ${b.upgradeTo ? `<button onclick="upgradeFairyBuilding('${bid}')" style="background:#f59e0b; border:none; border-radius:6px; padding:4px 8px; font-size:10px; color:#422006; font-weight:700; cursor:pointer;">⬆️ Upgrade</button>` : '<span style="font-size:9px; color:#6ee7b7;">MAX</span>'}
-            `;
-            builtDiv.appendChild(row);
-        });
-        el.appendChild(builtDiv);
+    if (!fv.tutorialDone) {
+        setTimeout(()=> showFVDialog('RARA WILIS',
+            '✨ Selamat datang di Kahyangan Wilis!\n\nDahulu tempat ini penuh cahaya dan ribuan Widadari.\nKini... hanya hamparan tanah dan satu pohon energi yang tersisa.\n\nAku membutuhkan bantuanmu untuk membangunnya kembali!',
+            [{text:'Aku siap!', action:()=>{ fvActiveDialog=null;
+                setTimeout(()=> showFVDialog('RARA WILIS',
+                    '🌳 LANGKAH 1: Kumpulkan Serbuk Wilis\n→ Jalan ke Pohon Energi di selatan peta\n→ Tekan tombol ✨ saat sudah dekat\n\n🏗️ LANGKAH 2: Perintahkan Pembangunan\n→ Kembali ke aku (Rara Wilis)\n→ Tekan 💬 lalu pilih "Perintah Bangun"\n\n⏳ Setiap bangunan butuh WAKTU — seperti dunia nyata!',
+                    [{text:'Ayo mulai!', action:()=>{ fvActiveDialog=null; fv.tutorialDone=true; }}]
+                ), 200);
+            }}]
+        ), 400);
     }
 
-    // Katalog bangunan tersedia
-    const catalogDiv = document.createElement('div');
-    catalogDiv.innerHTML = '<div style="color:#fde68a; font-size:11px; font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">🛒 Katalog Bangunan Kahyangan</div>';
-    const tiers = [1,2,3,4];
-    tiers.forEach(tier => {
-        const tierBuildings = Object.entries(FAIRY_BUILDINGS).filter(([,b]) => b.tier === tier);
-        const tierHeader = document.createElement('div');
-        tierHeader.style.cssText = 'color:#a78bfa; font-size:10px; font-weight:700; margin:8px 0 4px 0; text-transform:uppercase; letter-spacing:1px;';
-        tierHeader.textContent = `— Tier ${tier} —`;
-        catalogDiv.appendChild(tierHeader);
+    setupFairyInput();
+    startFairyLoop();
+    updateFVHUD();
+}
 
-        tierBuildings.forEach(([bid, b]) => {
-            const res = fv.resources;
-            const canAfford = Object.entries(b.cost).every(([k,v]) => (res[k]||0) >= v);
-            const costStr = Object.entries(b.cost).map(([k,v]) => {
-                const icon = k==='debu'?'✨':k==='kristal'?'💎':'🌟';
-                const have = res[k]||0;
-                const color = have >= v ? '#4ade80' : '#f87171';
-                return `<span style="color:${color}">${icon}${v}</span>`;
-            }).join(' ');
-            const row = document.createElement('div');
-            row.style.cssText = `background:rgba(255,255,255,${canAfford?'0.1':'0.04'}); border:1px solid rgba(255,255,255,${canAfford?'0.3':'0.1'}); border-radius:8px; padding:8px 10px; margin-bottom:5px;`;
-            row.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                    <div style="flex:1;">
-                        <div style="font-size:12px; font-weight:700; color:${canAfford?'#fff':'#94a3b8'};">${b.name}</div>
-                        <div style="font-size:10px; color:#d1fae5; margin:2px 0;">${b.desc}</div>
-                        <div style="font-size:10px; color:#6ee7b7;">${b.effect}</div>
-                        <div style="margin-top:4px; font-size:10px;">Biaya: ${costStr}</div>
-                    </div>
-                    <button onclick="buyFairyBuilding('${bid}')" ${!canAfford?'disabled':''} style="background:${canAfford?'linear-gradient(135deg,#4ade80,#22d3ee)':'rgba(100,100,100,0.3)'}; border:none; border-radius:8px; padding:6px 12px; font-size:11px; color:${canAfford?'#052e16':'#64748b'}; font-weight:700; cursor:${canAfford?'pointer':'not-allowed'}; white-space:nowrap; min-width:60px;">
-                        ${canAfford?'🔨 Beli':'🔒'}
-                    </button>
-                </div>
-            `;
-            catalogDiv.appendChild(row);
-        });
+function resizeFairyCanvas() {
+    if (!fvCanvas) return;
+    const modal  = document.getElementById('fairy-village-modal');
+    const hud    = document.getElementById('fv-hud');
+    const bottom = document.getElementById('fv-bottom-bar');
+    const w = modal.clientWidth  || 360;
+    const h = modal.clientHeight - (hud?.offsetHeight||50) - (bottom?.offsetHeight||110);
+    fvCanvas.width  = Math.max(200, w);
+    fvCanvas.height = Math.max(150, h);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GAME LOOP
+// ═══════════════════════════════════════════════════════════════
+function startFairyLoop() {
+    stopFairyLoop();
+    fvLastTime = performance.now();
+    FVG = requestAnimationFrame(fairyLoop);
+}
+function stopFairyLoop() {
+    if (FVG) { cancelAnimationFrame(FVG); FVG = null; }
+}
+
+function fairyLoop(ts) {
+    if (!fvCanvas || document.getElementById('fairy-village-modal').style.display==='none') { FVG=null; return; }
+    const dt = Math.min(32, ts - fvLastTime);
+    fvLastTime = ts;
+    checkBuildQueue();
+    updateFairyPlayer(dt);
+    drawFairyWorld(ts);
+    FVG = requestAnimationFrame(fairyLoop);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUILD QUEUE — waktu nyata: 1 hari game = 60 detik
+// ═══════════════════════════════════════════════════════════════
+const BUILD_DURATION_MS = 60 * 1000; // 60 detik real per bangunan
+
+function checkBuildQueue() {
+    const fv = getFairyVillage();
+    if (!fv.buildQueue || fv.buildQueue.length === 0) return;
+    const now = Date.now();
+    const done = fv.buildQueue.filter(q => now >= q.finishTime);
+    if (done.length === 0) return;
+    done.forEach(q => {
+        fv.buildings.push({ slotId: q.slotId, bid: q.bid });
+        const slot = FAIRY_SLOTS.find(s=>s.id===q.slotId);
+        if (slot) createFVParticles(slot.x*TS+TS, slot.y*TS+TS, 20);
+        showToast(`✅ ${FAIRY_BUILDINGS[q.bid]?.name||'Bangunan'} selesai dibangun!`);
     });
+    fv.buildQueue = fv.buildQueue.filter(q => now < q.finishTime);
+    updateFVHUD();
+}
 
-    // Trading jika ada pasar
-    if (stats.hasTrading) {
-        const tradeDiv = document.createElement('div');
-        tradeDiv.style.cssText = 'margin-top:12px; background:rgba(251,191,36,0.1); border:1px solid #fbbf24; border-radius:10px; padding:10px;';
-        tradeDiv.innerHTML = `
-            <div style="color:#fbbf24; font-size:11px; font-weight:700; margin-bottom:8px;">🛒 PASAR KAHYANGAN — Tukar Mata Uang</div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button onclick="fairyTrade('debu2gold')" style="background:#4ade80; border:none; border-radius:6px; padding:6px 10px; font-size:10px; color:#052e16; font-weight:700; cursor:pointer;">✨50 Serbuk → 💰200 G</button>
-                <button onclick="fairyTrade('gold2debu')" style="background:#fbbf24; border:none; border-radius:6px; padding:6px 10px; font-size:10px; color:#422006; font-weight:700; cursor:pointer;">💰500 G → ✨30 Serbuk</button>
-                <button onclick="fairyTrade('kristal2gold')" style="background:#a78bfa; border:none; border-radius:6px; padding:6px 10px; font-size:10px; color:#fff; font-weight:700; cursor:pointer;">💎1 Kristal Brantas → 💰1500 G</button>
-            </div>
-        `;
-        catalogDiv.appendChild(tradeDiv);
+// ═══════════════════════════════════════════════════════════════
+// UPDATE PLAYER
+// ═══════════════════════════════════════════════════════════════
+function updateFairyPlayer(dt) {
+    if (fvActiveDialog) return;
+    const speed = FV_SPEED * (dt/16);
+    let dx=0, dy=0;
+
+    // Keyboard
+    if (fvKeys['ArrowLeft'] ||fvKeys['a']) { dx=-1; fvPlayer.facing='left'; }
+    if (fvKeys['ArrowRight']||fvKeys['d']) { dx= 1; fvPlayer.facing='right'; }
+    if (fvKeys['ArrowUp']   ||fvKeys['w']) { dy=-1; fvPlayer.facing='up'; }
+    if (fvKeys['ArrowDown'] ||fvKeys['s']) { dy= 1; fvPlayer.facing='down'; }
+
+    // Joystick virtual (floating, sama seperti main game)
+    if (fvJoy.active) {
+        const mag = Math.sqrt(fvJoy.dx*fvJoy.dx + fvJoy.dy*fvJoy.dy);
+        if (mag > 8) {
+            dx = fvJoy.dx/mag; dy = fvJoy.dy/mag;
+            if (Math.abs(fvJoy.dx)>Math.abs(fvJoy.dy)) fvPlayer.facing = fvJoy.dx>0?'right':'left';
+            else fvPlayer.facing = fvJoy.dy>0?'down':'up';
+        }
     }
 
-    el.appendChild(catalogDiv);
+    // Diagonal normalization
+    if (dx!==0 && dy!==0) { dx*=0.707; dy*=0.707; }
+
+    fvPlayer.x = Math.max(0, Math.min((FW-1)*TS, fvPlayer.x + dx*speed));
+    fvPlayer.y = Math.max(0, Math.min((FH-1)*TS, fvPlayer.y + dy*speed));
+
+    // Camera smooth follow
+    const cw = fvCanvas.width, ch = fvCanvas.height;
+    const targetCX = fvPlayer.x - cw/2;
+    const targetCY = fvPlayer.y - ch/2;
+    fvCam.x += (targetCX - fvCam.x) * 0.12;
+    fvCam.y += (targetCY - fvCam.y) * 0.12;
+    fvCam.x = Math.max(0, Math.min(FW*TS - cw, fvCam.x));
+    fvCam.y = Math.max(0, Math.min(FH*TS - ch, fvCam.y));
+
+    updateFVActionBtn();
 }
 
-function buyFairyBuilding(bid) {
-    const b = FAIRY_BUILDINGS[bid];
-    if (!b) return;
-    const fv = getFairyVillage();
-    const res = fv.resources;
-    if (!Object.entries(b.cost).every(([k,v]) => (res[k]||0) >= v)) { showToast('Sumber daya Kahyangan tidak cukup!'); return; }
-    Object.entries(b.cost).forEach(([k,v]) => { res[k] -= v; });
-    fv.buildings.push(bid);
-    showToast(`${b.name} berhasil dibangun! 🎉`);
-    renderFairyVillageUI();
-}
+function updateFVActionBtn() {
+    const btn = document.getElementById('fv-action-btn');
+    if (!btn) return;
+    const px = fvPlayer.x, py = fvPlayer.y;
 
-function upgradeFairyBuilding(bid) {
-    const b = FAIRY_BUILDINGS[bid];
-    if (!b || !b.upgradeTo) return;
-    const upgB = FAIRY_BUILDINGS[b.upgradeTo];
-    if (!upgB) return;
-    const fv = getFairyVillage();
-    const res = fv.resources;
-    if (!Object.entries(upgB.cost).every(([k,v]) => (res[k]||0) >= v)) {
-        const costStr = Object.entries(upgB.cost).map(([k,v])=>`${k==='debu'?'✨':k==='kristal'?'💎':'🌟'}${v}`).join(', ');
-        showToast(`Butuh: ${costStr}`);
+    // Rara Wilis
+    const rx = FV_RARA_POS.x*TS+TS, ry = FV_RARA_POS.y*TS+TS;
+    if (Math.hypot(px-rx, py-ry) < TS*3) {
+        btn.style.display='block';
+        btn.textContent='💬 Bicara dengan Rara Wilis';
+        btn.onclick = openRaraWilisDialog;
         return;
     }
-    // Hapus bangunan lama, tambah yang baru
-    const idx = fv.buildings.indexOf(bid);
-    if (idx !== -1) fv.buildings.splice(idx, 1);
-    Object.entries(upgB.cost).forEach(([k,v]) => { res[k] -= v; });
-    fv.buildings.push(b.upgradeTo);
-    showToast(`Upgrade ke ${upgB.name} berhasil! ⬆️✨`);
-    renderFairyVillageUI();
+
+    // Pohon Energi
+    const tx = FV_POHON_POS.x*TS+TS, ty = FV_POHON_POS.y*TS+TS;
+    if (Math.hypot(px-tx, py-ty) < TS*3) {
+        btn.style.display='block';
+        btn.textContent='✨ Kumpulkan Serbuk Wilis';
+        btn.onclick = collectFairyDust;
+        return;
+    }
+
+    btn.style.display='none';
 }
 
-function renameFairy(fairyId) {
+// ═══════════════════════════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════════════════════════
+function drawFairyWorld(ts) {
+    if (!fvCtx) return;
+    const ctx = fvCtx;
+    const W = fvCanvas.width, H = fvCanvas.height;
     const fv = getFairyVillage();
-    const fairy = fv.fairies.find(f => f.id === fairyId);
-    if (!fairy) return;
-    const newName = prompt(`Ganti nama ${fairy.name} jadi:`);
-    if (newName && newName.trim().length > 0 && newName.trim().length <= 20) {
-        fairy.name = newName.trim();
-        showToast(`Nama diganti menjadi ${fairy.name}! ✨`);
-        renderFairyVillageUI();
-    } else if (newName !== null) {
-        showToast('Nama harus 1-20 karakter!');
+    const t = ts || performance.now();
+
+    // Sky
+    const sky = ctx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,'#06030f'); sky.addColorStop(1,'#0a1a0d');
+    ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+
+    ctx.save();
+    ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
+
+    const visX0 = Math.floor(fvCam.x/TS)-1, visX1 = visX0+Math.ceil(W/TS)+2;
+    const visY0 = Math.floor(fvCam.y/TS)-1, visY1 = visY0+Math.ceil(H/TS)+2;
+
+    // Ground tiles (only visible)
+    for (let ty=Math.max(0,visY0); ty<Math.min(FH,visY1); ty++) {
+        for (let tx=Math.max(0,visX0); tx<Math.min(FW,visX1); tx++) {
+            const even=(tx+ty)%2===0;
+            ctx.fillStyle = even?'#0a1a0c':'#0b1e0e';
+            ctx.fillRect(tx*TS, ty*TS, TS, TS);
+        }
+    }
+
+    // Main path — jalur besar horizontal & vertikal di peta 3×
+    ctx.fillStyle='#122018';
+    for (let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS, 72*TS, TS, TS*2); // horizontal tengah
+    for (let ty=0;ty<FH;ty++) ctx.fillRect(114*TS, ty*TS, TS*2, TS); // vertikal tengah
+
+    // Secondary paths
+    ctx.fillStyle='#0f1c14';
+    [25,50,100,125,175,200].forEach(ty=> { for(let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS,ty*TS,TS,TS); });
+
+    // Stars — tersebar di seluruh peta 3×
+    ctx.fillStyle='rgba(255,255,220,1)';
+    for (let i=0;i<150;i++) {
+        const sx=((i*173+20)%(FW*TS)), sy=((i*97+10)%(FH*TS));
+        const pulse = 0.3+0.5*Math.sin(t/800+i*1.3);
+        ctx.globalAlpha=pulse*0.6; ctx.fillRect(sx,sy,2,2);
+    }
+    ctx.globalAlpha=1;
+
+    // Slot markers (kosong)
+    const builtSlots   = new Set((fv.buildings||[]).map(b=>b.slotId));
+    const queueSlots   = new Set((fv.buildQueue||[]).map(b=>b.slotId));
+    FAIRY_SLOTS.forEach(slot => {
+        if (builtSlots.has(slot.id) || queueSlots.has(slot.id)) return;
+        ctx.strokeStyle='rgba(167,139,250,0.25)'; ctx.lineWidth=1;
+        ctx.setLineDash([3,4]);
+        ctx.strokeRect(slot.x*TS+1, slot.y*TS+1, TS*2-2, TS*2-2);
+        ctx.setLineDash([]);
+    });
+
+    // Bangunan dalam antrian (animasi konstruksi)
+    const now = Date.now();
+    (fv.buildQueue||[]).forEach(({slotId, bid, finishTime}) => {
+        const slot = FAIRY_SLOTS.find(s=>s.id===slotId); if (!slot) return;
+        const b = FAIRY_BUILDINGS[bid]; if (!b) return;
+        const bx=slot.x*TS, by=slot.y*TS, bw=TS*2, bh=TS*2;
+        const progress = 1 - Math.max(0, (finishTime-now)/BUILD_DURATION_MS);
+
+        // Background
+        ctx.fillStyle='rgba(30,20,10,0.8)';
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,4); ctx.fill();
+        ctx.strokeStyle='#f59e0b'; ctx.lineWidth=1.5;
+        ctx.setLineDash([4,3]); ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,4); ctx.stroke(); ctx.setLineDash([]);
+
+        // Progress bar
+        ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(bx+3,by+bh-8,bw-6,5);
+        ctx.fillStyle='#f59e0b'; ctx.fillRect(bx+3,by+bh-8,(bw-6)*progress,5);
+
+        // Emoji + label
+        ctx.font=`${TS*0.8}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.globalAlpha=0.5+0.4*Math.sin(t/400);
+        ctx.fillText(b.emoji||'🏗️', bx+bw/2, by+bh/2-4);
+        ctx.globalAlpha=1;
+        ctx.fillStyle='#fbbf24'; ctx.font='6px sans-serif';
+        const secsLeft = Math.max(0, Math.ceil((finishTime-now)/1000));
+        ctx.fillText(`${secsLeft}s`, bx+bw/2, by+8);
+        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    });
+
+    // Bangunan selesai
+    (fv.buildings||[]).forEach(({slotId, bid}) => {
+        const slot=FAIRY_SLOTS.find(s=>s.id===slotId); if(!slot) return;
+        const b=FAIRY_BUILDINGS[bid]; if(!b) return;
+        const bx=slot.x*TS, by=slot.y*TS, bw=TS*(b.w||2), bh=TS*(b.h||2);
+
+        // Shadow
+        ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(bx+3,by+4,bw,bh);
+
+        // BG
+        const bgC=['#0e2a1a','#152038','#2a1e42','#3a2a14','#3a1428'];
+        ctx.fillStyle=bgC[b.tier]||'#1a1a2a';
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.fill();
+
+        // Border tier
+        const tierC=['#4ade80','#60a5fa','#c084fc','#fb923c','#fbbf24'];
+        ctx.strokeStyle=tierC[b.tier]||'#60a5fa'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.stroke();
+
+        // Glow subtle
+        ctx.shadowColor=tierC[b.tier]||'#60a5fa'; ctx.shadowBlur=6;
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.stroke();
+        ctx.shadowBlur=0;
+
+        ctx.font=`${TS*0.85}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(b.emoji||'🏠', bx+bw/2, by+bh/2-3);
+        ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.font='6px sans-serif';
+        ctx.fillText(b.name.replace(/^[^\s]+\s/,'').slice(0,11), bx+bw/2, by+bh-5);
+        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    });
+
+    // Dekorasi pohon pinggir peta
+    FV_DECO_TREES.forEach(({x,y},i) => {
+        const vis = (fv.buildings?.length||0) > i*2; // pohon muncul seiring perkembangan desa
+        if (!vis) return;
+        ctx.font=`${TS}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        const sway = Math.sin(t/1500+i)*2;
+        ctx.fillText('🌲', x*TS+TS*0.5+sway, y*TS+TS*0.5);
+    });
+
+    // Pohon Energi
+    const poX=FV_POHON_POS.x*TS, poY=FV_POHON_POS.y*TS;
+    const glow = 0.25+0.2*Math.sin(t/600);
+    ctx.fillStyle=`rgba(74,222,128,${glow})`; ctx.beginPath();
+    ctx.arc(poX+TS, poY+TS*0.8, TS*1.3, 0, Math.PI*2); ctx.fill();
+    ctx.font=`${TS*2}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🌳', poX+TS, poY+TS);
+    ctx.fillStyle='#4ade80'; ctx.font='8px sans-serif';
+    ctx.fillText('Pohon Energi', poX+TS, poY+TS*2.3);
+
+    // Exclamation pohon jika dekat
+    const distP = Math.hypot(fvPlayer.x-(poX+TS), fvPlayer.y-(poY+TS));
+    if (distP < TS*3) {
+        ctx.fillStyle='#fbbf24'; ctx.font='bold 16px sans-serif'; ctx.textAlign='center';
+        ctx.fillText('!', poX+TS, poY-6);
+    }
+
+    // Rara Wilis NPC — sprite & nametag sudah dirender oleh sistem drawNPC() utama
+    // Hanya gambar aura ungu saja agar tetap ada efek visual tanpa duplikasi teks
+    const raraX=FV_RARA_POS.x*TS, raraY=FV_RARA_POS.y*TS;
+    const aura=0.12+0.12*Math.sin(t/500);
+    ctx.fillStyle=`rgba(167,139,250,${aura})`; ctx.beginPath();
+    ctx.arc(raraX+TS, raraY+TS, TS*1.8, 0, Math.PI*2); ctx.fill();
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+
+    // Peri wandering
+    fv.fairies.forEach((f,i)=>{
+        const wx=(20+i*15)*TS + Math.sin(t/1100+i*2.1)*TS*10;
+        const wy=(40+i%4*18)*TS + Math.cos(t/1300+i*1.7)*TS*6;
+        const cx=Math.max(TS,Math.min((FW-2)*TS,wx));
+        const cy=Math.max(TS,Math.min((FH-2)*TS,wy));
+        const ico=f.gender==='boy'?'🧚‍♂️':'🧚‍♀️';
+        ctx.font=`${TS*0.9}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(ico, cx, cy);
+        ctx.fillStyle='#fde68a'; ctx.font='6px sans-serif'; ctx.textBaseline='alphabetic';
+        ctx.fillText(f.name, cx, cy+TS*0.7);
+        ctx.fillStyle='#fff'; ctx.textAlign='left';
+    });
+
+    // Partikel
+    fvParticles = fvParticles.filter(p=>p.life>0);
+    fvParticles.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.vy+=0.06; p.life--;
+        ctx.globalAlpha=p.life/p.maxLife;
+        ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,3,3);
+    });
+    ctx.globalAlpha=1;
+
+    // Player
+    const playerIcon = '🧑';
+    ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath();
+    ctx.ellipse(fvPlayer.x+TS*0.5, fvPlayer.y+TS*0.95, TS*0.45, TS*0.15, 0, 0, Math.PI*2); ctx.fill();
+    ctx.font=`${TS*1.3}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(playerIcon, fvPlayer.x+TS*0.5, fvPlayer.y+TS*0.5);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+
+    ctx.restore();
+
+    // Dialog overlay
+    if (fvActiveDialog) drawFVDialog(ctx, W, H);
+
+    // Timer bar bangunan aktif (di atas canvas, tidak perlu translate)
+    drawFVBuildTimerBar(ctx, W, fv, now);
+
+    // Minimap
+    drawFVMinimap(ctx, W, H, fv);
+}
+
+// ── Timer bar konstruksi ───────────────────────────────────────
+function drawFVBuildTimerBar(ctx, W, fv, now) {
+    if (!fv.buildQueue || fv.buildQueue.length === 0) return;
+    const q = fv.buildQueue[0];
+    const b = FAIRY_BUILDINGS[q.bid];
+    const prog = Math.min(1, 1-(q.finishTime-now)/BUILD_DURATION_MS);
+    const secsLeft = Math.max(0, Math.ceil((q.finishTime-now)/1000));
+
+    ctx.fillStyle='rgba(0,0,0,0.65)';
+    ctx.beginPath(); ctx.roundRect(10,10,200,22,6); ctx.fill();
+    ctx.fillStyle='#f59e0b'; ctx.fillRect(12,18,Math.floor(196*prog),8);
+    ctx.fillStyle='#1a0a00'; ctx.fillRect(12+Math.floor(196*prog),18,196-Math.floor(196*prog),8);
+    ctx.fillStyle='#fde68a'; ctx.font='bold 9px sans-serif';
+    ctx.fillText(`🏗️ ${b?.emoji||''} ${b?.name||'Bangunan'} — ${secsLeft}s lagi`, 14, 15);
+}
+
+// ── Dialog ─────────────────────────────────────────────────────
+function drawFVDialog(ctx, W, H) {
+    const d = fvActiveDialog;
+    const bx=8, by=H-175, bw=W-16, bh=167;
+    ctx.fillStyle='rgba(6,3,18,0.96)';
+    ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,10); ctx.fill();
+    ctx.strokeStyle='#7c3aed'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,10); ctx.stroke();
+
+    // Portrait
+    ctx.fillStyle='rgba(124,58,237,0.2)';
+    ctx.beginPath(); ctx.roundRect(bx+8,by+8,48,48,8); ctx.fill();
+    ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(d.portrait||'👸', bx+32, by+32);
+
+    // Name
+    ctx.fillStyle='#fde68a'; ctx.font='bold 11px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.fillText(d.name, bx+62, by+20);
+
+    // Text wrap
+    ctx.fillStyle='#e2e8f0'; ctx.font='10px sans-serif';
+    wrapFVText(ctx, d.text, bw-70).slice(0,6).forEach((ln,i)=> ctx.fillText(ln, bx+62, by+34+i*13));
+
+    // Options
+    if (d.options?.length) {
+        d.options.forEach((opt,i)=>{
+            const oy=by+bh-28+(i-d.options.length+1)*22;
+            ctx.fillStyle=`rgba(124,58,237,0.3)`;
+            ctx.beginPath(); ctx.roundRect(bx+8,oy,bw-16,18,5); ctx.fill();
+            ctx.strokeStyle='rgba(167,139,250,0.4)'; ctx.lineWidth=0.8;
+            ctx.beginPath(); ctx.roundRect(bx+8,oy,bw-16,18,5); ctx.stroke();
+            ctx.fillStyle='#c4b5fd'; ctx.font='bold 9px sans-serif';
+            ctx.fillText('▶ '+opt.text, bx+14, oy+13);
+        });
+    } else {
+        ctx.fillStyle='#64748b'; ctx.font='9px sans-serif'; ctx.textAlign='right';
+        ctx.fillText('Tap untuk lanjut ▶', bx+bw-10, by+bh-8);
+        ctx.textAlign='left';
     }
 }
 
-function fairyTrade(type) {
-    const fv = getFairyVillage();
-    const res = fv.resources;
-    const p = STATE.player;
-    if (type === 'debu2gold') {
-        if ((res.debu||0) < 50) { showToast('Serbuk Wilis tidak cukup! Butuh 50 ✨'); return; }
-        res.debu -= 50; p.money += 200;
-        showToast('✨50 Serbuk → 💰+200 G!'); updateMoneyUI();
-    } else if (type === 'gold2debu') {
-        if (p.money < 500) { showToast('Gold tidak cukup! Butuh 500 G'); return; }
-        p.money -= 500; res.debu = (res.debu||0) + 30;
-        showToast('💰500 G → ✨+30 Serbuk Wilis!'); updateMoneyUI();
-    } else if (type === 'kristal2gold') {
-        if ((res.kristal||0) < 1) { showToast('Kristal tidak cukup!'); return; }
-        res.kristal -= 1; p.money += 1500;
-        showToast('💎1 Kristal → 💰+1500 G!'); updateMoneyUI();
+function wrapFVText(ctx, text, maxW) {
+    const lines=[];
+    text.split('\n').forEach(para=>{
+        if (!para.trim()) { lines.push(''); return; }
+        const words=para.split(' '); let cur='';
+        words.forEach(w=>{ const t=cur?cur+' '+w:w; if(ctx.measureText(t).width>maxW){ if(cur)lines.push(cur); cur=w; } else cur=t; });
+        if(cur) lines.push(cur);
+    });
+    return lines;
+}
+
+function tapFVDialog(e) {
+    if (!fvActiveDialog) return;
+    const d=fvActiveDialog;
+    if (d.options?.length) {
+        const W=fvCanvas.width, H=fvCanvas.height;
+        const bx=8, by=H-175, bw=W-16, bh=167;
+        const rect=fvCanvas.getBoundingClientRect();
+        const tapX=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+        const tapY=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
+        d.options.forEach((opt,i)=>{
+            const oy=by+bh-28+(i-d.options.length+1)*22;
+            if(tapX>bx+8&&tapX<bx+bw-8&&tapY>oy&&tapY<oy+18){ fvActiveDialog=null; opt.action?.(); }
+        });
+    } else { fvActiveDialog=null; }
+    e.stopPropagation();
+}
+
+function showFVDialog(name,text,options,portrait) {
+    // Gunakan sistem dialogue utama (showDialogue) karena fairy village
+    // berjalan di atas game canvas utama, bukan modal terpisah.
+    if (typeof showDialogue === 'function') {
+        // Tentukan portrait image berdasarkan nama/portrait parameter
+        let imgSrc = null;
+        if (portrait === '👸' || name.includes('RARA') || name.includes('Rara')) {
+            imgSrc = 'images/rarawilis.png';
+        } else if (portrait === '🌳' || name.includes('POHON')) {
+            imgSrc = 'images/pohonperi.png';
+        } else if (name === 'WENING' || name === 'Wening') {
+            imgSrc = 'images/wening.png';
+        } else if (name === 'SEKAR' || name === 'Sekar') {
+            imgSrc = 'images/sekar.png';
+        } else if (name === 'BENING' || name === 'Bening') {
+            imgSrc = 'images/bening.png';
+        } else if (name === 'JUNA' || name === 'Juna') {
+            imgSrc = 'images/juna.png';
+        } else if (portrait === '🧚‍♀️' || name.includes('WIDADARI')) {
+            imgSrc = 'images/rarawilis.png';
+        }
+        const opts = (options||[]).map(o=>({
+            text: o.text,
+            action: ()=>{
+                if (typeof closeDialogue === 'function') closeDialogue();
+                if (typeof o.action === 'function') setTimeout(()=>o.action(), 30);
+            }
+        }));
+        if (opts.length===0) opts.push({text:'Tutup', action: ()=>{ if(typeof closeDialogue==='function') closeDialogue(); }});
+        showDialogue(name, text, opts, imgSrc);
+        return;
     }
-    renderFairyVillageUI();
+    // Fallback lama (hanya aktif jika fairy-village-modal dipakai)
+    fvActiveDialog={name,text,options:options||null,portrait:portrait||'👸'};
 }
 
-// Tambahkan Kristal lewat Quest/Event Kahyangan Wilis
-function addFairyResource(type, amount) {
+// ── Minimap ────────────────────────────────────────────────────
+function drawFVMinimap(ctx, W, H, fv) {
+    const mw=90,mh=56,mx=W-mw-6,my=6;
+    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx,my,mw,mh,4); ctx.fill();
+    ctx.strokeStyle='rgba(124,58,237,0.6)'; ctx.lineWidth=1; ctx.stroke();
+    const sx=mw/FW,sy=mh/FH;
+    (fv.buildings||[]).forEach(({slotId})=>{ const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return; ctx.fillStyle='#60a5fa'; ctx.fillRect(mx+s.x*sx,my+s.y*sy,sx*2+1,sy*2+1); });
+    (fv.buildQueue||[]).forEach(({slotId})=>{ const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return; ctx.fillStyle='#fbbf24'; ctx.fillRect(mx+s.x*sx,my+s.y*sy,sx*2+1,sy*2+1); });
+    ctx.fillStyle='#4ade80'; ctx.fillRect(mx+FV_POHON_POS.x*sx,my+FV_POHON_POS.y*sy,sx*2,sy*2);
+    ctx.fillStyle='#e9d5ff'; ctx.fillRect(mx+FV_RARA_POS.x*sx,my+FV_RARA_POS.y*sy,sx*2,sy*2);
+    ctx.fillStyle='#fbbf24'; ctx.beginPath();
+    ctx.arc(mx+fvPlayer.x/TS*sx,my+fvPlayer.y/TS*sy,2.5,0,Math.PI*2); ctx.fill();
+    // Legend
+    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='5px sans-serif';
+    ctx.fillText('🔵 Bangunan  🟡 Konstruksi  🟢 Pohon', mx+2, my+mh+9);
+}
+
+// ─────────────────────────────────────────────────────────────
+// DIALOG NPC PERI KECIL — FAIRY VILLAGE
+// ─────────────────────────────────────────────────────────────
+function openFairyNPCDialog_fv_wening() {
+    showFVDialog('WENING', `Selamat datang kembali! 🌿\n\nAku Wening, Widadari penjaga hutan Wilis.\n\nDulu aku merawat ribuan pohon di lereng Gunung Wilis. Sekarang aku baru bisa merawat yang tersisa... tapi dengan bantuanmu, hutan itu perlahan tumbuh kembali.\n\n🌲 Pohon-pohon muda sudah mulai bertunas di sisi utara. Aku merasakan energinya!`,
+        [{ text: 'Teruskan perjuanganmu, Wening!', action: () => fvActiveDialog = null },
+         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        'images/wening.png');
+}
+function openFairyNPCDialog_fv_sekar() {
+    showFVDialog('SEKAR', `Hei! 🌸\n\nNamaku Sekar — aku peri bunga. Tugasku memastikan setiap bunga di Kahyangan Wilis mekar pada waktunya.\n\nSejak Kahyangan hampir punah, bunganya pun layu. Tapi lihat — kenanga dan melati di sudut selatan mulai mekar lagi!\n\n🌺 Aku sedang menanam taman bunga baru di dekat Pohon Beringin. Doakan berhasil ya!`,
+        [{ text: 'Taman bungamu pasti indah, Sekar!', action: () => fvActiveDialog = null },
+         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        'images/sekar.png');
+}
+function openFairyNPCDialog_fv_bening() {
+    showFVDialog('BENING', `Oh! Kamu mau bicara denganku? 💧\n\nAku Bening... Widadari air termuda di sini. Aku lahir saat Kahyangan sudah mulai pudar, jadi aku tidak pernah tahu Kahyangan yang penuh.\n\nTapi Rara Wilis dan Kak Wening sering bercerita betapa indahnya dulu...\n\n💙 Kalau Kahyangan pulih sepenuhnya, aku ingin membuka kembali Sendang Suci Selatan!`,
+        [{ text: 'Aku yakin kamu bisa, Bening!', action: () => fvActiveDialog = null },
+         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        'images/bening.png');
+}
+function openFairyNPCDialog_fv_juna() {
+    showFVDialog('JUNA', `Hei, manusia! Jarang ada yang mau ngobrol sama peri cowok. 😄\n\nAku Juna — peri angin. Tugasku membawa serbuk bunga dan benih pohon ke seluruh penjuru Wilis lewat hembusan angin.\n\nWaktu longsor terjadi, aku sedang terbang jauh... jadi aku selamat. Tapi aku merasa bersalah tidak bisa menyelamatkan yang lain.\n\n🌬️ Kini aku kembali untuk membantu membangun Kahyangan bersama kalian!`,
+        [{ text: 'Jangan menyesal, Juna. Kamu ada sekarang!', action: () => fvActiveDialog = null },
+         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        'images/juna.png');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIALOG RARA WILIS
+// ═══════════════════════════════════════════════════════════════
+function openRaraWilisDialog() {
+    fvActiveDialog = null;
+    STATE.screen = 'play';
+    const fv = getFairyVillage(), stats = getFairyVillageStats(fv), res = fv.resources;
+    const bCount = (fv.buildings||[]).length;
+    const qCount = (fv.buildQueue||[]).length;
+    const totalBuilt = bCount;
+
+    // ── Tentukan FASE cerita berdasarkan progress ──────────────────
+    // Fase 0 = kunjungan pertama (sebelum bangun apapun)
+    // Fase 1 = mulai membangun (1-3 bangunan)
+    // Fase 2 = berkembang (4-9 bangunan)
+    // Fase 3 = hampir pulih (10-15 bangunan)
+    // Fase 4 = pulih sepenuhnya (sylvariaQuestComplete)
+
+    const fase = STATE.player.sylvariaQuestComplete ? 4
+               : totalBuilt === 0 ? 0
+               : totalBuilt <= 3  ? 1
+               : totalBuilt <= 9  ? 2
+               : 3;
+
+    // ── Salam pembuka sesuai fase ──────────────────────────────────
+    const salamBuka = [
+        // Fase 0 — Pertama kali, penuh kekhawatiran
+        `...Akhirnya ada manusia yang bisa melihat kami.\n\nAku Rara Wilis. Ratu terakhir para Widadari Gunung Wilis.\n\nKahyangan kami... hampir punah. Ratusan tahun yang lalu, bencana besar melanda — tanah longsor raksasa menghancurkan hampir seluruh Kahyangan. Pohon Beringin Agung kami — sumber hidup para Widadari — retak parah.\n\nPara Widadari melarikan diri. Banyak yang tidak selamat. Kini tersisa segelintir saja.\n\nAku tidak punya siapa-siapa lagi. Kecuali... kamu.`,
+
+        // Fase 1 — Ada harapan tipis
+        `Kamu kembali... ${fv.fairies.length > 0 ? 'dan kamu membawa Widadari baru!' : ''}\n\nBencana longsor itu meluluhlantakkan tanah kami dalam semalam. Aku masih ingat suara pohon-pohon tumbang, kristal Brantas yang hancur berkeping...\n\nTapi kini, dengan ${totalBuilt} bangunan yang mulai berdiri, ada secercah harapan.\n\n✨ Serbuk: ${res.debu}  💎 Kristal: ${res.kristal}  🌟 Cahaya: ${res.cahaya}  🍽️ Makanan: ${res.makanan||0}\n👥 Widadari: ${fv.fairies.length}/${stats.totalCap}`,
+
+        // Fase 2 — Mulai bangkit
+        `${fv.fairies.length >= 3 ? 'Suara tawa Widadari kecil sudah terdengar lagi...' : 'Kahyangan perlahan bernapas kembali.'}\n\nDulunya tempat ini ramai. Ribuan Widadari menjaga keseimbangan alam Jawa Timur — peri hutan merawat pohon-pohon Wilis, peri bunga membantu penyerbukan ladang manusia.\n\nBencana itu memutus semuanya. Manusia pun lupa kami ada.\n\nKini ada ${totalBuilt} bangunan. Kami mulai bangkit!\n\n✨ ${res.debu}  💎 ${res.kristal}  🌟 ${res.cahaya}  👥 ${fv.fairies.length}/${stats.totalCap}`,
+
+        // Fase 3 — Mendekati pulih
+        `Kamu sungguh... luar biasa.\n\nAku tidak menyangka Kahyangan Wilis bisa seramai ini lagi. ${totalBuilt} bangunan sudah berdiri. Para Widadari bernyanyi lagi setiap pagi.\n\nHanya satu hal lagi yang kubutuhkan — energi penuh untuk membangkitkan Pohon Beringin Agung ke kondisi sempurna.\n\nBantu aku menyelesaikan ini. Untuk Wilis. Untuk alam.\n\n✨ ${res.debu}  💎 ${res.kristal}  🌟 ${res.cahaya}  👥 ${fv.fairies.length}/${stats.totalCap}`,
+
+        // Fase 4 — Selesai, rasa syukur
+        `Kahyangan Wilis telah pulih sepenuhnya! 🌳✨\n\nPohon Beringin Agung berdaun lebat lagi. Para Widadari menari di antara sinar bulan Wilis.\n\nKamu adalah manusia pertama dalam ratusan tahun yang benar-benar peduli.\n\nKahyangan ini akan terus berdoa untukmu.\n\n✨ ${res.debu}  💎 ${res.kristal}  🌟 ${res.cahaya}  👥 ${fv.fairies.length}`,
+    ][fase];
+
+    // ── Susun pilihan menu sesuai fase ────────────────────────────
+    const opts = [];
+
+    // Tombol build — selalu ada kecuali fase 4 (semua sudah selesai)
+    if (fase < 4) {
+        opts.push({ text: '🏗️ Perintahkan Membangun', action: openBuildMenu });
+    }
+    // Manajemen Widadari
+    if (fv.fairies.length > 0 || fase >= 1) {
+        opts.push({ text: `👥 Lihat Widadari (${fv.fairies.length})`, action: openFairyListDialog });
+    }
+    // Manajemen Makanan
+    opts.push({ text: `🍽️ Stok Makanan: ${res.makanan||0} porsi`, action: () => {
+        fvActiveDialog = null;
+        STATE.screen = 'play';
+        setTimeout(() => {
+            const shortage = Math.max(0, fv.fairies.length - (res.makanan||0));
+            const buyMsg = shortage > 0
+                ? `⚠️ Kekurangan ${shortage} porsi!\n\nPeri yang tidak makan akan bad mood.\n\n`
+                : `✅ Stok aman untuk ${fv.fairies.length} peri.\n\n`;
+            showFVDialog('🍽️ DAPUR KAHYANGAN',
+                `${buyMsg}Stok makanan: ${res.makanan||0} porsi\nPeri: ${fv.fairies.length} (butuh ${fv.fairies.length}/hari)\n\n💡 Taman Bunga menghasilkan +3 makanan/hari secara otomatis.`,
+                [
+                    { text: '🛒 Beli 10 porsi (30 Serbuk)', action: () => {
+                        fvActiveDialog=null; STATE.screen='play';
+                        setTimeout(()=>{
+                            if ((res.debu||0)>=30){ res.debu-=30; res.makanan=(res.makanan||0)+10; showToast('🛒 +10 porsi makanan!'); }
+                            else showToast('❌ Serbuk tidak cukup (butuh 30)!');
+                            openRaraWilisDialog();
+                        }, 30);
+                    }},
+                    { text: '🛒 Beli 30 porsi (80 Serbuk)', action: () => {
+                        fvActiveDialog=null; STATE.screen='play';
+                        setTimeout(()=>{
+                            if ((res.debu||0)>=80){ res.debu-=80; res.makanan=(res.makanan||0)+30; showToast('🛒 +30 porsi makanan!'); }
+                            else showToast('❌ Serbuk tidak cukup (butuh 80)!');
+                            openRaraWilisDialog();
+                        }, 30);
+                    }},
+                    { text: 'Kembali', action: () => { fvActiveDialog=null; STATE.screen='play'; setTimeout(openRaraWilisDialog,30); }}
+                ], '🍽️');
+        }, 30);
+    }});
+    // Status konstruksi
+    if (qCount > 0) {
+        opts.push({ text: `🏗️ Status Konstruksi (${qCount})`, action: openQueueDialog });
+    }
+    // Tanya lore bencana — hanya muncul di fase 0 dan 1
+    if (fase <= 1) {
+        opts.push({ text: '❓ Apa yang terjadi dulu...?', action: () => {
+            showFVDialog('RARA WILIS',
+                `Seratus tahun yang lalu, manusia-manusia tamak mulai menebang hutan Gunung Wilis tanpa henti.\n\nKeseimbangan alam rusak. Hujan tanpa musim. Tanah kehilangan akarnya.\n\nLalu... malam itu tiba. Longsor terbesar sepanjang sejarah Wilis. Setengah Kahyangan terhapus dalam satu malam.\n\nPohon Beringin Agung — pohon tertua yang menjadi sumber kekuatan kami — terluka parah. Kristal Brantas yang menyimpan energi Kahyangan hancur berserakan.\n\nPara Widadari yang tersisa hanya bisa menangis dan menyaksikan rumah kami runtuh.\n\nKini hanya kamu yang bisa membantu kami membangun kembali.`,
+                [{ text: 'Aku akan membantu...', action: openRaraWilisDialog }],
+                'images/rarawilis.png'
+            );
+        }});
+    }
+    // Lore lanjutan — fase 2+
+    if (fase >= 2) {
+        opts.push({ text: '🌿 Cerita tentang Kahyangan...', action: () => {
+            const lorePerFase = [
+                '', '',
+                `Kahyangan Wilis terbentang dari puncak Gunung Wilis hingga lembah Brantas di timur.\n\nDulu ada tiga penjuru Kahyangan:\n🌲 Hutan Wilis Utara — dijaga peri hutan\n🌸 Taman Bunga Tengah — dijaga peri bunga  \n💧 Sendang Suci Selatan — dijaga peri air\n\nSemuanya hancur terkena longsor. Kini kita membangun dari nol.\n\nWening, Sekar, dan Bening — tiga Widadari terakhir yang selamat — bersamaku hingga hari ini.`,
+                `Pohon Beringin Agung itu bukan sekadar pohon biasa.\n\nIa menyerap energi dari bumi, langit, dan hati manusia yang tulus.\n\nSelama manusia menjaga alam, Pohon itu bersinar. Saat manusia tamak, ia meredup.\n\nKini dengan bantuanmu, sinarnya mulai kembali. Para Widadari merasakan kehangatan yang sudah lama hilang.\n\nTerima kasih... benar-benar.`,
+                `Kahyangan Wilis kini bersinar kembali seperti ratusan tahun lalu.\n\nDahulu, hubungan antara manusia dan Widadari sangatlah erat. Para petani berdoa kepada peri hutan agar ladang subur. Para nelayan meminta restu peri air agar sungai Brantas melimpah.\n\nBencana longsor memutus ikatan itu. Manusia melupakan kami. Kami pun memudar.\n\nTapi kamu... kamu tidak lupa. Kamu membangun kembali jembatan antara dunia manusia dan Kahyangan.\n\nKisah ini akan dikenang para Widadari sepanjang masa.`,
+            ][fase] || `Kahyangan Wilis kini bersinar penuh! ✨\n\nTerima kasih telah memulihkan tempat suci ini.\n\nPara Widadari akan selalu menjaga alam Jawa Timur — dan mendoakanmu.`;
+            showFVDialog('RARA WILIS', lorePerFase,
+                [{ text: 'Aku mengerti...', action: openRaraWilisDialog }],
+                'images/rarawilis.png'
+            );
+        }});
+    }
+
+    // Tombol KELUAR dari Pulau Peri — selalu ada di bawah
+    opts.push({ text: '🚪 Tinggalkan Kahyangan Wilis', action: () => {
+        if (typeof closeDialogue === 'function') closeDialogue();
+        closeFairyVillage();
+    }});
+
+    showFVDialog('RARA WILIS', salamBuka, opts, 'images/rarawilis.png');
+}
+
+function openBuildMenu() {
+    fvActiveDialog=null;
+    STATE.screen = 'play'; // Pastikan screen play sebelum buka dialog baru
+    const fv=getFairyVillage(), res=fv.resources;
+    const builtBids  = new Set((fv.buildings||[]).map(b=>b.bid));
+    const queueBids  = new Set((fv.buildQueue||[]).map(b=>b.bid));
+    const freeSlots  = FAIRY_SLOTS.filter(s=>!new Set([...(fv.buildings||[]),...(fv.buildQueue||[])].map(b=>b.slotId)).has(s.id));
+
+    if (freeSlots.length===0) {
+        showFVDialog('RARA WILIS','Semua lahan sudah terisi atau sedang dibangun!\n\nTunggu konstruksi selesai untuk melanjutkan.',[{text:'Baik',action:()=>fvActiveDialog=null}]); return;
+    }
+
+    const available=Object.entries(FAIRY_BUILDINGS).filter(([bid,b])=>!b.builtIn&&!builtBids.has(bid)&&!queueBids.has(bid));
+    if (available.length===0) {
+        showFVDialog('RARA WILIS','Semua bangunan sudah ada! Kahyangan Wilis lengkap!',[{text:'Luar biasa!',action:()=>fvActiveDialog=null}]); return;
+    }
+
+    const opts=available.slice(0,5).map(([bid,b])=>{
+        const costStr=Object.entries(b.cost||{}).map(([k,v])=>`${v}${k==='debu'?'✨':k==='kristal'?'💎':'🌟'}`).join(' ');
+        const canAfford=Object.entries(b.cost||{}).every(([k,v])=>(res[k]||0)>=v);
+        return {
+            text:(canAfford?'':' 🔒')+b.emoji+' '+b.name.replace(/^[^\s]+\s/,'')+(costStr?' ['+costStr+']':'')+(canAfford?' ⏳60s':''),
+            action: canAfford
+                ? ()=>confirmBuild(bid)
+                : ()=>showFVDialog('RARA WILIS',`Resource belum cukup!\n\n${b.name} butuh: ${costStr}\n\nKumpulkan Serbuk Wilis dari Pohon Energi di selatan.`,[{text:'Mengerti',action:openBuildMenu}])
+        };
+    });
+    opts.push({text:'❌ Batal',action:()=>fvActiveDialog=null});
+    showFVDialog('RARA WILIS',`🏗️ Pilih bangunan:\n\n⏳ Setiap bangunan butuh 60 detik untuk selesai.\nBisa bangun beberapa sekaligus!`,opts,'👸');
+}
+
+function confirmBuild(bid) {
+    const fv=getFairyVillage(), b=FAIRY_BUILDINGS[bid];
+    const usedSlots=new Set([...(fv.buildings||[]),...(fv.buildQueue||[])].map(x=>x.slotId));
+    const freeSlots=FAIRY_SLOTS.filter(s=>!usedSlots.has(s.id));
+    if (freeSlots.length===0) { showFVDialog('RARA WILIS','Tidak ada lahan kosong!',[{text:'OK',action:()=>fvActiveDialog=null}]); return; }
+
+    // Kurangi resource
+    Object.entries(b.cost||{}).forEach(([k,v])=>{ fv.resources[k]=(fv.resources[k]||0)-v; });
+
+    // Pilih slot paling dekat player
+    const best=freeSlots.sort((a,z)=>Math.hypot(a.x*TS-fvPlayer.x,a.y*TS-fvPlayer.y)-Math.hypot(z.x*TS-fvPlayer.x,z.y*TS-fvPlayer.y))[0];
+    fv.buildQueue=fv.buildQueue||[];
+    fv.buildQueue.push({ slotId:best.id, bid, finishTime: Date.now()+BUILD_DURATION_MS });
+
+    updateFVHUD();
+    showFVDialog('RARA WILIS',`⏳ ${b.name} mulai dibangun!\n\nLokasi: sekitar kamu\nSelesai dalam: 60 detik\n\nKamu bisa terus jalan-jalan sambil menunggu. Aku yang mengawasi konstruksinya!`,[{text:'Terima kasih Rara!',action:()=>fvActiveDialog=null}],'👸');
+}
+
+function openQueueDialog() {
+    const fv=getFairyVillage();
+    const now=Date.now();
+    if (!fv.buildQueue||fv.buildQueue.length===0) {
+        showFVDialog('STATUS KONSTRUKSI','Tidak ada bangunan yang sedang dibangun.\n\nPerintahkan aku untuk memulai pembangunan!',[{text:'Tutup',action:()=>fvActiveDialog=null}],'👸'); return;
+    }
+    const list=fv.buildQueue.map((q,i)=>`${i+1}. ${FAIRY_BUILDINGS[q.bid]?.name||q.bid} — ${Math.max(0,Math.ceil((q.finishTime-now)/1000))}s lagi`).join('\n');
+    showFVDialog('STATUS KONSTRUKSI','🏗️ Sedang dibangun:\n\n'+list+'\n\nBangunan akan otomatis selesai setelah waktunya habis.',[{text:'Tutup',action:()=>fvActiveDialog=null}],'🏗️');
+}
+
+function openFairyListDialog() {
     const fv = getFairyVillage();
-    fv.resources[type] = (fv.resources[type]||0) + amount;
-    showToast(`Dapat ${amount} ${type==='debu'?'✨ Serbuk Wilis':type==='kristal'?'💎 Kristal':'🌟 Cahaya'}!`);
+    if (fv.fairies.length === 0) {
+        showFVDialog('RARA WILIS', 'Belum ada Widadari.\n\nBangun Padepokan Cilik atau Omah Widadari agar Widadari bisa datang!',
+            [{text:'Mengerti', action:()=>fvActiveDialog=null}], '👸');
+        return;
+    }
+    showFairyCardModal(0);
 }
 
+// ── FAIRY CARD MODAL ─────────────────────────────────────────────
+// ID 5 peri awal yang namanya tidak bisa diubah
+const FAIRY_FIXED_IDS = ['t1','t2','t3','t4','t5'];
 
-// ── TOMBOL INFO / PANDUAN ─────────────────────────────────────
-function showFairyVillageInfo() {
-    showDialogue('PANDUAN KAHYANGAN WILIS', 
-        '🧚 CARA MAIN:\n\n' +
-        '✨ SERBUK WILIS — mata uang utama. Dapatkan dari Taman & dikumpulkan tiap hari.\n\n' +
-        '💎 KRISTAL BRANTAS PERI — rare. Dapatkan dari quest Kahyangan Wilis, hadiah Rara Wilis, atau tukar Gold di Pasar Kahyangan.\n\n' +
-        '🌟 CAHAYA WILIS — sangat langka. Dari Pohon Kehidupan (Tier 4) atau event special.\n\n' +
-        '🏗️ Bangun bangunan untuk menambah kapasitas peri, produksi Debu, dan kebahagiaan.\n\n' +
-        '👶 Peri baru lahir otomatis tiap hari jika ada bangunan yang mendukung kelahiran.\n\n' +
-        '✏️ Kamu bisa ganti nama semua peri sesuai keinginan!\n\n' +
-        '⬆️ Upgrade bangunan untuk membuka tier lebih tinggi.',
-        [{ text: 'Mengerti!', action: closeDialogue }], null);
+function _fairyMoodLabel(f) {
+    const m = f.mood || (f.happiness >= 70 ? 'happy' : f.happiness >= 40 ? 'neutral' : 'sad');
+    if (m === 'happy')    return { text:'😊 Senang',    color:'#4ade80' };
+    if (m === 'neutral')  return { text:'😐 Biasa',     color:'#fbbf24' };
+    if (m === 'sad')      return { text:'😢 Sedih',     color:'#f87171' };
+    if (m === 'bad_mood') return { text:'😠 Bad Mood',  color:'#ef4444' };
+    return { text:'😊 Senang', color:'#4ade80' };
 }
 
-// ── KUMPULKAN DEBU MANUAL (bonus harian) ─────────────────────
+function _fairyImg(f) {
+    // Gambar portrait berdasarkan id atau nama peri
+    const map = {
+        't1': 'images/rarawilis.png',
+        't2': 'images/wening.png',
+        't3': 'images/sekar.png',
+        't4': 'images/bening.png',
+        't5': 'images/juna.png',
+    };
+    if (map[f.id]) return map[f.id];
+    return f.gender === 'girl' ? 'images/wening.png' : 'images/juna.png';
+}
+
+function showFairyCardModal(idx) {
+    const fv = getFairyVillage();
+    const fairies = fv.fairies;
+    if (!fairies.length) return;
+    const f = fairies[Math.max(0, Math.min(idx, fairies.length-1))];
+    const total = fairies.length;
+    const isFixed = FAIRY_FIXED_IDS.includes(f.id);
+
+    const mood = _fairyMoodLabel(f);
+    const imgSrc = _fairyImg(f);
+
+    // Stat bars helper
+    const statBar = (label, val, max, color) => {
+        const pct = Math.round((val/max)*100);
+        return `${label}: ${val}/${max} [${pct}%]`;
+    };
+
+    const intel   = f.intel   || 10;
+    const agility = f.agility || 10;
+    const spirit  = f.spirit  || 10;
+    const hp      = f.hp      || 80;
+    const maxHp   = f.maxHp   || 100;
+    const lv      = f.level   || 1;
+    const hap     = f.happiness !== undefined ? f.happiness : 80;
+
+    // Build stat bangunan — intel tinggi = lebih cepat & efisien
+    const buildBonus = intel >= 25 ? '⚡ CEPAT' : intel >= 15 ? '🔧 Normal' : '🐢 Lambat';
+    const collectBonus = spirit >= 25 ? '✨ x2 Serbuk' : spirit >= 15 ? '✨ x1.5' : '✨ x1';
+    const exploreBonus = agility >= 25 ? '🏃 Jelajah Luas' : agility >= 15 ? '🚶 Normal' : '🐌 Terbatas';
+
+    const text =
+`✦ Level ${lv}  |  ${f.gender === 'girl' ? '🧚‍♀️ Widadari' : '🧚‍♂️ Peri Pria'}\n` +
+`${mood.text}\n\n` +
+`❤️ HP: ${hp}/${maxHp}\n` +
+`😊 Kebahagiaan: ${hap}%\n\n` +
+`📊 STAT:\n` +
+`  🧠 Intelijen: ${intel}  → Konstruksi ${buildBonus}\n` +
+`  ⚡ Ketangkasan: ${agility}  → ${exploreBonus}\n` +
+`  🌟 Semangat: ${spirit}  → Koleksi ${collectBonus}\n\n` +
+`🍽️ Makan: 1 porsi/hari  |  Peri ke-${idx+1} dari ${total}`;
+
+    const opts = [];
+
+    // Navigasi
+    if (idx > 0)
+        opts.push({ text: '◀ Peri Sebelumnya', action: () => { if (typeof closeDialogue==='function') closeDialogue(); setTimeout(()=>showFairyCardModal(idx-1), 30); }});
+    if (idx < total - 1)
+        opts.push({ text: 'Peri Berikutnya ▶', action: () => { if (typeof closeDialogue==='function') closeDialogue(); setTimeout(()=>showFairyCardModal(idx+1), 30); }});
+
+    // Ubah nama — hanya untuk peri bukan 5 awal
+    if (!isFixed) {
+        opts.push({ text: '✏️ Ganti Nama', action: () => {
+            if (typeof closeDialogue==='function') closeDialogue();
+            // Gunakan prompt HTML sederhana via modal kecil
+            setTimeout(()=>{
+                const newName = window.prompt(`Ganti nama peri "${f.name}" menjadi:`, f.name);
+                if (newName && newName.trim()) {
+                    f.name = newName.trim().substring(0, 20);
+                    showToast(`✏️ Nama diubah menjadi: ${f.name}`);
+                }
+                setTimeout(()=>showFairyCardModal(idx), 100);
+            }, 100);
+        }});
+    }
+
+    // Beri makan langsung
+    opts.push({ text: `🍽️ Beri Makan (Stok: ${fv.resources.makanan||0})`, action: () => {
+        if ((fv.resources.makanan||0) >= 1) {
+            fv.resources.makanan--;
+            f.happiness = Math.min(100, (f.happiness||80)+10);
+            f.mood = f.happiness >= 70 ? 'happy' : f.happiness >= 40 ? 'neutral' : 'sad';
+            showToast(`🍽️ ${f.name} makan! Kebahagiaan: ${f.happiness}%`);
+        } else {
+            showToast('❌ Stok makanan habis!');
+        }
+        if (typeof closeDialogue==='function') closeDialogue();
+        setTimeout(()=>showFairyCardModal(idx), 30);
+    }});
+
+    // Tambah stok makanan (beli)
+    opts.push({ text: '🛒 Beli Makanan (30 Serbuk = +10 porsi)', action: () => {
+        if ((fv.resources.debu||0) >= 30) {
+            fv.resources.debu -= 30;
+            fv.resources.makanan = (fv.resources.makanan||0) + 10;
+            showToast('🛒 +10 porsi makanan dibeli!');
+        } else {
+            showToast('❌ Serbuk Wilis tidak cukup (butuh 30)!');
+        }
+        if (typeof closeDialogue==='function') closeDialogue();
+        setTimeout(()=>showFairyCardModal(idx), 30);
+    }});
+
+    opts.push({ text: '❌ Tutup', action: () => { if (typeof closeDialogue==='function') closeDialogue(); }});
+
+    showDialogue(
+        `🧚 ${f.name}  (${idx+1}/${total})`,
+        text, opts, imgSrc
+    );
+}
+
+// ─────────────────────────────────────────────────────────────
+// COLLECT DUST
+// ─────────────────────────────────────────────────────────────
 function collectFairyDust() {
-    const fv = getFairyVillage();
-    const curDay = STATE.day;
-    if (fv.lastCollectDay === curDay) { showToast('Sudah mengumpulkan Serbuk Wilis hari ini!'); return; }
-    const bonus = 5 + fv.fairies.length * 2;
-    fv.resources.debu = (fv.resources.debu || 0) + bonus;
-    fv.lastCollectDay = curDay;
-    showToast(`Mengumpulkan ✨${bonus} Serbuk Wilis dari angin lereng Wilis!`);
-    renderFairyVillageUI();
+    const fv=getFairyVillage(), curDay=STATE.day;
+    if (fv.lastCollectDay===curDay) {
+        showFVDialog('🌳 POHON ENERGI','Serbuk Wilis hari ini sudah dikumpulkan!\n\nKembali besok ya.',[{text:'OK',action:()=>fvActiveDialog=null}],'🌳'); return;
+    }
+    const bonus=5+fv.fairies.length*2+(fv.buildings?.length||0);
+    fv.resources.debu=(fv.resources.debu||0)+bonus;
+    fv.lastCollectDay=curDay;
+    updateFVHUD();
+    createFVParticles(FV_POHON_POS.x*TS+TS, FV_POHON_POS.y*TS+TS, 15);
+    showFVDialog('🌳 POHON ENERGI',`Berhasil! ✨ +${bonus} Serbuk Wilis\n\nTotal Serbuk: ${fv.resources.debu}\n\n💡 Semakin banyak Widadari dan bangunan, semakin banyak serbuk yang bisa dikumpulkan!`,[{text:'Terima kasih!',action:()=>fvActiveDialog=null}],'🌳');
 }
 
-// ── DAPATKAN KRISTAL DARI RARA WILIS (reward quest harian Kahyangan Wilis) ─
-function earnFairyKristal(amount) {
-    const fv = getFairyVillage();
-    fv.resources.kristal = (fv.resources.kristal || 0) + amount;
-    showToast(`💎 +${amount} Kristal Brantas dari Sylva!`);
+// ─────────────────────────────────────────────────────────────
+// PARTIKEL
+// ─────────────────────────────────────────────────────────────
+function createFVParticles(wx,wy,count=12) {
+    // Konversi world coords ke screen coords
+    const sx=wx-fvCam.x, sy=wy-fvCam.y;
+    for(let i=0;i<count;i++){
+        const angle=Math.random()*Math.PI*2, speed=1+Math.random()*2.5;
+        fvParticles.push({x:sx,y:sy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-1,life:45,maxLife:45,color:`hsl(${260+Math.random()*80},85%,72%)`});
+    }
 }
 
+// ─────────────────────────────────────────────────────────────
+// INPUT — Floating joystick (same as main game)
+// ─────────────────────────────────────────────────────────────
+function setupFairyInput() {
+    document.addEventListener('keydown', fvKeyDown);
+    document.addEventListener('keyup',   fvKeyUp);
+    if (fvCanvas) {
+        fvCanvas.addEventListener('click',      tapFVDialog,     false);
+        fvCanvas.addEventListener('touchstart', fvCanvasTouchStart, {passive:false});
+        fvCanvas.addEventListener('touchend',   fvCanvasTouchEnd,   {passive:false});
+    }
+    // Floating joystick — attached to the bottom bar area
+    const area = document.getElementById('fv-bottom-bar');
+    if (area) {
+        area.addEventListener('touchstart', fvJoyTouchStart, {passive:false});
+        area.addEventListener('touchmove',  fvJoyTouchMove,  {passive:false});
+        area.addEventListener('touchend',   fvJoyTouchEnd,   {passive:false});
+        area.addEventListener('mousedown',  fvJoyMouseStart);
+        document.addEventListener('mousemove', fvJoyMouseMove);
+        document.addEventListener('mouseup',   fvJoyMouseEnd);
+    }
+}
+
+function removeFairyInput() {
+    document.removeEventListener('keydown', fvKeyDown);
+    document.removeEventListener('keyup',   fvKeyUp);
+    document.removeEventListener('mousemove', fvJoyMouseMove);
+    document.removeEventListener('mouseup',   fvJoyMouseEnd);
+}
+
+function fvKeyDown(e){ fvKeys[e.key]=true; if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault(); }
+function fvKeyUp(e)  { fvKeys[e.key]=false; }
+
+function fvCanvasTouchStart(e){ e.preventDefault(); tapFVDialog(e); }
+function fvCanvasTouchEnd(e)  { e.preventDefault(); }
+
+// Floating joystick — muncul di posisi sentuhan, sama seperti main game
+function fvJoyTouchStart(e) {
+    e.preventDefault();
+    const t=e.touches[0];
+    fvJoy.startX=t.clientX; fvJoy.startY=t.clientY;
+    fvJoy.active=true; fvJoy.dx=0; fvJoy.dy=0;
+    showFVJoyVisual(t.clientX, t.clientY, 0, 0);
+}
+function fvJoyTouchMove(e) {
+    if(!fvJoy.active)return; e.preventDefault();
+    const t=e.touches[0];
+    let dx=t.clientX-fvJoy.startX, dy=t.clientY-fvJoy.startY;
+    const mag=Math.sqrt(dx*dx+dy*dy);
+    if(mag>50){dx=dx/mag*50; dy=dy/mag*50;}
+    fvJoy.dx=dx; fvJoy.dy=dy;
+    showFVJoyVisual(fvJoy.startX, fvJoy.startY, dx, dy);
+}
+function fvJoyTouchEnd(e) {
+    fvJoy.active=false; fvJoy.dx=0; fvJoy.dy=0;
+    hideFVJoyVisual();
+}
+function fvJoyMouseStart(e) {
+    fvJoy.startX=e.clientX; fvJoy.startY=e.clientY;
+    fvJoy.active=true; fvJoy.dx=0; fvJoy.dy=0;
+    showFVJoyVisual(e.clientX, e.clientY, 0, 0);
+}
+function fvJoyMouseMove(e) {
+    if(!fvJoy.active)return;
+    let dx=e.clientX-fvJoy.startX, dy=e.clientY-fvJoy.startY;
+    const mag=Math.sqrt(dx*dx+dy*dy);
+    if(mag>50){dx=dx/mag*50; dy=dy/mag*50;}
+    fvJoy.dx=dx; fvJoy.dy=dy;
+    showFVJoyVisual(fvJoy.startX, fvJoy.startY, dx, dy);
+}
+function fvJoyMouseEnd() {
+    fvJoy.active=false; fvJoy.dx=0; fvJoy.dy=0;
+    hideFVJoyVisual();
+}
+
+function showFVJoyVisual(bx,by,dx,dy){
+    const base=document.getElementById('fv-joy-base');
+    const stick=document.getElementById('fv-joy-stick');
+    if(!base||!stick)return;
+    const rect=document.getElementById('fv-bottom-bar').getBoundingClientRect();
+    base.style.display='block';
+    base.style.left=(bx-rect.left-40)+'px';
+    base.style.top=(by-rect.top-40)+'px';
+    stick.style.left=(40+dx-16)+'px';
+    stick.style.top=(40+dy-16)+'px';
+}
+function hideFVJoyVisual(){
+    const base=document.getElementById('fv-joy-base');
+    if(base) base.style.display='none';
+}
+
+// ─────────────────────────────────────────────────────────────
+// HUD
+// ─────────────────────────────────────────────────────────────
+function updateFVHUD(){
+    const fv=getFairyVillage(), stats=getFairyVillageStats(fv);
+    const g=id=>document.getElementById(id);
+    if(g('fv-hud-debu'))    g('fv-hud-debu').textContent=fv.resources.debu||0;
+    if(g('fv-hud-kristal')) g('fv-hud-kristal').textContent=fv.resources.kristal||0;
+    if(g('fv-hud-cahaya'))  g('fv-hud-cahaya').textContent=fv.resources.cahaya||0;
+    if(g('fv-hud-makanan')) g('fv-hud-makanan').textContent=fv.resources.makanan||0;
+    if(g('fv-hud-pop'))     g('fv-hud-pop').textContent=`${fv.fairies.length}/${stats.totalCap}`;
+    if(g('fv-hud-queue'))   g('fv-hud-queue').textContent=(fv.buildQueue||[]).length;
+}
+
+// ─────────────────────────────────────────────────────────────
+// TEST MODE
+// ─────────────────────────────────────────────────────────────
+function openFairyTestMode(){
+    const p=STATE.player;
+    p.sylvariaQuestComplete=true;
+    p.sylvariaQuest={stage:99,task1:true,task2:true,task3:true,task4:true};
+    if(!p.spriteIdle) selectGender(p.gender||'boy',true);
+    if(!p.name||!p.name.trim()) p.name=document.getElementById('hud-name')?.textContent?.trim()||'Arsa';
+
+    // Pastikan state bersih — jangan terhalang prologue/tutorial
+    STATE.isPrologue = false;
+    STATE.screen = 'play';
+    // Tutup semua dialog/modal yang mungkin terbuka
+    const dialogBox = document.getElementById('dialogue-wrapper');
+    if (dialogBox) dialogBox.style.display = 'none';
+
+    const fv=getFairyVillage();
+    fv.resources.debu=9999; fv.resources.kristal=99; fv.resources.cahaya=99;
+    if(!fv.fairies||fv.fairies.length===0){
+        fv.fairies=[
+            {id:'t1',name:'Rara Wilis',gender:'girl',level:5,xp:0,happiness:100,mood:'happy',intel:28,agility:22,spirit:30,hp:100,maxHp:100},
+            {id:'t2',name:'Wening',    gender:'girl',level:3,xp:0,happiness:90, mood:'happy',intel:20,agility:18,spirit:22,hp:90, maxHp:100},
+            {id:'t3',name:'Sekar',     gender:'girl',level:2,xp:0,happiness:85, mood:'happy',intel:16,agility:24,spirit:15,hp:85, maxHp:100},
+            {id:'t4',name:'Bening',    gender:'girl',level:1,xp:0,happiness:80, mood:'happy',intel:12,agility:15,spirit:18,hp:80, maxHp:100},
+            {id:'t5',name:'Juna',      gender:'boy', level:3,xp:0,happiness:88, mood:'happy',intel:18,agility:25,spirit:14,hp:88, maxHp:100},
+        ];
+        fv.resources.makanan = 50;
+    }
+    fv.tutorialDone=true;
+    showToast('🧚 TEST MODE — Masuk Kahyangan Wilis!');
+    openFairyVillage();
+}
+
+// ─────────────────────────────────────────────────────────────
+// LEGACY STUBS
+// ─────────────────────────────────────────────────────────────
+function earnFairyKristal(amount){
+    const fv=getFairyVillage();
+    fv.resources.kristal=(fv.resources.kristal||0)+amount;
+    showToast(`💎 +${amount} Kristal Brantas!`);
+}
 
         </script>
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- 🧚 FAIRY VILLAGE MODAL                                      -->
+<!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 80×50                    -->
 <!-- ═══════════════════════════════════════════════════════════ -->
-<div id="fairy-village-modal" class="minigame-overlay" style="display:none; background: radial-gradient(ellipse at top, #1a0533 0%, #0c1a0e 60%, #050d1a 100%); flex-direction:column; overflow:hidden;">
-
-    <!-- HEADER -->
-    <div style="background:rgba(0,0,0,0.4); border-bottom:2px solid rgba(167,139,250,0.4); padding:10px 14px; display:flex; align-items:center; gap:10px; flex-shrink:0;">
-        <div style="font-size:22px;">🧚</div>
-        <div>
-            <div style="font-family:'Fredoka',sans-serif; color:#e9d5ff; font-size:16px; font-weight:700; letter-spacing:1px;">KAHYANGAN WILIS</div>
-            <div style="color:#a78bfa; font-size:10px;">✨ Bangkitkan kembali Kahyangan Widadari di lereng Gunung Wilis</div>
-        </div>
-        <div style="flex:1;"></div>
-        <!-- Resources -->
-        <div style="display:flex; gap:8px; align-items:center;">
-            <div style="background:rgba(74,222,128,0.15); border:1px solid #4ade80; border-radius:8px; padding:4px 8px; text-align:center;">
-                <div style="color:#4ade80; font-size:9px; font-weight:700;">✨ SERBUK WILIS</div>
-                <div id="fv-res-debu" style="color:#fff; font-weight:700; font-size:14px;">0</div>
-            </div>
-            <div style="background:rgba(167,139,250,0.15); border:1px solid #a78bfa; border-radius:8px; padding:4px 8px; text-align:center;">
-                <div style="color:#a78bfa; font-size:9px; font-weight:700;">💎 KRISTAL BRANTAS</div>
-                <div id="fv-res-kristal" style="color:#fff; font-weight:700; font-size:14px;">0</div>
-            </div>
-            <div style="background:rgba(251,191,36,0.15); border:1px solid #fbbf24; border-radius:8px; padding:4px 8px; text-align:center;">
-                <div style="color:#fbbf24; font-size:9px; font-weight:700;">🌟 CAHAYA WILIS</div>
-                <div id="fv-res-cahaya" style="color:#fff; font-weight:700; font-size:14px;">0</div>
-            </div>
-        </div>
-        <button onclick="closeFairyVillage()" style="background:rgba(239,68,68,0.7); border:none; border-radius:8px; color:#fff; padding:6px 12px; font-size:13px; cursor:pointer; font-weight:700;">✕</button>
-    </div>
-
-    <!-- STATS BAR -->
-    <div style="background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.1); padding:6px 14px; display:flex; gap:16px; flex-shrink:0; flex-wrap:wrap;">
-        <div style="font-size:11px; color:#d1fae5;">👥 Populasi: <b id="fv-stat-pop" style="color:#4ade80;">0/1</b></div>
-        <div style="font-size:11px; color:#d1fae5;">⚗️ Produksi: <b id="fv-stat-dust" style="color:#4ade80;">+0/hari</b></div>
-        <div style="font-size:11px; color:#d1fae5;">😊 Kebahagiaan: <b id="fv-stat-happy" style="color:#f9a8d4;">0%</b></div>
-        <div style="flex:1;"></div>
-        <button onclick="showFairyVillageInfo()" style="background:rgba(167,139,250,0.2); border:1px solid #a78bfa; border-radius:6px; color:#e9d5ff; font-size:10px; padding:3px 8px; cursor:pointer;">❓ Panduan</button>
-    </div>
-
-    <!-- MAIN CONTENT — 2 KOLOM -->
-    <div style="display:flex; flex:1; overflow:hidden; gap:0;">
-
-        <!-- KIRI: PERI -->
-        <div style="width:45%; border-right:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; overflow:hidden;">
-            <div style="background:rgba(0,0,0,0.2); padding:8px 12px; font-family:'Fredoka',sans-serif; color:#fde68a; font-size:13px; font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
-                🧚‍♀️ Para Widadari
-            </div>
-            <div id="fv-fairy-list" style="flex:1; overflow-y:auto; padding:10px; -webkit-overflow-scrolling:touch;"></div>
-        </div>
-
-        <!-- KANAN: BANGUNAN -->
-        <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
-            <div style="background:rgba(0,0,0,0.2); padding:8px 12px; font-family:'Fredoka',sans-serif; color:#fde68a; font-size:13px; font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); flex-shrink:0; display:flex; justify-content:space-between; align-items:center;">
-                <span>🏗️ Bangunan Kahyangan</span>
-                <button onclick="collectFairyDust()" style="background:linear-gradient(135deg,#4ade80,#22d3ee); border:none; border-radius:8px; padding:4px 10px; font-size:10px; color:#052e16; font-weight:700; cursor:pointer;">⚗️ Kumpulkan Serbuk</button>
-            </div>
-            <div id="fv-building-list" style="flex:1; overflow-y:auto; padding:10px; -webkit-overflow-scrolling:touch;"></div>
-        </div>
-    </div>
-</div>
+<div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
 
         <!-- ONLINE NOTIFICATION POPUP -->
         <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
