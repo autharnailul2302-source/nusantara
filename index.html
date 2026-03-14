@@ -1743,29 +1743,22 @@
         #prologue-text {
             font-family: 'Cinzel', serif;
             font-size: 20px;
-            /* Ukuran font nyaman dibaca */
             line-height: 1.6;
             color: var(--secondary);
-            /* Warna Emas */
             font-style: italic;
-
-            /* UPDATE: POSISI DI BAWAH (CINEMATIC SUBTITLE STYLE) */
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-
-            /* Gradient background agar teks terbaca di atas gambar apapun */
             background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, transparent 100%);
-
             padding: 60px 40px 50px 40px;
-            /* Padding atas luas untuk fade, bawah untuk jarak aman */
             text-align: center;
             text-shadow: 0 2px 4px #000;
-
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             z-index: 1000;
+            /* FIX: jangan blokir klik tombol di atasnya */
+            pointer-events: none;
         }
 
         /* Gender Selection Screen */
@@ -2549,6 +2542,38 @@
         #skip-prologue-btn:hover {
             background: var(--secondary);
             color: #000;
+        }
+
+        #next-prologue-btn {
+            position: absolute;
+            /* FIX: naikkan dari bottom agar tidak tertutup prologue-text gradient */
+            bottom: 120px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.75);
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            padding: 10px 24px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            /* FIX: z-index lebih tinggi dari prologue-text (1002) */
+            z-index: 1002;
+            display: none;
+            backdrop-filter: blur(4px);
+            border-radius: 8px;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+            box-shadow: 0 4px 0 rgba(202,138,4,0.5);
+        }
+        #next-prologue-btn:hover {
+            background: var(--secondary);
+            color: #000;
+            transform: translateY(-2px);
+        }
+        #next-prologue-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
         }
 
         /* Start Screen (Intro after login) */
@@ -7466,6 +7491,7 @@
         <div id="prologue-screen">
             <div id="prologue-text"></div>
             <button id="skip-prologue-btn" onclick="skipPrologue()">SKIP >></button>
+            <button id="next-prologue-btn" onclick="nextPrologue()">LANJUT ▶</button>
         </div>
 
         <!-- 6. GENDER SELECTION SCREEN -->
@@ -10762,9 +10788,11 @@
                 const screen = document.getElementById('prologue-screen');
                 const textEl = document.getElementById('prologue-text');
                 const skipBtn = document.getElementById('skip-prologue-btn');
+                const nextBtn = document.getElementById('next-prologue-btn');
 
                 screen.style.display = 'flex';
-                skipBtn.style.display = 'block'; // Show skip button
+                skipBtn.style.display = 'block';
+                if (nextBtn) nextBtn.style.display = 'block'; // Tampilkan tombol LANJUT
                 STATE.screen = 'prologue';
 
                 prologueIndex = 0;
@@ -10810,7 +10838,14 @@
 
                             prologueIndex++;
 
-                            // 4. Jadwalkan baris berikutnya (5 Detik)
+                            // 4. Update tombol LANJUT dengan nomor scene
+                            const _nb = document.getElementById('next-prologue-btn');
+                            if (_nb) {
+                                const total = prologueTexts.length;
+                                _nb.textContent = prologueIndex < total ? `LANJUT ▶  ${prologueIndex}/${total}` : 'LANJUT ▶';
+                            }
+
+                            // 5. Jadwalkan baris berikutnya (5 Detik)
                             prologueTimeout = setTimeout(showNextLine, 5000);
                         };
 
@@ -10835,12 +10870,28 @@
                     }, 500); // Waktu transisi fade out text
                 }
 
+                // Expose showNextLine agar tombol LANJUT bisa memanggilnya
+                window._prologueNext = () => {
+                    if (STATE.screen !== 'prologue') return;
+                    if (prologueTimeout) clearTimeout(prologueTimeout);
+                    showNextLine();
+                };
+
                 // Mulai sequence
                 showNextLine();
             }
 
+            function nextPrologue() {
+                if (window._prologueNext) window._prologueNext();
+            }
+
             function skipPrologue() {
                 clearTimeout(prologueTimeout); // Stop animation
+                window._prologueNext = null;   // Bersihkan referensi
+
+                // Sembunyikan tombol LANJUT
+                const nextBtn = document.getElementById('next-prologue-btn');
+                if (nextBtn) nextBtn.style.display = 'none';
 
                 // Reset style background prologue agar tidak mengganggu screen lain (just in case)
                 document.getElementById('prologue-screen').style.backgroundImage = 'none';
@@ -11336,37 +11387,49 @@
                 },
 
                 getTeachers: async function () {
-                    // Cek mode terlebih dahulu atau timeout cepat
+                    // Helper dedup: hilangkan duplikat berdasarkan email
+                    const _dedup = (list) => {
+                        const seen = new Set();
+                        return list.filter(g => {
+                            const k = (g.email || '').toLowerCase().trim();
+                            if (!k || seen.has(k)) return false;
+                            seen.add(k); return true;
+                        });
+                    };
+
                     if (this.mode === 'local' || !navigator.onLine) {
                         const dbLocal = this.getDB();
-                        return Object.values(dbLocal)
-                            .filter(u => u.role === 'guru')
-                            .map(u => ({
-                                email: Object.keys(dbLocal).find(key => dbLocal[key] === u),
+                        const list = Object.entries(dbLocal)
+                            .filter(([, u]) => u.role === 'guru')
+                            .map(([guruEmail, u]) => ({
+                                email: guruEmail,
                                 name: u.name,
                                 school: u.school || 'Unknown School'
                             }));
+                        return _dedup(list);
                     } else {
                         try {
-                            // Timeout dipercepat untuk list guru (2 detik)
                             const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
                             const snapshot = await Promise.race([
                                 db.collection('artifacts').doc('nusantara-arsa').collection('users').where('role', '==', 'guru').get(),
                                 timeout
                             ]);
-
-                            return snapshot.docs.map(doc => {
+                            const list = snapshot.docs.map(doc => {
                                 const d = doc.data();
                                 return { email: doc.id, name: d.name, school: d.school || 'Unknown School' };
                             });
+                            return _dedup(list);
                         } catch (e) {
                             console.warn("Gagal fetch guru cloud, fallback local");
                             const dbLocal = this.getDB();
-                            return Object.values(dbLocal).filter(u => u.role === 'guru').map(u => ({
-                                email: Object.keys(dbLocal).find(key => dbLocal[key] === u),
-                                name: u.name,
-                                school: u.school || 'Unknown'
-                            }));
+                            const list = Object.entries(dbLocal)
+                                .filter(([, u]) => u.role === 'guru')
+                                .map(([guruEmail, u]) => ({
+                                    email: guruEmail,
+                                    name: u.name,
+                                    school: u.school || 'Unknown'
+                                }));
+                            return _dedup(list);
                         }
                     }
                 },
@@ -11892,21 +11955,31 @@
                                 .where('role', '==', 'guru').get();
                             guruList = snap.docs.map(d => ({ email: d.id, name: d.data().name, school: d.data().school || '' }));
                         }
-                        // Tambah dari lokal juga (merge, hindari duplikat)
+                        // FIX: Tambah dari lokal juga (merge, hindari duplikat)
+                        // Rename [email,u] → [guruEmail,u] agar tidak shadow variabel 'email' user luar
                         const dbLocal = DataService.getDB();
-                        Object.entries(dbLocal).filter(([,u]) => u.role === 'guru').forEach(([email, u]) => {
-                            if (!guruList.find(g => g.email === email)) {
-                                guruList.push({ email, name: u.name, school: u.school || '' });
+                        Object.entries(dbLocal).filter(([,u]) => u.role === 'guru').forEach(([guruEmail, u]) => {
+                            if (!guruList.find(g => g.email === guruEmail)) {
+                                guruList.push({ email: guruEmail, name: u.name, school: u.school || '' });
                             }
                         });
 
-                        guruList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                        // Dedup final berdasarkan email (case-insensitive)
+                        const seen = new Set();
+                        const dedupedList = guruList.filter(g => {
+                            const key = (g.email || '').toLowerCase().trim();
+                            if (seen.has(key)) return false;
+                            seen.add(key);
+                            return true;
+                        });
+
+                        dedupedList.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                         guruSelect.innerHTML = '<option value="">-- Pilih Guru Pendamping --</option>';
                         guruSelect.disabled = false;
-                        if (guruList.length === 0) {
+                        if (dedupedList.length === 0) {
                             guruSelect.innerHTML += '<option value="" disabled>⚠️ Belum ada guru terdaftar</option>';
                         } else {
-                            guruList.forEach(g => {
+                            dedupedList.forEach(g => {
                                 const opt = document.createElement('option');
                                 opt.value = g.email;
                                 const sekolah = g.school && g.school !== 'Unknown School' && g.school !== 'Unknown' ? ` — ${g.school}` : '';
@@ -11919,9 +11992,13 @@
                         guruSelect.disabled = false;
                         guruSelect.innerHTML = '<option value="">-- Pilih Guru (Offline) --</option>';
                         const dbLocal = DataService.getDB();
-                        Object.entries(dbLocal).filter(([,u]) => u.role === 'guru').forEach(([email, u]) => {
+                        // FIX: rename [email,u] → [guruEmail,u]
+                        const localSeen = new Set();
+                        Object.entries(dbLocal).filter(([,u]) => u.role === 'guru').forEach(([guruEmail, u]) => {
+                            if (localSeen.has(guruEmail)) return;
+                            localSeen.add(guruEmail);
                             const opt = document.createElement('option');
-                            opt.value = email;
+                            opt.value = guruEmail;
                             opt.textContent = u.name;
                             guruSelect.appendChild(opt);
                         });
@@ -17833,7 +17910,7 @@ ${reward.tip}`,
             // Ukuran 3× lebih besar (240×150), TANPA TEMBOK/BORDER
             // ═══════════════════════════════════════════════════════════════
             (function initFairyVillageMap() {
-                const FW = 120, FH = 75;
+                const FW = 60, FH = 40;
                 // Tile 20 = Lantai Peri (semua tile adalah lantai, TANPA border wall)
                 const tiles = new Array(FW * FH).fill(20);
                 // Tidak ada border/tembok — peta terbuka luas
@@ -18078,11 +18155,22 @@ ${reward.tip}`,
                     resize();
                     await DataService.init(true);
 
+                    // FIX: Pastikan semua layar overlay tersembunyi & canvas visible
                     document.getElementById('start-screen').classList.add('hidden');
-                    document.getElementById('ui-layer').classList.remove('hidden');
+                    ['login-screen','title-screen','prologue-screen','gender-screen'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) { el.style.display = 'none'; el.classList.add('hidden'); }
+                    });
+
+                    // FIX: Pastikan canvas & ui-layer tampil
+                    const gcCanvas = document.getElementById('gameCanvas');
+                    if (gcCanvas) gcCanvas.style.display = 'block';
+                    const uiLayer = document.getElementById('ui-layer');
+                    if (uiLayer) { uiLayer.style.display = 'flex'; uiLayer.classList.remove('hidden'); }
 
                     AudioService.stopBGM();
 
+                    // FIX: Cancel game loop lama agar tidak ada dua loop berjalan bersamaan
                     if (window.gameLoopId) {
                         cancelAnimationFrame(window.gameLoopId);
                         window.gameLoopId = null;
@@ -25275,8 +25363,10 @@ ${reward.tip}`,
                     // UPDATE: 'port' (Dermaga) juga dibuat walkable agar bisa jalan di atasnya
                     if (b.type === 'trigger' || b.id === 'port') continue;
 
-                    const bx = b.x * TILE_SIZE;
-                    const bw = b.w * TILE_SIZE;
+                    // FIX: fairy village pakai TS=28, lokasi lain pakai TILE_SIZE=30
+                    const _bTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                    const bx = b.x * _bTS;
+                    const bw = b.w * _bTS;
 
                     // CUSTOM COLLISION FOR ROCKS & BUILDINGS
 
@@ -25285,26 +25375,17 @@ ${reward.tip}`,
                     if (b.type === 'dungeon_rock') {
                         // Batu hitboxnya cuma setengah bawah (15px)
                         collisionHeight = 15;
-                        yOffset = (b.h * TILE_SIZE) - collisionHeight;
+                        yOffset = (b.h * _bTS) - collisionHeight;
                     } else {
-                        // REVISI: AGAR BISA JALAN DI BELAKANG BANGUNAN (TAPI TIDAK TEMBUS)
-                        // Hitbox hanya aktif di bagian bawah bangunan (Dinding/Kaki).
-                        // Bagian atas (Atap) tidak memiliki hitbox fisik (Walkable).
-
-                        // Logika: 
-                        // Jika bangunan tinggi (> 2 tile), hitbox hanya 1.8 tile terbawah (~54px).
-                        // Sisanya adalah atap yang bisa dilewati di belakangnya.
-                        // Jika pemain berjalan dari belakang ke depan, dia akan menabrak 'dinding belakang' hitbox ini.
-
                         const isTall = b.h > 2;
-                        const solidTiles = isTall ? 1.8 : b.h; // 1.8 tile (54px) cukup untuk memblokir, sisanya atap
+                        const solidTiles = isTall ? 1.8 : b.h;
 
-                        collisionHeight = solidTiles * TILE_SIZE;
-                        yOffset = (b.h * TILE_SIZE) - collisionHeight;
+                        collisionHeight = solidTiles * _bTS;
+                        yOffset = (b.h * _bTS) - collisionHeight;
                     }
 
                     // Koordinat hitbox absolut
-                    const hitboxY = (b.y * TILE_SIZE) + yOffset;
+                    const hitboxY = (b.y * _bTS) + yOffset;
 
                     const pw = 20;
                     const ph = 20;
@@ -36043,23 +36124,25 @@ Pilih masakan:
                 } else if (STATE.location === 'house') {
                     isBgLoaded = false; // Paksa render sistem Tile
                 } else if (STATE.location === 'fairyVillage') {
+                    // FIX: gunakan TS=28 (tile size fairy village), bukan TILE_SIZE=30
+                    const _fvTS = (typeof TS !== 'undefined') ? TS : 28;
                     // Background gradien hijau gelap
-                    const fvGrad = ctx.createLinearGradient(0, 0, 0, maps['fairyVillage'].h * TILE_SIZE);
+                    const fvGrad = ctx.createLinearGradient(0, 0, 0, maps['fairyVillage'].h * _fvTS);
                     fvGrad.addColorStop(0, '#03100a');
                     fvGrad.addColorStop(0.5, '#051508');
                     fvGrad.addColorStop(1, '#071a0c');
                     ctx.fillStyle = fvGrad;
-                    ctx.fillRect(0, 0, maps['fairyVillage'].w * TILE_SIZE, maps['fairyVillage'].h * TILE_SIZE);
+                    ctx.fillRect(0, 0, maps['fairyVillage'].w * _fvTS, maps['fairyVillage'].h * _fvTS);
 
                     // Pola grid rumput tipis
                     ctx.strokeStyle = 'rgba(20,80,30,0.3)';
                     ctx.lineWidth = 0.5;
-                    const fw = maps['fairyVillage'].w * TILE_SIZE;
-                    const fh = maps['fairyVillage'].h * TILE_SIZE;
-                    for (let gx = 0; gx <= fw; gx += TILE_SIZE) {
+                    const fw = maps['fairyVillage'].w * _fvTS;
+                    const fh = maps['fairyVillage'].h * _fvTS;
+                    for (let gx = 0; gx <= fw; gx += _fvTS) {
                         ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, fh); ctx.stroke();
                     }
-                    for (let gy = 0; gy <= fh; gy += TILE_SIZE) {
+                    for (let gy = 0; gy <= fh; gy += _fvTS) {
                         ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(fw, gy); ctx.stroke();
                     }
 
@@ -36799,13 +36882,13 @@ Pilih masakan:
 
                         // FIX: Menentukan prioritas gambar (Z-Index)
                         // Default: Urutkan berdasarkan kaki bangunan (Y + Height) agar pemain bisa tertutup saat di belakangnya
-                        let sortY = (b.y + b.h) * TILE_SIZE;
+                        // FIX: fairy village pakai TS=28
+                        const _rTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                        let sortY = (b.y + b.h) * _rTS;
 
-                        // EXCEPTION: Untuk 'port' (Dermaga) yang merupakan lantai datar/walkable,
-                        // kita set sortY ke bagian paling atas bangunan.
-                        // Ini memaksa Dermaga digambar LEBIH DULU daripada pemain, sehingga pemain terlihat BERDIRI DI ATASNYA.
+                        // EXCEPTION: Untuk 'port' (Dermaga) yang merupakan lantai datar/walkable
                         if (b.id === 'port') {
-                            sortY = (b.y * TILE_SIZE);
+                            sortY = (b.y * _rTS);
                         }
 
                         renderList.push({
@@ -37669,8 +37752,10 @@ Pilih masakan:
 
                 // FIX: Bangunan Fairy Village — render pakai emoji + warna tier
                 if (b.id && b.id.startsWith('fv_bld_')) {
-                    const bx = b.x * TILE_SIZE, by = b.y * TILE_SIZE;
-                    const bw = (b.w || 2) * TILE_SIZE, bh = (b.h || 2) * TILE_SIZE;
+                    // FIX: fairy village pakai TS=28, bukan TILE_SIZE=30
+                    const _ts = (typeof TS !== 'undefined') ? TS : 28;
+                    const bx = b.x * _ts, by = b.y * _ts;
+                    const bw = (b.w || 2) * _ts, bh = (b.h || 2) * _ts;
                     const bgColors = ['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
                     const borderColors = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
                     const tier = b._fvTier || 0;
