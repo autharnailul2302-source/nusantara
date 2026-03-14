@@ -910,7 +910,7 @@
             font-size: 13px;
             font-weight: 600;
             color: #57534e;
-            white-space: pre-wrap;
+            white-space: normal;
             overflow-y: auto;
             flex-shrink: 1;
             flex-grow: 1;
@@ -921,6 +921,8 @@
             scrollbar-width: thin;
             scrollbar-color: #d97706 transparent;
         }
+        #dialogue-text b { color: #92400e; font-weight: 800; }
+        #dialogue-text i { color: #78350f; font-style: italic; }
 
         /* Tombol Lanjut di dialogue */
         #dialogue-options .dlg-next-btn {
@@ -5178,6 +5180,166 @@
         }
 
         /* ══════════════════════════════════════════════
+           FAIRY VILLAGE TUTORIAL OVERLAY
+        ══════════════════════════════════════════════ */
+        #fv-tutorial {
+            position: fixed; inset: 0; z-index: 9800;
+            background: rgba(5,2,20,0.88);
+            display: none; align-items: flex-end; justify-content: center;
+            padding-bottom: 12px; box-sizing: border-box;
+            backdrop-filter: blur(3px);
+        }
+        #fv-tutorial.active { display: flex; }
+
+        #fv-tut-panel {
+            width: min(98vw, 520px);
+            background: linear-gradient(160deg, #140833 0%, #1e1050 55%, #0b1e3a 100%);
+            border: 2.5px solid #7c3aed;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(124,58,237,.45), 0 8px 32px rgba(0,0,0,.6);
+            overflow: hidden;
+            animation: fvTutSlide .3s cubic-bezier(.34,1.4,.64,1);
+        }
+        @keyframes fvTutSlide {
+            from { transform: translateY(60px); opacity:0; }
+            to   { transform: translateY(0);    opacity:1; }
+        }
+        #fv-tut-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 14px 8px;
+            border-bottom: 1.5px solid rgba(124,58,237,.35);
+            background: rgba(124,58,237,.12);
+        }
+        #fv-tut-avatar {
+            width: 52px; height: 66px; object-fit: contain;
+            border-radius: 10px; border: 2px solid rgba(192,132,252,.5);
+            background: rgba(255,255,255,.04); flex-shrink:0;
+        }
+        #fv-tut-head-info { flex:1; }
+        #fv-tut-speaker {
+            font-family:'Fredoka',sans-serif; font-size:15px; font-weight:700;
+            color:#e9d5ff; letter-spacing:.5px;
+        }
+        #fv-tut-step-badge {
+            display:inline-block; background:rgba(124,58,237,.3);
+            border:1px solid #7c3aed; border-radius:20px;
+            font-size:10px; color:#c4b5fd; padding:1px 10px; margin-top:2px;
+        }
+        #fv-tut-skip {
+            background: rgba(239,68,68,.2); border:1.5px solid rgba(239,68,68,.5);
+            color:#fca5a5; border-radius:20px; padding:4px 12px; font-size:11px;
+            cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; white-space:nowrap;
+        }
+        #fv-tut-body {
+            padding: 14px 16px 6px;
+            display: flex; gap: 12px; align-items: flex-start;
+        }
+        #fv-tut-icon { font-size: 32px; flex-shrink:0; line-height:1; }
+        #fv-tut-content { flex:1; }
+        #fv-tut-title {
+            font-family:'Fredoka',sans-serif; font-size:16px; color:#f0abfc;
+            font-weight:700; margin-bottom:6px; line-height:1.2;
+        }
+        #fv-tut-text {
+            font-size:12.5px; color:#cbd5e1; line-height:1.65;
+        }
+        #fv-tut-text b { color:#fde68a; }
+        #fv-tut-text .tut-tag {
+            display:inline-block; background:rgba(99,102,241,.25);
+            border:1px solid rgba(99,102,241,.5); border-radius:6px;
+            color:#a5b4fc; font-size:11px; padding:0 7px; margin:1px 2px;
+            font-weight:700;
+        }
+
+        /* Stat showcase inside tutorial */
+        .fv-tut-stats {
+            display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px;
+        }
+        .fv-tut-stat-card {
+            background:rgba(255,255,255,.06); border-radius:10px;
+            padding:7px 10px; border:1.5px solid rgba(255,255,255,.08);
+        }
+        .fv-tut-stat-card .fv-sc-label { font-size:10px; color:#94a3b8; font-weight:700; }
+        .fv-tut-stat-card .fv-sc-name  { font-size:12px; font-weight:800; margin:1px 0; }
+        .fv-tut-stat-card .fv-sc-desc  { font-size:10px; color:#94a3b8; line-height:1.4; }
+
+        /* Resource bar tutorial */
+        .fv-tut-res-row {
+            display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;
+        }
+        .fv-tut-res-chip {
+            background:rgba(255,255,255,.07); border-radius:8px;
+            border:1.5px solid rgba(255,255,255,.12);
+            padding:5px 10px; font-size:11px; font-weight:700;
+            display:flex; align-items:center; gap:5px;
+        }
+
+        #fv-tut-footer {
+            padding: 10px 14px 12px;
+            display:flex; align-items:center; gap:10px;
+        }
+        #fv-tut-dots { display:flex; gap:5px; flex:1; }
+        .fv-tut-dot {
+            width:8px; height:8px; border-radius:50%;
+            background:rgba(124,58,237,.3); border:1.5px solid rgba(124,58,237,.5);
+            transition:all .2s;
+        }
+        .fv-tut-dot.on {
+            background:#7c3aed; border-color:#c084fc;
+            box-shadow:0 0 8px #7c3aed; width:20px; border-radius:4px;
+        }
+        #fv-tut-prev {
+            background:rgba(255,255,255,.07); border:1.5px solid rgba(255,255,255,.2);
+            color:#94a3b8; border-radius:10px; padding:8px 16px;
+            font-size:13px; font-weight:700; cursor:pointer; font-family:'Nunito',sans-serif;
+        }
+        #fv-tut-prev:disabled { opacity:.3; cursor:default; }
+        #fv-tut-next {
+            background:linear-gradient(135deg,#6d28d9,#9333ea);
+            border:2px solid #c084fc; color:#fff; border-radius:10px;
+            padding:8px 20px; font-size:13px; font-weight:800;
+            cursor:pointer; font-family:'Fredoka',sans-serif;
+            box-shadow:0 4px 0 #4c1d95; transition:transform .1s;
+        }
+        #fv-tut-next:active { transform:translateY(2px); box-shadow:0 2px 0 #4c1d95; }
+
+        /* Highlight ring for tutorial — reuse tutorial-highlight but purple */
+        .fv-tut-hl {
+            box-shadow: 0 0 0 4px #c084fc, 0 0 28px #7c3aed !important;
+            z-index:9850 !important; position:relative !important;
+            animation: fvTutGlow .9s infinite alternate;
+        }
+        @keyframes fvTutGlow {
+            from { box-shadow:0 0 0 3px #c084fc, 0 0 18px #7c3aed; }
+            to   { box-shadow:0 0 0 6px #f0abfc, 0 0 40px #a855f7; }
+        }
+
+        /* Finger pointer for fairy tutorial */
+        #fv-tut-pointer {
+            position:fixed; z-index:9850; pointer-events:none;
+            display:none; flex-direction:column; align-items:center;
+        }
+        #fv-tut-ptr-label {
+            background:linear-gradient(90deg,#6d28d9,#9333ea);
+            color:#fff; padding:4px 12px; border-radius:20px;
+            font-family:'Fredoka',sans-serif; font-weight:700; font-size:13px;
+            border:2px solid #c084fc; white-space:nowrap; margin-bottom:4px;
+            box-shadow:0 4px 12px rgba(109,40,217,.5);
+            animation:fvPtrPulse .7s infinite alternate;
+        }
+        @keyframes fvPtrPulse {
+            from{transform:scale(1);opacity:.85} to{transform:scale(1.08);opacity:1}
+        }
+        #fv-tut-ptr-hand {
+            font-size:40px; animation:fvPtrBounce .55s infinite ease-in-out alternate;
+            filter:drop-shadow(0 4px 8px rgba(109,40,217,.6));
+        }
+        @keyframes fvPtrBounce {
+            from{transform:translateY(0) scale(1)}
+            to  {transform:translateY(-12px) scale(1.15)}
+        }
+
+        /* ══════════════════════════════════════════════
            FAIRY BIRTH POPUP
         ══════════════════════════════════════════════ */
         #fbp-overlay {
@@ -5223,147 +5385,180 @@
         #fbp-btn-ok:active { transform:translateY(3px); box-shadow:0 1px 0 #4c1d95; }
 
         /* ══════════════════════════════════════════════
-           KAHYANGAN MANAGEMENT MODAL
+           KAHYANGAN MANAGEMENT MODAL — seragam dengan gaya main game
         ══════════════════════════════════════════════ */
         #kh-modal {
             display:none; position:fixed; inset:0; z-index:9000;
-            background:rgba(0,0,0,.75); backdrop-filter:blur(5px);
+            background:rgba(15,5,0,.72); backdrop-filter:blur(4px);
             align-items:center; justify-content:center; padding:10px; box-sizing:border-box;
         }
         #kh-modal.open { display:flex; }
         #kh-panel {
-            background:linear-gradient(150deg,#1a0533 0%,#2a1150 55%,#0d2240 100%);
-            border:3px solid #7c3aed; border-radius:20px;
-            box-shadow:0 0 50px rgba(124,58,237,.5);
+            background: #fffbeb;
+            border: 4px solid #a16207;
+            border-radius: 20px;
+            box-shadow: 0 12px 0 rgba(66,32,6,.25), 0 0 40px rgba(161,98,7,.18);
             width:min(98vw,500px); max-height:90dvh;
             display:flex; flex-direction:column; overflow:hidden;
         }
         /* Header */
         #kh-hdr {
             display:flex; align-items:center; gap:10px;
-            padding:12px 14px 8px; border-bottom:2px solid rgba(124,58,237,.4); flex-shrink:0;
+            padding:12px 14px 10px;
+            border-bottom: 3px dashed rgba(161,98,7,.35);
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            flex-shrink:0;
         }
-        #kh-hdr h2 { flex:1; margin:0; font-family:'Fredoka',sans-serif; font-size:17px; color:#e9d5ff; letter-spacing:1px; }
+        #kh-hdr h2 {
+            flex:1; margin:0;
+            font-family:'Fredoka',sans-serif; font-size:17px;
+            color:#78350f; letter-spacing:1px; text-transform:uppercase;
+        }
         #kh-x {
-            background:rgba(239,68,68,.25); border:2px solid #ef4444; color:#fca5a5;
+            background:rgba(239,68,68,.15); border:2px solid #ef4444; color:#b91c1c;
             border-radius:50%; width:30px; height:30px; font-size:16px; cursor:pointer;
             display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            font-weight:bold;
         }
+        #kh-x:hover { background:rgba(239,68,68,.3); }
         /* Resource bar */
         #kh-res {
-            display:flex; gap:6px; padding:7px 14px; background:rgba(0,0,0,.28);
+            display:flex; gap:6px; padding:8px 14px;
+            background:rgba(161,98,7,.08);
+            border-bottom: 2px solid rgba(161,98,7,.2);
             flex-shrink:0; flex-wrap:wrap;
         }
-        .kr { background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.18);
-              border-radius:20px; padding:3px 10px; font-size:12px; font-weight:700; color:#e9d5ff; }
+        .kr {
+            background:#fff8e1; border:2px solid #d97706;
+            border-radius:20px; padding:3px 10px;
+            font-size:12px; font-weight:800; color:#78350f;
+            box-shadow: 0 2px 0 rgba(161,98,7,.2);
+        }
         /* Tabs */
-        #kh-tabs { display:flex; flex-shrink:0; border-bottom:2px solid rgba(124,58,237,.3); }
+        #kh-tabs { display:flex; flex-shrink:0; border-bottom:3px solid rgba(161,98,7,.25); background:#fffbeb; }
         .kh-tab {
             flex:1; padding:9px 4px; text-align:center;
-            font-family:'Fredoka',sans-serif; font-size:14px; font-weight:600;
-            color:#a78bfa; cursor:pointer; border:none; background:transparent;
-            border-bottom:3px solid transparent; transition:all .18s;
+            font-family:'Fredoka',sans-serif; font-size:14px; font-weight:700;
+            color:#a16207; cursor:pointer; border:none; background:transparent;
+            border-bottom:3px solid transparent; transition:all .18s; margin-bottom:-3px;
         }
-        .kh-tab.on { color:#fff; border-bottom-color:#7c3aed; background:rgba(124,58,237,.14); }
+        .kh-tab.on {
+            color:#78350f; border-bottom-color:#d97706;
+            background:rgba(217,119,6,.1);
+        }
         /* Scrollable body */
-        #kh-body { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:#7c3aed transparent; }
+        #kh-body {
+            flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+            background:#fffbeb;
+            scrollbar-width:thin; scrollbar-color:#d97706 transparent;
+        }
         /* ─── PERI TAB ─── */
         .kh-fc { padding:14px; display:flex; flex-direction:column; gap:12px; }
         .kh-prow { display:flex; gap:12px; align-items:flex-start; }
         .kh-port {
             width:88px; height:118px; object-fit:cover; object-position:top center;
-            border-radius:12px; border:3px solid #7c3aed;
-            box-shadow:0 0 16px rgba(124,58,237,.45); flex-shrink:0;
-            image-rendering:pixelated; background:rgba(0,0,0,.3);
+            border-radius:12px; border:3px solid #d97706;
+            box-shadow:0 4px 0 rgba(161,98,7,.3); flex-shrink:0;
+            image-rendering:pixelated; background:rgba(254,243,199,.5);
         }
         .kh-finfo { flex:1; display:flex; flex-direction:column; gap:4px; }
-        .kh-fname { font-family:'Fredoka',sans-serif; font-size:20px; color:#e9d5ff; font-weight:700; }
-        .kh-fsub  { font-size:12px; color:#a78bfa; font-weight:600; }
+        .kh-fname { font-family:'Fredoka',sans-serif; font-size:20px; color:#78350f; font-weight:700; }
+        .kh-fsub  { font-size:12px; color:#a16207; font-weight:600; }
         .kh-mood  { display:inline-block; padding:2px 10px; border-radius:20px; font-size:12px; font-weight:800; width:fit-content; }
-        .kh-stats { background:rgba(0,0,0,.22); border-radius:12px; padding:11px; display:flex; flex-direction:column; gap:8px; }
+        .kh-stats {
+            background:rgba(161,98,7,.07); border:2px solid rgba(161,98,7,.2);
+            border-radius:12px; padding:11px; display:flex; flex-direction:column; gap:8px;
+        }
         .kh-si { display:flex; flex-direction:column; gap:3px; }
-        .kh-slr { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#c4b5fd; }
-        .kh-sv  { color:#fff; font-size:13px; }
-        .kh-bt  { height:8px; background:rgba(255,255,255,.1); border-radius:8px; overflow:hidden; }
+        .kh-slr { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#78350f; }
+        .kh-sv  { color:#422006; font-size:13px; font-weight:800; }
+        .kh-bt  { height:8px; background:rgba(161,98,7,.15); border-radius:8px; overflow:hidden; border:1px solid rgba(161,98,7,.2); }
         .kh-bf  { height:100%; border-radius:8px; transition:width .45s ease; }
-        .kh-hint{ font-size:10px; color:#9061f9; font-weight:600; }
+        .kh-hint{ font-size:10px; color:#d97706; font-weight:700; }
         /* Peri nav */
         .kh-nav { display:flex; justify-content:space-between; align-items:center; padding:6px 14px 14px; gap:8px; }
         .kh-nb {
-            background:rgba(124,58,237,.22); border:2px solid #7c3aed; color:#e9d5ff;
+            background:#fff8e1; border:2px solid #d97706; color:#78350f;
             border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700;
             cursor:pointer; font-family:'Fredoka',sans-serif;
+            box-shadow:0 3px 0 rgba(161,98,7,.3);
         }
-        .kh-nb:disabled { opacity:.32; cursor:not-allowed; }
-        .kh-cnt { font-family:'Fredoka',sans-serif; font-size:14px; color:#a78bfa; }
+        .kh-nb:disabled { opacity:.32; cursor:not-allowed; box-shadow:none; }
+        .kh-cnt { font-family:'Fredoka',sans-serif; font-size:14px; color:#a16207; font-weight:700; }
         /* Action & food */
         .kh-ar { display:flex; gap:8px; padding:0 14px 6px; flex-wrap:wrap; }
         .kh-ab {
-            flex:1; min-width:110px; background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.2);
-            color:#e9d5ff; border-radius:10px; padding:8px; font-size:12px; font-weight:700;
+            flex:1; min-width:110px;
+            background:#fff8e1; border:2px solid #d97706;
+            color:#78350f; border-radius:10px; padding:8px;
+            font-size:12px; font-weight:700;
             cursor:pointer; font-family:'Nunito',sans-serif; text-align:center;
+            box-shadow:0 2px 0 rgba(161,98,7,.25);
         }
-        .kh-ab:hover { background:rgba(124,58,237,.28); border-color:#7c3aed; }
+        .kh-ab:hover { background:#fef3c7; border-color:#b45309; }
         .kh-fr {
             display:flex; align-items:center; justify-content:space-between;
-            background:rgba(0,0,0,.22); border-radius:10px; padding:8px 12px; margin:0 14px 6px;
-            font-size:12px; color:#e9d5ff; font-weight:700; gap:8px;
+            background:rgba(161,98,7,.08); border:2px solid rgba(161,98,7,.2);
+            border-radius:10px; padding:8px 12px; margin:0 14px 6px;
+            font-size:12px; color:#78350f; font-weight:700; gap:8px;
         }
         .kh-fb {
-            background:rgba(251,191,36,.18); border:1.5px solid #fbbf24; color:#fbbf24;
+            background:rgba(251,191,36,.2); border:2px solid #d97706; color:#78350f;
             border-radius:8px; padding:4px 10px; font-size:11px; font-weight:800;
             cursor:pointer; font-family:'Nunito',sans-serif;
+            box-shadow:0 2px 0 rgba(161,98,7,.2);
         }
         /* ─── BANGUNAN TAB ─── */
         #kh-blist { padding:12px; display:flex; flex-direction:column; gap:10px; }
-        #kh-catalog-wrap { display:none; padding:12px; display:none; flex-direction:column; gap:10px; }
+        #kh-catalog-wrap { display:none; padding:12px; flex-direction:column; gap:10px; }
         .kh-empty {
             display:flex; flex-direction:column; align-items:center; gap:12px;
             padding:30px 14px; text-align:center;
         }
         .kh-ej { font-size:52px; }
-        .kh-ep { color:#a78bfa; font-size:13px; font-weight:600; margin:0; }
+        .kh-ep { color:#a16207; font-size:13px; font-weight:600; margin:0; }
         .kh-big-btn {
-            background:linear-gradient(135deg,#7c3aed,#4f46e5); border:2px solid #a78bfa;
+            background:linear-gradient(135deg,#d97706,#b45309); border:2px solid #fff;
             color:#fff; border-radius:14px; padding:12px 24px; font-size:15px; font-weight:800;
-            cursor:pointer; font-family:'Fredoka',sans-serif; box-shadow:0 4px 0 rgba(0,0,0,.3);
+            cursor:pointer; font-family:'Fredoka',sans-serif; box-shadow:0 4px 0 rgba(66,32,6,.3);
             width:100%; box-sizing:border-box;
         }
-        .kh-sec { font-family:'Fredoka',sans-serif; font-size:13px; color:#a78bfa; font-weight:700; margin-bottom:-4px; }
+        .kh-sec { font-family:'Fredoka',sans-serif; font-size:13px; color:#a16207; font-weight:700; margin-bottom:-4px; text-transform:uppercase; letter-spacing:.5px; }
         .kh-bi {
-            background:rgba(255,255,255,.06); border:2px solid rgba(124,58,237,.35);
+            background:#fff8e1; border:2px solid rgba(161,98,7,.35);
             border-radius:12px; padding:10px 12px;
             display:flex; align-items:center; gap:10px;
         }
         .kh-be { font-size:26px; }
-        .kh-bn { font-family:'Fredoka',sans-serif; font-size:14px; color:#e9d5ff; font-weight:700; }
-        .kh-bd { font-size:11px; color:#a78bfa; margin-top:1px; }
+        .kh-bn { font-family:'Fredoka',sans-serif; font-size:14px; color:#78350f; font-weight:700; }
+        .kh-bd { font-size:11px; color:#a16207; margin-top:1px; }
         .kh-qi {
-            background:rgba(251,191,36,.1); border:2px solid rgba(251,191,36,.35);
+            background:rgba(251,191,36,.15); border:2px solid rgba(217,119,6,.4);
             border-radius:12px; padding:10px 12px;
             display:flex; align-items:center; gap:10px;
         }
-        .kh-qt { font-size:12px; color:#fbbf24; font-weight:700; }
+        .kh-qt { font-size:12px; color:#b45309; font-weight:700; }
         /* Catalog */
         .kh-ci {
-            background:rgba(255,255,255,.06); border:2px solid rgba(124,58,237,.28);
+            background:#fff8e1; border:2px solid rgba(161,98,7,.3);
             border-radius:12px; padding:11px; display:flex; align-items:center; gap:10px;
             cursor:pointer; transition:background .15s, border-color .15s;
         }
-        .kh-ci:hover:not(.lk) { background:rgba(124,58,237,.2); border-color:#7c3aed; }
+        .kh-ci:hover:not(.lk) { background:#fef3c7; border-color:#d97706; }
         .kh-ci.lk { opacity:.48; cursor:not-allowed; }
         .kh-ce { font-size:28px; }
-        .kh-cn { font-family:'Fredoka',sans-serif; font-size:14px; color:#e9d5ff; font-weight:700; }
-        .kh-cdesc { font-size:11px; color:#a78bfa; margin-top:2px; }
-        .kh-cc { font-size:11px; color:#fbbf24; font-weight:700; margin-top:3px; }
+        .kh-cn { font-family:'Fredoka',sans-serif; font-size:14px; color:#78350f; font-weight:700; }
+        .kh-cdesc { font-size:11px; color:#a16207; margin-top:2px; }
+        .kh-cc { font-size:11px; color:#b45309; font-weight:700; margin-top:3px; }
         .kh-cs { font-size:11px; font-weight:800; padding:3px 9px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
-        .kh-cs.ok   { background:rgba(74,222,128,.2); color:#4ade80; border:1px solid #4ade80; }
-        .kh-cs.no   { background:rgba(239,68,68,.15); color:#f87171; border:1px solid #f87171; }
-        .kh-cs.done { background:rgba(124,58,237,.2); color:#a78bfa; border:1px solid #7c3aed; }
+        .kh-cs.ok   { background:rgba(74,222,128,.15); color:#15803d; border:1px solid #16a34a; }
+        .kh-cs.no   { background:rgba(239,68,68,.12); color:#b91c1c; border:1px solid #ef4444; }
+        .kh-cs.done { background:rgba(217,119,6,.15); color:#b45309; border:1px solid #d97706; }
         .kh-back-btn {
-            background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.2);
-            color:#e9d5ff; border-radius:10px; padding:9px; font-size:13px; font-weight:700;
-            cursor:pointer; font-family:'Fredoka',sans-serif; text-align:center; width:100%; box-sizing:border-box;
+            background:#fff8e1; border:2px solid #d97706;
+            color:#78350f; border-radius:10px; padding:9px; font-size:13px; font-weight:700;
+            cursor:pointer; font-family:'Fredoka',sans-serif; text-align:center;
+            width:100%; box-sizing:border-box; box-shadow:0 3px 0 rgba(161,98,7,.25);
         }
 
     </style>
@@ -35257,15 +35452,27 @@ Pilih masakan:
                         ? `${title}  (${idx + 1}/${total})`
                         : title;
 
+                    // ── Helper: escape HTML lalu render **bold** dan *italic* markdown ──
+                    function renderDlgMD(raw) {
+                        return raw
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                            .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                            .replace(/\n/g, '<br>');
+                    }
+
                     // Teks halaman saat ini
-                    textEl.innerText = '';
+                    textEl.innerHTML = '';
                     const pageText = pages[idx];
+                    const pageChars = [...pageText]; // split by unicode char
                     let charIdx = 0;
                     if (box._typeTimer) clearInterval(box._typeTimer);
                     box._typeTimer = setInterval(() => {
-                        textEl.innerText += pageText[charIdx];
                         charIdx++;
-                        if (charIdx >= pageText.length) {
+                        textEl.innerHTML = renderDlgMD(pageChars.slice(0, charIdx).join(''));
+                        if (charIdx >= pageChars.length) {
                             clearInterval(box._typeTimer);
                             box._typeTimer = null;
                         }
@@ -35279,7 +35486,7 @@ Pilih masakan:
                         if (box._typeTimer) {
                             clearInterval(box._typeTimer);
                             box._typeTimer = null;
-                            textEl.innerText = pageText;
+                            textEl.innerHTML = renderDlgMD(pageText);
                         } else if (!isLast) {
                             pageIndex++;
                             renderPage(pageIndex);
@@ -35299,7 +35506,7 @@ Pilih masakan:
                             if (box._typeTimer) {
                                 clearInterval(box._typeTimer);
                                 box._typeTimer = null;
-                                textEl.innerText = pageText;
+                                textEl.innerHTML = renderDlgMD(pageText);
                             } else {
                                 pageIndex++;
                                 renderPage(pageIndex);
@@ -35329,7 +35536,7 @@ Pilih masakan:
                                     if (box._typeTimer) {
                                         clearInterval(box._typeTimer);
                                         box._typeTimer = null;
-                                        textEl.innerText = pageText;
+                                        textEl.innerHTML = renderDlgMD(pageText);
                                         return;
                                     }
                                     o.action();
@@ -43071,6 +43278,228 @@ function closeFairyBirthPopup() {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// FAIRY VILLAGE TUTORIAL — Tampil sekali saat pertama masuk
+// ═══════════════════════════════════════════════════════════════
+const FV_TUTORIAL_STEPS = [
+    {
+        icon: '✨',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Selamat Datang di Kahyangan Wilis!',
+        text: `Aku <b>Rara Wilis</b>, ratu Widadari penjaga tanah Wilis.\n\nDahulu, tempat ini dipenuhi ribuan Widadari yang menjaga keseimbangan alam. Kini hanya tersisa <b>puing-puing</b> dan sebuah Pohon Energi yang hampir padam.\n\n<b>Tugas kamu:</b> Membangun kembali Kahyangan Wilis menjadi desa peri yang makmur! 🌿`,
+        highlight: null,
+    },
+    {
+        icon: '🏠',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Apa Itu Kahyangan Wilis?',
+        text: `Kahyangan Wilis adalah <b>dunia peri</b> milikmu yang bisa kamu kembangkan.\n\nDi sini kamu bisa:\n• 🏗️ <b>Membangun</b> berbagai bangunan peri\n• 🧚 <b>Merawat</b> para Widadari\n• ✨ <b>Mengumpulkan</b> Serbuk Wilis setiap hari\n• 🥚 <b>Mendapat</b> peri baru yang lahir dari hunian\n\nSemakin berkembang desamu, semakin kuat pengaruhmu di Nusantara Arsa!`,
+        highlight: null,
+        statsBlock: [
+            { icon:'✨', color:'#fde68a', name:'Serbuk Wilis', desc:'Mata uang utama. Kumpulkan dari Pohon Energi & bangunan.' },
+            { icon:'💎', color:'#60a5fa', name:'Kristal Brantas', desc:'Langka. Untuk bangunan tier tinggi.' },
+            { icon:'🌟', color:'#e879f9', name:'Cahaya Wilis', desc:'Energi spiritual. Dihasilkan dari meditasi peri.' },
+            { icon:'🍽️', color:'#4ade80', name:'Makanan', desc:'Peri lapar = sedih. Pastikan stok cukup!' },
+        ],
+    },
+    {
+        icon: '🧠',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Stat Para Widadari',
+        text: `Setiap Widadari punya <b>3 stat utama</b> yang menentukan kemampuannya:\n\n<span class="tut-tag" style="color:#60a5fa;border-color:#60a5fa">🧠 Intelijen</span> Menentukan kecepatan konstruksi bangunan. Intel tinggi = bangun lebih cepat!\n\n<span class="tut-tag" style="color:#fbbf24;border-color:#fbbf24">⚡ Ketangkasan</span> Luas jelajah di dunia Wilis. Gesit = bisa eksplorasi lebih jauh.\n\n<span class="tut-tag" style="color:#e879f9;border-color:#e879f9">🌟 Semangat</span> Produksi Serbuk Wilis. Semangat tinggi = serbuk ×2!`,
+        highlight: null,
+    },
+    {
+        icon: '🏗️',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Cara Membangun',
+        text: `Untuk membangun, <b>dekati aku</b> lalu tekan tombol 💬 yang muncul.\n\nPilih <b>"Perintah Bangun"</b> untuk membuka katalog bangunan.\n\nSetiap bangunan butuh <b>waktu & sumber daya</b>:\n• Tier 1 (🟢) → paling mudah, butuh Serbuk Wilis\n• Tier 2 (🔵) → lebih kuat, butuh Kristal\n• Tier 3+ (🟣🟠🟡) → legendaris, syarat kompleks\n\nKamu bisa <b>upgrade</b> bangunan yang sudah ada untuk bonus lebih besar!`,
+        highlight: null,
+    },
+    {
+        icon: '🌳',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Pohon Energi — Sumber Kehidupan',
+        text: `Di <b>selatan peta</b> ada Pohon Energi yang bercahaya hijau 🌳\n\nSekali per hari, kamu bisa mengumpulkan <b>Serbuk Wilis</b> dari pohon ini.\n\n💡 <b>Bonus serbuk</b> tergantung:\n• Jumlah Widadari yang tinggal\n• Banyaknya bangunan yang aktif\n\nJangan lupa kumpulkan setiap hari! Serbuk adalah kunci semua pembangunan.`,
+        highlight: null,
+    },
+    {
+        icon: '🥚',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Kelahiran Peri Baru!',
+        text: `Bangunan <b>hunian</b> seperti Padepokan Cilik memiliki kemungkinan <b>melahirkan peri baru</b> setiap hari.\n\n🎉 Saat peri lahir:\n• Kamu akan melihat <b>popup kelahiran</b> dengan sprite unik\n• Setiap peri punya <b>stat acak</b> — bisa lemah, bisa kuat!\n• Kamu bisa <b>memberi nama</b> sebelum menyambutnya\n\n♀️ Peri perempuan: 4 tampilan berbeda\n♂️ Peri laki: 2 tampilan berbeda\n\nPeri yang lahir bisa <b>diganti namanya kapan saja</b> dari menu Para Peri.`,
+        highlight: null,
+    },
+    {
+        icon: '🧚',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Merawat Para Widadari',
+        text: `Buka menu <b>Para Peri</b> untuk melihat semua Widadari-mu.\n\nDari sana kamu bisa:\n• 🍽️ <b>Beri Makan</b> agar peri tetap bahagia\n• ✏️ <b>Ganti Nama</b> peri yang lahir\n• 📊 Lihat detail <b>stat & mood</b> setiap peri\n• 👷 <b>Tugaskan</b> peri ke bangunan sebagai pekerja\n\n⚠️ Jika stok <b>makanan habis</b>, peri mulai lapar → sedih → malas bekerja.\nBeli makanan dengan Serbuk Wilis di menu yang sama!`,
+        highlight: null,
+    },
+    {
+        icon: '🗺️',
+        speaker: 'RARA WILIS',
+        avatar: 'images/rarawilis.png',
+        title: 'Siap Membangun Kahyangan!',
+        text: `Kamu sudah siap memulai petualangan di Kahyangan Wilis! 🌟\n\n<b>Langkah pertama:</b>\n1. 🌳 Jalan ke <b>Pohon Energi</b> di selatan peta\n2. ✨ Kumpulkan <b>Serbuk Wilis</b> pertamamu\n3. 🤝 Kembali ke <b>aku (Rara Wilis)</b> di utara\n4. 🏗️ Pilih <b>"Perintah Bangun"</b> dan dirikan bangunan pertama!\n\nMinimap di pojok kanan atas membantumu navigasi 🗺️\n\n<b>Selamat membangun, Penjaga Wilis!</b> ✨`,
+        highlight: null,
+        isLast: true,
+    },
+];
+
+let _fvTutStep = 0;
+
+function startFairyVillageTutorial() {
+    _fvTutStep = 0;
+    const el = document.getElementById('fv-tutorial');
+    if (el) el.classList.add('active');
+    _fvTutRender();
+}
+
+function fvTutSkip() {
+    _fvTutClose();
+    getFairyVillage().fvTutorialDone = true;
+    showToast('📖 Tutorial dilewati. Bicara ke Rara Wilis jika butuh panduan!');
+}
+
+function fvTutGo(dir) {
+    const total = FV_TUTORIAL_STEPS.length;
+    _fvTutClearHL();
+    _fvTutStep = Math.max(0, Math.min(total - 1, _fvTutStep + dir));
+    if (dir > 0 && _fvTutStep === total - 1 && FV_TUTORIAL_STEPS[_fvTutStep].isLast) {
+        // On last step, next button becomes "Mulai!"
+    }
+    if (dir > 0 && _fvTutStep >= total) {
+        _fvTutFinish(); return;
+    }
+    _fvTutRender();
+}
+
+function _fvTutRender() {
+    const total = FV_TUTORIAL_STEPS.length;
+    const step  = FV_TUTORIAL_STEPS[_fvTutStep];
+    if (!step) return;
+
+    // Avatar
+    const av = document.getElementById('fv-tut-avatar');
+    if (av) { av.src = step.avatar || 'images/rarawilis.png'; av.style.display = step.avatar ? '' : 'none'; }
+
+    // Speaker & badge
+    const sp = document.getElementById('fv-tut-speaker');
+    if (sp) sp.textContent = step.speaker || 'RARA WILIS';
+    const bd = document.getElementById('fv-tut-step-badge');
+    if (bd) bd.textContent = `Panduan ${_fvTutStep + 1} / ${total}`;
+
+    // Icon
+    const ic = document.getElementById('fv-tut-icon');
+    if (ic) ic.textContent = step.icon || '✨';
+
+    // Title
+    const ti = document.getElementById('fv-tut-title');
+    if (ti) ti.textContent = step.title;
+
+    // Text (HTML with <b> and .tut-tag)
+    const tx = document.getElementById('fv-tut-text');
+    if (tx) {
+        let html = (step.text || '').replace(/\n/g, '<br>');
+        // Resource/stat block
+        if (step.statsBlock) {
+            html += '<div class="fv-tut-stats">';
+            step.statsBlock.forEach(s => {
+                html += `<div class="fv-tut-stat-card">
+                    <div class="fv-sc-label">${s.icon}</div>
+                    <div class="fv-sc-name" style="color:${s.color}">${s.name}</div>
+                    <div class="fv-sc-desc">${s.desc}</div>
+                </div>`;
+            });
+            html += '</div>';
+        }
+        tx.innerHTML = html;
+    }
+
+    // Dots
+    const dots = document.getElementById('fv-tut-dots');
+    if (dots) {
+        dots.innerHTML = '';
+        for (let i = 0; i < total; i++) {
+            const d = document.createElement('div');
+            d.className = 'fv-tut-dot' + (i === _fvTutStep ? ' on' : '');
+            dots.appendChild(d);
+        }
+    }
+
+    // Buttons
+    const prev = document.getElementById('fv-tut-prev');
+    const next = document.getElementById('fv-tut-next');
+    if (prev) prev.disabled = (_fvTutStep === 0);
+    if (next) {
+        const isLast = _fvTutStep === total - 1;
+        next.textContent = isLast ? '🌟 Mulai!' : 'Lanjut ▶';
+        next.onclick = isLast ? _fvTutFinish : () => fvTutGo(1);
+    }
+
+    // Highlight
+    _fvTutClearHL();
+    if (step.highlight) {
+        setTimeout(() => _fvTutHighlight(step.highlight, step.hlLabel), 200);
+    } else {
+        _fvTutHidePointer();
+    }
+}
+
+function _fvTutHighlight(elementId, label) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    el.classList.add('fv-tut-hl');
+    const ptr  = document.getElementById('fv-tut-pointer');
+    const pLbl = document.getElementById('fv-tut-ptr-label');
+    if (!ptr) return;
+    if (pLbl) pLbl.textContent = label || 'LIHAT INI';
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    ptr.style.display = 'flex';
+    ptr.style.left = (cx - 35) + 'px';
+    ptr.style.top  = (cy + rect.height / 2 + 8) + 'px';
+}
+
+function _fvTutClearHL() {
+    document.querySelectorAll('.fv-tut-hl').forEach(e => e.classList.remove('fv-tut-hl'));
+    _fvTutHidePointer();
+}
+function _fvTutHidePointer() {
+    const p = document.getElementById('fv-tut-pointer');
+    if (p) p.style.display = 'none';
+}
+
+function _fvTutClose() {
+    _fvTutClearHL();
+    const el = document.getElementById('fv-tutorial');
+    if (el) el.classList.remove('active');
+}
+
+function _fvTutFinish() {
+    _fvTutClose();
+    getFairyVillage().fvTutorialDone = true;
+    showToast('🌟 Tutorial selesai! Selamat membangun Kahyangan Wilis!');
+    // Kasih hint awal
+    setTimeout(() => {
+        showFVDialog('RARA WILIS',
+            '✨ Mulailah dengan jalan ke Pohon Energi di selatan untuk mengumpulkan Serbuk Wilis pertamamu!\n\n🗺️ Gunakan minimap di pojok kanan atas untuk navigasi.',
+            [{text:'Siap, Rara!', action:()=>{ if(typeof closeDialogue==='function') closeDialogue(); }}],
+            'images/rarawilis.png'
+        );
+    }, 500);
+}
+
 function getFairyVillageStats(fv) {
     let totalCap=0, totalDust=0, totalHappy=0, totalFood=0, dustMult=1, xpMult=1, intelBonus=0;
     (fv.buildings||[]).forEach(({bid, workers}) => {
@@ -43268,17 +43697,46 @@ function openFairyVillage() {
     // Tutup dialogue jika ada
     const _dw = document.getElementById('dialogue-wrapper');
     if (_dw) _dw.style.display = 'none';
+
+    // ── TUTORIAL PERTAMA KALI ──────────────────────────────────────
+    if (!fv.fvTutorialDone) {
+        setTimeout(() => startFairyVillageTutorial(), 600);
+    }
 }
 
 function closeFairyVillage() {
-    // Tutup dialogue jika masih terbuka
+    // 1. Tutup semua layer dialog yang mungkin aktif
+    fvActiveDialog = null;
     const dw = document.getElementById('dialogue-wrapper');
-    if (dw) dw.style.display = 'none';
-    // Kembalikan ke lokasi sebelumnya
+    if (dw) {
+        // Bersihkan typewriter timer
+        if (dw._typeTimer) { clearInterval(dw._typeTimer); dw._typeTimer = null; }
+        // Lepas tap handler
+        const box = document.getElementById('dialogue-box');
+        if (box && dw._tapHandler) {
+            box.removeEventListener('click', dw._tapHandler);
+            dw._tapHandler = null;
+        }
+        dw.style.display = 'none';
+    }
+    // 2. Tutup kh-modal jika terbuka
+    const khm = document.getElementById('kh-modal');
+    if (khm) khm.classList.remove('open');
+    // 3. Tutup tutorial jika aktif
+    const tut = document.getElementById('fv-tutorial');
+    if (tut) tut.classList.remove('active');
+    // 4. Bersihkan highlight tutorial
+    document.querySelectorAll('.fv-tut-hl').forEach(e => e.classList.remove('fv-tut-hl'));
+    const ptr = document.getElementById('fv-tut-pointer');
+    if (ptr) ptr.style.display = 'none';
+    // 5. Reset STATE
+    STATE.screen = 'play';
+    // 6. Kembalikan ke lokasi sebelumnya
     STATE.location = window._fvPrevLocation || 'village';
     STATE.player.x  = window._fvPrevX !== undefined ? window._fvPrevX : 1200;
     STATE.player.y  = window._fvPrevY !== undefined ? window._fvPrevY : 600;
-    STATE.screen = 'play';
+    // 7. Reset input agar tidak ada tombol tertahan
+    if (typeof resetInputs === 'function') resetInputs();
     manualSave();
     showToast('🏝️ Kembali ke Pulau Arsa');
 }
@@ -43299,16 +43757,9 @@ function initFairyWorld() {
     fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
 
     const fv = getFairyVillage();
+    // Tutorial lama (2 pesan singkat) dinonaktifkan — digantikan tutorial baru yang lebih lengkap
     if (!fv.tutorialDone) {
-        setTimeout(()=> showFVDialog('RARA WILIS',
-            '✨ Selamat datang di Kahyangan Wilis!\n\nDahulu tempat ini penuh cahaya dan ribuan Widadari.\nKini... hanya hamparan tanah dan satu pohon energi yang tersisa.\n\nAku membutuhkan bantuanmu untuk membangunnya kembali!',
-            [{text:'Aku siap!', action:()=>{ fvActiveDialog=null;
-                setTimeout(()=> showFVDialog('RARA WILIS',
-                    '🌳 LANGKAH 1: Kumpulkan Serbuk Wilis\n→ Jalan ke Pohon Energi di selatan peta\n→ Tekan tombol ✨ saat sudah dekat\n\n🏗️ LANGKAH 2: Perintahkan Pembangunan\n→ Kembali ke aku (Rara Wilis)\n→ Tekan 💬 lalu pilih "Perintah Bangun"\n\n⏳ Setiap bangunan butuh WAKTU — seperti dunia nyata!',
-                    [{text:'Ayo mulai!', action:()=>{ fvActiveDialog=null; fv.tutorialDone=true; }}]
-                ), 200);
-            }}]
-        ), 400);
+        fv.tutorialDone = true; // langsung mark agar tidak muncul, tutorial baru yang akan jalan
     }
 
     setupFairyInput();
@@ -43938,8 +44389,9 @@ function openRaraWilisDialog() {
         }});
     }
     opts.push({ text: '🚪 Tinggalkan Kahyangan', action: () => {
+        // Tutup dialogue wrapper dulu baru close fairy village
         if (typeof closeDialogue === 'function') closeDialogue();
-        closeFairyVillage();
+        setTimeout(() => closeFairyVillage(), 40);
     }});
 
     showFVDialog('RARA WILIS', salamBuka, opts, 'images/rarawilis.png');
@@ -44013,13 +44465,13 @@ function _khMoodHTML(f) {
     const h = f.happiness ?? 80;
     const m = f.mood || (h>=70?'happy':h>=40?'neutral':h>=20?'sad':'bad_mood');
     const D = {
-        happy:    ['😊 Senang',   'rgba(74,222,128,.25)', '#4ade80'],
-        neutral:  ['😐 Biasa',    'rgba(251,191,36,.2)',  '#fbbf24'],
-        sad:      ['😢 Sedih',    'rgba(248,113,113,.2)', '#f87171'],
-        bad_mood: ['😠 Bad Mood', 'rgba(239,68,68,.28)',  '#ef4444'],
+        happy:    ['😊 Senang',   'rgba(22,163,74,.12)',  '#15803d'],
+        neutral:  ['😐 Biasa',    'rgba(217,119,6,.15)',  '#b45309'],
+        sad:      ['😢 Sedih',    'rgba(59,130,246,.12)', '#1d4ed8'],
+        bad_mood: ['😠 Bad Mood', 'rgba(239,68,68,.12)',  '#b91c1c'],
     };
     const [label, bg, col] = D[m] || D.happy;
-    return `<span class="kh-mood" style="background:${bg};color:${col};border:1px solid ${col}">${label}</span>`;
+    return `<span class="kh-mood" style="background:${bg};color:${col};border:1.5px solid ${col}">${label}</span>`;
 }
 function _khBar(pct, col) {
     return `<div class="kh-bt"><div class="kh-bf" style="width:${Math.min(100,Math.round(pct))}%;background:${col}"></div></div>`;
@@ -44625,6 +45077,7 @@ function openFairyTestMode(){
     ];
     fv.buildQueue = [];
     fv.tutorialDone = true;
+    fv.fvTutorialDone = true; // skip tutorial di test mode
     refreshFairyVillageMap();
     showToast('🧚 TEST MODE — Masuk Kahyangan Wilis!');
     openFairyVillage();
@@ -44644,6 +45097,37 @@ function earnFairyKristal(amount){
 <!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 80×50                    -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
+
+        <!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
+        <div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
+            <div id="fv-tut-panel">
+                <div id="fv-tut-header">
+                    <img id="fv-tut-avatar" src="images/rarawilis.png" alt="Rara Wilis" onerror="this.src=''">
+                    <div id="fv-tut-head-info">
+                        <div id="fv-tut-speaker">RARA WILIS</div>
+                        <div id="fv-tut-step-badge">Panduan 1 / 8</div>
+                    </div>
+                    <button id="fv-tut-skip" onclick="fvTutSkip()">Lewati ✕</button>
+                </div>
+                <div id="fv-tut-body">
+                    <div id="fv-tut-icon">✨</div>
+                    <div id="fv-tut-content">
+                        <div id="fv-tut-title">Selamat Datang!</div>
+                        <div id="fv-tut-text">Memuat panduan...</div>
+                    </div>
+                </div>
+                <div id="fv-tut-footer">
+                    <div id="fv-tut-dots"></div>
+                    <button id="fv-tut-prev" onclick="fvTutGo(-1)" disabled>◀ Kembali</button>
+                    <button id="fv-tut-next" onclick="fvTutGo(1)">Lanjut ▶</button>
+                </div>
+            </div>
+        </div>
+        <!-- Finger pointer for fairy tutorial -->
+        <div id="fv-tut-pointer">
+            <div id="fv-tut-ptr-label">LIHAT INI</div>
+            <div id="fv-tut-ptr-hand">👆</div>
+        </div>
 
         <!-- ONLINE NOTIFICATION POPUP -->
         <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
