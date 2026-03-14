@@ -11731,14 +11731,52 @@
 
                     // Cek role mismatch (siswa login di tab guru atau sebaliknya)
                     if (userData.role !== role && userData.role !== 'admin') {
-                        const roleLabel = { siswa: 'Siswa', guru: 'Guru', admin: 'Admin' };
-                        const correctRole = roleLabel[userData.role] || userData.role;
-                        const usedRole = roleLabel[role] || role;
-                        msgEl.style.color = '#ef4444';
-                        msgEl.innerText = `❌ SALAH AKUN! Akun ini terdaftar sebagai ${correctRole}, bukan ${usedRole}. Silakan login di tab yang sesuai.`;
-                        // Reset Google sign-in state agar bisa coba lagi
-                        try { if (firebase && firebase.auth) await firebase.auth().signOut(); } catch(e) {}
-                        return; // HENTIKAN login, jangan lanjut ke game
+                        // FIX: Sebelum blokir, verifikasi ke Firestore dulu
+                        // Data lokal mungkin stale (sisa daftar sebelumnya yang gagal/dibatalkan)
+                        let cloudRole = null;
+                        if (db) {
+                            try {
+                                msgEl.innerText = '⏳ Memverifikasi data ke server...';
+                                const verifyDoc = await db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(email).get();
+                                if (verifyDoc.exists) {
+                                    cloudRole = verifyDoc.data().role;
+                                } else {
+                                    // Tidak ada di cloud sama sekali — data lokal adalah stale
+                                    // Hapus data lokal stale dan anggap user baru
+                                    delete dbLocal[email];
+                                    DataService.saveDB(dbLocal);
+                                    userData = null;
+                                    msgEl.style.color = '#4ade80';
+                                    msgEl.innerText = '✅ Akun Google terdeteksi! Lengkapi data dulu.';
+                                    showGoogleRegisterForm(role, email, displayName, photoURL);
+                                    return;
+                                }
+                            } catch(e) { console.warn('Verifikasi cloud gagal:', e); }
+                        }
+                        // Jika di cloud role-nya sama dengan yang dipilih, update lokal dan lanjut
+                        if (cloudRole === role) {
+                            userData = (await db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(email).get()).data();
+                            dbLocal[email] = userData;
+                            DataService.saveDB(dbLocal);
+                        } else if (cloudRole && cloudRole !== role) {
+                            // Cloud juga konfirmasi role berbeda — ini memang salah tab
+                            const roleLabel = { siswa: 'Siswa', guru: 'Guru', admin: 'Admin' };
+                            const correctRole = roleLabel[cloudRole] || cloudRole;
+                            const usedRole = roleLabel[role] || role;
+                            msgEl.style.color = '#ef4444';
+                            msgEl.innerText = `❌ SALAH AKUN! Akun ini terdaftar sebagai ${correctRole}, bukan ${usedRole}. Silakan login di tab yang sesuai.`;
+                            try { if (firebase && firebase.auth) await firebase.auth().signOut(); } catch(e) {}
+                            return;
+                        } else {
+                            // Tidak ada internet / cloud tidak bisa dicek — gunakan data lokal
+                            const roleLabel = { siswa: 'Siswa', guru: 'Guru', admin: 'Admin' };
+                            const correctRole = roleLabel[userData.role] || userData.role;
+                            const usedRole = roleLabel[role] || role;
+                            msgEl.style.color = '#ef4444';
+                            msgEl.innerText = `❌ SALAH AKUN! Akun ini terdaftar sebagai ${correctRole}, bukan ${usedRole}. Silakan login di tab yang sesuai.`;
+                            try { if (firebase && firebase.auth) await firebase.auth().signOut(); } catch(e) {}
+                            return;
+                        }
                     }
 
                     // USER LAMA — sync cloud dulu, baru masuk
@@ -11930,16 +11968,22 @@
                 dbLocal[email] = newUser;
                 DataService.saveDB(dbLocal);
 
-                // Simpan ke Firestore — path sama dengan saveGame agar muncul di monitoring
-                try {
-                    if (db) {
+                // Simpan ke Firestore — wajib agar akun muncul di dashboard admin/guru
+                if (db) {
+                    try {
                         await db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(email).set(newUser, { merge: true });
+                    } catch(e) {
+                        console.warn('Cloud sync gagal, data tersimpan lokal saja:', e);
+                        msgEl.style.color = '#fbbf24';
+                        msgEl.innerText = '⚠️ Tersimpan lokal. Sinkronisasi cloud gagal — pastikan internet stabil.';
+                        await new Promise(r => setTimeout(r, 1500));
                     }
-                } catch(e) { console.warn('Cloud sync gagal, data tersimpan lokal.'); }
+                }
 
                 localStorage.setItem(SESSION_KEY, email);
                 DataService.user = newUser;
 
+                msgEl.style.color = '#4ade80';
                 msgEl.innerText = `✅ Berhasil! Selamat datang, ${nama}!`;
 
                 setTimeout(() => {
