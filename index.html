@@ -187,6 +187,15 @@
         }
 
         /* Tombol Lanjut yang Besar agar mudah ditekan */
+
+        /* ── FV HUD BAR ── */
+        #fv-hud-bar {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+        }
+        #fv-hud-bar button:active {
+            background: rgba(239,68,68,0.45) !important;
+            transform: scale(0.96);
+        }
         .resume-btn {
             background: linear-gradient(135deg, #1e3a8a, #06b6d4);
             color: white;
@@ -5367,90 +5376,218 @@
         }
 
         /* ══════════════════════════════════════════════
-           BUILDING INTERIOR POPUP
+           BUILDING INTERIOR POPUP — REDESIGN IMMERSIVE
         ══════════════════════════════════════════════ */
         #fv-building-interior { position:fixed; inset:0; z-index:9600; display:flex; align-items:center; justify-content:center; }
-        #fvbi-overlay { position:absolute; inset:0; background:rgba(10,5,0,.65); backdrop-filter:blur(3px); }
+        #fvbi-overlay { position:absolute; inset:0; background:rgba(10,2,25,.75); backdrop-filter:blur(5px); }
         #fvbi-panel {
             position:relative; z-index:1;
-            background:#fffbeb; border:4px solid #a16207; border-radius:20px;
-            box-shadow:0 12px 0 rgba(66,32,6,.2), 0 0 40px rgba(161,98,7,.15);
-            width:min(96vw,420px); max-height:88dvh; overflow-y:auto;
+            background:linear-gradient(175deg,#1a0535 0%,#2d0a55 60%,#1a0535 100%);
+            border:3px solid rgba(167,139,250,.55);
+            border-radius:22px;
+            box-shadow:0 0 0 1px rgba(139,92,246,.2), 0 20px 60px rgba(0,0,0,.8), 0 0 80px rgba(109,40,217,.25);
+            width:min(97vw,460px); max-height:90dvh; overflow:hidden;
             display:flex; flex-direction:column; gap:0;
-            transform:scale(0.85); opacity:0;
-            transition:transform .22s cubic-bezier(.34,1.5,.64,1), opacity .18s;
+            transform:scale(0.88) translateY(20px); opacity:0;
+            transition:transform .28s cubic-bezier(.34,1.5,.64,1), opacity .22s;
             font-family:'Nunito',sans-serif;
         }
-        #fvbi-panel.fvbi-in { transform:scale(1); opacity:1; }
+        #fvbi-panel.fvbi-in { transform:scale(1) translateY(0); opacity:1; }
+
+        /* HEADER */
         #fvbi-header {
             display:flex; align-items:center; gap:10px;
-            padding:12px 14px 10px;
-            background:linear-gradient(135deg,#fef3c7,#fde68a);
-            border-bottom:3px dashed rgba(161,98,7,.3); flex-shrink:0;
+            padding:14px 16px 12px;
+            background:linear-gradient(135deg,rgba(109,40,217,.6) 0%,rgba(167,139,250,.25) 100%);
+            border-bottom:1.5px solid rgba(167,139,250,.3); flex-shrink:0;
+            position:relative;
         }
-        #fvbi-emoji { font-size:32px; line-height:1; flex-shrink:0; }
+        #fvbi-header::after {
+            content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
+            background:linear-gradient(90deg,transparent,rgba(167,139,250,.6),transparent);
+        }
+        #fvbi-emoji { font-size:34px; line-height:1; flex-shrink:0; filter:drop-shadow(0 0 8px rgba(167,139,250,.6)); }
         #fvbi-title-wrap { flex:1; }
-        #fvbi-name { font-family:'Fredoka',sans-serif; font-size:18px; color:#78350f; font-weight:700; }
-        #fvbi-tier { font-size:11px; color:#a16207; font-weight:600; margin-top:2px; }
+        #fvbi-name { font-family:'Fredoka',sans-serif; font-size:19px; color:#e9d5ff; font-weight:700; text-shadow:0 0 12px rgba(167,139,250,.5); }
+        #fvbi-tier { font-size:10px; color:#a78bfa; font-weight:600; margin-top:2px; letter-spacing:.5px; text-transform:uppercase; }
         #fvbi-close {
-            background:rgba(239,68,68,.15); border:2px solid #ef4444; color:#b91c1c;
-            border-radius:50%; width:28px; height:28px; font-size:14px;
+            background:rgba(239,68,68,.2); border:1.5px solid rgba(239,68,68,.6); color:#fca5a5;
+            border-radius:50%; width:30px; height:30px; font-size:15px;
             cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+            transition:background .15s;
         }
+        #fvbi-close:hover { background:rgba(239,68,68,.4); }
+
+        /* INTERIOR VISUAL SCENE */
+        #fvbi-scene {
+            position:relative; width:100%; height:160px; flex-shrink:0; overflow:hidden;
+            background:linear-gradient(180deg,#0f0520 0%,#1e0940 50%,#120325 100%);
+        }
+        #fvbi-scene-bg {
+            position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.55;
+        }
+        #fvbi-scene-overlay {
+            position:absolute; inset:0;
+            background:linear-gradient(180deg,transparent 40%,rgba(26,5,53,.95) 100%);
+        }
+        /* sparkle particles */
+        #fvbi-scene::before {
+            content:'✨ 💫 ⭐ ✨ 💫';
+            position:absolute; top:8px; left:0; right:0;
+            font-size:14px; text-align:center; letter-spacing:24px;
+            animation:fvbiFloat 3s ease-in-out infinite; opacity:.6;
+            pointer-events:none;
+        }
+        @keyframes fvbiFloat {
+            0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}
+        }
+        /* Peri slots di dalam scene */
+        #fvbi-fairy-row {
+            position:absolute; bottom:10px; left:0; right:0;
+            display:flex; justify-content:center; align-items:flex-end; gap:12px;
+            padding:0 16px;
+        }
+        .fvbi-fairy-slot {
+            display:flex; flex-direction:column; align-items:center; gap:3px;
+            cursor:pointer; transition:transform .18s;
+        }
+        .fvbi-fairy-slot:hover { transform:translateY(-4px) scale(1.06); }
+        .fvbi-fairy-slot-img {
+            width:52px; height:64px; object-fit:contain; border-radius:10px;
+            border:2px solid rgba(167,139,250,.7);
+            background:rgba(109,40,217,.3);
+            filter:drop-shadow(0 4px 8px rgba(139,92,246,.5));
+        }
+        .fvbi-fairy-slot-name {
+            font-family:'Fredoka',sans-serif; font-size:10px; color:#e9d5ff;
+            font-weight:700; text-align:center; text-shadow:0 1px 4px rgba(0,0,0,.8);
+            max-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        /* Slot Kosong */
+        .fvbi-fairy-slot-empty .fvbi-fairy-slot-img {
+            background:rgba(109,40,217,.12);
+            border:2px dashed rgba(167,139,250,.35);
+            display:flex; align-items:center; justify-content:center; font-size:22px;
+            filter:none;
+        }
+        .fvbi-fairy-slot-empty .fvbi-fairy-slot-name { color:#a78bfa; opacity:.7; }
+        .fvbi-fairy-slot-empty:hover .fvbi-fairy-slot-img {
+            background:rgba(109,40,217,.3);
+            border-color:rgba(167,139,250,.7);
+        }
+        /* Badge kerja */
+        .fvbi-work-badge {
+            position:absolute; top:-4px; right:-4px;
+            background:#22c55e; border:1.5px solid #fff; border-radius:50%;
+            width:14px; height:14px; font-size:8px;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .fvbi-fairy-slot { position:relative; }
+
+        /* STAT INFO BAR */
+        #fvbi-stat-bar {
+            display:flex; gap:6px; padding:10px 14px 8px; flex-wrap:wrap;
+            border-bottom:1px solid rgba(167,139,250,.2); flex-shrink:0;
+            background:rgba(109,40,217,.1);
+        }
+        .fvbi-stat-chip {
+            display:flex; align-items:center; gap:4px;
+            background:rgba(109,40,217,.22); border:1px solid rgba(167,139,250,.3);
+            border-radius:20px; padding:3px 10px;
+            font-size:11px; color:#e9d5ff; font-weight:700;
+        }
+        .fvbi-stat-chip span { font-size:12px; }
+
+        /* PRODUKSI */
         #fvbi-prod {
             padding:10px 14px 8px;
-            background:rgba(161,98,7,.06);
-            border-bottom:2px solid rgba(161,98,7,.15);
+            background:rgba(0,0,0,.2);
+            border-bottom:1px solid rgba(167,139,250,.15);
+            flex-shrink:0;
         }
         .fvbi-sec-label {
-            font-family:'Fredoka',sans-serif; font-size:12px; color:#a16207;
-            font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;
+            font-family:'Fredoka',sans-serif; font-size:11px; color:#a78bfa;
+            font-weight:700; text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px;
         }
         #fvbi-prod-tags { display:flex; flex-wrap:wrap; gap:5px; }
         .fvbi-prod-tag {
-            background:#fff8e1; border:1.5px solid #d97706; border-radius:20px;
-            padding:2px 10px; font-size:11px; color:#78350f; font-weight:700;
+            background:rgba(109,40,217,.2); border:1.5px solid rgba(167,139,250,.4); border-radius:20px;
+            padding:3px 11px; font-size:11px; color:#c4b5fd; font-weight:700;
         }
-        #fvbi-workers-section { padding:10px 14px 8px; }
+
+        /* WORKERS ASSIGN SECTION */
+        #fvbi-workers-section { padding:10px 14px 8px; overflow-y:auto; flex:1 1 auto; min-height:0; }
         #fvbi-worker-grid { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
         .fvbi-worker {
             border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:10px;
         }
         .fvbi-worker.filled {
-            background:#fff8e1; border:2px solid #d97706;
-            box-shadow:0 2px 0 rgba(161,98,7,.2);
+            background:rgba(109,40,217,.2); border:2px solid rgba(167,139,250,.5);
+            box-shadow:0 2px 0 rgba(109,40,217,.2);
         }
         .fvbi-worker.empty {
-            background:rgba(161,98,7,.05); border:2px dashed rgba(161,98,7,.3);
+            background:rgba(109,40,217,.08); border:2px dashed rgba(167,139,250,.25);
         }
         .fvbi-wimg {
-            width:44px; height:56px; object-fit:contain; border-radius:8px;
-            border:2px solid #d97706; background:rgba(254,243,199,.5); flex-shrink:0;
+            width:42px; height:54px; object-fit:contain; border-radius:8px;
+            border:2px solid rgba(167,139,250,.5); background:rgba(109,40,217,.2); flex-shrink:0;
         }
-        .fvbi-wname { font-family:'Fredoka',sans-serif; font-size:14px; color:#78350f; font-weight:700; }
-        .fvbi-wstat { font-size:11px; color:#a16207; margin-top:2px; }
+        .fvbi-winfo { flex:1; min-width:0; }
+        .fvbi-wname { font-family:'Fredoka',sans-serif; font-size:14px; color:#e9d5ff; font-weight:700; }
+        .fvbi-wstat { font-size:11px; color:#a78bfa; margin-top:2px; }
         .fvbi-wfire {
-            margin-left:auto; background:rgba(239,68,68,.12); border:1.5px solid #ef4444;
-            color:#b91c1c; border-radius:8px; padding:4px 10px; font-size:11px;
-            font-weight:700; cursor:pointer; flex-shrink:0;
+            margin-left:auto; background:rgba(239,68,68,.15); border:1.5px solid rgba(239,68,68,.5);
+            color:#fca5a5; border-radius:8px; padding:4px 10px; font-size:11px;
+            font-weight:700; cursor:pointer; flex-shrink:0; transition:background .15s;
         }
-        .fvbi-empty-ico { font-size:28px; opacity:.4; flex-shrink:0; }
-        .fvbi-empty-label { font-size:12px; color:#a16207; font-weight:600; flex-shrink:0; }
+        .fvbi-wfire:hover { background:rgba(239,68,68,.35); }
+        .fvbi-empty-ico { font-size:26px; opacity:.35; flex-shrink:0; }
+        .fvbi-empty-label { font-size:12px; color:#a78bfa; font-weight:600; flex-shrink:0; }
         .fvbi-sel {
-            flex:1; border:2px solid #d97706; border-radius:8px;
-            padding:5px 8px; font-size:12px; color:#78350f;
-            background:#fff8e1; font-family:'Nunito',sans-serif; font-weight:700;
+            flex:1; border:1.5px solid rgba(167,139,250,.5); border-radius:8px;
+            padding:5px 8px; font-size:12px; color:#e9d5ff;
+            background:rgba(30,9,80,.8); font-family:'Nunito',sans-serif; font-weight:700;
         }
         .fvbi-wassign {
-            background:linear-gradient(135deg,#d97706,#b45309); border:2px solid #fff;
+            background:linear-gradient(135deg,#7c3aed,#6d28d9); border:2px solid rgba(167,139,250,.5);
             color:#fff; border-radius:8px; padding:5px 12px; font-size:12px;
             font-weight:800; cursor:pointer; flex-shrink:0; font-family:'Fredoka',sans-serif;
-            box-shadow:0 2px 0 rgba(66,32,6,.25);
+            box-shadow:0 2px 0 rgba(109,40,217,.4); transition:background .15s;
         }
-        .fvbi-wassign:disabled { opacity:.4; cursor:not-allowed; }
+        .fvbi-wassign:hover { background:linear-gradient(135deg,#8b5cf6,#7c3aed); }
+        .fvbi-wassign:disabled { opacity:.35; cursor:not-allowed; }
+
+        /* Assign dari klik slot scene */
+        #fvbi-assign-modal {
+            position:absolute; inset:0; z-index:2;
+            background:rgba(10,2,25,.92); backdrop-filter:blur(4px);
+            display:none; flex-direction:column; align-items:center; justify-content:center;
+            padding:16px; gap:10px;
+        }
+        #fvbi-assign-modal.open { display:flex; }
+        #fvbi-assign-title { font-family:'Fredoka',sans-serif; font-size:15px; color:#e9d5ff; font-weight:700; text-align:center; }
+        #fvbi-assign-list { width:100%; display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto; }
+        .fvbi-assign-item {
+            display:flex; align-items:center; gap:10px;
+            background:rgba(109,40,217,.2); border:1.5px solid rgba(167,139,250,.35);
+            border-radius:12px; padding:8px 12px; cursor:pointer; transition:background .15s;
+        }
+        .fvbi-assign-item:hover { background:rgba(109,40,217,.45); border-color:rgba(167,139,250,.7); }
+        .fvbi-assign-item img { width:34px; height:44px; object-fit:contain; border-radius:6px; background:rgba(109,40,217,.3); border:1.5px solid rgba(167,139,250,.4); }
+        .fvbi-assign-item-info { flex:1; }
+        .fvbi-assign-item-name { font-family:'Fredoka',sans-serif; font-size:13px; color:#e9d5ff; font-weight:700; }
+        .fvbi-assign-item-stat { font-size:10px; color:#a78bfa; margin-top:1px; }
+        .fvbi-assign-cancel {
+            background:rgba(239,68,68,.15); border:1.5px solid rgba(239,68,68,.4);
+            color:#fca5a5; border-radius:10px; padding:7px 20px; font-size:12px;
+            font-weight:700; cursor:pointer; font-family:'Fredoka',sans-serif;
+        }
+        .fvbi-assign-empty { font-size:12px; color:#a78bfa; text-align:center; padding:12px; }
+
         #fvbi-desc {
-            padding:8px 14px 14px; font-size:11px; color:#92400e;
-            font-style:italic; border-top:2px dashed rgba(161,98,7,.2);
+            padding:8px 14px 14px; font-size:11px; color:#a78bfa;
+            font-style:italic; border-top:1px dashed rgba(167,139,250,.2); flex-shrink:0;
+            background:rgba(0,0,0,.15);
         }
 
         /* ══════════════════════════════════════════════
@@ -17925,7 +18062,7 @@ ${reward.tip}`,
                         {
                             id: 'rara_wilis',
                             name: 'Rara Wilis',
-                            x: 57, y: 4,
+                            x: 2, y: 2,
                             w: 38, h: 58,
                             imgSrc: 'images/rarawilis.png',
                             sprite: 'images/rarawilis.png',
@@ -17937,7 +18074,7 @@ ${reward.tip}`,
                         {
                             id: 'pohon_energi',
                             name: 'Pohon Energi',
-                            x: 57, y: 58,
+                            x: 28, y: 33,
                             w: 38, h: 58,
                             imgSrc: 'images/pohonperi.png',
                             sprite: 'images/pohonperi.png',
@@ -17949,42 +18086,46 @@ ${reward.tip}`,
                         {
                             id: 'fv_wening',
                             name: 'Wening',
-                            x: 44, y: 14,
+                            x: 15, y: 10,
                             w: 38, h: 58,
                             imgSrc: 'images/wening.png',
                             sprite: 'images/wening.png',
-                            type: 'wander', vx: 0.4, vy: 0,
-                            schedule: 'always', noNameTag: true
+                            type: 'wander', vx: 0.3, vy: 0.15,
+                            schedule: 'always', noNameTag: true,
+                            solid: true
                         },
                         {
                             id: 'fv_sekar',
                             name: 'Sekar',
-                            x: 68, y: 14,
+                            x: 45, y: 8,
                             w: 38, h: 58,
                             imgSrc: 'images/sekar.png',
                             sprite: 'images/sekar.png',
-                            type: 'wander', vx: -0.4, vy: 0,
-                            schedule: 'always', noNameTag: true
+                            type: 'wander', vx: -0.3, vy: 0.15,
+                            schedule: 'always', noNameTag: true,
+                            solid: true
                         },
                         {
                             id: 'fv_bening',
                             name: 'Bening',
-                            x: 57, y: 22,
+                            x: 55, y: 2,
                             w: 38, h: 58,
                             imgSrc: 'images/bening.png',
                             sprite: 'images/bening.png',
-                            type: 'static',
-                            schedule: 'always', noNameTag: true
+                            type: 'wander', vx: 0.0, vy: 0.2,
+                            schedule: 'always', noNameTag: true,
+                            solid: true
                         },
                         {
                             id: 'fv_juna',
                             name: 'Juna',
-                            x: 50, y: 30,
+                            x: 30, y: 18,
                             w: 38, h: 58,
                             imgSrc: 'images/juna.png',
                             sprite: 'images/juna.png',
-                            type: 'wander', vx: 0.3, vy: 0.3,
-                            schedule: 'always', noNameTag: true
+                            type: 'wander', vx: 0.25, vy: 0.25,
+                            schedule: 'always', noNameTag: true,
+                            solid: true
                         }
                     ]
                 };
@@ -36124,38 +36265,30 @@ Pilih masakan:
                 } else if (STATE.location === 'house') {
                     isBgLoaded = false; // Paksa render sistem Tile
                 } else if (STATE.location === 'fairyVillage') {
-                    // FIX: gunakan TS=28 (tile size fairy village), bukan TILE_SIZE=30
                     const _fvTS = (typeof TS !== 'undefined') ? TS : 28;
-                    // Background gradien hijau gelap
-                    const fvGrad = ctx.createLinearGradient(0, 0, 0, maps['fairyVillage'].h * _fvTS);
-                    fvGrad.addColorStop(0, '#03100a');
-                    fvGrad.addColorStop(0.5, '#051508');
-                    fvGrad.addColorStop(1, '#071a0c');
-                    ctx.fillStyle = fvGrad;
-                    ctx.fillRect(0, 0, maps['fairyVillage'].w * _fvTS, maps['fairyVillage'].h * _fvTS);
-
-                    // Pola grid rumput tipis
-                    ctx.strokeStyle = 'rgba(20,80,30,0.3)';
-                    ctx.lineWidth = 0.5;
-                    const fw = maps['fairyVillage'].w * _fvTS;
-                    const fh = maps['fairyVillage'].h * _fvTS;
-                    for (let gx = 0; gx <= fw; gx += _fvTS) {
-                        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, fh); ctx.stroke();
+                    const _fvW  = maps['fairyVillage'].w * _fvTS;
+                    const _fvH  = maps['fairyVillage'].h * _fvTS;
+                    // Coba pakai images/kayangan.png sebagai background
+                    if (typeof fvBgImage !== 'undefined' && fvBgImage && fvBgImage.complete && fvBgImage.naturalWidth > 0) {
+                        const bw = fvBgImage.naturalWidth, bh = fvBgImage.naturalHeight;
+                        for (let _tx = 0; _tx < _fvW; _tx += bw) {
+                            for (let _ty = 0; _ty < _fvH; _ty += bh) {
+                                ctx.drawImage(fvBgImage, _tx, _ty, bw, bh);
+                            }
+                        }
+                    } else {
+                        // Fallback gradient ungu gelap
+                        const fvGrad = ctx.createLinearGradient(0, 0, 0, _fvH);
+                        fvGrad.addColorStop(0, '#0c0620'); fvGrad.addColorStop(1, '#1a0e35');
+                        ctx.fillStyle = fvGrad;
+                        ctx.fillRect(0, 0, _fvW, _fvH);
                     }
-                    for (let gy = 0; gy <= fh; gy += _fvTS) {
-                        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(fw, gy); ctx.stroke();
+                    // Overlay siang/malam
+                    if (typeof getFVTimeOfDay === 'function') {
+                        const _ovMap = { pagi:'rgba(255,220,100,0.10)', siang:'rgba(255,255,200,0.06)', sore:'rgba(255,150,60,0.15)', senja:'rgba(180,60,60,0.18)', malam:'rgba(5,0,30,0.48)' };
+                        ctx.fillStyle = _ovMap[getFVTimeOfDay()] || 'rgba(5,0,30,0.48)';
+                        ctx.fillRect(0, 0, _fvW, _fvH);
                     }
-
-                    // Bintik cahaya peri random (partikel statis)
-                    const seed = 42;
-                    ctx.fillStyle = 'rgba(200,255,200,0.15)';
-                    for (let pi = 0; pi < 80; pi++) {
-                        const px2 = ((pi * 173 + seed * 31) % fw);
-                        const py2 = ((pi * 97 + seed * 19) % fh);
-                        const ps = 1 + (pi % 3);
-                        ctx.beginPath(); ctx.arc(px2, py2, ps, 0, Math.PI*2); ctx.fill();
-                    }
-
                     isBgLoaded = true;
                 }
 
@@ -36966,24 +37099,37 @@ Pilih masakan:
                 });
 
 
-                // ── Overlay Kahyangan Wilis ──
+                // ── Overlay Kahyangan Wilis — update HTML HUD bar ──
                 if (STATE.location === 'fairyVillage') {
-                    ctx.save();
-                    // Banner atas
-                    ctx.fillStyle = 'rgba(60,10,100,0.82)';
-                    ctx.fillRect(0, 0, GAME_WIDTH, 18);
-                    ctx.font = 'bold 10px Fredoka, sans-serif';
-                    ctx.fillStyle = '#e9d5ff';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('✨ KAHYANGAN WILIS', 8, 13);
-                    // Sumber daya di pojok kanan banner
-                    const fvRes = (STATE.player.fairyVillage || {resources:{}}).resources || {};
-                    ctx.textAlign = 'right';
-                    ctx.font = '8px Fredoka, sans-serif';
-                    ctx.fillStyle = '#a7f3d0';
-                    ctx.fillText('✨'+( fvRes.debu||0)+' 💎'+(fvRes.kristal||0)+' 🌟'+(fvRes.cahaya||0), GAME_WIDTH-6, 13);
-                    ctx.textAlign = 'left';
-                    ctx.restore();
+                    // Sembunyikan main HUD player, tampilkan fv-hud-bar
+                    const _mainHud = document.getElementById('main-hud');
+                    const _fvBar   = document.getElementById('fv-hud-bar');
+                    if (_mainHud) _mainHud.style.display = 'none';
+                    if (_fvBar) {
+                        _fvBar.style.display = 'flex';
+                        const _fvRes = (STATE.player.fairyVillage||{resources:{}}).resources||{};
+                        const _fvFv  = STATE.player.fairyVillage||{};
+                        const _fvCap = typeof getFairyVillageStats==='function' ? getFairyVillageStats(_fvFv).totalCap : '?';
+                        const el = id => document.getElementById(id);
+                        if(el('fvbar-debu'))    el('fvbar-debu').textContent    = _fvRes.debu    || 0;
+                        if(el('fvbar-kristal')) el('fvbar-kristal').textContent = _fvRes.kristal || 0;
+                        if(el('fvbar-cahaya'))  el('fvbar-cahaya').textContent  = _fvRes.cahaya  || 0;
+                        if(el('fvbar-makanan')) el('fvbar-makanan').textContent = _fvRes.makanan || 0;
+                        if(el('fvbar-pop'))     el('fvbar-pop').textContent     = `${(_fvFv.fairies||[]).length}/${_fvCap}`;
+                        // Update time+season label
+                        if(el('fvbar-time-label') && typeof getFVTimeOfDay==='function') {
+                            const _tod2 = getFVTimeOfDay();
+                            const _sea2 = getFVSeason();
+                            const _todIco = {pagi:'🌅',siang:'☀️',sore:'🌤️',senja:'🌇',malam:'🌙'};
+                            el('fvbar-time-label').textContent = (_todIco[_tod2]||'🌙')+' '+(_tod2.charAt(0).toUpperCase()+_tod2.slice(1))+'  |  '+_sea2.label;
+                        }
+                    }
+                } else {
+                    // Kembali ke lokasi lain — tampilkan main HUD, sembunyikan fv-hud-bar
+                    const _mainHud = document.getElementById('main-hud');
+                    const _fvBar   = document.getElementById('fv-hud-bar');
+                    if (_mainHud && _mainHud.style.display === 'none') _mainHud.style.display = '';
+                    if (_fvBar)   _fvBar.style.display = 'none';
                 }
 
                 if (STATE.location === 'village') {
@@ -43534,8 +43680,8 @@ const FAIRY_SLOTS = [
 ];
 
 // Posisi NPC & objek penting — proporsional
-const FV_RARA_POS  = { x:28, y:2  };   // Rara Wilis — tengah-atas
-const FV_POHON_POS = { x:28, y:32 };   // Pohon Energi — tengah-bawah
+const FV_RARA_POS  = { x:2,  y:2  };   // Rara Wilis — pojok kiri atas
+const FV_POHON_POS = { x:28, y:33 };   // Pohon Energi — tengah-bawah
 // Pohon dekoratif pinggir peta
 const FV_DECO_TREES = [
     {x:2,y:2},{x:10,y:1},{x:20,y:1},{x:40,y:1},{x:50,y:2},{x:57,y:2},
@@ -43554,6 +43700,83 @@ let fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
 let fvLastTime = 0;
 let fvParticles = [];
 let fvSpriteCache = {}; // Cache sprite image untuk peri wandering
+
+// ── KAHYANGAN: Background Image ────────────────────────────────
+let fvBgImage = null;
+(function(){
+    fvBgImage = new Image();
+    fvBgImage.src = 'images/kayangan.png';
+})();
+
+// ── KAHYANGAN: Siang/Malam & Musim ─────────────────────────────
+function getFVTimeOfDay() {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12)  return 'pagi';
+    if (h >= 12 && h < 15) return 'siang';
+    if (h >= 15 && h < 18) return 'sore';
+    if (h >= 18 && h < 20) return 'senja';
+    return 'malam';
+}
+function isFVNight() {
+    const h = new Date().getHours();
+    return h >= 20 || h < 5;
+}
+function getFVSeason() {
+    const m = new Date().getMonth(); // 0-11
+    if (m >= 2 && m <= 4)  return { id:'semi',    label:'Musim Semi 🌸',   color:'#f9a8d4' };
+    if (m >= 5 && m <= 7)  return { id:'panas',   label:'Musim Panas ☀️',  color:'#fde68a' };
+    if (m >= 8 && m <= 10) return { id:'gugur',   label:'Musim Gugur 🍂',  color:'#fb923c' };
+    return                          { id:'dingin', label:'Musim Dingin ❄️', color:'#bae6fd' };
+}
+
+// ── KAHYANGAN: Kunang-kunang (Fireflies) ────────────────────────
+let fvFireflies = [];
+function initFVFireflies(W, H) {
+    if (fvFireflies.length > 0) return;
+    for (let i = 0; i < 35; i++) {
+        fvFireflies.push({
+            x: Math.random() * (FW * TS),
+            y: Math.random() * (FH * TS),
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.4 + Math.random() * 0.6,
+        });
+    }
+}
+function updateFVFireflies() {
+    fvFireflies.forEach(f => {
+        f.x += f.vx + Math.sin(performance.now()/2000 + f.phase) * 0.3;
+        f.y += f.vy + Math.cos(performance.now()/1800 + f.phase) * 0.25;
+        if (f.x < 0) f.x = FW * TS;
+        if (f.x > FW * TS) f.x = 0;
+        if (f.y < 0) f.y = FH * TS;
+        if (f.y > FH * TS) f.y = 0;
+    });
+}
+function drawFVFireflies(ctx, t) {
+    fvFireflies.forEach((f, i) => {
+        const pulse = 0.4 + 0.6 * Math.sin(t / 600 + f.phase);
+        const r = 2 + pulse * 1.5;
+        ctx.save();
+        ctx.globalAlpha = pulse * 0.85;
+        // Glow
+        const grd = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r * 3);
+        grd.addColorStop(0, 'rgba(200,255,120,0.9)');
+        grd.addColorStop(1, 'rgba(200,255,120,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, r * 3, 0, Math.PI * 2);
+        ctx.fill();
+        // Titik inti
+        ctx.globalAlpha = pulse;
+        ctx.fillStyle = '#d9f99d';
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, r * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+}
 
 // ── HELPER DATA ────────────────────────────────────────────────
 function getFairyVillage() {
@@ -44136,8 +44359,8 @@ function openFairyVillage() {
     STATE.screen = 'play';
 
     // Spawn player di bawah Rara Wilis
-    STATE.player.x = FV_RARA_POS ? (FV_RARA_POS.x+1) * 28 : 840;
-    STATE.player.y = FV_RARA_POS ? (FV_RARA_POS.y+4) * 28 : 196;
+    STATE.player.x = FV_RARA_POS ? (FV_RARA_POS.x + 3) * 28 : 140;
+    STATE.player.y = FV_RARA_POS ? (FV_RARA_POS.y + 3) * 28 : 140;
 
     // Sembunyikan modal lama (jika masih ada)
     const oldModal = document.getElementById('fairy-village-modal');
@@ -44205,7 +44428,7 @@ function initFairyWorld() {
     fvCtx = fvCanvas.getContext('2d');
     resizeFairyCanvas();
 
-    fvPlayer = { x: FV_RARA_POS.x*TS+TS, y: (FV_RARA_POS.y+4)*TS, facing:'down' };
+    fvPlayer = { x: (FV_RARA_POS.x+3)*TS, y: (FV_RARA_POS.y+3)*TS, facing:'down' };
     fvKeys = {};
     fvActiveDialog = null;
     fvParticles = [];
@@ -44324,8 +44547,35 @@ function updateFairyPlayer(dt) {
     // Diagonal normalization
     if (dx!==0 && dy!==0) { dx*=0.707; dy*=0.707; }
 
-    fvPlayer.x = Math.max(0, Math.min((FW-1)*TS, fvPlayer.x + dx*speed));
-    fvPlayer.y = Math.max(0, Math.min((FH-1)*TS, fvPlayer.y + dy*speed));
+    // ── NPC Collision (solid NPCs menghalangi player) ─────────
+    const _npx = fvPlayer.x + dx*speed;
+    const _npy = fvPlayer.y + dy*speed;
+    const _pw = 20, _ph = 24; // hitbox player (kecil, di kaki)
+    const _map = (typeof maps !== 'undefined') ? maps['fairyVillage'] : null;
+    let _blockedX = false, _blockedY = false;
+
+    if (_map && _map.npcs) {
+        for (const _npc of _map.npcs) {
+            if (!_npc.solid) continue;
+            // Gunakan tile coords → pixel (tile-based NPC)
+            const _nxp = _npc.x * TS, _nyp = _npc.y * TS;
+            const _nw  = _npc.w || TS, _nh  = _npc.h || TS;
+            const _nhw = Math.min(_nw, TS * 1.2), _nhh = Math.min(_nh * 0.4, TS * 0.8);
+            const _nHitX = _nxp + (_nw - _nhw) / 2;
+            const _nHitY = _nyp + _nh - _nhh;
+
+            const overlapX = _npx + _pw > _nHitX && _npx < _nHitX + _nhw &&
+                             fvPlayer.y + _ph > _nHitY && fvPlayer.y < _nHitY + _nhh;
+            const overlapY = fvPlayer.x + _pw > _nHitX && fvPlayer.x < _nHitX + _nhw &&
+                             _npy + _ph > _nHitY && _npy < _nHitY + _nhh;
+
+            if (overlapX) _blockedX = true;
+            if (overlapY) _blockedY = true;
+        }
+    }
+
+    fvPlayer.x = Math.max(0, Math.min((FW-1)*TS, _blockedX ? fvPlayer.x : fvPlayer.x + dx*speed));
+    fvPlayer.y = Math.max(0, Math.min((FH-1)*TS, _blockedY ? fvPlayer.y : fvPlayer.y + dy*speed));
 
     // Camera smooth follow
     const cw = fvCanvas.width, ch = fvCanvas.height;
@@ -44391,15 +44641,57 @@ function drawFairyWorld(ts) {
     const fv = getFairyVillage();
     const t = ts || performance.now();
 
-    // Sky — lebih terang, suasana senja magis
-    const sky = ctx.createLinearGradient(0,0,0,H);
-    sky.addColorStop(0,'#0c0620'); sky.addColorStop(1,'#1a0e35');
-    ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+    // ── BACKGROUND: images/kayangan.png ────────────────────────
+    if (fvBgImage && fvBgImage.complete && fvBgImage.naturalWidth > 0) {
+        // Gambar tile background sesuai ukuran world (FW*TS × FH*TS), tapi clipped ke viewport
+        ctx.save();
+        ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
+        const bw = fvBgImage.naturalWidth, bh = fvBgImage.naturalHeight;
+        for (let tx = 0; tx < FW * TS; tx += bw) {
+            for (let ty = 0; ty < FH * TS; ty += bh) {
+                ctx.drawImage(fvBgImage, tx, ty, bw, bh);
+            }
+        }
+        ctx.restore();
+    } else {
+        // Fallback gradient jika gambar belum load
+        const sky = ctx.createLinearGradient(0,0,0,H);
+        sky.addColorStop(0,'#0c0620'); sky.addColorStop(1,'#1a0e35');
+        ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
+    }
+
+    // ── OVERLAY SIANG/MALAM ─────────────────────────────────────
+    const _tod = getFVTimeOfDay();
+    const _night = isFVNight();
+    const _overlayMap = {
+        pagi:  'rgba(255,220,100,0.13)',
+        siang: 'rgba(255,255,200,0.08)',
+        sore:  'rgba(255,150,60,0.18)',
+        senja: 'rgba(180,60,60,0.22)',
+        malam: 'rgba(5,0,30,0.52)',
+    };
+    ctx.fillStyle = _overlayMap[_tod] || 'rgba(5,0,30,0.52)';
+    ctx.fillRect(0, 0, W, H);
+
+    // ── LABEL WAKTU & MUSIM (sudut kiri atas) ──────────────────
+    const _season = getFVSeason();
+    const _todLabel = { pagi:'🌅 Pagi', siang:'☀️ Siang', sore:'🌤️ Sore', senja:'🌇 Senja', malam:'🌙 Malam' };
+    ctx.save();
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(6, 6, 170, 22);
+    ctx.fillStyle = '#fef9c3';
+    ctx.fillText((_todLabel[_tod]||'🌙 Malam') + '  |  ' + _season.label, 10, 10);
+    ctx.restore();
+
+    // ── Init kunang-kunang ──────────────────────────────────────
+    initFVFireflies(W, H);
+    updateFVFireflies();
 
     ctx.save();
     ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
-
-    const visX0 = Math.floor(fvCam.x/TS)-1, visX1 = visX0+Math.ceil(W/TS)+2;
     const visY0 = Math.floor(fvCam.y/TS)-1, visY1 = visY0+Math.ceil(H/TS)+2;
 
     // Ground tiles — lebih terang, hijau gelap yang hangat
@@ -44595,6 +44887,11 @@ function drawFairyWorld(ts) {
         ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,3,3);
     });
     ctx.globalAlpha=1;
+
+    // Kunang-kunang — muncul saat senja & malam
+    if (_night || _tod === 'senja' || _tod === 'malam') {
+        drawFVFireflies(ctx, t);
+    }
 
     // Player
     const playerIcon = '🧑';
@@ -45437,6 +45734,21 @@ function collectFairyDust() {
 // ─────────────────────────────────────────────────────────────
 // INTERIOR BANGUNAN — popup saat masuk bangunan
 // ─────────────────────────────────────────────────────────────
+// ── Building interior BG images per category ──
+const FVBI_BG = {
+    pohon_energi:'images/pohonperi.png',
+    pondok_peri:'images/kayangan.png', rumah_peri:'images/kayangan.png', dalem_widadari:'images/kayangan.png',
+    istana_mini:'images/kayangan.png', pohon_kehidupan:'images/pohonperi.png',
+    taman_mini:'images/kayangan.png', taman_mekar:'images/kayangan.png', kebun_raya:'images/kayangan.png',
+    kolam_kristal:'images/kayangan.png', kolam_agung:'images/kayangan.png', telaga_nirmala:'images/kayangan.png',
+    sekolah_peri:'images/kayangan.png', sanggar_tari:'images/kayangan.png', akademi_agung:'images/kayangan.png',
+    pasar_peri:'images/kayangan.png', balai_dagang:'images/kayangan.png', pusat_niaga:'images/kayangan.png',
+    menara_kecil:'images/kayangan.png', menara_wilis:'images/kayangan.png', menara_cahaya:'images/kayangan.png',
+};
+
+// Slot index sedang di-assign
+let _fvbiAssignSlot = -1;
+
 function openBuildingInterior(bldg, slot) {
     const fv  = getFairyVillage();
     const b   = FAIRY_BUILDINGS[bldg.bid];
@@ -45457,65 +45769,171 @@ function openBuildingInterior(bldg, slot) {
     const el = document.createElement('div');
     el.id = 'fv-building-interior';
 
-    // Worker cards HTML
-    const workerSlots = Array.from({length: maxW}, (_, i) => {
+    // ── Scene: tampilkan peri yg bekerja + slot kosong di dalam scene ──
+    const sceneSlots = Array.from({length: maxW}, (_, i) => {
+        const wf = workers[i];
+        if (wf) {
+            const img = _khImg(wf);
+            return `<div class="fvbi-fairy-slot" title="${wf.name}" onclick="fvFireWorkerPrompt('${bldg.slotId}',${i})">
+                <div class="fvbi-work-badge">⚙</div>
+                <img src="${img}" onerror="this.src='images/rarawilis.png'" class="fvbi-fairy-slot-img">
+                <div class="fvbi-fairy-slot-name">${wf.name}</div>
+            </div>`;
+        } else {
+            return `<div class="fvbi-fairy-slot fvbi-fairy-slot-empty" title="Tempatkan peri" onclick="fvbiOpenAssign(${i})">
+                <div class="fvbi-fairy-slot-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;">🧚</div>
+                <div class="fvbi-fairy-slot-name">Kosong</div>
+            </div>`;
+        }
+    }).join('');
+
+    // ── Stat chips ──
+    const statChips = [];
+    statChips.push(`<div class="fvbi-stat-chip"><span>👷</span>${workers.length}/${maxW} Peri</div>`);
+    statChips.push(`<div class="fvbi-stat-chip"><span>⭐</span>Tier ${b.tier}</div>`);
+    if (b.maxFairies)     statChips.push(`<div class="fvbi-stat-chip"><span>🏠</span>Hunian +${b.maxFairies}</div>`);
+    if (b.birthChance)    statChips.push(`<div class="fvbi-stat-chip"><span>👶</span>${Math.round(b.birthChance*100)}% lahir</div>`);
+    if (b.dustMultiplier) statChips.push(`<div class="fvbi-stat-chip"><span>✨</span>Debu ×${b.dustMultiplier}</div>`);
+    if (b.xpBonus)        statChips.push(`<div class="fvbi-stat-chip"><span>📚</span>XP ×${b.xpBonus}</div>`);
+    if (b.enableTrading)  statChips.push(`<div class="fvbi-stat-chip"><span>💱</span>Trading x${b.tradeBonus||1}</div>`);
+
+    // ── Produksi tags ──
+    const fx=[];
+    if(b.dustPerDay)     fx.push(`+${b.dustPerDay} ✨ Debu/hari`);
+    if(b.foodPerDay)     fx.push(`+${b.foodPerDay} 🍽️ Makanan/hari`);
+    if(b.happinessBonus) fx.push(`+${b.happinessBonus} ❤️ Happiness/hari`);
+    if(b.cahayaPerWeek)  fx.push(`+${b.cahayaPerWeek} 🌟 Cahaya/minggu`);
+    if(b.intelBonus)     fx.push(`+${b.intelBonus} 🧠 Intel/hari`);
+    const prodHTML = fx.length ? fx.map(f=>`<span class="fvbi-prod-tag">${f}</span>`).join('') : '<span class="fvbi-prod-tag">Pasif</span>';
+
+    // ── Worker list (below scene, detail assign) ──
+    const workerCards = Array.from({length: maxW}, (_, i) => {
         const wf = workers[i];
         if (wf) {
             const img = _khImg(wf);
             return `<div class="fvbi-worker filled">
                 <img src="${img}" onerror="this.src='images/rarawilis.png'" class="fvbi-wimg">
-                <div class="fvbi-wname">${wf.name}</div>
-                <div class="fvbi-wstat">🧠${wf.intel||0} ⚡${wf.agility||0} 🌟${wf.spirit||0}</div>
+                <div class="fvbi-winfo">
+                    <div class="fvbi-wname">${wf.name} <span style="font-size:10px;opacity:.6;">${wf.gender==='girl'?'♀':'♂'} Lv.${wf.level||1}</span></div>
+                    <div class="fvbi-wstat">🧠${wf.intel||0} ⚡${wf.agility||0} 🌟${wf.spirit||0} ❤️${wf.happiness||0}%</div>
+                </div>
                 <button class="fvbi-wfire" onclick="fvFireWorker('${bldg.slotId}',${i})">✕ Tarik</button>
             </div>`;
         } else {
             const freeOpts = freeFairies.length
-                ? freeFairies.map(f=>`<option value="${f.id}">${f.name} (${f.gender==='girl'?'♀':'♂'}) Int:${f.intel||0}</option>`).join('')
+                ? freeFairies.map(f=>`<option value="${f.id}">${f.name} (${f.gender==='girl'?'♀':'♂'}) Lv.${f.level||1} 🧠${f.intel||0}</option>`).join('')
                 : `<option value="">— Tidak ada peri bebas —</option>`;
             return `<div class="fvbi-worker empty">
                 <div class="fvbi-empty-ico">🧚</div>
-                <div class="fvbi-empty-label">Slot Kosong</div>
+                <div class="fvbi-empty-label">Slot ${i+1} Kosong</div>
                 <select class="fvbi-sel" id="fvbi-sel-${bldg.slotId}-${i}">${freeOpts}</select>
-                <button class="fvbi-wassign" onclick="fvAssignWorkerFromInterior('${bldg.slotId}',${i})" ${freeFairies.length?'':'disabled'}>+ Tugaskan</button>
+                <button class="fvbi-wassign" onclick="fvAssignWorkerFromInterior('${bldg.slotId}',${i})" ${freeFairies.length?'':'disabled'}>Tugaskan</button>
             </div>`;
         }
     }).join('');
 
-    // Produksi info
-    const fx=[];
-    if(b.maxFairies)     fx.push(`+${b.maxFairies} kapasitas`);
-    if(b.dustPerDay)     fx.push(`+${b.dustPerDay} ✨/hari`);
-    if(b.foodPerDay)     fx.push(`+${b.foodPerDay} 🍽️/hari`);
-    if(b.happinessBonus) fx.push(`+${b.happinessBonus} ❤️/hari`);
-    if(b.birthChance)    fx.push(`${Math.round(b.birthChance*100)}% lahir/hari`);
-    if(b.xpBonus)        fx.push(`XP ×${b.xpBonus}`);
-    const prodHTML = fx.length ? fx.map(f=>`<span class="fvbi-prod-tag">${f}</span>`).join('') : '<span class="fvbi-prod-tag">—</span>';
+    // ── Assign modal list ──
+    const assignItems = freeFairies.length
+        ? freeFairies.map(f => {
+            const img = _khImg(f);
+            return `<div class="fvbi-assign-item" onclick="fvbiDoAssignSlot('${bldg.slotId}',_fvbiAssignSlot,'${f.id}')">
+                <img src="${img}" onerror="this.src='images/rarawilis.png'">
+                <div class="fvbi-assign-item-info">
+                    <div class="fvbi-assign-item-name">${f.name} <span style="font-size:10px;opacity:.6;">${f.gender==='girl'?'♀':'♂'} Lv.${f.level||1}</span></div>
+                    <div class="fvbi-assign-item-stat">🧠${f.intel||0} ⚡${f.agility||0} 🌟${f.spirit||0} ❤️${f.happiness||0}%</div>
+                </div>
+            </div>`;
+          }).join('')
+        : `<div class="fvbi-assign-empty">Tidak ada peri bebas saat ini 🧚</div>`;
+
+    const bgSrc = FVBI_BG[bldg.bid] || 'images/kayangan.png';
 
     el.innerHTML = `
         <div id="fvbi-overlay" onclick="closeBuildingInterior()"></div>
         <div id="fvbi-panel">
+            <!-- HEADER -->
             <div id="fvbi-header">
                 <span id="fvbi-emoji">${b.emoji||'🏠'}</span>
                 <div id="fvbi-title-wrap">
                     <div id="fvbi-name">${b.name.replace(/^[^\s]+\s/,'')}</div>
-                    <div id="fvbi-tier">Tier ${b.tier} · Slot ${slot.id.toUpperCase()}</div>
+                    <div id="fvbi-tier">Tier ${b.tier} · ${slot?'Slot '+slot.id.toUpperCase():''}</div>
                 </div>
                 <button id="fvbi-close" onclick="closeBuildingInterior()">✕</button>
             </div>
+
+            <!-- INTERIOR SCENE -->
+            <div id="fvbi-scene">
+                <img id="fvbi-scene-bg" src="${bgSrc}" onerror="this.style.display='none'" alt="">
+                <div id="fvbi-scene-overlay"></div>
+                <div id="fvbi-fairy-row">${sceneSlots}</div>
+
+                <!-- Assign overlay (muncul saat klik slot kosong di scene) -->
+                <div id="fvbi-assign-modal">
+                    <div id="fvbi-assign-title">🧚 Pilih Peri untuk Slot ini</div>
+                    <div id="fvbi-assign-list">${assignItems}</div>
+                    <button class="fvbi-assign-cancel" onclick="fvbiCloseAssign()">✕ Batal</button>
+                </div>
+            </div>
+
+            <!-- STAT CHIPS -->
+            <div id="fvbi-stat-bar">${statChips.join('')}</div>
+
+            <!-- PRODUKSI -->
             <div id="fvbi-prod">
-                <div class="fvbi-sec-label">⚙️ Produksi</div>
+                <div class="fvbi-sec-label">⚙️ Produksi & Fungsi</div>
                 <div id="fvbi-prod-tags">${prodHTML}</div>
             </div>
+
+            <!-- WORKERS DETAIL -->
             <div id="fvbi-workers-section">
-                <div class="fvbi-sec-label">👷 Peri Bekerja <span style="font-weight:400;font-size:11px;color:#a16207;">(${workers.length}/${maxW})</span></div>
-                <div id="fvbi-worker-grid">${workerSlots}</div>
+                <div class="fvbi-sec-label">👷 Penugasan Peri <span style="font-weight:400;font-size:10px;color:#a78bfa;">(${workers.length}/${maxW} bekerja)</span></div>
+                <div id="fvbi-worker-grid">${workerCards}</div>
             </div>
-            <div id="fvbi-desc">${b.desc||''}</div>
+
+            <!-- DESC -->
+            <div id="fvbi-desc">💬 ${b.desc||''}</div>
         </div>
     `;
     document.body.appendChild(el);
-    // Animasi masuk
     requestAnimationFrame(()=> el.querySelector('#fvbi-panel').classList.add('fvbi-in'));
+}
+
+function fvbiOpenAssign(slotIdx) {
+    _fvbiAssignSlot = slotIdx;
+    const modal = document.getElementById('fvbi-assign-modal');
+    if (modal) modal.classList.add('open');
+}
+function fvbiCloseAssign() {
+    const modal = document.getElementById('fvbi-assign-modal');
+    if (modal) modal.classList.remove('open');
+}
+function fvbiDoAssignSlot(slotId, workerIdx, fairyId) {
+    fvbiCloseAssign();
+    // Re-use existing assign logic
+    const fv   = getFairyVillage();
+    const bldg = (fv.buildings||[]).find(b=>b.slotId===slotId);
+    if (!bldg) return;
+    const wid  = fairyId;
+    const alreadyWorking = (fv.buildings||[]).some(b=>b.workers&&b.workers.includes(wid));
+    if (alreadyWorking) { showToast('Peri ini sudah bekerja di bangunan lain!'); return; }
+    if (!bldg.workers) bldg.workers = [];
+    bldg.workers[workerIdx] = wid;
+    const f = fv.fairies.find(x=>x.id===wid);
+    showToast(`✅ ${f?.name||'Peri'} mulai bekerja!`);
+    typeof _khRefRes==='function' && _khRefRes();
+    closeBuildingInterior();
+    const slot = FAIRY_SLOTS.find(s=>s.id===slotId);
+    if (slot) setTimeout(()=>openBuildingInterior(bldg,slot), 100);
+}
+function fvFireWorkerPrompt(slotId, workerIdx) {
+    const fv = getFairyVillage();
+    const bldg = (fv.buildings||[]).find(b=>b.slotId===slotId);
+    if (!bldg) return;
+    const wid = bldg.workers[workerIdx];
+    const f = fv.fairies.find(x=>x.id===wid);
+    if (!f) return;
+    // Konfirmasi singkat via toast, lalu fire
+    showToast(`🔓 Tekan tombol "Tarik" di daftar bawah untuk menarik ${f.name}.`);
 }
 
 function closeBuildingInterior() {
@@ -45669,12 +46087,24 @@ function hideFVJoyVisual(){
 function updateFVHUD(){
     const fv=getFairyVillage(), stats=getFairyVillageStats(fv);
     const g=id=>document.getElementById(id);
+    // Legacy elements (jika ada)
     if(g('fv-hud-debu'))    g('fv-hud-debu').textContent=fv.resources.debu||0;
     if(g('fv-hud-kristal')) g('fv-hud-kristal').textContent=fv.resources.kristal||0;
     if(g('fv-hud-cahaya'))  g('fv-hud-cahaya').textContent=fv.resources.cahaya||0;
     if(g('fv-hud-makanan')) g('fv-hud-makanan').textContent=fv.resources.makanan||0;
     if(g('fv-hud-pop'))     g('fv-hud-pop').textContent=`${fv.fairies.length}/${stats.totalCap}`;
     if(g('fv-hud-queue'))   g('fv-hud-queue').textContent=(fv.buildQueue||[]).length;
+    // New top HUD bar
+    if(g('fvbar-debu'))    g('fvbar-debu').textContent    = fv.resources.debu    || 0;
+    if(g('fvbar-kristal')) g('fvbar-kristal').textContent = fv.resources.kristal || 0;
+    if(g('fvbar-cahaya'))  g('fvbar-cahaya').textContent  = fv.resources.cahaya  || 0;
+    if(g('fvbar-makanan')) g('fvbar-makanan').textContent = fv.resources.makanan || 0;
+    if(g('fvbar-pop'))     g('fvbar-pop').textContent     = `${fv.fairies.length}/${stats.totalCap}`;
+    if(g('fvbar-time-label') && typeof getFVTimeOfDay==='function'){
+        const _tod3=getFVTimeOfDay(), _sea3=getFVSeason();
+        const _ti={pagi:'🌅',siang:'☀️',sore:'🌤️',senja:'🌇',malam:'🌙'};
+        g('fvbar-time-label').textContent=(_ti[_tod3]||'🌙')+' '+(_tod3.charAt(0).toUpperCase()+_tod3.slice(1))+'  |  '+_sea3.label;
+    }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -45748,6 +46178,40 @@ function earnFairyKristal(amount){
 <!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 80×50                    -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
+
+<!-- FV HUD BAR -->
+<div id="fv-hud-bar" style="display:none; position:fixed; top:0; left:0; right:0; z-index:8000; height:44px; background:linear-gradient(135deg,rgba(30,5,60,0.96) 0%,rgba(60,10,110,0.96) 60%,rgba(20,5,45,0.96) 100%); border-bottom:1.5px solid rgba(167,139,250,0.45); box-shadow:0 2px 16px rgba(139,92,246,0.35); align-items:center; justify-content:space-between; padding:0 10px; gap:6px; font-family:Fredoka,sans-serif; backdrop-filter:blur(8px);">
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <span style="font-size:16px;filter:drop-shadow(0 0 6px #a78bfa);">&#10024;</span>
+        <div style="line-height:1.1;">
+            <div style="font-size:11px;font-weight:700;color:#e9d5ff;letter-spacing:0.5px;">KAHYANGAN WILIS</div>
+            <div id="fvbar-time-label" style="font-size:9px;color:#a78bfa;">&#127774; Siang &nbsp;|&nbsp; &#127800; Musim Semi</div>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px;flex:1;justify-content:center;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:3px;background:rgba(253,224,71,0.13);border:1px solid rgba(253,224,71,0.35);border-radius:20px;padding:3px 9px;">
+            <span style="font-size:12px;">&#10024;</span>
+            <span id="fvbar-debu" style="font-size:12px;font-weight:600;color:#fde047;">0</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,0.13);border:1px solid rgba(96,165,250,0.35);border-radius:20px;padding:3px 9px;">
+            <span style="font-size:12px;">&#128142;</span>
+            <span id="fvbar-kristal" style="font-size:12px;font-weight:600;color:#93c5fd;">0</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:3px;background:rgba(250,204,21,0.13);border:1px solid rgba(250,204,21,0.35);border-radius:20px;padding:3px 9px;">
+            <span style="font-size:12px;">&#127775;</span>
+            <span id="fvbar-cahaya" style="font-size:12px;font-weight:600;color:#fcd34d;">0</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:3px;background:rgba(52,211,153,0.13);border:1px solid rgba(52,211,153,0.35);border-radius:20px;padding:3px 9px;">
+            <span style="font-size:12px;">&#127807;</span>
+            <span id="fvbar-makanan" style="font-size:12px;font-weight:600;color:#6ee7b7;">0</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:3px;background:rgba(232,121,249,0.13);border:1px solid rgba(232,121,249,0.35);border-radius:20px;padding:3px 9px;">
+            <span style="font-size:12px;">&#129498;</span>
+            <span id="fvbar-pop" style="font-size:12px;font-weight:600;color:#f0abfc;">0/0</span>
+        </div>
+    </div>
+    <button onclick="if(typeof closeFairyVillage==='function')closeFairyVillage();" style="flex-shrink:0;background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.5);border-radius:16px;color:#fca5a5;font-family:Fredoka,sans-serif;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;">&#8592; Keluar</button>
+</div>
 
         <!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
         <div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
