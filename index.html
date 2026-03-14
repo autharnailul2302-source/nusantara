@@ -923,6 +923,8 @@
         }
         #dialogue-text b { color: #92400e; font-weight: 800; }
         #dialogue-text i { color: #78350f; font-style: italic; }
+        /* HTML suffix (relation bar dll) di dalam dialogue-text */
+        #dialogue-text > div { margin-top: 6px; }
 
         /* Tombol Lanjut di dialogue */
         #dialogue-options .dlg-next-btn {
@@ -5340,49 +5342,162 @@
         }
 
         /* ══════════════════════════════════════════════
+           BUILDING INTERIOR POPUP
+        ══════════════════════════════════════════════ */
+        #fv-building-interior { position:fixed; inset:0; z-index:9600; display:flex; align-items:center; justify-content:center; }
+        #fvbi-overlay { position:absolute; inset:0; background:rgba(10,5,0,.65); backdrop-filter:blur(3px); }
+        #fvbi-panel {
+            position:relative; z-index:1;
+            background:#fffbeb; border:4px solid #a16207; border-radius:20px;
+            box-shadow:0 12px 0 rgba(66,32,6,.2), 0 0 40px rgba(161,98,7,.15);
+            width:min(96vw,420px); max-height:88dvh; overflow-y:auto;
+            display:flex; flex-direction:column; gap:0;
+            transform:scale(0.85); opacity:0;
+            transition:transform .22s cubic-bezier(.34,1.5,.64,1), opacity .18s;
+            font-family:'Nunito',sans-serif;
+        }
+        #fvbi-panel.fvbi-in { transform:scale(1); opacity:1; }
+        #fvbi-header {
+            display:flex; align-items:center; gap:10px;
+            padding:12px 14px 10px;
+            background:linear-gradient(135deg,#fef3c7,#fde68a);
+            border-bottom:3px dashed rgba(161,98,7,.3); flex-shrink:0;
+        }
+        #fvbi-emoji { font-size:32px; line-height:1; flex-shrink:0; }
+        #fvbi-title-wrap { flex:1; }
+        #fvbi-name { font-family:'Fredoka',sans-serif; font-size:18px; color:#78350f; font-weight:700; }
+        #fvbi-tier { font-size:11px; color:#a16207; font-weight:600; margin-top:2px; }
+        #fvbi-close {
+            background:rgba(239,68,68,.15); border:2px solid #ef4444; color:#b91c1c;
+            border-radius:50%; width:28px; height:28px; font-size:14px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+        }
+        #fvbi-prod {
+            padding:10px 14px 8px;
+            background:rgba(161,98,7,.06);
+            border-bottom:2px solid rgba(161,98,7,.15);
+        }
+        .fvbi-sec-label {
+            font-family:'Fredoka',sans-serif; font-size:12px; color:#a16207;
+            font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px;
+        }
+        #fvbi-prod-tags { display:flex; flex-wrap:wrap; gap:5px; }
+        .fvbi-prod-tag {
+            background:#fff8e1; border:1.5px solid #d97706; border-radius:20px;
+            padding:2px 10px; font-size:11px; color:#78350f; font-weight:700;
+        }
+        #fvbi-workers-section { padding:10px 14px 8px; }
+        #fvbi-worker-grid { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
+        .fvbi-worker {
+            border-radius:12px; padding:10px 12px; display:flex; align-items:center; gap:10px;
+        }
+        .fvbi-worker.filled {
+            background:#fff8e1; border:2px solid #d97706;
+            box-shadow:0 2px 0 rgba(161,98,7,.2);
+        }
+        .fvbi-worker.empty {
+            background:rgba(161,98,7,.05); border:2px dashed rgba(161,98,7,.3);
+        }
+        .fvbi-wimg {
+            width:44px; height:56px; object-fit:contain; border-radius:8px;
+            border:2px solid #d97706; background:rgba(254,243,199,.5); flex-shrink:0;
+        }
+        .fvbi-wname { font-family:'Fredoka',sans-serif; font-size:14px; color:#78350f; font-weight:700; }
+        .fvbi-wstat { font-size:11px; color:#a16207; margin-top:2px; }
+        .fvbi-wfire {
+            margin-left:auto; background:rgba(239,68,68,.12); border:1.5px solid #ef4444;
+            color:#b91c1c; border-radius:8px; padding:4px 10px; font-size:11px;
+            font-weight:700; cursor:pointer; flex-shrink:0;
+        }
+        .fvbi-empty-ico { font-size:28px; opacity:.4; flex-shrink:0; }
+        .fvbi-empty-label { font-size:12px; color:#a16207; font-weight:600; flex-shrink:0; }
+        .fvbi-sel {
+            flex:1; border:2px solid #d97706; border-radius:8px;
+            padding:5px 8px; font-size:12px; color:#78350f;
+            background:#fff8e1; font-family:'Nunito',sans-serif; font-weight:700;
+        }
+        .fvbi-wassign {
+            background:linear-gradient(135deg,#d97706,#b45309); border:2px solid #fff;
+            color:#fff; border-radius:8px; padding:5px 12px; font-size:12px;
+            font-weight:800; cursor:pointer; flex-shrink:0; font-family:'Fredoka',sans-serif;
+            box-shadow:0 2px 0 rgba(66,32,6,.25);
+        }
+        .fvbi-wassign:disabled { opacity:.4; cursor:not-allowed; }
+        #fvbi-desc {
+            padding:8px 14px 14px; font-size:11px; color:#92400e;
+            font-style:italic; border-top:2px dashed rgba(161,98,7,.2);
+        }
+
+        /* ══════════════════════════════════════════════
            FAIRY BIRTH POPUP
         ══════════════════════════════════════════════ */
         #fbp-overlay {
-            position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:9500;
+            position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:9500;
+            backdrop-filter:blur(4px);
         }
         #fbp-card {
             position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.8);
-            opacity:0; transition:transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s;
+            opacity:0; transition:transform .28s cubic-bezier(.34,1.56,.64,1), opacity .2s;
             z-index:9501;
-            background:linear-gradient(150deg,#1a0533,#2d1160,#0d2240);
-            border:3px solid #c084fc; border-radius:22px;
-            box-shadow:0 0 60px rgba(192,132,252,.5), 0 0 20px rgba(192,132,252,.3);
-            padding:18px 20px 16px; width:min(92vw,320px);
-            display:flex; flex-direction:column; align-items:center; gap:8px;
+            background:#fffbeb;
+            border:4px solid #d97706; border-radius:24px;
+            box-shadow:0 16px 0 rgba(161,98,7,.25), 0 0 50px rgba(217,119,6,.25);
+            padding:20px 22px 18px; width:min(92vw,340px);
+            display:flex; flex-direction:column; align-items:center; gap:10px;
             font-family:'Nunito',sans-serif;
         }
         #fbp-card.fbp-in { transform:translate(-50%,-50%) scale(1); opacity:1; }
-        #fbp-sparkle { font-size:18px; animation:fbpSpark .6s ease infinite alternate; }
-        @keyframes fbpSpark { from{letter-spacing:2px;opacity:.7} to{letter-spacing:8px;opacity:1} }
-        #fbp-title { font-family:'Fredoka',sans-serif; font-size:20px; color:#f0abfc; font-weight:700; text-align:center; }
-        #fbp-sub { font-size:11px; color:#a78bfa; margin-top:-4px; }
-        #fbp-img { width:90px; height:110px; object-fit:contain; filter:drop-shadow(0 0 12px #c084fc); border-radius:10px; background:rgba(255,255,255,.04); }
+        #fbp-sparkle {
+            font-size:22px; letter-spacing:4px;
+            animation:fbpSpark .7s ease infinite alternate;
+        }
+        @keyframes fbpSpark {
+            from{letter-spacing:2px;opacity:.7;transform:scale(1)}
+            to  {letter-spacing:10px;opacity:1;transform:scale(1.05)}
+        }
+        #fbp-title {
+            font-family:'Fredoka',sans-serif; font-size:22px; color:#78350f;
+            font-weight:700; text-align:center; line-height:1.1;
+        }
+        #fbp-sub { font-size:12px; color:#a16207; margin-top:-6px; font-weight:600; }
+        #fbp-img {
+            width:96px; height:120px; object-fit:contain;
+            filter:drop-shadow(0 6px 12px rgba(161,98,7,.3));
+            border-radius:12px; background:rgba(254,243,199,.6);
+            border:3px solid #d97706;
+        }
+        #fbp-name-label { font-size:12px; color:#a16207; font-weight:700; align-self:flex-start; }
         #fbp-name-row { display:flex; gap:6px; width:100%; justify-content:center; }
         #fbp-name-input {
-            background:rgba(255,255,255,.08); border:2px solid #7c3aed; border-radius:10px;
-            color:#fff; font-size:15px; font-weight:700; font-family:'Fredoka',sans-serif;
-            padding:6px 12px; text-align:center; width:100%; outline:none; max-width:220px;
+            background:#fff8e1; border:3px solid #d97706; border-radius:12px;
+            color:#78350f; font-size:16px; font-weight:800; font-family:'Fredoka',sans-serif;
+            padding:7px 14px; text-align:center; width:100%; outline:none; max-width:240px;
+            box-shadow:inset 0 2px 4px rgba(161,98,7,.1);
         }
-        #fbp-name-input:focus { border-color:#c084fc; box-shadow:0 0 8px rgba(192,132,252,.4); }
-        #fbp-stats { display:flex; flex-direction:column; gap:4px; width:100%; }
-        .fbp-stat { display:flex; align-items:center; gap:6px; font-size:11px; color:#d8b4fe; }
-        .fbp-stat span:first-child { width:70px; font-weight:700; }
-        .fbp-stars { font-size:12px; letter-spacing:1px; flex:1; }
-        .fbp-val { font-weight:800; font-size:12px; color:#f0abfc; min-width:22px; text-align:right; }
-        #fbp-gender { font-size:11px; color:#a78bfa; }
-        #fbp-btns { margin-top:4px; width:100%; }
+        #fbp-name-input:focus { border-color:#b45309; box-shadow:0 0 0 3px rgba(217,119,6,.2); }
+        #fbp-stats {
+            display:flex; flex-direction:column; gap:5px; width:100%;
+            background:rgba(161,98,7,.07); border-radius:12px; padding:10px 12px;
+            border:1.5px solid rgba(161,98,7,.2);
+        }
+        .fbp-stat { display:flex; align-items:center; gap:6px; font-size:12px; color:#78350f; }
+        .fbp-stat span:first-child { width:80px; font-weight:800; color:#a16207; }
+        .fbp-stars { font-size:13px; letter-spacing:2px; flex:1; color:#d97706; }
+        .fbp-val { font-weight:800; font-size:13px; color:#78350f; min-width:24px; text-align:right; }
+        #fbp-gender {
+            font-size:12px; color:#a16207; font-weight:700;
+            background:rgba(161,98,7,.1); border-radius:20px; padding:3px 14px;
+            border:1.5px solid rgba(161,98,7,.2);
+        }
+        #fbp-btns { margin-top:2px; width:100%; }
         #fbp-btn-ok {
-            width:100%; padding:10px; border-radius:12px; border:2px solid #c084fc;
-            background:linear-gradient(135deg,#6d28d9,#9333ea); color:#fff;
-            font-size:15px; font-weight:700; font-family:'Fredoka',sans-serif;
-            cursor:pointer; box-shadow:0 4px 0 #4c1d95; transition:transform .1s;
+            width:100%; padding:12px; border-radius:14px; border:3px solid #fff;
+            background:linear-gradient(135deg,#d97706,#b45309); color:#fff;
+            font-size:16px; font-weight:800; font-family:'Fredoka',sans-serif;
+            cursor:pointer; box-shadow:0 6px 0 rgba(120,53,15,.35);
+            transition:transform .1s, box-shadow .1s;
         }
-        #fbp-btn-ok:active { transform:translateY(3px); box-shadow:0 1px 0 #4c1d95; }
+        #fbp-btn-ok:active { transform:translateY(3px); box-shadow:0 3px 0 rgba(120,53,15,.35); }
 
         /* ══════════════════════════════════════════════
            KAHYANGAN MANAGEMENT MODAL — seragam dengan gaya main game
@@ -27129,9 +27244,9 @@ ${reward.tip}`,
                                 // ... existing clues ...
                             }
 
-                            // Tambahkan bar relasi ke teks dialogue
+                            // Bar relasi dipisah sebagai htmlSuffix agar tidak tampil sebagai teks mentah
                             const _relBarLover = renderRelationBar(npc.id, love);
-                            const _mainWithBar = mainText + '\n\n' + _relBarLover;
+                            const _mainWithBar = mainText; // teks plain saja, HTML dipass terpisah
 
                             const dialogueOpts = [
                                 { text: "Beri Hadiah 🎁", action: () => openGiftMenu(npc) },
@@ -27571,7 +27686,7 @@ ${reward.tip}`,
 
                             dialogueOpts.push({ text: "Dah", action: closeDialogue });
 
-                            showDialogue(getLoveTitle(npc.name, love), _mainWithBar, dialogueOpts, npc.imgSrc);
+                            showDialogue(getLoveTitle(npc.name, love), _mainWithBar, dialogueOpts, npc.imgSrc, _relBarLover);
                         }
                     } else {
                         // --- NEW: INTERAKSI DOKTER BUDI UNTUK SESAMA COWOK (PASIEN) ---
@@ -35418,12 +35533,23 @@ Pilih masakan:
                 return result.filter(p => p.length > 0);
             }
 
-            function showDialogue(title, text, opts, imgSrc) {
+            function showDialogue(title, text, opts, imgSrc, htmlSuffix) {
                 const box      = document.getElementById('dialogue-wrapper');
                 const portrait = document.getElementById('dialogue-portrait');
                 const titleEl  = document.getElementById('dialogue-title');
                 const textEl   = document.getElementById('dialogue-text');
                 const grp      = document.getElementById('dialogue-options');
+
+                // ── Bersihkan state dialog sebelumnya ──────────────────────────
+                if (box._typeTimer) { clearInterval(box._typeTimer); box._typeTimer = null; }
+                const dlgBox = document.getElementById('dialogue-box');
+                if (dlgBox && box._tapHandler) {
+                    dlgBox.removeEventListener('click', box._tapHandler);
+                    box._tapHandler = null;
+                }
+                // Reset area teks & opsi
+                textEl.innerHTML = '';
+                grp.innerHTML = '';
 
                 // Set portrait
                 if (imgSrc) {
@@ -35443,134 +35569,157 @@ Pilih masakan:
                 const pages = splitDialoguePages(text);
                 let pageIndex = 0;
 
+                // ── Helper: escape HTML lalu render **bold** dan *italic* markdown ──
+                function renderDlgMD(raw) {
+                    return raw
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                        .replace(/\n/g, '<br>');
+                }
+
+                // ── Inject htmlSuffix sebagai node terpisah di bawah teks ──────
+                function appendSuffix() {
+                    if (!htmlSuffix) return;
+                    // Hapus suffix lama jika ada, lalu inject baru
+                    const old = textEl.querySelector('.dlg-html-suffix');
+                    if (old) old.remove();
+                    const suf = document.createElement('div');
+                    suf.className = 'dlg-html-suffix';
+                    suf.innerHTML = htmlSuffix;
+                    textEl.appendChild(suf);
+                }
+
                 function renderPage(idx) {
                     const isLast = idx >= pages.length - 1;
                     const total  = pages.length;
+
+                    // Bersihkan timer lama
+                    if (box._typeTimer) { clearInterval(box._typeTimer); box._typeTimer = null; }
 
                     // Judul + indikator halaman
                     titleEl.innerText = total > 1
                         ? `${title}  (${idx + 1}/${total})`
                         : title;
 
-                    // ── Helper: escape HTML lalu render **bold** dan *italic* markdown ──
-                    function renderDlgMD(raw) {
-                        return raw
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                            .replace(/\*(.*?)\*/g, '<i>$1</i>')
-                            .replace(/\n/g, '<br>');
-                    }
-
-                    // Teks halaman saat ini
+                    // Reset teks, siapkan span untuk typewriter
                     textEl.innerHTML = '';
+                    const textSpan = document.createElement('span');
+                    textEl.appendChild(textSpan);
+
                     const pageText = pages[idx];
-                    const pageChars = [...pageText]; // split by unicode char
+                    const pageChars = [...pageText];
                     let charIdx = 0;
-                    if (box._typeTimer) clearInterval(box._typeTimer);
+
+                    // Fungsi selesai typewriter
+                    const onTypeDone = () => {
+                        box._typeTimer = null;
+                        // Render full teks dengan markdown (bukan append karakter)
+                        textSpan.innerHTML = renderDlgMD(pageText);
+                        // Suffix hanya di halaman terakhir
+                        if (isLast) appendSuffix();
+                        renderOpts();
+                    };
+
+                    // Fungsi skip typewriter
+                    const skipType = () => {
+                        if (!box._typeTimer) return false; // sudah selesai
+                        clearInterval(box._typeTimer);
+                        onTypeDone();
+                        return true;
+                    };
+
+                    // Typewriter — update span innerHTML setiap tick
                     box._typeTimer = setInterval(() => {
                         charIdx++;
-                        textEl.innerHTML = renderDlgMD(pageChars.slice(0, charIdx).join(''));
+                        // Render partial dengan markdown agar ** tidak muncul saat animasi
+                        textSpan.innerHTML = renderDlgMD(pageChars.slice(0, charIdx).join(''));
                         if (charIdx >= pageChars.length) {
                             clearInterval(box._typeTimer);
-                            box._typeTimer = null;
+                            onTypeDone();
                         }
                     }, 16);
 
-                    // Tap kotak mana saja = skip typewriter atau next
-                    box._tapHandler && document.getElementById('dialogue-box').removeEventListener('click', box._tapHandler);
+                    // Tap kotak = skip typewriter atau next page
+                    if (box._tapHandler) dlgBox.removeEventListener('click', box._tapHandler);
                     box._tapHandler = (e) => {
-                        // Jangan trigger jika klik tombol
                         if (e.target.tagName === 'BUTTON') return;
-                        if (box._typeTimer) {
-                            clearInterval(box._typeTimer);
-                            box._typeTimer = null;
-                            textEl.innerHTML = renderDlgMD(pageText);
-                        } else if (!isLast) {
-                            pageIndex++;
-                            renderPage(pageIndex);
-                        }
+                        if (skipType()) return; // skip typewriter dulu
+                        if (!isLast) { pageIndex++; renderPage(pageIndex); }
                     };
-                    document.getElementById('dialogue-box').addEventListener('click', box._tapHandler);
+                    dlgBox.addEventListener('click', box._tapHandler);
 
-                    // Render tombol
-                    grp.innerHTML = '';
-
-                    if (!isLast) {
-                        // Tombol LANJUT
-                        const nextBtn = document.createElement('button');
-                        nextBtn.innerText = 'Lanjut ▶';
-                        nextBtn.className = 'dlg-next-btn';
-                        nextBtn.onclick = () => {
-                            if (box._typeTimer) {
-                                clearInterval(box._typeTimer);
-                                box._typeTimer = null;
-                                textEl.innerHTML = renderDlgMD(pageText);
-                            } else {
+                    // ── Render tombol ─────────────────────────────────────────
+                    function renderOpts() {
+                        grp.innerHTML = '';
+                        if (!isLast) {
+                            // Tombol LANJUT
+                            const nextBtn = document.createElement('button');
+                            nextBtn.innerText = 'Lanjut ▶';
+                            nextBtn.className = 'dlg-next-btn';
+                            nextBtn.onclick = () => {
+                                if (skipType()) return;
                                 pageIndex++;
                                 renderPage(pageIndex);
+                            };
+                            grp.appendChild(nextBtn);
+                        } else {
+                            // Halaman terakhir — tampilkan pilihan dengan paging
+                            const OPTS_PER_PAGE = 4;
+                            const totalOptPages = Math.ceil(opts.length / OPTS_PER_PAGE);
+
+                            if (box._optPage === undefined || box._optPageTitle !== title) {
+                                box._optPage = 0;
+                                box._optPageTitle = title;
                             }
-                        };
-                        grp.appendChild(nextBtn);
-                    } else {
-                        // Halaman terakhir: tampilkan tombol pilihan dengan PAGING otomatis
-                        const OPTS_PER_PAGE = 4;
-                        const totalOptPages = Math.ceil(opts.length / OPTS_PER_PAGE);
 
-                        // Simpan optPage di box agar persistent antar render
-                        if (box._optPage === undefined || box._optPageTitle !== title) {
-                            box._optPage = 0;
-                            box._optPageTitle = title;
-                        }
+                            function renderOptPage(optPage) {
+                                box._optPage = optPage;
+                                grp.innerHTML = '';
 
-                        function renderOpts(optPage) {
-                            box._optPage = optPage;
-                            grp.innerHTML = '';
+                                opts.slice(optPage * OPTS_PER_PAGE, (optPage + 1) * OPTS_PER_PAGE).forEach(o => {
+                                    const b = document.createElement('button');
+                                    b.innerText = o.text;
+                                    b.onclick = () => {
+                                        if (skipType()) return; // skip typewriter jika masih jalan
+                                        o.action();
+                                    };
+                                    grp.appendChild(b);
+                                });
 
-                            const sliced = opts.slice(optPage * OPTS_PER_PAGE, (optPage + 1) * OPTS_PER_PAGE);
-                            sliced.forEach(o => {
-                                const b = document.createElement('button');
-                                b.innerText = o.text;
-                                b.onclick = () => {
-                                    if (box._typeTimer) {
-                                        clearInterval(box._typeTimer);
-                                        box._typeTimer = null;
-                                        textEl.innerHTML = renderDlgMD(pageText);
-                                        return;
+                                if (totalOptPages > 1) {
+                                    const navRow = document.createElement('div');
+                                    navRow.className = 'dlg-nav-row';
+                                    navRow.style.cssText = 'display:flex;gap:6px;margin-top:2px;';
+                                    const navStyle = 'flex:1;width:auto!important;background:#1e3a8a;border:2px solid #3b82f6;border-radius:10px;color:#bfdbfe;font-size:11px;padding:7px 6px;font-family:Nunito,sans-serif;font-weight:700;cursor:pointer;text-align:center;box-sizing:border-box;';
+                                    if (optPage > 0) {
+                                        const bP = document.createElement('button');
+                                        bP.innerText = `◀ Hal. ${optPage}/${totalOptPages}`;
+                                        bP.style.cssText = navStyle;
+                                        bP.onclick = () => renderOptPage(optPage - 1);
+                                        navRow.appendChild(bP);
                                     }
-                                    o.action();
-                                };
-                                grp.appendChild(b);
-                            });
-
-                            // Tombol navigasi halaman pilihan (hanya jika lebih dari 1 halaman)
-                            if (totalOptPages > 1) {
-                                const navRow = document.createElement('div');
-                                navRow.className = 'dlg-nav-row';
-                                navRow.style.cssText = 'display:flex; gap:6px; margin-top:2px;';
-
-                                const navBtnStyle = 'flex:1; width:auto !important; background:#1e3a8a; border:2px solid #3b82f6; border-radius:10px; color:#bfdbfe; font-size:11px; padding:7px 6px; font-family:Nunito,sans-serif; font-weight:700; cursor:pointer; text-align:center; box-sizing:border-box;';
-                                if (optPage > 0) {
-                                    const bPrev = document.createElement('button');
-                                    bPrev.innerText = `◀ Hal. ${optPage}/${totalOptPages}`;
-                                    bPrev.style.cssText = navBtnStyle;
-                                    bPrev.onclick = () => renderOpts(optPage - 1);
-                                    navRow.appendChild(bPrev);
+                                    if (optPage < totalOptPages - 1) {
+                                        const bN = document.createElement('button');
+                                        bN.innerText = `Hal. ${optPage + 2}/${totalOptPages} ▶`;
+                                        bN.style.cssText = navStyle;
+                                        bN.onclick = () => renderOptPage(optPage + 1);
+                                        navRow.appendChild(bN);
+                                    }
+                                    grp.appendChild(navRow);
                                 }
-                                if (optPage < totalOptPages - 1) {
-                                    const bNext = document.createElement('button');
-                                    bNext.innerText = `Hal. ${optPage + 2}/${totalOptPages} ▶`;
-                                    bNext.style.cssText = navBtnStyle;
-                                    bNext.onclick = () => renderOpts(optPage + 1);
-                                    navRow.appendChild(bNext);
-                                }
-                                grp.appendChild(navRow);
                             }
-                        }
 
-                        renderOpts(box._optPage || 0);
+                            renderOptPage(box._optPage || 0);
+                        }
                     }
+
+                    // Render tombol langsung jika single-page (bukan typewriter baru)
+                    // — tombol muncul setelah typewriter selesai via onTypeDone()
+                    // Tapi kalau sudah selesai langsung (teks kosong), render sekarang
+                    if (pageChars.length === 0) onTypeDone();
                 }
 
                 renderPage(pageIndex);
@@ -35578,14 +35727,23 @@ Pilih masakan:
 
             function closeDialogue() {
                 const box = document.getElementById('dialogue-wrapper');
-                // Bersihkan typewriter timer jika masih jalan
-                if (box && box._typeTimer) {
-                    clearInterval(box._typeTimer);
-                    box._typeTimer = null;
+                if (!box) return;
+                // Hentikan typewriter
+                if (box._typeTimer) { clearInterval(box._typeTimer); box._typeTimer = null; }
+                // Lepas tap handler
+                const dlgBox = document.getElementById('dialogue-box');
+                if (dlgBox && box._tapHandler) {
+                    dlgBox.removeEventListener('click', box._tapHandler);
+                    box._tapHandler = null;
                 }
+                // Bersihkan konten
+                const textEl = document.getElementById('dialogue-text');
+                if (textEl) textEl.innerHTML = '';
+                const grp = document.getElementById('dialogue-options');
+                if (grp) grp.innerHTML = '';
                 box.style.display = 'none';
                 STATE.screen = 'play';
-                // FIX: RESET INPUT SETIAP KALI DIALOG DITUTUP (Agar tidak jalan sendiri)
+                // Reset input agar tidak ada tombol tertahan
                 resetInputs();
             }
             function showToast(msg) {
@@ -43136,34 +43294,30 @@ const FAIRY_NAMES_GIRL = ['Ayu','Wulan','Sekar','Endah','Ratih','Dewi','Larasati
 
 
 // ── LAYOUT SLOT BANGUNAN DI PETA 120×75 (setengah dari sebelumnya) ──
-const FW = 120, FH = 75;   // setengah dari 240×150
-const TS = 20;              // ukuran 1 tile dalam pixel (sama)
-const FV_SPEED = 2.8;
+const FW = 60, FH = 40;    // peta lebih kecil — lebih padat & intim
+const TS = 28;              // tile lebih besar agar bangunan terlihat jelas
+const FV_SPEED = 2.4;
 
-// 18 slot tersebar di peta 120×75
+// 12 slot bangunan tersebar di peta 60×40
 const FAIRY_SLOTS = [
-    // Baris atas (y~10)
-    {id:'s1', x:10, y:10}, {id:'s2', x:28, y:10}, {id:'s3', x:46, y:10},
-    {id:'s4', x:64, y:10}, {id:'s5', x:82, y:10}, {id:'s6', x:100,y:10},
-    // Baris tengah-atas (y~24)
-    {id:'s7', x:8,  y:24}, {id:'s8', x:26, y:24}, {id:'s9', x:44, y:24},
-    {id:'s10',x:62, y:24}, {id:'s11',x:80, y:24}, {id:'s12',x:98, y:24},
-    // Baris tengah-bawah (y~38)
-    {id:'s13',x:10, y:38}, {id:'s14',x:30, y:38}, {id:'s15',x:50, y:38},
-    {id:'s16',x:70, y:38}, {id:'s17',x:90, y:38},
-    // Baris bawah (y~54)
-    {id:'s18',x:55, y:54},
+    // Baris atas (y~6)
+    {id:'s1', x:5,  y:6 }, {id:'s2', x:16, y:6 }, {id:'s3', x:27, y:6 },
+    {id:'s4', x:38, y:6 }, {id:'s5', x:49, y:6 },
+    // Baris tengah (y~18)
+    {id:'s6', x:5,  y:18}, {id:'s7', x:16, y:18}, {id:'s8', x:27, y:18},
+    {id:'s9', x:38, y:18}, {id:'s10',x:49, y:18},
+    // Baris bawah (y~29)
+    {id:'s11',x:10, y:29}, {id:'s12',x:42, y:29},
 ];
 
-// Posisi NPC & objek penting — proporsional setengah
-const FV_RARA_POS  = { x:57, y:4   };   // Rara Wilis — tengah-atas
-const FV_POHON_POS = { x:57, y:58  };   // Pohon Energi — tengah-bawah
-// Pohon dekoratif tersebar di peta 120×75
+// Posisi NPC & objek penting — proporsional
+const FV_RARA_POS  = { x:28, y:2  };   // Rara Wilis — tengah-atas
+const FV_POHON_POS = { x:28, y:32 };   // Pohon Energi — tengah-bawah
+// Pohon dekoratif pinggir peta
 const FV_DECO_TREES = [
-    {x:5,y:5},{x:20,y:4},{x:40,y:3},{x:60,y:4},{x:80,y:3},{x:100,y:4},{x:115,y:5},
-    {x:4,y:20},{x:116,y:20},{x:4,y:40},{x:116,y:40},{x:4,y:60},{x:116,y:60},
-    {x:20,y:68},{x:40,y:70},{x:60,y:71},{x:80,y:70},{x:100,y:68},
-    {x:25,y:28},{x:75,y:28},{x:30,y:52},{x:85,y:52},
+    {x:2,y:2},{x:10,y:1},{x:20,y:1},{x:40,y:1},{x:50,y:2},{x:57,y:2},
+    {x:1,y:10},{x:58,y:10},{x:1,y:22},{x:58,y:22},{x:1,y:32},{x:58,y:32},
+    {x:10,y:37},{x:28,y:38},{x:46,y:37},
 ];
 
 // ── STATE RUNTIME ──────────────────────────────────────────────
@@ -43221,39 +43375,85 @@ function showFairyBirthPopup(fairy, buildingName) {
     if (old) old.remove();
 
     const img = fairy.gender === 'girl'
-        ? `images/peri_pr${fairy.spriteIdx % 4 + 1}.png`
-        : `images/peri_lk${fairy.spriteIdx % 2 + 1}.png`;
-    const statStars = v => {
-        const filled = Math.round(v/30*5);
-        return '★'.repeat(filled) + '☆'.repeat(5-filled);
+        ? `images/peri_pr${(fairy.spriteIdx||0) % 4 + 1}.png`
+        : `images/peri_lk${(fairy.spriteIdx||0) % 2 + 1}.png`;
+
+    const statBar = (val, color) => {
+        const pct = Math.round(val/30*100);
+        return `<div style="flex:1;height:7px;background:rgba(161,98,7,.15);border-radius:99px;overflow:hidden;border:1px solid rgba(161,98,7,.2)">
+            <div style="width:${pct}%;height:100%;background:${color};border-radius:99px;transition:width .4s"></div>
+        </div>`;
     };
+
+    const rarity = fairy.intel+fairy.agility+fairy.spirit;
+    const rarityLabel = rarity >= 70 ? '⭐ LANGKA!'
+                      : rarity >= 50 ? '✨ Bagus'
+                      : '🌱 Biasa';
+    const rarityColor = rarity >= 70 ? '#d97706' : rarity >= 50 ? '#059669' : '#6b7280';
+
+    const genderLabel = fairy.gender==='girl' ? '🧚‍♀️ Widadari' : '🧚‍♂️ Peri Laki';
+    const bname = buildingName.replace(/^[^\s]+\s/,'');
 
     const el = document.createElement('div');
     el.id = 'fairy-birth-popup';
     el.innerHTML = `
         <div id="fbp-overlay" onclick="closeFairyBirthPopup()"></div>
         <div id="fbp-card">
-            <div id="fbp-sparkle">✨🌟✨</div>
-            <div id="fbp-title">🎉 Peri Baru Lahir!</div>
-            <div id="fbp-sub">di ${buildingName}</div>
-            <img id="fbp-img" src="${img}" onerror="this.src='images/${fairy.gender==='girl'?'wening':'juna'}.png'" alt="${fairy.name}">
-            <div id="fbp-name-row">
-                <input id="fbp-name-input" type="text" value="${fairy.name}" maxlength="20" placeholder="Nama peri...">
+            <div id="fbp-sparkle">🌟 ✨ 🌟</div>
+            <div id="fbp-title">🥚 Peri Baru Lahir!</div>
+            <div id="fbp-sub">dari ${genderLabel} di ${bname}</div>
+
+            <img id="fbp-img"
+                src="${img}"
+                onerror="this.src='images/${fairy.gender==='girl'?'wening':'juna'}.png'"
+                alt="peri baru">
+
+            <div style="display:flex;align-items:center;gap:8px;width:100%">
+                <span style="font-size:11px;font-weight:800;color:${rarityColor};background:${rarityColor}18;border:1.5px solid ${rarityColor}55;border-radius:20px;padding:2px 10px">${rarityLabel}</span>
+                <span style="font-size:11px;color:#a16207;font-weight:600">Total Stat: ${rarity}/90</span>
             </div>
+
             <div id="fbp-stats">
-                <div class="fbp-stat"><span>🧠 Intel</span><span class="fbp-stars" style="color:#60a5fa">${statStars(fairy.intel)}</span><span class="fbp-val">${fairy.intel}</span></div>
-                <div class="fbp-stat"><span>⚡ Gesit</span><span class="fbp-stars" style="color:#fbbf24">${statStars(fairy.agility)}</span><span class="fbp-val">${fairy.agility}</span></div>
-                <div class="fbp-stat"><span>🌟 Semangat</span><span class="fbp-stars" style="color:#e879f9">${statStars(fairy.spirit)}</span><span class="fbp-val">${fairy.spirit}</span></div>
+                <div class="fbp-stat">
+                    <span>🧠 Intel</span>
+                    ${statBar(fairy.intel,'#60a5fa')}
+                    <span class="fbp-val">${fairy.intel}</span>
+                </div>
+                <div class="fbp-stat">
+                    <span>⚡ Gesit</span>
+                    ${statBar(fairy.agility,'#fbbf24')}
+                    <span class="fbp-val">${fairy.agility}</span>
+                </div>
+                <div class="fbp-stat">
+                    <span>🌟 Semangat</span>
+                    ${statBar(fairy.spirit,'#f472b6')}
+                    <span class="fbp-val">${fairy.spirit}</span>
+                </div>
             </div>
-            <div id="fbp-gender">${fairy.gender==='girl'?'🧚‍♀️ Widadari':'🧚‍♂️ Peri Laki'} · Lv.1</div>
+
+            <div style="width:100%">
+                <div id="fbp-name-label">✏️ Beri Nama:</div>
+                <div id="fbp-name-row">
+                    <input id="fbp-name-input" type="text" value="${fairy.name}" maxlength="20" placeholder="Nama peri...">
+                </div>
+                <div style="font-size:10px;color:#a16207;text-align:center;margin-top:3px">Nama bisa diubah lagi nanti dari menu Para Peri</div>
+            </div>
+
             <div id="fbp-btns">
-                <button id="fbp-btn-ok" onclick="confirmFairyBirth('${fairy.id}')">💖 Sambut!</button>
+                <button id="fbp-btn-ok" onclick="confirmFairyBirth('${fairy.id}')">💖 Sambut ke Kahyangan!</button>
             </div>
         </div>
     `;
     document.body.appendChild(el);
+
     // Animasi masuk
-    requestAnimationFrame(() => el.querySelector('#fbp-card').classList.add('fbp-in'));
+    requestAnimationFrame(() => {
+        el.querySelector('#fbp-card').classList.add('fbp-in');
+        // Partikel kelahiran di peta
+        if (typeof createFVParticles === 'function' && typeof fvPlayer !== 'undefined') {
+            createFVParticles(fvPlayer.x - (fvCam?.x||0), fvPlayer.y - (fvCam?.y||0), 20);
+        }
+    });
 }
 
 function confirmFairyBirth(fairyId) {
@@ -43682,8 +43882,8 @@ function openFairyVillage() {
     STATE.screen = 'play';
 
     // Spawn player di bawah Rara Wilis
-    STATE.player.x = 57 * 30;   // tengah peta baru
-    STATE.player.y = 12 * 30;   // di bawah Rara Wilis
+    STATE.player.x = FV_RARA_POS ? (FV_RARA_POS.x+1) * 28 : 840;
+    STATE.player.y = FV_RARA_POS ? (FV_RARA_POS.y+4) * 28 : 196;
 
     // Sembunyikan modal lama (jika masih ada)
     const oldModal = document.getElementById('fairy-village-modal');
@@ -43750,7 +43950,7 @@ function initFairyWorld() {
     fvCtx = fvCanvas.getContext('2d');
     resizeFairyCanvas();
 
-    fvPlayer = { x: FV_RARA_POS.x*TS+TS, y: (FV_RARA_POS.y+6)*TS, facing:'down' };
+    fvPlayer = { x: FV_RARA_POS.x*TS+TS, y: (FV_RARA_POS.y+4)*TS, facing:'down' };
     fvKeys = {};
     fvActiveDialog = null;
     fvParticles = [];
@@ -43797,6 +43997,11 @@ function fairyLoop(ts) {
     checkBuildQueue();
     updateFairyPlayer(dt);
     drawFairyWorld(ts);
+    // Cek daily tick saat di dalam pulau — jika hari berubah sejak terakhir masuk
+    const fv = getFairyVillage();
+    if (fv.lastTickDay !== STATE.day) {
+        fairyDailyTick(fv);
+    }
     FVG = requestAnimationFrame(fairyLoop);
 }
 
@@ -43883,10 +44088,11 @@ function updateFVActionBtn() {
     const btn = document.getElementById('fv-action-btn');
     if (!btn) return;
     const px = fvPlayer.x, py = fvPlayer.y;
+    const fv = getFairyVillage();
 
     // Rara Wilis
     const rx = FV_RARA_POS.x*TS+TS, ry = FV_RARA_POS.y*TS+TS;
-    if (Math.hypot(px-rx, py-ry) < TS*3) {
+    if (Math.hypot(px-rx, py-ry) < TS*2.5) {
         btn.style.display='block';
         btn.textContent='💬 Bicara dengan Rara Wilis';
         btn.onclick = openRaraWilisDialog;
@@ -43895,11 +44101,26 @@ function updateFVActionBtn() {
 
     // Pohon Energi
     const tx = FV_POHON_POS.x*TS+TS, ty = FV_POHON_POS.y*TS+TS;
-    if (Math.hypot(px-tx, py-ty) < TS*3) {
+    if (Math.hypot(px-tx, py-ty) < TS*2.5) {
         btn.style.display='block';
         btn.textContent='✨ Kumpulkan Serbuk Wilis';
         btn.onclick = collectFairyDust;
         return;
+    }
+
+    // Cek bangunan selesai — enter building
+    const buildings = fv.buildings || [];
+    for (const bldg of buildings) {
+        const slot = FAIRY_SLOTS.find(s=>s.id===bldg.slotId);
+        if (!slot) continue;
+        const bx = slot.x*TS + TS, by = slot.y*TS + TS;
+        if (Math.hypot(px-bx, py-by) < TS*2) {
+            const b = FAIRY_BUILDINGS[bldg.bid];
+            btn.style.display='block';
+            btn.textContent=`🚪 Masuk ${b?.emoji||'🏠'} ${(b?.name||'Bangunan').replace(/^[^\s]+\s/,'')}`;
+            btn.onclick = () => openBuildingInterior(bldg, slot);
+            return;
+        }
     }
 
     btn.style.display='none';
@@ -43915,9 +44136,9 @@ function drawFairyWorld(ts) {
     const fv = getFairyVillage();
     const t = ts || performance.now();
 
-    // Sky
+    // Sky — lebih terang, suasana senja magis
     const sky = ctx.createLinearGradient(0,0,0,H);
-    sky.addColorStop(0,'#06030f'); sky.addColorStop(1,'#0a1a0d');
+    sky.addColorStop(0,'#0c0620'); sky.addColorStop(1,'#1a0e35');
     ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
 
     ctx.save();
@@ -43926,23 +44147,23 @@ function drawFairyWorld(ts) {
     const visX0 = Math.floor(fvCam.x/TS)-1, visX1 = visX0+Math.ceil(W/TS)+2;
     const visY0 = Math.floor(fvCam.y/TS)-1, visY1 = visY0+Math.ceil(H/TS)+2;
 
-    // Ground tiles (only visible)
+    // Ground tiles — lebih terang, hijau gelap yang hangat
     for (let ty=Math.max(0,visY0); ty<Math.min(FH,visY1); ty++) {
         for (let tx=Math.max(0,visX0); tx<Math.min(FW,visX1); tx++) {
             const even=(tx+ty)%2===0;
-            ctx.fillStyle = even?'#0a1a0c':'#0b1e0e';
+            ctx.fillStyle = even?'#1c3a20':'#1f4024';
             ctx.fillRect(tx*TS, ty*TS, TS, TS);
         }
     }
 
-    // Main path — jalur besar horizontal & vertikal di peta 3×
-    ctx.fillStyle='#122018';
-    for (let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS, 72*TS, TS, TS*2); // horizontal tengah
-    for (let ty=0;ty<FH;ty++) ctx.fillRect(57*TS, ty*TS, TS*2, TS); // vertikal tengah
+    // Main path — jalur utama
+    ctx.fillStyle='#2a1e10';
+    for (let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS, Math.floor(FH/2)*TS, TS, TS*2);  // horizontal tengah
+    for (let ty=0;ty<FH;ty++) ctx.fillRect(Math.floor(FW/2)*TS, ty*TS, TS*2, TS);  // vertikal tengah
 
     // Secondary paths
-    ctx.fillStyle='#0f1c14';
-    [12,25,50,62].forEach(ty=> { for(let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS,ty*TS,TS,TS); });
+    ctx.fillStyle='#251a0c';
+    [8,20,30].forEach(ty=> { for(let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS,ty*TS,TS,TS); });
 
     // Stars
     ctx.fillStyle='rgba(255,255,220,1)';
@@ -43993,34 +44214,59 @@ function drawFairyWorld(ts) {
         ctx.textAlign='left'; ctx.textBaseline='alphabetic';
     });
 
-    // Bangunan selesai
-    (fv.buildings||[]).forEach(({slotId, bid}) => {
+    // Bangunan selesai — render dengan tema cerah & ada tanda pintu
+    (fv.buildings||[]).forEach(({slotId, bid, workers}) => {
         const slot=FAIRY_SLOTS.find(s=>s.id===slotId); if(!slot) return;
         const b=FAIRY_BUILDINGS[bid]; if(!b) return;
         const bx=slot.x*TS, by=slot.y*TS, bw=TS*(b.w||2), bh=TS*(b.h||2);
 
-        // Shadow
-        ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(bx+3,by+4,bw,bh);
+        // Shadow tanah
+        ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.fillRect(bx+4,by+bh-2,bw,6);
 
-        // BG
-        const bgC=['#0e2a1a','#152038','#2a1e42','#3a2a14','#3a1428'];
-        ctx.fillStyle=bgC[b.tier]||'#1a1a2a';
-        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.fill();
+        // Warna bangunan per tier — bright/warm
+        const bgColors=['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
+        const borderColors=['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
+        ctx.fillStyle=bgColors[b.tier]||'#fef3c7';
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.fill();
 
         // Border tier
-        const tierC=['#4ade80','#60a5fa','#c084fc','#fb923c','#fbbf24'];
-        ctx.strokeStyle=tierC[b.tier]||'#60a5fa'; ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.stroke();
+        const bc = borderColors[b.tier]||'#d97706';
+        ctx.strokeStyle=bc; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.stroke();
 
-        // Glow subtle
-        ctx.shadowColor=tierC[b.tier]||'#60a5fa'; ctx.shadowBlur=6;
-        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.stroke();
+        // Glow saat player dekat
+        const px=fvPlayer.x, py=fvPlayer.y;
+        const bCx=bx+bw/2, bCy=by+bh/2;
+        const nearDist = Math.hypot(px-bCx, py-bCy);
+        if (nearDist < TS*2.5) {
+            ctx.shadowColor=bc; ctx.shadowBlur=12;
+            ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.stroke();
+            ctx.shadowBlur=0;
+            // Label "TEKAN TOMBOL" di atas bangunan
+            ctx.fillStyle=bc; ctx.font='bold 7px sans-serif'; ctx.textAlign='center';
+            ctx.fillText('▼ Masuk', bCx, by-4);
+        }
         ctx.shadowBlur=0;
 
-        ctx.font=`${TS*0.85}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(b.emoji||'🏠', bx+bw/2, by+bh/2-3);
-        ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.font='6px sans-serif';
-        ctx.fillText(b.name.replace(/^[^\s]+\s/,'').slice(0,11), bx+bw/2, by+bh-5);
+        // Emoji bangunan
+        ctx.font=`${TS*1.0}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(b.emoji||'🏠', bx+bw/2, by+bh/2-4);
+
+        // Nama bangunan
+        ctx.fillStyle=bc; ctx.font='bold 6px sans-serif';
+        ctx.fillText(b.name.replace(/^[^\s]+\s/,'').slice(0,12), bx+bw/2, by+bh-5);
+
+        // Indikator peri bekerja — titik-titik kecil
+        const wCount=(workers||[]).length;
+        if (wCount>0) {
+            for(let wi=0;wi<wCount;wi++){
+                ctx.fillStyle='#22c55e';
+                ctx.beginPath();
+                ctx.arc(bx+5+wi*7, by+5, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
         ctx.textAlign='left'; ctx.textBaseline='alphabetic';
     });
 
@@ -44393,6 +44639,11 @@ function openRaraWilisDialog() {
         if (typeof closeDialogue === 'function') closeDialogue();
         setTimeout(() => closeFairyVillage(), 40);
     }});
+
+    // TEST MODE: tombol test kelahiran
+    if (STATE.player.sylvariaQuestComplete && (fv.resources.debu >= 9000 || STATE.freeRoamMode)) {
+        opts.push({ text: '🥚 [TEST] Lahirkan Peri Baru', action: testFairyBirth });
+    }
 
     showFVDialog('RARA WILIS', salamBuka, opts, 'images/rarawilis.png');
 }
@@ -44929,6 +45180,132 @@ function collectFairyDust() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// INTERIOR BANGUNAN — popup saat masuk bangunan
+// ─────────────────────────────────────────────────────────────
+function openBuildingInterior(bldg, slot) {
+    const fv  = getFairyVillage();
+    const b   = FAIRY_BUILDINGS[bldg.bid];
+    if (!b) return;
+
+    // Peri yang bekerja di sini
+    const workers = (bldg.workers || []).map(wid => fv.fairies.find(f=>f.id===wid)).filter(Boolean);
+    // Peri yang tidak bekerja di mana pun
+    const busyIds = new Set((fv.buildings||[]).flatMap(bl=>bl.workers||[]));
+    const freeFairies = fv.fairies.filter(f => !busyIds.has(f.id));
+    const maxW = b.maxWorkers || 2;
+
+    // Hapus popup lama
+    const old = document.getElementById('fv-building-interior');
+    if (old) old.remove();
+
+    // Buat popup
+    const el = document.createElement('div');
+    el.id = 'fv-building-interior';
+
+    // Worker cards HTML
+    const workerSlots = Array.from({length: maxW}, (_, i) => {
+        const wf = workers[i];
+        if (wf) {
+            const img = _khImg(wf);
+            return `<div class="fvbi-worker filled">
+                <img src="${img}" onerror="this.src='images/rarawilis.png'" class="fvbi-wimg">
+                <div class="fvbi-wname">${wf.name}</div>
+                <div class="fvbi-wstat">🧠${wf.intel||0} ⚡${wf.agility||0} 🌟${wf.spirit||0}</div>
+                <button class="fvbi-wfire" onclick="fvFireWorker('${bldg.slotId}',${i})">✕ Tarik</button>
+            </div>`;
+        } else {
+            const freeOpts = freeFairies.length
+                ? freeFairies.map(f=>`<option value="${f.id}">${f.name} (${f.gender==='girl'?'♀':'♂'}) Int:${f.intel||0}</option>`).join('')
+                : `<option value="">— Tidak ada peri bebas —</option>`;
+            return `<div class="fvbi-worker empty">
+                <div class="fvbi-empty-ico">🧚</div>
+                <div class="fvbi-empty-label">Slot Kosong</div>
+                <select class="fvbi-sel" id="fvbi-sel-${bldg.slotId}-${i}">${freeOpts}</select>
+                <button class="fvbi-wassign" onclick="fvAssignWorkerFromInterior('${bldg.slotId}',${i})" ${freeFairies.length?'':'disabled'}>+ Tugaskan</button>
+            </div>`;
+        }
+    }).join('');
+
+    // Produksi info
+    const fx=[];
+    if(b.maxFairies)     fx.push(`+${b.maxFairies} kapasitas`);
+    if(b.dustPerDay)     fx.push(`+${b.dustPerDay} ✨/hari`);
+    if(b.foodPerDay)     fx.push(`+${b.foodPerDay} 🍽️/hari`);
+    if(b.happinessBonus) fx.push(`+${b.happinessBonus} ❤️/hari`);
+    if(b.birthChance)    fx.push(`${Math.round(b.birthChance*100)}% lahir/hari`);
+    if(b.xpBonus)        fx.push(`XP ×${b.xpBonus}`);
+    const prodHTML = fx.length ? fx.map(f=>`<span class="fvbi-prod-tag">${f}</span>`).join('') : '<span class="fvbi-prod-tag">—</span>';
+
+    el.innerHTML = `
+        <div id="fvbi-overlay" onclick="closeBuildingInterior()"></div>
+        <div id="fvbi-panel">
+            <div id="fvbi-header">
+                <span id="fvbi-emoji">${b.emoji||'🏠'}</span>
+                <div id="fvbi-title-wrap">
+                    <div id="fvbi-name">${b.name.replace(/^[^\s]+\s/,'')}</div>
+                    <div id="fvbi-tier">Tier ${b.tier} · Slot ${slot.id.toUpperCase()}</div>
+                </div>
+                <button id="fvbi-close" onclick="closeBuildingInterior()">✕</button>
+            </div>
+            <div id="fvbi-prod">
+                <div class="fvbi-sec-label">⚙️ Produksi</div>
+                <div id="fvbi-prod-tags">${prodHTML}</div>
+            </div>
+            <div id="fvbi-workers-section">
+                <div class="fvbi-sec-label">👷 Peri Bekerja <span style="font-weight:400;font-size:11px;color:#a16207;">(${workers.length}/${maxW})</span></div>
+                <div id="fvbi-worker-grid">${workerSlots}</div>
+            </div>
+            <div id="fvbi-desc">${b.desc||''}</div>
+        </div>
+    `;
+    document.body.appendChild(el);
+    // Animasi masuk
+    requestAnimationFrame(()=> el.querySelector('#fvbi-panel').classList.add('fvbi-in'));
+}
+
+function closeBuildingInterior() {
+    const el = document.getElementById('fv-building-interior');
+    if (!el) return;
+    const panel = el.querySelector('#fvbi-panel');
+    if (panel) panel.classList.remove('fvbi-in');
+    setTimeout(()=>el.remove(), 220);
+}
+
+function fvFireWorker(slotId, workerIdx) {
+    const fv = getFairyVillage();
+    const bldg = (fv.buildings||[]).find(b=>b.slotId===slotId);
+    if (!bldg) return;
+    const fired = bldg.workers[workerIdx];
+    bldg.workers.splice(workerIdx, 1);
+    const f = fv.fairies.find(x=>x.id===fired);
+    showToast(`🔓 ${f?.name||'Peri'} selesai bertugas di bangunan ini.`);
+    closeBuildingInterior();
+    // Re-open dengan data terbaru
+    const slot = FAIRY_SLOTS.find(s=>s.id===slotId);
+    if (slot) setTimeout(()=>openBuildingInterior(bldg,slot), 100);
+}
+
+function fvAssignWorkerFromInterior(slotId, workerIdx) {
+    const fv   = getFairyVillage();
+    const bldg = (fv.buildings||[]).find(b=>b.slotId===slotId);
+    if (!bldg) return;
+    const sel  = document.getElementById(`fvbi-sel-${slotId}-${workerIdx}`);
+    if (!sel || !sel.value) { showToast('Pilih peri dulu!'); return; }
+    const wid  = sel.value;
+    // Cek sudah bekerja di tempat lain
+    const alreadyWorking = (fv.buildings||[]).some(b=>b.workers&&b.workers.includes(wid));
+    if (alreadyWorking) { showToast('Peri ini sudah bekerja di bangunan lain!'); return; }
+    if (!bldg.workers) bldg.workers = [];
+    bldg.workers[workerIdx] = wid;
+    const f = fv.fairies.find(x=>x.id===wid);
+    showToast(`✅ ${f?.name||'Peri'} mulai bekerja!`);
+    _khRefRes && _khRefRes();
+    closeBuildingInterior();
+    const slot = FAIRY_SLOTS.find(s=>s.id===slotId);
+    if (slot) setTimeout(()=>openBuildingInterior(bldg,slot), 100);
+}
+
+// ─────────────────────────────────────────────────────────────
 // PARTIKEL
 // ─────────────────────────────────────────────────────────────
 function createFVParticles(wx,wy,count=12) {
@@ -45071,16 +45448,35 @@ function openFairyTestMode(){
     ];
     // Pre-built buildings dengan beberapa worker sudah ditugaskan
     fv.buildings = [
-        { slotId:'s1', bid:'pondok_peri',    workers:['t2'] },
-        { slotId:'s7', bid:'taman_mini',     workers:['t3','t4'] },
-        { slotId:'s13',bid:'kolam_kristal',  workers:[] },
+        { slotId:'s1',  bid:'pondok_peri',   workers:['t2'] },
+        { slotId:'s7',  bid:'taman_mini',    workers:['t3','t4'] },
+        { slotId:'s11', bid:'kolam_kristal', workers:[] },
     ];
     fv.buildQueue = [];
     fv.tutorialDone = true;
     fv.fvTutorialDone = true; // skip tutorial di test mode
     refreshFairyVillageMap();
-    showToast('🧚 TEST MODE — Masuk Kahyangan Wilis!');
+    showToast('🧚 TEST MODE — Masuk Kahyangan Wilis! (Gunakan menu Rara Wilis → Test Kelahiran)');
     openFairyVillage();
+}
+
+// ── TEST: Trigger kelahiran peri manual (dari menu Rara Wilis di test mode) ──
+function testFairyBirth() {
+    const fv = getFairyVillage();
+    const g = Math.random() < 0.6 ? 'girl' : 'boy';
+    const names = g==='girl' ? FAIRY_NAMES_GIRL : FAIRY_NAMES_BOY;
+    const spriteIdx = Math.floor(Math.random() * (g==='girl'?4:2));
+    const newFairy = {
+        id: 'f_test_'+Date.now(),
+        name: names[Math.floor(Math.random()*names.length)],
+        gender:g, level:1, xp:0, happiness:80, mood:'happy',
+        intel:_fairyStat(), agility:_fairyStat(), spirit:_fairyStat(),
+        hp:80+Math.floor(Math.random()*20), maxHp:100,
+        spriteIdx, isBorn:true,
+    };
+    fv.fairies.push(newFairy);
+    if (typeof closeDialogue==='function') closeDialogue();
+    setTimeout(()=>showFairyBirthPopup(newFairy, '🏠 Pondok Peri'), 200);
 }
 
 // ─────────────────────────────────────────────────────────────
