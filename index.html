@@ -11037,38 +11037,49 @@
                 adminDeleteStudent: async function (studentEmail) {
                     await this.init(true);
 
+                    // FIX: Selalu hapus dari localStorage dulu (mencegah login ulang via cache lokal)
+                    const dbLocal = this.getDB();
+                    if (dbLocal[studentEmail]) {
+                        delete dbLocal[studentEmail];
+                        this.saveDB(dbLocal);
+                    }
+                    // Juga bersihkan session jika yang dihapus adalah user yang sedang login
+                    try {
+                        const sess = localStorage.getItem('sc_session_email');
+                        if (sess === studentEmail) localStorage.removeItem('sc_session_email');
+                    } catch(e) {}
+
                     if (this.mode === 'firebase' && db) {
                         try {
-                            // Hapus dokumen user sepenuhnya dari koleksi 'users'
+                            // Hapus dokumen user dari Firestore juga
                             await db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(studentEmail).delete();
-                            return { success: true, type: 'cloud' };
+                            return { success: true, type: 'cloud+local' };
                         } catch (e) {
                             console.error("Gagal hapus akun cloud:", e);
-                            return { success: false, msg: "Gagal menghapus dari Cloud: " + e.message };
+                            // localStorage sudah terhapus — kembalikan sukses parsial
+                            return { success: true, type: 'local_only', msg: 'Lokal terhapus. Cloud gagal: ' + e.message };
                         }
-                    }
-                    else {
-                        // Hapus dari Local Storage
-                        const dbLocal = this.getDB();
-                        if (dbLocal[studentEmail]) {
-                            delete dbLocal[studentEmail]; // Hapus key email sepenuhnya
-                            this.saveDB(dbLocal);
+                    } else {
+                        if (dbLocal[studentEmail] !== undefined || true) {
                             return { success: true, type: 'local' };
                         }
-                        return { success: false, msg: "User tidak ditemukan di Local Storage." };
+                        return { success: false, msg: 'User tidak ditemukan.' };
                     }
                 },
 
                 getAllStudents: async function () {
                     // UPDATE: Logika pengambilan data berdasarkan Role User yang Login
-                    // Jika Admin: Ambil SEMUA user (Guru & Siswa)
+                    // Jika Admin: Ambil SEMUA user (Guru & Siswa, kecuali akun admin)
                     // Jika Guru: Ambil HANYA Siswa
-                    const isAdmin = this.user && this.user.role === 'admin';
+                    // FIX: Pakai DataService.user langsung agar tidak kehilangan context 'this'
+                    const currentUser = DataService.user;
+                    const isAdmin = currentUser && currentUser.role === 'admin';
 
                     if (this.mode === 'local') {
                         const dbLocal = this.getDB();
                         if (isAdmin) {
-                            return Object.values(dbLocal); // Semua data lokal
+                            // Admin: semua kecuali akun admin sendiri
+                            return Object.values(dbLocal).filter(u => u.role === 'siswa' || u.role === 'guru');
                         } else {
                             return Object.values(dbLocal).filter(u => u.role === 'siswa');
                         }
@@ -11076,19 +11087,20 @@
                         try {
                             let query = db.collection('artifacts').doc('nusantara-arsa').collection('users');
 
-                            // Jika bukan admin (berarti guru), filter hanya siswa
+                            // Admin ambil semua (tanpa filter) — guru hanya siswa
                             if (!isAdmin) {
                                 query = query.where('role', '==', 'siswa');
                             }
 
                             const snapshot = await query.get();
-                            return snapshot.docs.map(doc => {
-                                return { email: doc.id, ...doc.data() };
-                            });
+                            let users = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data() }));
+                            // Sembunyikan akun admin dari daftar
+                            if (isAdmin) users = users.filter(u => u.role !== 'admin');
+                            return users;
                         } catch (e) {
                             console.error("Gagal mengambil data users:", e);
                             const dbLocal = this.getDB();
-                            if (isAdmin) return Object.values(dbLocal);
+                            if (isAdmin) return Object.values(dbLocal).filter(u => u.role === 'siswa' || u.role === 'guru');
                             return Object.values(dbLocal).filter(u => u.role === 'siswa');
                         }
                     }
@@ -11593,7 +11605,13 @@
                         }
                     }
 
-                    const isAdmin = this.user && this.user.role === 'admin';
+                    // FIX BUG GURU: Simpan referensi DataService.user ke variabel lokal
+                    // agar tidak kehilangan context 'this' saat dipanggil sebagai callback
+                    const currentUser = DataService.user;
+                    const isAdmin = currentUser && currentUser.role === 'admin';
+
+                    // DEBUG: log untuk verifikasi isAdmin
+                    console.log('[subscribeToStudents] user:', currentUser && currentUser.email, 'isAdmin:', isAdmin);
 
                     if (!useCloud) {
                         // Fallback untuk mode offline/lokal: Gunakan Polling Interval
@@ -11601,9 +11619,12 @@
                             const dbLocal = this.getDB();
                             let users = Object.values(dbLocal);
 
-                            // Filter jika bukan admin
+                            // Filter jika bukan admin — admin dapat semua termasuk guru
                             if (!isAdmin) {
                                 users = users.filter(u => u.role === 'siswa');
+                            } else {
+                                // Admin: tampilkan guru & siswa, kecuali admin itu sendiri
+                                users = users.filter(u => u.role === 'siswa' || u.role === 'guru');
                             }
 
                             // Tambahkan flag source untuk UI
@@ -11616,13 +11637,20 @@
                         try {
                             let query = db.collection('artifacts').doc('nusantara-arsa').collection('users');
 
-                            // Filter query jika bukan admin
+                            // FIX: Admin ambil SEMUA user (siswa + guru), guru hanya siswa
+                            // Admin: tidak filter sama sekali
+                            // Guru: filter hanya role siswa
                             if (!isAdmin) {
                                 query = query.where('role', '==', 'siswa');
                             }
+                            // Jika isAdmin: tidak ada .where() — ambil semua dokumen
 
                             return query.onSnapshot((snapshot) => {
-                                const users = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data(), _source: 'cloud' }));
+                                let users = snapshot.docs.map(doc => ({ email: doc.id, ...doc.data(), _source: 'cloud' }));
+                                // Filter out akun admin itu sendiri dari daftar agar tidak muncul
+                                if (isAdmin) {
+                                    users = users.filter(u => u.role !== 'admin');
+                                }
                                 onUpdate(users);
                             }, (error) => {
                                 console.error("Monitoring Error:", error);
@@ -11745,11 +11773,21 @@
                         if (userData.role === 'guru' || userData.role === 'admin') {
                             initTeacherDashboard();
                         } else {
-                            const uiLayer = document.getElementById('ui-layer');
-                            const gc = document.getElementById('gameCanvas');
-                            if (uiLayer) uiLayer.style.display = 'block';
-                            if (gc) gc.style.display = 'block';
-                            startGame(userData);
+                            // Siswa: tampilkan welcome info dulu
+                            const welcomeName = document.getElementById('welcome-name');
+                            const welcomeClass = document.getElementById('welcome-class');
+                            const welcomeMentor = document.getElementById('welcome-mentor');
+                            if (welcomeName) welcomeName.innerText = userData.name || 'Siswa';
+                            if (welcomeClass) welcomeClass.innerText = userData.details || 'Umum';
+                            if (welcomeMentor && userData.mentor) welcomeMentor.innerText = 'Mentor Active';
+
+                            if (!userData.saveData) {
+                                // New game — mulai prologue
+                                startPrologue();
+                            } else {
+                                // Load game — tampilkan start screen
+                                document.getElementById('start-screen').classList.remove('hidden');
+                            }
                         }
                     }, 900);
 
@@ -11911,11 +11949,14 @@
                     if (role === 'guru') {
                         initTeacherDashboard();
                     } else {
-                        const uiLayer = document.getElementById('ui-layer');
-                        const gc = document.getElementById('gameCanvas');
-                        if (uiLayer) uiLayer.style.display = 'block';
-                        if (gc) gc.style.display = 'block';
-                        startGame(newUser);
+                        // Siswa baru — tampilkan welcome info lalu mulai prologue
+                        const welcomeName = document.getElementById('welcome-name');
+                        const welcomeClass = document.getElementById('welcome-class');
+                        const welcomeMentor = document.getElementById('welcome-mentor');
+                        if (welcomeName) welcomeName.innerText = newUser.name || 'Siswa';
+                        if (welcomeClass) welcomeClass.innerText = newUser.details || 'Umum';
+                        if (welcomeMentor && newUser.mentor) welcomeMentor.innerText = 'Mentor Active';
+                        startPrologue();
                     }
                 }, 900);
             }
@@ -12206,15 +12247,41 @@
 
                         // GANTI ALERT HASIL REGISTRASI:
                         if (res.success) {
-                            msgEl.style.color = "#4ade80"; // Hijau
+                            msgEl.style.color = "#4ade80";
                             let extraMsg = "";
-                            if (res.msg.includes("LOKAL")) extraMsg = " (Mode Offline)";
-                            msgEl.innerText = "✅ Registrasi Berhasil!" + extraMsg + " Silakan Login.";
+                            if (res.msg.includes("LOKAL")) extraMsg = " (Offline)";
 
-                            // Pindah ke tab login otomatis
-                            setTimeout(() => toggleAuthMode(), 1500);
+                            if (role === 'siswa') {
+                                // FIX: Auto-login langsung setelah daftar — siswa tidak perlu login ulang
+                                msgEl.innerText = "✅ Registrasi Berhasil!" + extraMsg + " Memuat game...";
+                                setTimeout(async () => {
+                                    const loginRes = await DataService.login(email, pass);
+                                    if (loginRes.success) {
+                                        localStorage.setItem(SESSION_KEY, email);
+                                        const u = loginRes.user;
+                                        const welcomeName = document.getElementById('welcome-name');
+                                        const welcomeClass = document.getElementById('welcome-class');
+                                        const welcomeMentor = document.getElementById('welcome-mentor');
+                                        if (welcomeName) welcomeName.innerText = u.name || 'Siswa';
+                                        if (welcomeClass) welcomeClass.innerText = u.details || 'Umum';
+                                        if (welcomeMentor && u.mentor) welcomeMentor.innerText = 'Mentor Active';
+                                        document.getElementById('login-screen').style.display = 'none';
+                                        const titleSc = document.getElementById('title-screen');
+                                        if (titleSc) { titleSc.style.display = 'none'; titleSc.classList.add('hidden'); }
+                                        startPrologue();
+                                    } else {
+                                        // Fallback: pindah ke tab login jika auto-login gagal
+                                        msgEl.innerText = "✅ Registrasi Berhasil! Silakan Login.";
+                                        setTimeout(() => toggleAuthMode(), 1000);
+                                    }
+                                }, 800);
+                            } else {
+                                // Guru: tetap arahkan ke login
+                                msgEl.innerText = "✅ Registrasi Berhasil!" + extraMsg + " Silakan Login.";
+                                setTimeout(() => toggleAuthMode(), 1500);
+                            }
                         } else {
-                            msgEl.style.color = "#ef4444"; // Merah
+                            msgEl.style.color = "#ef4444";
                             msgEl.innerText = "❌ " + res.msg;
                         }
 
@@ -12903,8 +12970,9 @@
                         else if (u.role === 'guru') {
                             roleHtml = `<span style="background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:bold; font-size:10px; border:1px solid #93c5fd;">MENTOR</span>`;
                             detailsHtml = `NIP: ${u.details || '-'}<br><small>${u.school || ''}</small>`;
-                            if (DataService.user.role === 'admin') {
-                                actionHtml = `<button class="auth-btn" style="width:auto; padding:4px 8px; font-size:9px; background:#475569;" onclick="alert('Fitur Edit Guru Segera Hadir')">EDIT</button>`;
+                            if (DataService.user && DataService.user.role === 'admin') {
+                                // FIX: Admin bisa hapus akun guru permanen
+                                actionHtml = `<button class="auth-btn" style="width:auto; padding:4px 8px; font-size:9px; background:#dc2626; margin:0;" onclick="confirmDeleteStudent('${safeEmail}', '${safeName}')" title="Hapus Akun Guru">🗑️ HAPUS</button>`;
                             }
                         }
                         else { // Siswa
@@ -35487,7 +35555,7 @@ Pilih masakan:
             // ─── DIALOGUE SYSTEM WITH AUTO-PAGINATION ───────────────────
             // Memecah teks panjang jadi halaman-halaman pendek
             // Threshold karakter sebelum dipaginate
-            const DIALOGUE_PAGE_LIMIT = 220;
+            const DIALOGUE_PAGE_LIMIT = 400;
 
             function splitDialoguePages(text) {
                 // Jika teks pendek, langsung 1 halaman
@@ -36706,7 +36774,9 @@ Pilih masakan:
 
                 renderList.push({
                     type: 'player',
-                    y: STATE.player.y + STATE.player.h,
+                    // FIX: Gunakan tinggi sprite visual (58px) bukan hitbox h:20
+                    // agar z-sorting konsisten dengan NPC yang juga pakai visualHeight
+                    y: STATE.player.y + 58,
                     data: STATE.player
                 });
 
@@ -37552,6 +37622,30 @@ Pilih masakan:
             function drawBuilding(ctx, b) {
                 // Bangunan collision-only di fairy village (sudah ada sprite NPC) — skip render
                 if (b.id === 'rara_wilis_bld' || b.id === 'pohon_energi_bld') return;
+
+                // FIX: Bangunan Fairy Village — render pakai emoji + warna tier
+                if (b.id && b.id.startsWith('fv_bld_')) {
+                    const bx = b.x * TILE_SIZE, by = b.y * TILE_SIZE;
+                    const bw = (b.w || 2) * TILE_SIZE, bh = (b.h || 2) * TILE_SIZE;
+                    const bgColors = ['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
+                    const borderColors = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
+                    const tier = b._fvTier || 0;
+                    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+                    ctx.fillRect(bx+4, by+bh-2, bw, 6);
+                    ctx.fillStyle = bgColors[tier] || '#fef3c7';
+                    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 6); ctx.fill();
+                    ctx.strokeStyle = borderColors[tier] || '#d97706';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 6); ctx.stroke();
+                    ctx.font = (Math.min(bw, bh) * 0.55) + 'px serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(b._fvEmoji || '🏠', bx + bw/2, by + bh/2 - 4);
+                    ctx.fillStyle = borderColors[tier] || '#d97706';
+                    ctx.font = 'bold 7px Nunito, sans-serif';
+                    ctx.fillText((b.name||'').replace(/^[^ ]+ /,'').substring(0,12), bx + bw/2, by + bh - 5);
+                    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+                    return;
+                }
 
                 if (b.type === 'trigger') {
                     // Trigger invisible, but usually draws entrance circle below
@@ -43343,12 +43437,20 @@ function getFairyVillage() {
             lastTickDay:  STATE.day,
             lastCollectDay: -1,
             tutorialDone: false,
+            fvTutorialDone: false, // FIX: flag yang dicek openFairyVillage
+            isFirstVisit: true,    // FIX: flag kunjungan pertama untuk resource reset
         };
     }
     const fv = STATE.player.fairyVillage;
     if (!fv.buildQueue) fv.buildQueue = [];
     if (fv.resources.makanan === undefined) fv.resources.makanan = 20;
-    // Migrate save lama yang masih kosong semua → kasih starter
+    // Migrate: pastikan fvTutorialDone ada (save lama hanya punya tutorialDone)
+    if (fv.fvTutorialDone === undefined) fv.fvTutorialDone = false;
+    // Migrate: isFirstVisit untuk save lama — anggap sudah pernah kunjung jika ada bangunan
+    if (fv.isFirstVisit === undefined) {
+        fv.isFirstVisit = !(fv.buildings && fv.buildings.length > 0);
+    }
+    // Migrate save lama yang masih kosong semua → kasih starter resource
     const r = fv.resources;
     if (!r.debu && !r.kristal && !r.cahaya && !(fv.buildings||[]).length && !(fv.buildQueue||[]).length) {
         fv.resources = { debu:50, kristal:5, cahaya:1, makanan:30 };
@@ -43791,7 +43893,8 @@ function fairyDailyTick(fv) {
             const spriteCount = g === 'girl' ? 4 : 2;
             const spriteIdx = Math.floor(Math.random() * spriteCount);
             const defaultName = names[Math.floor(Math.random()*names.length)];
-            const stats = {
+            // FIX: ganti nama 'stats' menjadi 'newFairyStats' agar tidak shadow outer 'stats'
+            const newFairyStats = {
                 intel:_fairyStat(), agility:_fairyStat(), spirit:_fairyStat(),
                 hp:80+Math.floor(Math.random()*20)
             };
@@ -43799,8 +43902,8 @@ function fairyDailyTick(fv) {
                 id: 'f_'+Date.now()+'_'+Math.floor(Math.random()*9999),
                 name: defaultName,
                 gender:g, level:1, xp:0, happiness:80, mood:'happy',
-                intel:stats.intel, agility:stats.agility, spirit:stats.spirit,
-                hp:stats.hp, maxHp:100,
+                intel:newFairyStats.intel, agility:newFairyStats.agility, spirit:newFairyStats.spirit,
+                hp:newFairyStats.hp, maxHp:100,
                 spriteIdx: spriteIdx,
                 isBorn: true,
             };
@@ -43828,15 +43931,21 @@ function refreshFairyVillageMap() {
     ];
 
     // Tambahkan bangunan yang sudah selesai dibangun
+    // FIX: bangunan menyimpan slotId (string ID), bukan slot (object)
+    // Lookup posisi dari FAIRY_SLOTS menggunakan slotId
     (fv.buildings || []).forEach(b => {
-        if (b.slot) {
-            buildings.push({
-                id: 'fv_bld_' + b.bid,
-                x: b.slot.x || 10, y: b.slot.y || 10,
-                w: b.slot.w || 3, h: b.slot.h || 3,
-                solid: true, name: b.name || 'Bangunan'
-            });
-        }
+        const slot = FAIRY_SLOTS.find(s => s.id === b.slotId);
+        if (!slot) return; // skip jika slotId tidak valid
+        const bDef = (typeof FAIRY_BUILDINGS !== 'undefined') ? FAIRY_BUILDINGS[b.bid] : null;
+        buildings.push({
+            id: 'fv_bld_' + b.bid,
+            x: slot.x, y: slot.y,
+            w: (bDef && bDef.w) || 2, h: (bDef && bDef.h) || 2,
+            solid: true,
+            name: (bDef && bDef.name) || 'Bangunan',
+            _fvEmoji: (bDef && bDef.emoji) || '🏠',
+            _fvTier: (bDef && bDef.tier) || 0,
+        });
     });
 
     maps['fairyVillage'].buildings = buildings;
@@ -43867,7 +43976,23 @@ function openFairyVillage() {
         showToast('Selesaikan Quest Kahyangan Wilis dulu!'); return;
     }
     const fv = getFairyVillage();
-    fairyDailyTick(fv);
+
+    // FIX: Reset resource ke starter untuk kunjungan pertama
+    // Dilakukan SEBELUM fairyDailyTick agar tidak ter-override
+    if (fv.isFirstVisit) {
+        fv.resources = { debu:50, kristal:5, cahaya:1, makanan:30 };
+        fv.isFirstVisit = false;
+        showToast('✨ Selamat datang di Kahyangan Wilis! Kamu mendapat sumber daya awal!');
+    }
+
+    // FIX: Hanya jalankan daily tick jika BUKAN kunjungan pertama
+    // agar tidak ada popup kelahiran peri yang bentrok dengan tutorial
+    if (!fv.fvTutorialDone) {
+        // Skip daily tick saat tutorial agar tidak ada interupsi
+        fv.lastTickDay = STATE.day; // mark hari ini agar tick tidak jalan
+    } else {
+        fairyDailyTick(fv);
+    }
 
     // Simpan lokasi & posisi sebelumnya
     window._fvPrevLocation = STATE.location;
@@ -43899,8 +44024,9 @@ function openFairyVillage() {
     if (_dw) _dw.style.display = 'none';
 
     // ── TUTORIAL PERTAMA KALI ──────────────────────────────────────
+    // FIX: Tunda 1000ms agar canvas sudah ter-render sebelum tutorial muncul
     if (!fv.fvTutorialDone) {
-        setTimeout(() => startFairyVillageTutorial(), 600);
+        setTimeout(() => startFairyVillageTutorial(), 1000);
     }
 }
 
