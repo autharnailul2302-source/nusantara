@@ -6611,6 +6611,7 @@
                     </div>
                     <ul class="dash-nav">
                         <li onclick="showDashPage('welcome')" id="nav-welcome" style="color:#fbbf24; font-weight:700;">🏆 Tentang & Panduan</li>
+                        <li onclick="showDashPage('statistik')" id="nav-statistik" style="color:#34d399; font-weight:700; display:none;">📊 Statistik Platform</li>
                         <li onclick="showDashPage('monitoring')" class="active">📡 Live Monitoring</li>
                         <li onclick="showDashPage('accounts')">👥 Database Akun</li>
                         <li onclick="showDashPage('ranking')">🏆 Class Ranking</li>
@@ -6632,6 +6633,13 @@
                     </ul>
                 </div>
                 <div class="dash-content">
+                    <!-- ===================== STATISTIK PLATFORM ===================== -->
+                    <div id="page-statistik" class="dash-page hidden">
+                        <h2 style="color:#0f172a;margin-top:0;display:flex;align-items:center;gap:10px;">📊 Statistik Platform Nusantara Arsa</h2>
+                        <div id="stats-content">
+                            <div style="display:flex;align-items:center;justify-content:center;height:200px;color:#94a3b8;font-size:14px;">⏳ Memuat statistik...</div>
+                        </div>
+                    </div>
                     <!-- ===================== WELCOME PAGE ===================== -->
                     <div id="page-welcome" class="dash-page hidden">
                         <h2 style="color:#0f172a; margin-top:0; display:flex; align-items:center; gap:10px;">
@@ -12639,14 +12647,27 @@
                 // CUSTOMIZE DASHBOARD TITLE BASED ON ROLE
                 if (user && user.role === 'admin') {
                     titleEl.innerHTML = "ADMINISTRATOR<br>CONTROL PANEL";
-                    titleEl.style.color = "#ef4444"; // Merah
+                    titleEl.style.color = "#ef4444";
                     titleEl.style.textShadow = "0 0 10px rgba(239, 68, 68, 0.3)";
-                    // Render halaman welcome khusus admin
+                    // Admin: tampilkan menu statistik, buka langsung halaman statistik
+                    const navStats = document.getElementById('nav-statistik');
+                    if (navStats) navStats.style.display = '';
+                    // Langsung buka statistik untuk admin
+                    document.querySelectorAll('.dash-page').forEach(el => el.classList.add('hidden'));
+                    const statsPage = document.getElementById('page-statistik');
+                    if (statsPage) {
+                        statsPage.classList.remove('hidden');
+                        document.querySelectorAll('.dash-nav li').forEach(el => el.classList.remove('active'));
+                        if (navStats) navStats.classList.add('active');
+                    }
                     renderAdminWelcomePage();
                 } else {
                     titleEl.innerHTML = "TEACHER<br>COMMAND CENTER";
-                    titleEl.style.color = "#fbbf24"; // Emas
+                    titleEl.style.color = "#fbbf24";
                     titleEl.style.textShadow = "none";
+                    // Sembunyikan menu statistik untuk guru
+                    const navStats = document.getElementById('nav-statistik');
+                    if (navStats) navStats.style.display = 'none';
                 }
 
                 // Tampilkan status connecting agar tidak bingung
@@ -13060,6 +13081,7 @@
                 if (activePage) {
                     const pageId = activePage.id;
                     // Panggil fungsi render tanpa 'await' karena menggunakan cached data
+                    if (pageId === 'page-statistik') renderStatsDashboard();
                     if (pageId === 'page-accounts') renderAccountsList(); // NEW
                     if (pageId === 'page-grading') renderGrading();
                     if (pageId === 'page-reflections') renderReflections();
@@ -13144,6 +13166,7 @@
 
                 // Render Immediately using Cache
                 if (page === 'welcome') return; // static page, no render needed
+                if (page === 'statistik') renderStatsDashboard();
                 if (page === 'accounts') renderAccountsList(); // NEW
                 if (page === 'grading') renderGrading();
                 if (page === 'reflections') renderReflections();
@@ -13153,6 +13176,337 @@
                 if (page === 'ranking') renderRanking();
                 if (page === 'bk') renderBKDashboard();
                 if (page === 'gempita') renderGempitaLeaderboard();
+            }
+
+            // ═══════════════════════════════════════════════════════
+            // STATISTIK PLATFORM DASHBOARD — Admin Only
+            // ═══════════════════════════════════════════════════════
+            function renderStatsDashboard() {
+                const el = document.getElementById('stats-content');
+                if (!el) return;
+                const users = latestStudentData || [];
+
+                const siswaList     = users.filter(u => u.role === 'siswa');
+                const guruList      = users.filter(u => u.role === 'guru');
+                const activePlayers = siswaList.filter(u => u.saveData && u.saveData.day);
+                const now = Date.now();
+                const onlineNow     = siswaList.filter(u => {
+                    const la = u.lastActive || (u.saveData && u.saveData.lastActive) || 0;
+                    return now - la < 600000;
+                });
+                const totalVisits   = siswaList.reduce((s,u) =>
+                    s + ((u.saveData && u.saveData.arsaVisitCount) || (u.saveData ? 1 : 0)), 0);
+                const avgDay        = activePlayers.length
+                    ? (activePlayers.reduce((s,u) => s+(u.saveData.day||1), 0) / activePlayers.length).toFixed(1) : '0';
+                const avgMoney      = activePlayers.length
+                    ? Math.round(activePlayers.reduce((s,u) => s+(u.saveData.money||0), 0) / activePlayers.length) : 0;
+
+                const roleMap = { worker:0, student:0, entrepreneur:0, family:0, none:0 };
+                activePlayers.forEach(u => { const r=u.saveData.role||'none'; if(roleMap[r]!==undefined) roleMap[r]++; else roleMap.none++; });
+
+                const genderM = activePlayers.filter(u => u.saveData.gender==='boy').length;
+                const genderF = activePlayers.filter(u => u.saveData.gender==='girl').length;
+
+                const lvlBuckets = { 'Lv.1-2':0,'Lv.3-5':0,'Lv.6-9':0,'Lv.10+':0 };
+                activePlayers.forEach(u => {
+                    const lv = u.saveData.level||1;
+                    if (lv<=2) lvlBuckets['Lv.1-2']++;
+                    else if (lv<=5) lvlBuckets['Lv.3-5']++;
+                    else if (lv<=9) lvlBuckets['Lv.6-9']++;
+                    else lvlBuckets['Lv.10+']++;
+                });
+
+                // Aktivitas per jam
+                const hourBuckets = Array(24).fill(0);
+                siswaList.forEach(u => {
+                    const la = u.lastActive || (u.saveData && u.saveData.lastActive) || 0;
+                    if (la > 0) hourBuckets[new Date(la).getHours()]++;
+                });
+                const maxHour = Math.max(...hourBuckets, 1);
+
+                const guruSiswaMap = {};
+                siswaList.forEach(u => { if(u.mentor) guruSiswaMap[u.mentor]=(guruSiswaMap[u.mentor]||0)+1; });
+                const topGuru = Object.entries(guruSiswaMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+                const sekolahMap = {};
+                guruList.forEach(g => { if(g.sekolah) sekolahMap[g.sekolah]=(sekolahMap[g.sekolah]||0)+1; });
+                const sekolahEntries = Object.entries(sekolahMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+                const married   = activePlayers.filter(u=>u.saveData.married).length;
+                const hasKid    = activePlayers.filter(u=>u.saveData.kids&&u.saveData.kids.length>0).length;
+                const completed = activePlayers.filter(u=>(u.saveData.day||0)>=25).length;
+                const refreshTime = new Date().toLocaleString('id-ID');
+
+                const roleColors = { worker:'#3b82f6',student:'#8b5cf6',entrepreneur:'#10b981',family:'#ec4899',none:'#94a3b8' };
+                const roleNames  = { worker:'⚒️ Pekerja',student:'🎓 Akademisi',entrepreneur:'💼 Wirausaha',family:'🏠 Keluarga',none:'❓ Belum' };
+                const lvlColors  = { 'Lv.1-2':'#86efac','Lv.3-5':'#4ade80','Lv.6-9':'#22c55e','Lv.10+':'#15803d' };
+
+                function barRow(label, val, total, color) {
+                    const pct = total>0 ? Math.round(val/total*100) : 0;
+                    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                        <div style="width:88px;font-size:10px;color:#374151;text-align:right;flex-shrink:0;line-height:1.2;">${label}</div>
+                        <div style="flex:1;background:#f1f5f9;border-radius:20px;height:14px;overflow:hidden;">
+                            <div class="stat-bar-fill" data-pct="${pct}" style="width:0%;background:${color};height:100%;border-radius:20px;transition:width 0.8s cubic-bezier(.4,0,.2,1);"></div>
+                        </div>
+                        <div style="width:52px;font-size:10px;color:#1e293b;font-weight:700;flex-shrink:0;">${val} <span style="color:#94a3b8;font-weight:400;">${pct}%</span></div>
+                    </div>`;
+                }
+
+                el.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+                    <div style="font-size:11px;color:#64748b;">🕐 <b>${refreshTime}</b> &nbsp;•&nbsp; <b style="color:${DataService.mode==='firebase'?'#059669':'#d97706'}">${DataService.mode==='firebase'?'☁️ Firebase':'💾 Lokal'}</b></div>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="exportStatsCsv()" style="background:#0f172a;color:#34d399;border:1.5px solid #34d399;border-radius:8px;padding:6px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">⬇️ Export CSV</button>
+                        <button onclick="renderStatsDashboard()" style="background:#0f172a;color:#38bdf8;border:1.5px solid #38bdf8;border-radius:8px;padding:6px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">🔄 Refresh</button>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+                    ${[
+                        {icon:'👁️',label:'Total Kunjungan',val:totalVisits.toLocaleString('id'),sub:'sesi masuk game',c:'#3b82f6',bg:'#eff6ff',bd:'#bfdbfe'},
+                        {icon:'🎮',label:'Total Pemain',val:siswaList.length,sub:'akun siswa terdaftar',c:'#7c3aed',bg:'#f5f3ff',bd:'#ddd6fe'},
+                        {icon:'👩‍🏫',label:'Jumlah Mentor',val:guruList.length,sub:'guru terdaftar',c:'#059669',bg:'#f0fdf4',bd:'#bbf7d0'},
+                        {icon:'🟢',label:'Online Sekarang',val:onlineNow.length,sub:'aktif < 10 menit',c:'#d97706',bg:'#fffbeb',bd:'#fde68a'},
+                    ].map(c=>`<div style="background:${c.bg};border:2px solid ${c.bd};border-radius:14px;padding:16px 12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.06);position:relative;overflow:hidden;">
+                        <div style="position:absolute;right:8px;top:8px;font-size:28px;opacity:0.12;">${c.icon}</div>
+                        <div style="font-size:30px;font-weight:800;color:${c.c};font-family:'Fredoka',sans-serif;line-height:1;">${c.val}</div>
+                        <div style="font-size:10px;font-weight:700;color:${c.c};margin-top:4px;">${c.label}</div>
+                        <div style="font-size:9px;color:#94a3b8;margin-top:3px;">${c.sub}</div>
+                    </div>`).join('')}
+                </div>
+
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">
+                    ${[
+                        {l:'▶️ Sudah Mulai',v:activePlayers.length,c:'#16a34a'},
+                        {l:'⏳ Belum Mulai',v:siswaList.length-activePlayers.length,c:'#dc2626'},
+                        {l:'📅 Avg. Hari',v:avgDay+' hari',c:'#0369a1'},
+                        {l:'💰 Avg. Gold',v:avgMoney.toLocaleString('id')+('G'),c:'#b45309'},
+                        {l:'💍 Menikah',v:married,c:'#be185d'},
+                        {l:'👶 Punya Anak',v:hasKid,c:'#7c3aed'},
+                        {l:'🏁 Tamat (≥Hari 25)',v:completed,c:'#0f766e'},
+                        {l:'🏫 Sekolah',v:Object.keys(sekolahMap).length,c:'#1d4ed8'},
+                        {l:'👦👧 Boy:Girl',v:(genderM>0||genderF>0)?genderM+':'+genderF:'–',c:'#64748b'},
+                    ].map(c=>`<div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:20px;padding:5px 12px;font-size:10px;font-weight:700;color:${c.c};display:flex;align-items:center;gap:5px;">
+                        ${c.l} <span style="background:${c.c};color:#fff;border-radius:10px;padding:1px 6px;font-size:9px;">${c.v}</span>
+                    </div>`).join('')}
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                    <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size:12px;font-weight:800;color:#1e3a5f;margin-bottom:14px;">🗺️ Distribusi Jalur Hidup</div>
+                        <div style="display:flex;gap:12px;align-items:flex-start;">
+                            <div style="flex:1;">
+                                ${Object.entries(roleMap).map(([k,v])=>barRow(roleNames[k]||k,v,activePlayers.length,roleColors[k]||'#94a3b8')).join('')}
+                            </div>
+                            <canvas id="cv-role" width="100" height="100" style="flex-shrink:0;"></canvas>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;">
+                            ${Object.entries(roleMap).filter(([,v])=>v>0).map(([k,v])=>`<div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#475569;"><div style="width:8px;height:8px;border-radius:50%;background:${roleColors[k]};"></div>${roleNames[k]} (${v})</div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size:12px;font-weight:800;color:#1e3a5f;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+                            <span>⏰ Aktivitas per Jam</span>
+                            <span style="font-size:9px;color:#94a3b8;font-weight:400;">berdasarkan lastActive</span>
+                        </div>
+                        <div style="display:flex;align-items:flex-end;gap:2px;height:90px;padding:0 2px;">
+                            ${hourBuckets.map((v,h)=>{
+                                const ht=Math.round((v/maxHour)*86);
+                                const isNow=new Date().getHours()===h;
+                                const isPeak=v===maxHour&&v>0;
+                                return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative;" title="${h}:00 — ${v} pemain">
+                                    ${isPeak?`<div style="position:absolute;top:-13px;font-size:7px;font-weight:700;color:#f59e0b;">${v}★</div>`:''}
+                                    <div style="width:100%;background:${isNow?'#f59e0b':v>0?'#3b82f6':'#e2e8f0'};height:${Math.max(ht,v>0?3:0)}px;border-radius:3px 3px 0 0;${isNow?'box-shadow:0 0 6px #f59e0b66;':''};"></div>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                        <div style="display:flex;gap:2px;margin-top:4px;padding:0 2px;">
+                            ${Array(24).fill(0).map((_,h)=>h%3===0?`<div style="flex:3;font-size:8px;color:#94a3b8;">${h<10?'0'+h:h}</div>`:`<div style="flex:1;"></div>`).join('')}
+                        </div>
+                        <div style="margin-top:8px;font-size:9px;color:#64748b;">
+                            🕐 Jam paling ramai: <b style="color:#f59e0b;">${hourBuckets.indexOf(maxHour)}:00</b> &nbsp;•&nbsp; Total aktif hari ini: <b style="color:#3b82f6;">${hourBuckets.reduce((a,b)=>a+b,0)}</b>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
+                    <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="font-size:12px;font-weight:800;color:#1e3a5f;margin-bottom:12px;">⭐ Distribusi Level</div>
+                        ${Object.entries(lvlBuckets).map(([k,v])=>barRow(k,v,activePlayers.length,lvlColors[k]||'#4ade80')).join('')}
+                        <canvas id="cv-level" width="90" height="90" style="display:block;margin:8px auto 0;"></canvas>
+                    </div>
+
+                    <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="font-size:12px;font-weight:800;color:#1e3a5f;margin-bottom:10px;">👤 Gender Pemain</div>
+                        <div style="display:flex;gap:8px;margin-bottom:14px;">
+                            <div style="flex:${genderM||1};background:linear-gradient(135deg,#dbeafe,#bfdbfe);border-radius:10px;padding:10px;text-align:center;">
+                                <div style="font-size:20px;">👦</div>
+                                <div style="font-size:18px;font-weight:800;color:#1d4ed8;">${genderM}</div>
+                                <div style="font-size:9px;color:#3b82f6;">${activePlayers.length>0?Math.round(genderM/activePlayers.length*100):0}%</div>
+                            </div>
+                            <div style="flex:${genderF||1};background:linear-gradient(135deg,#fce7f3,#fbcfe8);border-radius:10px;padding:10px;text-align:center;">
+                                <div style="font-size:20px;">👧</div>
+                                <div style="font-size:18px;font-weight:800;color:#be185d;">${genderF}</div>
+                                <div style="font-size:9px;color:#ec4899;">${activePlayers.length>0?Math.round(genderF/activePlayers.length*100):0}%</div>
+                            </div>
+                        </div>
+                        <div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:8px;">🏆 Top Mentor</div>
+                        ${topGuru.length?topGuru.map(([name,cnt],i)=>`
+                            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+                                <div style="width:16px;height:16px;border-radius:50%;background:${['#f59e0b','#94a3b8','#b45309','#e2e8f0','#e2e8f0'][i]};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:${i<3?'#fff':'#64748b'};flex-shrink:0;">${i+1}</div>
+                                <div style="flex:1;font-size:10px;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+                                <div style="background:#eff6ff;color:#1d4ed8;border-radius:10px;padding:1px 7px;font-size:9px;font-weight:700;">${cnt}</div>
+                            </div>
+                        `).join(''):`<div style="color:#94a3b8;font-size:10px;">Belum ada data</div>`}
+                    </div>
+
+                    <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="font-size:12px;font-weight:800;color:#1e3a5f;margin-bottom:12px;">🏫 Asal Sekolah Mentor</div>
+                        ${sekolahEntries.length?sekolahEntries.map(([skl,cnt])=>barRow(skl,cnt,guruList.length,'#0284c7')).join('')
+                            :'<div style="color:#94a3b8;font-size:10px;text-align:center;padding:16px;">Belum ada data</div>'}
+                        ${Object.keys(sekolahMap).length>6?`<div style="font-size:9px;color:#94a3b8;margin-top:4px;">+${Object.keys(sekolahMap).length-6} sekolah lainnya</div>`:''}
+                    </div>
+                </div>
+
+                <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                        <div style="font-size:12px;font-weight:800;color:#1e3a5f;">🟢 Pemain Online Sekarang <span style="background:#dcfce7;color:#16a34a;border-radius:20px;padding:2px 8px;font-size:10px;margin-left:6px;">${onlineNow.length} aktif</span></div>
+                    </div>
+                    ${onlineNow.length?`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:10px;">
+                        <thead><tr style="background:#f8fafc;">
+                            <th style="padding:7px 10px;text-align:left;color:#475569;font-weight:700;border-bottom:2px solid #e2e8f0;">Nama</th>
+                            <th style="padding:7px 10px;text-align:left;color:#475569;font-weight:700;border-bottom:2px solid #e2e8f0;">Kelas</th>
+                            <th style="padding:7px 10px;text-align:left;color:#475569;font-weight:700;border-bottom:2px solid #e2e8f0;">Jalur</th>
+                            <th style="padding:7px 10px;text-align:center;color:#475569;font-weight:700;border-bottom:2px solid #e2e8f0;">Level</th>
+                            <th style="padding:7px 10px;text-align:center;color:#475569;font-weight:700;border-bottom:2px solid #e2e8f0;">Hari</th>
+                            <th style="padding:7px 10px;text-align:right;color:#475569;font-weight:700;border-bottom:2px solid #e2e8f0;">Terakhir Aktif</th>
+                        </tr></thead>
+                        <tbody>${onlineNow.sort((a,b)=>{const la=n=>n.lastActive||(n.saveData&&n.saveData.lastActive)||0;return la(b)-la(a);}).map((u,i)=>{
+                            const sd=u.saveData||{};
+                            const la=u.lastActive||(sd.lastActive)||0;
+                            const minsAgo=Math.floor((now-la)/60000);
+                            const rIco={worker:'⚒️',student:'🎓',entrepreneur:'💼',family:'🏠'}[sd.role]||'❓';
+                            const rName={worker:'Pekerja',student:'Akademisi',entrepreneur:'Wirausaha',family:'Keluarga'}[sd.role]||'Belum';
+                            return `<tr style="border-bottom:1px solid #f1f5f9;${i%2===0?'background:#fafafa':''}">
+                                <td style="padding:7px 10px;"><div style="display:flex;align-items:center;gap:6px;"><div style="width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 5px #22c55e;flex-shrink:0;"></div><b>${u.name||u.email}</b></div></td>
+                                <td style="padding:7px 10px;color:#64748b;">${u.kelas||'-'}</td>
+                                <td style="padding:7px 10px;"><span style="background:${(roleColors[sd.role||'none']||'#94a3b8')+'22'};color:${roleColors[sd.role||'none']||'#94a3b8'};border-radius:10px;padding:2px 7px;font-weight:700;">${rIco} ${rName}</span></td>
+                                <td style="padding:7px 10px;text-align:center;"><span style="background:#fef3c7;color:#92400e;border-radius:8px;padding:2px 7px;font-weight:700;">Lv.${sd.level||1}</span></td>
+                                <td style="padding:7px 10px;text-align:center;color:#0369a1;font-weight:700;">Hari ${sd.day||1}</td>
+                                <td style="padding:7px 10px;text-align:right;color:#94a3b8;">${minsAgo===0?'baru saja':minsAgo+' mnt lalu'}</td>
+                            </tr>`;
+                        }).join('')}</tbody>
+                    </table></div>`:`<div style="text-align:center;padding:20px;color:#94a3b8;">Tidak ada pemain online saat ini</div>`}
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                    <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:14px;padding:18px;color:#e2e8f0;">
+                        <div style="font-size:12px;font-weight:800;color:#fbbf24;margin-bottom:12px;">📋 Rekap Sistem</div>
+                        ${[['Total User (non-admin)',siswaList.length+guruList.length,'#38bdf8'],['Ratio siswa : mentor',guruList.length>0?(siswaList.length/guruList.length).toFixed(1)+' : 1':'–','#34d399'],['Tingkat partisipasi',siswaList.length>0?Math.round(activePlayers.length/siswaList.length*100)+'%':'–','#a78bfa'],['Pemain tamat (Hari 25+)',completed+' / '+activePlayers.length,'#fbbf24'],['Total sekolah terdaftar',Object.keys(sekolahMap).length,'#fb923c'],['Mode database',DataService.mode==='firebase'?'☁️ Firebase Cloud':'💾 LocalStorage','#86efac']].map(([l,v,c])=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);"><span style="font-size:10px;color:#94a3b8;">${l}</span><span style="font-size:11px;font-weight:700;color:${c};">${v}</span></div>`).join('')}
+                    </div>
+                    <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="font-size:12px;font-weight:800;color:#1e3a5f;margin-bottom:12px;">💡 Insight Otomatis</div>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            ${(()=>{
+                                const ins=[];
+                                const tr=Object.entries(roleMap).sort((a,b)=>b[1]-a[1])[0];
+                                if(tr&&tr[1]>0) ins.push({ico:'🗺️',txt:`Jalur terpopuler: <b>${roleNames[tr[0]]}</b> (${tr[1]} pemain)`,c:'#3b82f6'});
+                                const ns=siswaList.length-activePlayers.length;
+                                if(ns>0) ins.push({ico:'⚠️',txt:`<b>${ns} siswa</b> belum mulai bermain`,c:'#dc2626'});
+                                if(onlineNow.length>0) ins.push({ico:'🟢',txt:`<b>${onlineNow.length} pemain</b> sedang aktif saat ini`,c:'#16a34a'});
+                                if(completed>0) ins.push({ico:'🏁',txt:`<b>${completed} pemain</b> sudah tamat (Hari 25+)`,c:'#0f766e'});
+                                if(parseFloat(avgDay)>15) ins.push({ico:'🔥',txt:`Rata-rata hari bermain <b>${avgDay}</b> — engagement tinggi!`,c:'#d97706'});
+                                if(ins.length===0) ins.push({ico:'📊',txt:'Belum ada data. Refresh setelah ada siswa aktif.',c:'#94a3b8'});
+                                return ins.slice(0,5).map(({ico,txt,c})=>`<div style="display:flex;align-items:flex-start;gap:8px;background:#f8fafc;border-left:3px solid ${c};border-radius:0 8px 8px 0;padding:8px 10px;"><span style="font-size:14px;">${ico}</span><span style="font-size:10px;color:#374151;line-height:1.5;">${txt}</span></div>`).join('');
+                            })()}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:9px;color:#94a3b8;border:1px solid #e2e8f0;">
+                    <span>📊 Statistik Platform · Nusantara Arsa</span>
+                    <span>Dokumen diproses: <b style="color:#475569;">${users.length}</b></span>
+                </div>
+                `;
+
+                setTimeout(()=>{ document.querySelectorAll('.stat-bar-fill').forEach(b=>{ b.style.width=b.dataset.pct+'%'; }); }, 80);
+
+                setTimeout(()=>{
+                    const cv=document.getElementById('cv-role'); if(!cv) return;
+                    const cx2=cv.getContext('2d');
+                    const tot=Object.values(roleMap).reduce((a,b)=>a+b,0);
+                    if(!tot){cx2.fillStyle='#e2e8f0';cx2.beginPath();cx2.arc(50,50,44,0,Math.PI*2);cx2.fill();return;}
+                    let sa=-Math.PI/2;
+                    Object.entries(roleMap).forEach(([k,v])=>{
+                        if(!v) return;
+                        const sl=(v/tot)*Math.PI*2;
+                        cx2.beginPath();cx2.moveTo(50,50);cx2.arc(50,50,44,sa,sa+sl);cx2.closePath();
+                        cx2.fillStyle=roleColors[k]||'#94a3b8';cx2.fill();sa+=sl;
+                    });
+                    cx2.beginPath();cx2.arc(50,50,26,0,Math.PI*2);cx2.fillStyle='#fff';cx2.fill();
+                    cx2.fillStyle='#1e293b';cx2.font='bold 9px Nunito,sans-serif';cx2.textAlign='center';cx2.textBaseline='middle';
+                    cx2.fillText(activePlayers.length+' aktif',50,50);
+                }, 100);
+
+                setTimeout(()=>{
+                    const cv2=document.getElementById('cv-level'); if(!cv2) return;
+                    const ctx2=cv2.getContext('2d');
+                    const tot2=Object.values(lvlBuckets).reduce((a,b)=>a+b,0);
+                    if(!tot2){ctx2.fillStyle='#e2e8f0';ctx2.beginPath();ctx2.arc(45,45,38,0,Math.PI*2);ctx2.fill();return;}
+                    let sa2=-Math.PI/2;
+                    const lc2=Object.values(lvlColors);
+                    Object.entries(lvlBuckets).forEach(([k,v],i)=>{
+                        if(!v) return;
+                        const sl=(v/tot2)*Math.PI*2;
+                        ctx2.beginPath();ctx2.moveTo(45,45);ctx2.arc(45,45,38,sa2,sa2+sl);ctx2.closePath();
+                        ctx2.fillStyle=lc2[i]||'#4ade80';ctx2.fill();sa2+=sl;
+                    });
+                    ctx2.beginPath();ctx2.arc(45,45,22,0,Math.PI*2);ctx2.fillStyle='#fff';ctx2.fill();
+                    ctx2.fillStyle='#15803d';ctx2.font='bold 8px sans-serif';ctx2.textAlign='center';ctx2.textBaseline='middle';
+                    ctx2.fillText(tot2,45,45);
+                }, 120);
+            }
+
+            function exportStatsCsv() {
+                const users = latestStudentData || [];
+                const siswaList = users.filter(u => u.role === 'siswa');
+                const guruList  = users.filter(u => u.role === 'guru');
+                const now = Date.now();
+                let csv = 'SEP=,\n';
+                csv += 'STATISTIK PLATFORM NUSANTARA ARSA\n';
+                csv += `Diekspor pada:,${new Date().toLocaleString('id-ID')}\n`;
+                csv += `Mode Database:,${DataService.mode==='firebase'?'Firebase Cloud':'LocalStorage'}\n\n`;
+                csv += '=== RINGKASAN ===\n';
+                csv += `Total Siswa,${siswaList.length}\n`;
+                csv += `Total Guru,${guruList.length}\n`;
+                csv += `Pemain Aktif,${siswaList.filter(u=>u.saveData&&u.saveData.day).length}\n`;
+                csv += `Online Sekarang,${siswaList.filter(u=>{const la=u.lastActive||(u.saveData&&u.saveData.lastActive)||0;return now-la<600000;}).length}\n`;
+                csv += `Total Kunjungan,${siswaList.reduce((s,u)=>s+((u.saveData&&u.saveData.arsaVisitCount)||(u.saveData?1:0)),0)}\n\n`;
+                csv += '=== DISTRIBUSI JALUR ===\n';
+                const rm={worker:0,student:0,entrepreneur:0,family:0,none:0};
+                siswaList.filter(u=>u.saveData&&u.saveData.day).forEach(u=>{const r=u.saveData.role||'none';if(rm[r]!==undefined)rm[r]++;});
+                csv += `Pekerja,${rm.worker}\nAkademisi,${rm.student}\nWirausaha,${rm.entrepreneur}\nKeluarga,${rm.family}\nBelum,${rm.none}\n\n`;
+                csv += '=== DATA SISWA ===\n';
+                csv += 'Nama,Email,Kelas,Mentor,Jalur,Level,Hari,Gold,Status\n';
+                siswaList.forEach(u=>{
+                    const sd=u.saveData||{};
+                    const la=u.lastActive||(sd.lastActive)||0;
+                    const isOl=now-la<600000;
+                    const rl={worker:'Pekerja',student:'Akademisi',entrepreneur:'Wirausaha',family:'Keluarga',none:'Belum'}[sd.role||'none']||'Belum';
+                    csv += `"${u.name||''}" ,"${u.email||''}" ,"${u.kelas||''}" ,"${u.mentor||''}" ,"${sd.day?rl:'Belum Mulai'}" ,${sd.level||'-'},${sd.day||'-'},${sd.money||'-'},"${isOl?'Online':'Offline'}"\n`;
+                });
+                csv += '\n=== DATA MENTOR ===\n';
+                csv += 'Nama,Email,Sekolah,NIP,Jumlah Siswa\n';
+                guruList.forEach(g=>{
+                    const cnt=siswaList.filter(u=>u.mentor===g.name).length;
+                    csv += `"${g.name||''}" ,"${g.email||''}" ,"${g.sekolah||''}" ,"${g.nip||''}" ,${cnt}\n`;
+                });
+                const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+                const url=URL.createObjectURL(blob);
+                const a=document.createElement('a');
+                a.href=url;a.download=`statistik_nusantara_arsa_${new Date().toISOString().slice(0,10)}.csv`;
+                a.click();URL.revokeObjectURL(url);
             }
 
             // --- NEW: RENDER DAFTAR AKUN (DATABASE) ---
@@ -43700,6 +44054,8 @@ let fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
 let fvLastTime = 0;
 let fvParticles = [];
 let fvSpriteCache = {}; // Cache sprite image untuk peri wandering
+let fvNpcRuntime = {}; // Runtime posisi NPC wandering di fairy village
+let fvBuildingImageCache = {}; // Cache offscreen canvas gambar bangunan
 
 // ── KAHYANGAN: Background Image ────────────────────────────────
 let fvBgImage = null;
@@ -44274,7 +44630,8 @@ function fairyDailyTick(fv) {
 function refreshFairyVillageMap() {
     if (!maps['fairyVillage']) return;
     const fv = getFairyVillage();
-    const TS = 30;
+    // FIX: jangan shadow global TS=28, pakai nama berbeda
+    const _rfTS = 28;
 
     // Buildings: Rara Wilis & Pohon Energi selalu ada sebagai solid (posisi 3×)
     const buildings = [
@@ -44353,6 +44710,9 @@ function openFairyVillage() {
 
     // Refresh map peri (bangunan dinamis)
     refreshFairyVillageMap();
+    // Reset NPC runtime positions agar fresh
+    fvNpcRuntime = {};
+    fvSpriteCache['__player__'] = null; // force re-cache player sprite
 
     // Pindah ke peta peri menggunakan sistem location utama
     STATE.location = 'fairyVillage';
@@ -44550,29 +44910,62 @@ function updateFairyPlayer(dt) {
     // ── NPC Collision (solid NPCs menghalangi player) ─────────
     const _npx = fvPlayer.x + dx*speed;
     const _npy = fvPlayer.y + dy*speed;
-    const _pw = 20, _ph = 24; // hitbox player (kecil, di kaki)
+    const _pw = 20, _ph = 20; // hitbox player (kaki)
+    const _pHitX = _npx + 4;
+    const _pHitY = _npy + TS*0.7; // hitbox di kaki
+    const _pHitXc = fvPlayer.x + 4;
+    const _pHitYc = fvPlayer.y + TS*0.7;
     const _map = (typeof maps !== 'undefined') ? maps['fairyVillage'] : null;
     let _blockedX = false, _blockedY = false;
 
     if (_map && _map.npcs) {
         for (const _npc of _map.npcs) {
             if (!_npc.solid) continue;
-            // Gunakan tile coords → pixel (tile-based NPC)
-            const _nxp = _npc.x * TS, _nyp = _npc.y * TS;
-            const _nw  = _npc.w || TS, _nh  = _npc.h || TS;
-            const _nhw = Math.min(_nw, TS * 1.2), _nhh = Math.min(_nh * 0.4, TS * 0.8);
-            const _nHitX = _nxp + (_nw - _nhw) / 2;
-            const _nHitY = _nyp + _nh - _nhh;
+            // Gunakan runtime position jika ada (wander NPC)
+            const rt = fvNpcRuntime[_npc.id];
+            const _nxp = rt ? rt.px : _npc.x * TS;
+            const _nyp = rt ? rt.py : _npc.y * TS;
+            const _nw  = 28, _nh = 28; // hitbox NPC kaki
+            const _nHitX = _nxp + 2;
+            const _nHitY = _nyp + TS*0.65;
 
-            const overlapX = _npx + _pw > _nHitX && _npx < _nHitX + _nhw &&
-                             fvPlayer.y + _ph > _nHitY && fvPlayer.y < _nHitY + _nhh;
-            const overlapY = fvPlayer.x + _pw > _nHitX && fvPlayer.x < _nHitX + _nhw &&
-                             _npy + _ph > _nHitY && _npy < _nHitY + _nhh;
+            const overlapX = _pHitX + _pw > _nHitX && _pHitX < _nHitX + _nw &&
+                             _pHitYc + _ph > _nHitY && _pHitYc < _nHitY + _nh;
+            const overlapY = _pHitXc + _pw > _nHitX && _pHitXc < _nHitX + _nw &&
+                             _pHitY + _ph > _nHitY && _pHitY < _nHitY + _nh;
 
             if (overlapX) _blockedX = true;
             if (overlapY) _blockedY = true;
         }
     }
+
+    // ── Building Collision ────────────────────────────────────
+    const fv2 = getFairyVillage();
+    (fv2.buildings||[]).forEach(({slotId, bid}) => {
+        const slot = FAIRY_SLOTS.find(s=>s.id===slotId); if(!slot) return;
+        const bDef = FAIRY_BUILDINGS[bid]; if(!bDef) return;
+        const bx_ = slot.x*TS, by_ = slot.y*TS;
+        const bw_ = TS*(bDef.w||2), bh_ = TS*(bDef.h||2);
+        // Hitbox bangunan = area bawah 60% (kaki bangunan, bukan atap)
+        const bHitX = bx_ + bw_*0.05;
+        const bHitY = by_ + bh_*0.4;
+        const bHitW = bw_*0.9;
+        const bHitH = bh_*0.6;
+
+        const ox = _pHitX + _pw > bHitX && _pHitX < bHitX+bHitW &&
+                   _pHitYc + _ph > bHitY && _pHitYc < bHitY+bHitH;
+        const oy = _pHitXc + _pw > bHitX && _pHitXc < bHitX+bHitW &&
+                   _pHitY + _ph > bHitY && _pHitY < bHitY+bHitH;
+        if (ox) _blockedX = true;
+        if (oy) _blockedY = true;
+    });
+
+    // Pohon Energi collision
+    const _poHitX = FV_POHON_POS.x*TS + TS*0.2;
+    const _poHitY = FV_POHON_POS.y*TS + TS*0.8;
+    const _poHitW = TS*1.6, _poHitH = TS*1.2;
+    if (_pHitX+_pw>_poHitX && _pHitX<_poHitX+_poHitW && _pHitYc+_ph>_poHitY && _pHitYc<_poHitY+_poHitH) _blockedX=true;
+    if (_pHitXc+_pw>_poHitX && _pHitXc<_poHitX+_poHitW && _pHitY+_ph>_poHitY && _pHitY<_poHitY+_poHitH) _blockedY=true;
 
     fvPlayer.x = Math.max(0, Math.min((FW-1)*TS, _blockedX ? fvPlayer.x : fvPlayer.x + dx*speed));
     fvPlayer.y = Math.max(0, Math.min((FH-1)*TS, _blockedY ? fvPlayer.y : fvPlayer.y + dy*speed));
@@ -44634,6 +45027,465 @@ function updateFVActionBtn() {
 // ═══════════════════════════════════════════════════════════════
 // DRAW
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// DRAW BANGUNAN KAHYANGAN — Canvas Asset per Tipe
+// ═══════════════════════════════════════════════════════════════
+function drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t) {
+    ctx.save();
+    const cx = bx + bw/2;
+    // ──────────────── HELPER ────────────────
+    function wall(color, rx=0, ry=bh*0.35, rw=bw, rh=bh*0.65, r=4) {
+        ctx.fillStyle=color;
+        ctx.beginPath(); ctx.roundRect(bx+rx, by+ry, rw, rh, r); ctx.fill();
+    }
+    function roof(color, peakX=cx, peakY=by, leftX=bx-2, rightX=bx+bw+2, baseY=by+bh*0.4) {
+        ctx.fillStyle=color;
+        ctx.beginPath(); ctx.moveTo(leftX,baseY); ctx.lineTo(peakX,peakY); ctx.lineTo(rightX,baseY); ctx.closePath(); ctx.fill();
+    }
+    function door(color, dw=bw*0.22, dh=bh*0.28, dx=cx-bw*0.11) {
+        ctx.fillStyle=color;
+        ctx.beginPath(); ctx.roundRect(dx, by+bh-dh, dw, dh, [3,3,0,0]); ctx.fill();
+    }
+    function window_(color, wx_, wy_, ww=bw*0.15, wh=bh*0.13) {
+        ctx.fillStyle='rgba(200,230,255,0.6)';
+        ctx.beginPath(); ctx.roundRect(wx_, wy_, ww, wh, 2); ctx.fill();
+        ctx.strokeStyle=color; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.roundRect(wx_, wy_, ww, wh, 2); ctx.stroke();
+        // Cross
+        ctx.beginPath(); ctx.moveTo(wx_+ww/2,wy_); ctx.lineTo(wx_+ww/2,wy_+wh);
+        ctx.moveTo(wx_,wy_+wh/2); ctx.lineTo(wx_+ww,wy_+wh/2); ctx.stroke();
+    }
+    function outlineBldg(color) {
+        ctx.strokeStyle=color; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,4); ctx.stroke();
+    }
+
+    // ──────────────── HUNIAN ────────────────
+    if (bid==='pondok_peri') {
+        wall('#d4a96a'); // dinding kayu
+        // Atap jerami
+        roof('#a0752a', cx, by-2, bx-3, bx+bw+3, by+bh*0.38);
+        ctx.fillStyle='#c99a45';
+        ctx.beginPath(); ctx.roundRect(bx-3, by+bh*0.36, bw+6, bh*0.07, 2); ctx.fill();
+        door('#7c4b1a', bw*0.24, bh*0.32);
+        window_('#7c4b1a', bx+bw*0.1, by+bh*0.45);
+        window_('#7c4b1a', bx+bw*0.72, by+bh*0.45);
+        outlineBldg('#8b5e2a');
+    } else if (bid==='rumah_peri') {
+        wall('#e8d5b0'); // dinding bata muda
+        // Bata pattern
+        ctx.fillStyle='rgba(180,120,60,0.18)';
+        for(let row=0;row<4;row++) for(let col=0;col<3;col++) {
+            const ox=(row%2)*bw*0.16;
+            ctx.beginPath(); ctx.roundRect(bx+bw*0.05+col*bw*0.3+ox, by+bh*0.4+row*bh*0.14, bw*0.27, bh*0.11, 1); ctx.fill();
+        }
+        roof('#c0392b', cx, by-4, bx-4, bx+bw+4, by+bh*0.37);
+        ctx.fillStyle='#922b21'; // lisplang atap
+        ctx.beginPath(); ctx.roundRect(bx-4, by+bh*0.35, bw+8, bh*0.05, 1); ctx.fill();
+        door('#5d3a1a', bw*0.25, bh*0.33);
+        window_('#5d3a1a', bx+bw*0.08, by+bh*0.44);
+        window_('#5d3a1a', bx+bw*0.68, by+bh*0.44);
+        outlineBldg('#c0392b');
+    } else if (bid==='dalem_widadari') {
+        // Rumah Jawa — joglo
+        wall('#f5e6cc');
+        ctx.fillStyle='rgba(150,100,30,0.15)';
+        for(let r=0;r<5;r++) for(let c=0;c<4;c++) {
+            ctx.beginPath(); ctx.roundRect(bx+bw*0.04+c*bw*0.23, by+bh*0.38+r*bh*0.12, bw*0.2, bh*0.09, 1); ctx.fill();
+        }
+        // Atap susun dua
+        roof('#8B4513', cx, by-6, bx-6, bx+bw+6, by+bh*0.32);
+        roof('#a0522d', cx, by+bh*0.22, bx-2, bx+bw+2, by+bh*0.4);
+        ctx.fillStyle='#6b3410';
+        ctx.beginPath(); ctx.roundRect(bx-6, by+bh*0.30, bw+12, bh*0.04, 1); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(bx-2, by+bh*0.38, bw+4, bh*0.04, 1); ctx.fill();
+        door('#4a2a0d', bw*0.26, bh*0.35);
+        window_('#4a2a0d', bx+bw*0.07, by+bh*0.43);
+        window_('#4a2a0d', bx+bw*0.67, by+bh*0.43);
+        // Ornamen emas
+        ctx.fillStyle='#fbbf24'; ctx.font=`${bh*0.12}px serif`; ctx.textAlign='center';
+        ctx.fillText('◆', cx, by+bh*0.27); ctx.textAlign='left';
+        outlineBldg('#8B4513');
+
+    // ──────────────── TAMAN ────────────────
+    } else if (bid==='taman_mini') {
+        // Taman bunga: tanah + bunga
+        ctx.fillStyle='#4a7c2f';
+        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.5, bw, bh*0.5, [0,0,4,4]); ctx.fill();
+        ctx.fillStyle='#2d5a1b';
+        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.5, bw, bh*0.06, 0); ctx.fill();
+        // Pagar kayu
+        ctx.strokeStyle='#8b6914'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.48, bw-2, bh*0.52, 3); ctx.stroke();
+        for(let i=0;i<4;i++) {
+            ctx.beginPath(); ctx.moveTo(bx+bw*0.12+i*bw*0.23, by+bh*0.48); ctx.lineTo(bx+bw*0.12+i*bw*0.23, by+bh); ctx.stroke();
+        }
+        // Bunga
+        const flowerColors=['#f472b6','#facc15','#fb923c','#a78bfa'];
+        for(let i=0;i<5;i++) {
+            const fx2=bx+bw*0.1+i*(bw*0.18), fy2=by+bh*0.62;
+            ctx.fillStyle=flowerColors[i%4];
+            for(let p=0;p<5;p++) {
+                const ang=p*Math.PI*2/5;
+                ctx.beginPath(); ctx.arc(fx2+Math.cos(ang)*4, fy2+Math.sin(ang)*4+Math.sin(t/800+i)*1.5, 3, 0, Math.PI*2); ctx.fill();
+            }
+            ctx.fillStyle='#fef08a'; ctx.beginPath(); ctx.arc(fx2, fy2+Math.sin(t/800+i)*1.5, 2.5, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='#16a34a'; ctx.lineWidth=1.5; ctx.strokeStyle='#16a34a';
+            ctx.beginPath(); ctx.moveTo(fx2, fy2+4+Math.sin(t/800+i)*1.5); ctx.lineTo(fx2, by+bh-2); ctx.stroke();
+        }
+    } else if (bid==='taman_mekar') {
+        ctx.fillStyle='#3a6b22';
+        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.45, bw, bh*0.55, [0,0,4,4]); ctx.fill();
+        // Path batu
+        ctx.fillStyle='#9ca3af';
+        for(let i=0;i<3;i++) { ctx.beginPath(); ctx.arc(cx+(-1+i)*bw*0.2, by+bh*0.78, bw*0.07, 0, Math.PI*2); ctx.fill(); }
+        // Pohon kecil di sudut
+        [[bx+bw*0.12, by+bh*0.5],[bx+bw*0.78, by+bh*0.5]].forEach(([tx2,ty2])=>{
+            ctx.fillStyle='#5c3d1e'; ctx.fillRect(tx2, ty2+bh*0.18, bw*0.06, bh*0.18);
+            ctx.fillStyle='#15803d'; ctx.beginPath(); ctx.arc(tx2+bw*0.03, ty2, bw*0.1, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(tx2+bw*0.03, ty2-bh*0.04, bw*0.07, 0, Math.PI*2); ctx.fill();
+        });
+        // Kenanga bunga
+        const flC=['#fde68a','#f9a8d4','#a5f3fc','#bbf7d0'];
+        for(let i=0;i<8;i++) {
+            const fx2=bx+bw*0.08+i*(bw*0.11), fy2=by+bh*0.62+Math.sin(i)*bh*0.06;
+            ctx.fillStyle=flC[i%4]; ctx.beginPath(); ctx.arc(fx2, fy2, 4, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.strokeStyle='#16a34a'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.44, bw-2, bh*0.56, 4); ctx.stroke();
+    } else if (bid==='kebun_raya') {
+        ctx.fillStyle='#166534';
+        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.4, bw, bh*0.6, [0,0,4,4]); ctx.fill();
+        // Gerbang masuk
+        ctx.fillStyle='#7c5c2e'; ctx.fillRect(cx-bw*0.12, by+bh*0.38, bw*0.24, bh*0.08);
+        ctx.fillRect(cx-bw*0.12, by+bh*0.4, bw*0.04, bh*0.2);
+        ctx.fillRect(cx+bw*0.08, by+bh*0.4, bw*0.04, bh*0.2);
+        // Banyak tanaman
+        const gC=['#16a34a','#22c55e','#4ade80','#15803d'];
+        for(let i=0;i<12;i++) {
+            const fx2=bx+bw*0.06+i*(bw*0.08), fy2=by+bh*0.55+Math.sin(i*1.3)*bh*0.1;
+            ctx.fillStyle=gC[i%4]; ctx.beginPath(); ctx.arc(fx2, fy2, 4+Math.sin(i)*1.5, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.strokeStyle='#15803d'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.39, bw-2, bh*0.61, 4); ctx.stroke();
+
+    // ──────────────── KOLAM ────────────────
+    } else if (bid==='kolam_kristal') {
+        // Badan kolam oval
+        ctx.fillStyle='#e0f2fe';
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.68, bw*0.4, bh*0.28, 0, 0, Math.PI*2); ctx.fill();
+        // Air berkilau
+        const shimmer = 0.4+0.3*Math.sin(t/500);
+        ctx.fillStyle=`rgba(56,189,248,${shimmer})`;
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.68, bw*0.32, bh*0.21, 0, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#0284c7'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.68, bw*0.4, bh*0.28, 0, 0, Math.PI*2); ctx.stroke();
+        // Batu tepi
+        for(let i=0;i<6;i++) {
+            const ang=i*Math.PI/3;
+            ctx.fillStyle='#94a3b8'; ctx.beginPath();
+            ctx.arc(cx+Math.cos(ang)*bw*0.38, by+bh*0.68+Math.sin(ang)*bh*0.26, 4, 0, Math.PI*2); ctx.fill();
+        }
+        // Papan nama
+        ctx.fillStyle='#7c5c2e'; ctx.beginPath(); ctx.roundRect(cx-bw*0.18, by+bh*0.32, bw*0.36, bh*0.14, 3); ctx.fill();
+        ctx.fillStyle='#fef9c3'; ctx.font=`bold ${bh*0.08}px Nunito,sans-serif`; ctx.textAlign='center';
+        ctx.fillText('Sendang', cx, by+bh*0.42); ctx.textAlign='left';
+    } else if (bid==='kolam_agung') {
+        // Kolam lebih besar dengan tier batu
+        ctx.fillStyle='#bfdbfe';
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.65, bw*0.44, bh*0.31, 0, 0, Math.PI*2); ctx.fill();
+        const sh2=0.45+0.3*Math.sin(t/450);
+        ctx.fillStyle=`rgba(14,165,233,${sh2})`;
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.65, bw*0.36, bh*0.24, 0, 0, Math.PI*2); ctx.fill();
+        // Pancuran kecil
+        ctx.strokeStyle='rgba(147,197,253,0.7)'; ctx.lineWidth=2;
+        for(let i=0;i<3;i++) {
+            const ang=-Math.PI/2+(-0.3+i*0.3);
+            ctx.beginPath();
+            ctx.moveTo(cx, by+bh*0.42);
+            ctx.quadraticCurveTo(cx+Math.cos(ang)*bw*0.15, by+bh*0.38, cx+Math.cos(ang)*bw*0.2, by+bh*0.55);
+            ctx.stroke();
+        }
+        ctx.strokeStyle='#0369a1'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.65, bw*0.44, bh*0.31, 0, 0, Math.PI*2); ctx.stroke();
+        for(let i=0;i<8;i++) {
+            const ang=i*Math.PI/4;
+            ctx.fillStyle='#64748b'; ctx.beginPath();
+            ctx.arc(cx+Math.cos(ang)*bw*0.42, by+bh*0.65+Math.sin(ang)*bh*0.29, 4.5, 0, Math.PI*2); ctx.fill();
+        }
+    } else if (bid==='telaga_nirmala') {
+        // Telaga pelangi
+        const telGrd = ctx.createRadialGradient(cx,by+bh*0.62,0,cx,by+bh*0.62,bw*0.46);
+        telGrd.addColorStop(0,'rgba(232,121,249,0.9)');
+        telGrd.addColorStop(0.4,'rgba(56,189,248,0.8)');
+        telGrd.addColorStop(0.8,'rgba(74,222,128,0.6)');
+        telGrd.addColorStop(1,'rgba(251,191,36,0.3)');
+        ctx.fillStyle=telGrd;
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.62, bw*0.46, bh*0.34, 0, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#a855f7'; ctx.lineWidth=2.5;
+        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.62, bw*0.46, bh*0.34, 0, 0, Math.PI*2); ctx.stroke();
+        // Partikel cahaya
+        for(let i=0;i<6;i++) {
+            const ang=i*Math.PI/3+t/1000;
+            const pr=bw*0.3; const gl=0.5+0.4*Math.sin(t/400+i);
+            ctx.fillStyle=`rgba(255,255,150,${gl})`; ctx.beginPath();
+            ctx.arc(cx+Math.cos(ang)*pr, by+bh*0.62+Math.sin(ang)*bh*0.2, 3, 0, Math.PI*2); ctx.fill();
+        }
+
+    // ──────────────── SEKOLAH ────────────────
+    } else if (bid==='sekolah_peri') {
+        wall('#fef9c3');
+        roof('#6366f1', cx, by-3, bx-3, bx+bw+3, by+bh*0.38);
+        ctx.fillStyle='#4f46e5'; ctx.beginPath(); ctx.roundRect(bx-3, by+bh*0.36, bw+6, bh*0.05, 1); ctx.fill();
+        // Papan tulis kecil di depan
+        ctx.fillStyle='#1e3a5f'; ctx.beginPath(); ctx.roundRect(cx-bw*0.18, by+bh*0.42, bw*0.36, bh*0.16, 2); ctx.fill();
+        ctx.fillStyle='#93c5fd'; ctx.font=`${bh*0.08}px serif`; ctx.textAlign='center';
+        ctx.fillText('📚', cx, by+bh*0.54); ctx.textAlign='left';
+        door('#4338ca', bw*0.24, bh*0.31);
+        window_('#4f46e5', bx+bw*0.08, by+bh*0.44);
+        window_('#4f46e5', bx+bw*0.68, by+bh*0.44);
+        // Bendera
+        ctx.fillStyle='#f1f5f9'; ctx.fillRect(cx+bw*0.2, by+bh*0.02, bw*0.05, bh*0.04);
+        ctx.fillStyle='#6366f1'; ctx.fillRect(cx+bw*0.2, by+bh*0.02, bw*0.11, bh*0.08);
+        ctx.strokeStyle='#4f46e5'; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(cx+bw*0.2+bw*0.025, by); ctx.lineTo(cx+bw*0.2+bw*0.025, by+bh*0.12); ctx.stroke();
+        outlineBldg('#6366f1');
+    } else if (bid==='sanggar_tari') {
+        wall('#fdf4ff');
+        roof('#9333ea', cx, by-5, bx-4, bx+bw+4, by+bh*0.36);
+        ctx.fillStyle='#7e22ce'; ctx.beginPath(); ctx.roundRect(bx-4, by+bh*0.34, bw+8, bh*0.05, 1); ctx.fill();
+        // Ornamen tari di dinding
+        ctx.fillStyle='rgba(167,139,250,0.3)';
+        ctx.beginPath(); ctx.arc(cx, by+bh*0.55, bw*0.2, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle='#a855f7'; ctx.font=`${bh*0.2}px serif`; ctx.textAlign='center';
+        ctx.fillText('🎭', cx, by+bh*0.62); ctx.textAlign='left';
+        door('#6b21a8', bw*0.25, bh*0.32);
+        window_('#9333ea', bx+bw*0.07, by+bh*0.44);
+        window_('#9333ea', bx+bw*0.67, by+bh*0.44);
+        outlineBldg('#9333ea');
+    } else if (bid==='akademi_agung') {
+        // Kuil / akademi besar
+        wall('#fefce8');
+        // Tiang-tiang
+        for(let i=0;i<4;i++) {
+            ctx.fillStyle='#e2e8f0';
+            ctx.beginPath(); ctx.roundRect(bx+bw*0.08+i*bw*0.24, by+bh*0.35, bw*0.08, bh*0.65, 2); ctx.fill();
+            ctx.strokeStyle='#94a3b8'; ctx.lineWidth=0.8;
+            ctx.beginPath(); ctx.roundRect(bx+bw*0.08+i*bw*0.24, by+bh*0.35, bw*0.08, bh*0.65, 2); ctx.stroke();
+        }
+        // Atap kuil
+        roof('#1d4ed8', cx, by-7, bx-5, bx+bw+5, by+bh*0.33);
+        roof('#2563eb', cx, by+bh*0.2, bx-2, bx+bw+2, by+bh*0.38);
+        ctx.fillStyle='#1e40af'; ctx.beginPath(); ctx.roundRect(bx-5, by+bh*0.31, bw+10, bh*0.04, 1); ctx.fill();
+        door('#1e3a8a', bw*0.26, bh*0.36);
+        // Lambang akademi
+        ctx.fillStyle='#fbbf24'; ctx.font=`bold ${bh*0.14}px serif`; ctx.textAlign='center';
+        ctx.fillText('🏛', cx, by+bh*0.3); ctx.textAlign='left';
+        outlineBldg('#2563eb');
+
+    // ──────────────── PASAR ────────────────
+    } else if (bid==='pasar_peri') {
+        wall('#fef3c7');
+        // Tenda pasar
+        ctx.fillStyle='#dc2626';
+        ctx.beginPath(); ctx.moveTo(bx-2,by+bh*0.42); ctx.lineTo(cx,by+bh*0.2); ctx.lineTo(bx+bw+2,by+bh*0.42); ctx.closePath(); ctx.fill();
+        // Stripe tenda
+        ctx.fillStyle='#fbbf24';
+        for(let i=0;i<5;i++) {
+            const tx2=bx+i*(bw/4.5);
+            ctx.beginPath(); ctx.moveTo(tx2,by+bh*0.42); ctx.lineTo(tx2+bw*0.06,by+bh*0.42);
+            ctx.lineTo(tx2+bw*0.1,by+bh*0.28); ctx.lineTo(tx2+bw*0.04,by+bh*0.28); ctx.closePath(); ctx.fill();
+        }
+        // Gerai jualan
+        ctx.fillStyle='#7c3aed';
+        ctx.beginPath(); ctx.roundRect(cx-bw*0.25, by+bh*0.55, bw*0.5, bh*0.18, 2); ctx.fill();
+        ctx.fillStyle='#fde68a'; ctx.font=`${bh*0.12}px serif`; ctx.textAlign='center';
+        ctx.fillText('🛒', cx, by+bh*0.68); ctx.textAlign='left';
+        outlineBldg('#dc2626');
+    } else if (bid==='balai_dagang') {
+        wall('#fff7ed');
+        roof('#ea580c', cx, by-4, bx-3, bx+bw+3, by+bh*0.37);
+        ctx.fillStyle='#c2410c'; ctx.beginPath(); ctx.roundRect(bx-3, by+bh*0.35, bw+6, bh*0.05, 1); ctx.fill();
+        // Toko sign
+        ctx.fillStyle='#1e3a5f'; ctx.beginPath(); ctx.roundRect(cx-bw*0.22, by+bh*0.4, bw*0.44, bh*0.16, 3); ctx.fill();
+        ctx.fillStyle='#fde68a'; ctx.font=`${bh*0.11}px serif`; ctx.textAlign='center';
+        ctx.fillText('🏪', cx, by+bh*0.53); ctx.textAlign='left';
+        door('#7c2d12', bw*0.24, bh*0.33);
+        window_('#ea580c', bx+bw*0.07, by+bh*0.44);
+        window_('#ea580c', bx+bw*0.67, by+bh*0.44);
+        outlineBldg('#ea580c');
+    } else if (bid==='pusat_niaga') {
+        wall('#fefce8');
+        // Gedung tinggi
+        ctx.fillStyle='#d4a72c';
+        ctx.beginPath(); ctx.roundRect(bx+bw*0.1, by+bh*0.05, bw*0.8, bh*0.35, [4,4,0,0]); ctx.fill();
+        // Jendela berjajar
+        for(let r=0;r<3;r++) for(let c=0;c<3;c++) {
+            const glow2 = 0.4+0.4*Math.sin(t/600+r+c);
+            ctx.fillStyle=`rgba(254,240,138,${glow2})`;
+            ctx.beginPath(); ctx.roundRect(bx+bw*0.17+c*bw*0.24, by+bh*0.1+r*bh*0.1, bw*0.14, bh*0.07, 1); ctx.fill();
+        }
+        // Tanda emas
+        ctx.fillStyle='#b45309'; ctx.beginPath(); ctx.roundRect(bx, by+bh*0.38, bw, bh*0.62, [0,0,4,4]); ctx.fill();
+        ctx.fillStyle='#fbbf24'; ctx.font=`${bh*0.18}px serif`; ctx.textAlign='center';
+        ctx.fillText('🏦', cx, by+bh*0.7); ctx.textAlign='left';
+        outlineBldg('#b45309');
+
+    // ──────────────── MENARA ────────────────
+    } else if (bid==='menara_kecil') {
+        const mw=bw*0.45, mx2=cx-mw/2;
+        // Badan menara
+        ctx.fillStyle='#d1d5db';
+        ctx.beginPath(); ctx.roundRect(mx2, by+bh*0.25, mw, bh*0.75, 3); ctx.fill();
+        // Batu pattern
+        ctx.fillStyle='rgba(100,116,139,0.3)';
+        for(let r=0;r<5;r++) {
+            const ox=(r%2)*mw*0.25;
+            for(let c=0;c<2;c++) {
+                ctx.beginPath(); ctx.roundRect(mx2+mw*0.05+c*mw*0.45+ox, by+bh*0.3+r*bh*0.13, mw*0.37, bh*0.10, 1); ctx.fill();
+            }
+        }
+        // Puncak lancip
+        ctx.fillStyle='#6b7280';
+        ctx.beginPath(); ctx.moveTo(cx,by); ctx.lineTo(mx2-2,by+bh*0.27); ctx.lineTo(mx2+mw+2,by+bh*0.27); ctx.closePath(); ctx.fill();
+        // Jendela bulat
+        const glCandle = 0.5+0.4*Math.sin(t/400);
+        ctx.fillStyle=`rgba(254,240,138,${glCandle})`;
+        ctx.beginPath(); ctx.arc(cx, by+bh*0.45, mw*0.2, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle='#6b7280'; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.arc(cx, by+bh*0.45, mw*0.2, 0, Math.PI*2); ctx.stroke();
+        outlineBldg('#6b7280');
+    } else if (bid==='menara_wilis') {
+        const mw=bw*0.5, mx2=cx-mw/2;
+        ctx.fillStyle='#c7d2fe';
+        ctx.beginPath(); ctx.roundRect(mx2, by+bh*0.2, mw, bh*0.8, 3); ctx.fill();
+        ctx.fillStyle='rgba(99,102,241,0.2)';
+        for(let r=0;r<6;r++) {
+            ctx.beginPath(); ctx.roundRect(mx2+mw*0.08, by+bh*0.25+r*bh*0.12, mw*0.8, bh*0.08, 1); ctx.fill();
+        }
+        // Atap menara bintang
+        ctx.fillStyle='#4f46e5';
+        ctx.beginPath(); ctx.moveTo(cx,by-2); ctx.lineTo(mx2-3,by+bh*0.22); ctx.lineTo(mx2+mw+3,by+bh*0.22); ctx.closePath(); ctx.fill();
+        const glW = 0.6+0.4*Math.sin(t/350);
+        ctx.fillStyle=`rgba(199,210,254,${glW})`;
+        ctx.beginPath(); ctx.arc(cx, by+bh*0.4, mw*0.22, 0, Math.PI*2); ctx.fill();
+        // Bintang berputar
+        ctx.fillStyle='#fbbf24'; ctx.font=`${mw*0.5}px serif`; ctx.textAlign='center';
+        ctx.save(); ctx.translate(cx,by+bh*0.4); ctx.rotate(Math.sin(t/2000)*0.5); ctx.fillText('✨',0,mw*0.15); ctx.restore();
+        ctx.textAlign='left';
+        outlineBldg('#6366f1');
+    } else if (bid==='menara_cahaya') {
+        const mw=bw*0.5, mx2=cx-mw/2;
+        const mGrd = ctx.createLinearGradient(mx2, by, mx2+mw, by+bh);
+        mGrd.addColorStop(0,'#fef9c3'); mGrd.addColorStop(0.5,'#fde68a'); mGrd.addColorStop(1,'#fbbf24');
+        ctx.fillStyle=mGrd;
+        ctx.beginPath(); ctx.roundRect(mx2, by+bh*0.18, mw, bh*0.82, 3); ctx.fill();
+        // Cahaya berputar di puncak
+        const glMC = 0.7+0.3*Math.sin(t/300);
+        const mcGrd = ctx.createRadialGradient(cx,by+bh*0.25,0,cx,by+bh*0.25,mw*1.5);
+        mcGrd.addColorStop(0,`rgba(254,240,138,${glMC})`);
+        mcGrd.addColorStop(1,'rgba(251,191,36,0)');
+        ctx.fillStyle=mcGrd; ctx.beginPath(); ctx.arc(cx,by+bh*0.25,mw*1.5,0,Math.PI*2); ctx.fill();
+        // Puncak emas
+        ctx.fillStyle='#d97706';
+        ctx.beginPath(); ctx.moveTo(cx,by-5); ctx.lineTo(mx2-3,by+bh*0.2); ctx.lineTo(mx2+mw+3,by+bh*0.2); ctx.closePath(); ctx.fill();
+        for(let i=0;i<5;i++) {
+            const ang=i*Math.PI*2/5+t/1200;
+            ctx.fillStyle='#fbbf24'; ctx.beginPath();
+            ctx.arc(cx+Math.cos(ang)*mw*0.55, by+bh*0.55+Math.sin(ang)*bh*0.18, 3, 0, Math.PI*2); ctx.fill();
+        }
+        outlineBldg('#d97706');
+
+    // ──────────────── ISTANA / LEGACY ────────────────
+    } else if (bid==='istana_mini') {
+        wall('#fef9c3');
+        // Menara samping
+        [[bx,by+bh*0.15,bw*0.22],[bx+bw*0.78,by+bh*0.15,bw*0.22]].forEach(([tx2,ty2,tw2])=>{
+            ctx.fillStyle='#e2e8f0'; ctx.beginPath(); ctx.roundRect(tx2, ty2, tw2, bh*0.85, 2); ctx.fill();
+            ctx.fillStyle='#94a3b8'; ctx.beginPath(); ctx.moveTo(tx2,ty2); ctx.lineTo(tx2+tw2/2,by); ctx.lineTo(tx2+tw2,ty2); ctx.closePath(); ctx.fill();
+        });
+        wall('#fef9c3', bw*0.2, bh*0.28, bw*0.6, bh*0.72, 3);
+        roof('#7c3aed', cx, by+bh*0.15, bx+bw*0.18, bx+bw*0.82, by+bh*0.35);
+        door('#4c1d95', bw*0.22, bh*0.3, cx-bw*0.11);
+        // Bendera
+        for(let flag=0;flag<3;flag++) {
+            const fx3=[bx+bw*0.11,cx,bx+bw*0.89][flag];
+            ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(fx3, by); ctx.lineTo(fx3, by+bh*0.18); ctx.stroke();
+            ctx.fillStyle=['#dc2626','#7c3aed','#dc2626'][flag];
+            ctx.beginPath(); ctx.moveTo(fx3,by); ctx.lineTo(fx3+bw*0.1,by+bh*0.05); ctx.lineTo(fx3,by+bh*0.1); ctx.closePath(); ctx.fill();
+        }
+        outlineBldg('#7c3aed');
+    } else {
+        // Default fallback — kotak warna
+        const bgC=['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
+        const bdC=['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
+        const tier=(FAIRY_BUILDINGS[bid]?.tier)||0;
+        ctx.fillStyle=bgC[tier]||'#fef3c7';
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.fill();
+        ctx.strokeStyle=bdC[tier]||'#d97706'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.stroke();
+        ctx.font=`${Math.min(bw,bh)*0.55}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(FAIRY_BUILDINGS[bid]?.emoji||'🏠', cx, by+bh*0.5);
+        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    }
+
+    // Nama bangunan di bawah (semua tipe)
+    const bDef=FAIRY_BUILDINGS[bid];
+    if (bDef) {
+        const nameStr = bDef.name.replace(/^[^\s]+\s/,'').slice(0,14);
+        ctx.font=`bold ${Math.max(5,bh*0.095)}px Nunito,sans-serif`;
+        const nw2 = ctx.measureText(nameStr).width+6;
+        ctx.fillStyle='rgba(0,0,0,0.55)';
+        ctx.beginPath(); ctx.roundRect(cx-nw2/2, by+bh+1, nw2, 9, 2); ctx.fill();
+        ctx.fillStyle='#fef9c3'; ctx.textAlign='center';
+        ctx.fillText(nameStr, cx, by+bh+8);
+        ctx.textAlign='left';
+    }
+    ctx.restore();
+}
+
+// ── Pohon Energi — Canvas drawn ──────────────────────────────
+function drawFVPohonEnergi(ctx, px, py, TS2, t) {
+    ctx.save();
+    const cx2=px+TS2, cy2=py+TS2;
+    // Akar / tanah
+    ctx.fillStyle='rgba(74,222,128,0.2)';
+    ctx.beginPath(); ctx.ellipse(cx2, py+TS2*1.9, TS2*1.4, TS2*0.45, 0, 0, Math.PI*2); ctx.fill();
+    // Batang
+    const trunkGrd = ctx.createLinearGradient(cx2-TS2*0.2, py, cx2+TS2*0.2, py);
+    trunkGrd.addColorStop(0,'#5c3d1e'); trunkGrd.addColorStop(0.5,'#7c5c2e'); trunkGrd.addColorStop(1,'#5c3d1e');
+    ctx.fillStyle=trunkGrd;
+    ctx.beginPath();
+    ctx.moveTo(cx2-TS2*0.22, py+TS2*1.8);
+    ctx.lineTo(cx2-TS2*0.15, py+TS2*0.7);
+    ctx.lineTo(cx2+TS2*0.15, py+TS2*0.7);
+    ctx.lineTo(cx2+TS2*0.22, py+TS2*1.8);
+    ctx.closePath(); ctx.fill();
+    // Kanopi 3 lapis (dari bawah ke atas)
+    const sway=Math.sin(t/1200)*2;
+    [[TS2*1.15,'#14532d',0],[TS2*1.0,'#15803d',TS2*0.18],[TS2*0.78,'#22c55e',TS2*0.32]].forEach(([r,col,dy3])=>{
+        const grd2=ctx.createRadialGradient(cx2+sway,cy2-dy3,0,cx2+sway,cy2-dy3,r);
+        grd2.addColorStop(0,col); grd2.addColorStop(1,col+'88');
+        ctx.fillStyle=grd2;
+        ctx.beginPath(); ctx.arc(cx2+sway, cy2-dy3, r, 0, Math.PI*2); ctx.fill();
+    });
+    // Partikel debu emas mengambang
+    for(let i=0;i<8;i++) {
+        const ang=i*Math.PI*2/8+t/2500;
+        const r2=TS2*0.7+Math.sin(t/600+i)*TS2*0.25;
+        const gl=0.4+0.5*Math.sin(t/500+i*0.7);
+        ctx.fillStyle=`rgba(251,191,36,${gl})`;
+        ctx.beginPath(); ctx.arc(cx2+sway+Math.cos(ang)*r2, cy2-TS2*0.3+Math.sin(ang)*r2*0.5, 2+Math.sin(t/400+i), 0, Math.PI*2); ctx.fill();
+    }
+    // Label
+    ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.font='bold 7px Nunito,sans-serif'; ctx.textAlign='center';
+    const lw=ctx.measureText('Pohon Energi').width+6;
+    ctx.fillRect(cx2-lw/2, py+TS2*2.0, lw, 10);
+    ctx.fillStyle='#4ade80'; ctx.fillText('Pohon Energi', cx2, py+TS2*2.08);
+    ctx.textAlign='left'; ctx.restore();
+}
+
 function drawFairyWorld(ts) {
     if (!fvCtx) return;
     const ctx = fvCtx;
@@ -44761,122 +45613,250 @@ function drawFairyWorld(ts) {
         ctx.textAlign='left'; ctx.textBaseline='alphabetic';
     });
 
-    // Bangunan selesai — render dengan tema cerah & ada tanda pintu
+    // ── Dekorasi pohon pinggir peta (render sebelum bangunan) ──
+    FV_DECO_TREES.forEach(({x,y},i) => {
+        if ((fv.buildings?.length||0) <= i*2) return;
+        const sway = Math.sin(t/1500+i)*1.5;
+        // Batang
+        ctx.fillStyle='#7c5c2e';
+        ctx.fillRect(x*TS+TS*0.45+sway, y*TS+TS*0.55, TS*0.1, TS*0.45);
+        // Kanopi 3 lapis
+        [[0,'#14532d',TS*0.55],[TS*0.07,'#15803d',TS*0.45],[TS*0.14,'#22c55e',TS*0.3]].forEach(([dy2,col,r])=>{
+            ctx.fillStyle=col;
+            ctx.beginPath();
+            ctx.arc(x*TS+TS*0.5+sway, y*TS+TS*0.35+dy2, r, 0, Math.PI*2);
+            ctx.fill();
+        });
+    });
+
+    // ── Bangunan selesai — render dengan gambar Canvas proper ──
     (fv.buildings||[]).forEach(({slotId, bid, workers}) => {
         const slot=FAIRY_SLOTS.find(s=>s.id===slotId); if(!slot) return;
         const b=FAIRY_BUILDINGS[bid]; if(!b) return;
         const bx=slot.x*TS, by=slot.y*TS, bw=TS*(b.w||2), bh=TS*(b.h||2);
-
         // Shadow tanah
-        ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.fillRect(bx+4,by+bh-2,bw,6);
-
-        // Warna bangunan per tier — bright/warm
-        const bgColors=['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
-        const borderColors=['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
-        ctx.fillStyle=bgColors[b.tier]||'#fef3c7';
-        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.fill();
-
-        // Border tier
-        const bc = borderColors[b.tier]||'#d97706';
-        ctx.strokeStyle=bc; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.stroke();
-
-        // Glow saat player dekat
-        const px=fvPlayer.x, py=fvPlayer.y;
-        const bCx=bx+bw/2, bCy=by+bh/2;
-        const nearDist = Math.hypot(px-bCx, py-bCy);
-        if (nearDist < TS*2.5) {
-            ctx.shadowColor=bc; ctx.shadowBlur=12;
-            ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,6); ctx.stroke();
+        ctx.fillStyle='rgba(0,0,0,0.3)';
+        ctx.beginPath(); ctx.ellipse(bx+bw/2, by+bh+2, bw*0.45, 4, 0, 0, Math.PI*2); ctx.fill();
+        // Gambar bangunan Canvas
+        drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t);
+        // Glow + label saat player dekat
+        const bCx=bx+bw/2;
+        const nearDist = Math.hypot(fvPlayer.x+TS*0.5-bCx, fvPlayer.y+TS*0.5-(by+bh*0.5));
+        if (nearDist < TS*3) {
+            const bc = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'][b.tier]||'#d97706';
+            ctx.strokeStyle=bc; ctx.lineWidth=2; ctx.shadowColor=bc; ctx.shadowBlur=10;
+            ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.stroke();
             ctx.shadowBlur=0;
-            // Label "TEKAN TOMBOL" di atas bangunan
-            ctx.fillStyle=bc; ctx.font='bold 7px sans-serif'; ctx.textAlign='center';
-            ctx.fillText('▼ Masuk', bCx, by-4);
+            ctx.fillStyle='#fef9c3'; ctx.font='bold 7px Nunito,sans-serif'; ctx.textAlign='center';
+            ctx.fillText('▼ Masuk', bCx, by-5);
+            ctx.textAlign='left';
         }
         ctx.shadowBlur=0;
-
-        // Emoji bangunan
-        ctx.font=`${TS*1.0}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(b.emoji||'🏠', bx+bw/2, by+bh/2-4);
-
-        // Nama bangunan
-        ctx.fillStyle=bc; ctx.font='bold 6px sans-serif';
-        ctx.fillText(b.name.replace(/^[^\s]+\s/,'').slice(0,12), bx+bw/2, by+bh-5);
-
-        // Indikator peri bekerja — titik-titik kecil
-        const wCount=(workers||[]).length;
-        if (wCount>0) {
-            for(let wi=0;wi<wCount;wi++){
-                ctx.fillStyle='#22c55e';
-                ctx.beginPath();
-                ctx.arc(bx+5+wi*7, by+5, 3, 0, Math.PI*2);
-                ctx.fill();
-            }
-        }
-
-        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+        // Indikator peri bekerja
+        (workers||[]).forEach((w,wi)=>{
+            ctx.fillStyle='#22c55e'; ctx.strokeStyle='#fff'; ctx.lineWidth=0.8;
+            ctx.beginPath(); ctx.arc(bx+6+wi*8, by+6, 3.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        });
     });
 
-    // Dekorasi pohon pinggir peta
-    FV_DECO_TREES.forEach(({x,y},i) => {
-        const vis = (fv.buildings?.length||0) > i*2; // pohon muncul seiring perkembangan desa
-        if (!vis) return;
-        ctx.font=`${TS}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-        const sway = Math.sin(t/1500+i)*2;
-        ctx.fillText('🌲', x*TS+TS*0.5+sway, y*TS+TS*0.5);
-    });
-
-    // Pohon Energi
+    // ── Pohon Energi (Canvas drawn) ──
     const poX=FV_POHON_POS.x*TS, poY=FV_POHON_POS.y*TS;
-    const glow = 0.25+0.2*Math.sin(t/600);
-    ctx.fillStyle=`rgba(74,222,128,${glow})`; ctx.beginPath();
-    ctx.arc(poX+TS, poY+TS*0.8, TS*1.3, 0, Math.PI*2); ctx.fill();
-    ctx.font=`${TS*2}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText('🌳', poX+TS, poY+TS);
-    ctx.fillStyle='#4ade80'; ctx.font='8px sans-serif';
-    ctx.fillText('Pohon Energi', poX+TS, poY+TS*2.3);
-
-    // Exclamation pohon jika dekat
+    drawFVPohonEnergi(ctx, poX, poY, TS, t);
     const distP = Math.hypot(fvPlayer.x-(poX+TS), fvPlayer.y-(poY+TS));
     if (distP < TS*3) {
-        ctx.fillStyle='#fbbf24'; ctx.font='bold 16px sans-serif'; ctx.textAlign='center';
-        ctx.fillText('!', poX+TS, poY-6);
+        ctx.fillStyle='#fbbf24'; ctx.font='bold 18px sans-serif'; ctx.textAlign='center';
+        ctx.fillText('!', poX+TS, poY-8);
+        ctx.textAlign='left';
     }
 
-    // Rara Wilis NPC — sprite & nametag sudah dirender oleh sistem drawNPC() utama
-    // Hanya gambar aura ungu saja agar tetap ada efek visual tanpa duplikasi teks
+    // ── Rara Wilis aura ──
     const raraX=FV_RARA_POS.x*TS, raraY=FV_RARA_POS.y*TS;
-    const aura=0.12+0.12*Math.sin(t/500);
-    ctx.fillStyle=`rgba(167,139,250,${aura})`; ctx.beginPath();
-    ctx.arc(raraX+TS, raraY+TS, TS*1.8, 0, Math.PI*2); ctx.fill();
-    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    const aura=0.10+0.10*Math.sin(t/500);
+    const raraGrd = ctx.createRadialGradient(raraX+TS,raraY+TS,0,raraX+TS,raraY+TS,TS*2);
+    raraGrd.addColorStop(0,`rgba(167,139,250,${aura*2})`);
+    raraGrd.addColorStop(1,'rgba(167,139,250,0)');
+    ctx.fillStyle=raraGrd; ctx.beginPath();
+    ctx.arc(raraX+TS, raraY+TS, TS*2, 0, Math.PI*2); ctx.fill();
 
-    // Peri wandering
-    fv.fairies.forEach((f,i)=>{
-        const wx=(20+i*15)*TS + Math.sin(t/1100+i*2.1)*TS*10;
-        const wy=(40+i%4*18)*TS + Math.cos(t/1300+i*1.7)*TS*6;
-        const cx=Math.max(TS,Math.min((FW-2)*TS,wx));
-        const cy=Math.max(TS,Math.min((FH-2)*TS,wy));
-
-        // Coba render sprite image, fallback ke emoji
-        const imgSrc = _khImg(f);
-        const cached = fvSpriteCache[imgSrc];
-        if (cached && cached.complete && cached.naturalWidth > 0) {
-            const sw = TS*1.1, sh = TS*1.5;
-            ctx.drawImage(cached, cx - sw/2, cy - sh/2, sw, sh);
-        } else {
-            if (!cached) {
-                const img = new Image(); img.src = imgSrc;
-                fvSpriteCache[imgSrc] = img;
-            }
-            const ico = f.gender==='boy'?'🧚‍♂️':'🧚‍♀️';
-            ctx.font=`${TS*0.9}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.fillText(ico, cx, cy);
+    // ── Update NPC runtime positions & collect all Y-sorted drawables ──
+    // Init NPC runtime jika belum ada
+    const _fvMapNpcs = (typeof maps!=='undefined' && maps['fairyVillage']) ? maps['fairyVillage'].npcs : [];
+    _fvMapNpcs.forEach(n => {
+        if (!fvNpcRuntime[n.id]) {
+            fvNpcRuntime[n.id] = {
+                px: n.x * TS,
+                py: n.y * TS,
+                vx: (n.vx||0) * TS * 0.015,
+                vy: (n.vy||0) * TS * 0.015,
+                facing: 'down',
+                timer: Math.random()*200
+            };
         }
+    });
+    // Update wander NPCs
+    _fvMapNpcs.forEach(n => {
+        if (n.type !== 'wander') return;
+        const rt = fvNpcRuntime[n.id];
+        if (!rt) return;
+        rt.timer = (rt.timer||0) - 1;
+        if (rt.timer <= 0) {
+            // Pilih arah baru
+            const angle = Math.random() * Math.PI * 2;
+            const spd = 0.3 + Math.random()*0.4;
+            rt.vx = Math.cos(angle)*spd;
+            rt.vy = Math.sin(angle)*spd;
+            rt.timer = 80 + Math.random()*160;
+            if (Math.abs(rt.vx) > Math.abs(rt.vy)) rt.facing = rt.vx>0?'right':'left';
+            else rt.facing = rt.vy>0?'down':'up';
+        }
+        const nx = rt.px + rt.vx;
+        const ny = rt.py + rt.vy;
+        // Batas peta
+        rt.px = Math.max(TS, Math.min((FW-3)*TS, nx));
+        rt.py = Math.max(TS, Math.min((FH-3)*TS, ny));
+        // Bounce di batas
+        if (nx<=TS || nx>=(FW-3)*TS) rt.vx *= -1;
+        if (ny<=TS || ny>=(FH-3)*TS) rt.vy *= -1;
+        // Sync ke npc record agar collision pakai posisi terbaru
+        n._rtx = rt.px / TS;
+        n._rty = rt.py / TS;
+    });
 
-        ctx.fillStyle='#fde68a'; ctx.font='6px sans-serif'; ctx.textBaseline='alphabetic'; ctx.textAlign='center';
-        ctx.fillText(f.name, cx, cy+TS*0.85);
-        ctx.fillStyle='#fff'; ctx.textAlign='left';
+    // ── Y-sorted draw: NPC map + fairies + player ──
+    const _drawables = [];
+
+    // NPC dari maps['fairyVillage'] (Rara Wilis, peri kecil)
+    _fvMapNpcs.forEach(n => {
+        const rt = fvNpcRuntime[n.id];
+        const px_ = rt ? rt.px : n.x * TS;
+        const py_ = rt ? rt.py : n.y * TS;
+        const nW = 30, nH = 46; // ukuran display NPC
+        _drawables.push({ sortY: py_ + nH, type:'npc', n, px:px_, py:py_, nW, nH, rt });
+    });
+
+    // Peri wandering (dari fv.fairies)
+    fv.fairies.forEach((f,i)=>{
+        if (!fvNpcRuntime['fairy_'+f.id]) {
+            fvNpcRuntime['fairy_'+f.id] = {
+                px: (8+i*9)*TS + (Math.random()-0.5)*TS*4,
+                py: (5+i%5*7)*TS + (Math.random()-0.5)*TS*3,
+                vx: (Math.random()-0.5)*0.5,
+                vy: (Math.random()-0.5)*0.5,
+                timer: Math.random()*180,
+                facing: 'down'
+            };
+        }
+        const rt = fvNpcRuntime['fairy_'+f.id];
+        rt.timer = (rt.timer||0) - 1;
+        if (rt.timer <= 0) {
+            const angle = Math.random() * Math.PI * 2;
+            const spd = 0.25 + Math.random()*0.35;
+            rt.vx = Math.cos(angle)*spd; rt.vy = Math.sin(angle)*spd;
+            rt.timer = 100 + Math.random()*200;
+            rt.facing = Math.abs(rt.vx)>Math.abs(rt.vy) ? (rt.vx>0?'right':'left') : (rt.vy>0?'down':'up');
+        }
+        rt.px = Math.max(TS, Math.min((FW-3)*TS, rt.px+rt.vx));
+        rt.py = Math.max(TS, Math.min((FH-3)*TS, rt.py+rt.vy));
+        if (rt.px<=TS || rt.px>=(FW-3)*TS) rt.vx*=-1;
+        if (rt.py<=TS || rt.py>=(FH-3)*TS) rt.vy*=-1;
+        _drawables.push({ sortY: rt.py+TS*1.2, type:'fairy', f, px:rt.px, py:rt.py });
+    });
+
+    // Player
+    const pSprSrc = (STATE.player.gender==='girl') ? 'images/girl.png' : 'images/boy.png';
+    _drawables.push({ sortY: fvPlayer.y+TS*1.1, type:'player' });
+
+    // Sort by Y
+    _drawables.sort((a,b2) => a.sortY - b2.sortY);
+
+    // Draw semua
+    _drawables.forEach(d => {
+        if (d.type === 'player') {
+            // Shadow
+            ctx.fillStyle='rgba(0,0,0,0.28)';
+            ctx.beginPath();
+            ctx.ellipse(fvPlayer.x+TS*0.5, fvPlayer.y+TS*1.0, TS*0.38, TS*0.13, 0, 0, Math.PI*2);
+            ctx.fill();
+            // Sprite atau fallback emoji
+            const _pImg = fvSpriteCache['__player__'];
+            if (_pImg && _pImg.complete && _pImg.naturalWidth>0) {
+                const _pw2=TS*1.15, _ph2=TS*1.6;
+                ctx.drawImage(_pImg, fvPlayer.x+TS*0.5-_pw2/2, fvPlayer.y+TS*0.5-_ph2*0.65, _pw2, _ph2);
+            } else {
+                if (!_pImg) { const i2=new Image(); i2.src=pSprSrc; fvSpriteCache['__player__']=i2; }
+                ctx.font=`${TS*1.25}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText(STATE.player.gender==='girl'?'👧':'👦', fvPlayer.x+TS*0.5, fvPlayer.y+TS*0.45);
+                ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+            }
+            // Nametag player
+            ctx.fillStyle='rgba(0,0,0,0.55)';
+            const _pName = STATE.player.name||'Kamu';
+            ctx.font='bold 7px Nunito,sans-serif';
+            const _pnw = ctx.measureText(_pName).width+6;
+            ctx.fillRect(fvPlayer.x+TS*0.5-_pnw/2, fvPlayer.y-10, _pnw, 11);
+            ctx.fillStyle='#fef9c3'; ctx.textAlign='center';
+            ctx.fillText(_pName, fvPlayer.x+TS*0.5, fvPlayer.y-1);
+            ctx.textAlign='left';
+        } else if (d.type === 'npc') {
+            const {n, px:nx2, py:ny2, nW, nH} = d;
+            // Shadow
+            ctx.fillStyle='rgba(0,0,0,0.22)';
+            ctx.beginPath(); ctx.ellipse(nx2+nW/2, ny2+nH*0.95, nW*0.4, nH*0.1, 0, 0, Math.PI*2); ctx.fill();
+            // Float effect untuk fairy_npc
+            const floatOff = (n.type==='fairy_npc') ? Math.sin(t/600+nx2)*3 : 0;
+            const imgSrc2 = n.imgSrc||n.sprite||'';
+            const cachedNpc = fvSpriteCache[imgSrc2];
+            if (cachedNpc && cachedNpc.complete && cachedNpc.naturalWidth>0) {
+                ctx.drawImage(cachedNpc, nx2, ny2-floatOff, nW, nH);
+            } else {
+                if (imgSrc2 && !cachedNpc) { const i2=new Image(); i2.src=imgSrc2; fvSpriteCache[imgSrc2]=i2; }
+                ctx.font=`${nH*0.7}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText('🧚', nx2+nW/2, ny2+nH/2-floatOff);
+                ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+            }
+            // Nametag
+            if (!n.noNameTag && n.name) {
+                ctx.font='bold 7px Nunito,sans-serif';
+                const _nw2 = ctx.measureText(n.name).width+6;
+                ctx.fillStyle='rgba(30,5,60,0.7)';
+                ctx.fillRect(nx2+nW/2-_nw2/2, ny2-floatOff-12, _nw2, 11);
+                ctx.fillStyle='#e9d5ff'; ctx.textAlign='center';
+                ctx.fillText(n.name, nx2+nW/2, ny2-floatOff-3);
+                ctx.textAlign='left';
+            }
+            // Sparkle di atas Rara Wilis
+            if (n.id==='rara_wilis') {
+                const sz=0.4+0.3*Math.sin(t/300);
+                ctx.fillStyle=`rgba(255,220,80,${sz})`;
+                ctx.font=`${TS*0.7}px serif`; ctx.textAlign='center';
+                ctx.fillText('✨', nx2+nW/2, ny2-floatOff-14);
+                ctx.textAlign='left';
+            }
+        } else if (d.type === 'fairy') {
+            const {f, px:fx, py:fy} = d;
+            const floatOff2 = Math.sin(t/700 + fx*0.01)*4;
+            ctx.fillStyle='rgba(0,0,0,0.18)';
+            ctx.beginPath(); ctx.ellipse(fx+TS*0.5, fy+TS*1.1, TS*0.3, TS*0.1, 0, 0, Math.PI*2); ctx.fill();
+            const imgSrc3 = _khImg(f);
+            const cached3 = fvSpriteCache[imgSrc3];
+            if (cached3 && cached3.complete && cached3.naturalWidth>0) {
+                const sw3=TS*1.0, sh3=TS*1.4;
+                ctx.drawImage(cached3, fx-sw3/2+TS*0.5, fy-sh3*0.6-floatOff2, sw3, sh3);
+            } else {
+                if (!cached3) { const i2=new Image(); i2.src=imgSrc3; fvSpriteCache[imgSrc3]=i2; }
+                ctx.font=`${TS*0.85}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText(f.gender==='boy'?'🧚‍♂️':'🧚‍♀️', fx+TS*0.5, fy+TS*0.3-floatOff2);
+                ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+            }
+            // Nametag peri
+            ctx.font='6px Nunito,sans-serif';
+            const _fnw = ctx.measureText(f.name).width+4;
+            ctx.fillStyle='rgba(30,5,60,0.65)';
+            ctx.fillRect(fx+TS*0.5-_fnw/2, fy-floatOff2-10, _fnw, 9);
+            ctx.fillStyle='#fde68a'; ctx.textAlign='center';
+            ctx.fillText(f.name, fx+TS*0.5, fy-floatOff2-3);
+            ctx.textAlign='left';
+        }
     });
 
     // Partikel
@@ -44892,14 +45872,6 @@ function drawFairyWorld(ts) {
     if (_night || _tod === 'senja' || _tod === 'malam') {
         drawFVFireflies(ctx, t);
     }
-
-    // Player
-    const playerIcon = '🧑';
-    ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.beginPath();
-    ctx.ellipse(fvPlayer.x+TS*0.5, fvPlayer.y+TS*0.95, TS*0.45, TS*0.15, 0, 0, Math.PI*2); ctx.fill();
-    ctx.font=`${TS*1.3}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(playerIcon, fvPlayer.x+TS*0.5, fvPlayer.y+TS*0.5);
-    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
 
     ctx.restore();
 
