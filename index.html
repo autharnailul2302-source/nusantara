@@ -1511,49 +1511,49 @@
             z-index: 300;
             display: none;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: flex-end;
             align-items: center;
             color: white;
             transition: opacity 0.5s ease-out;
-            padding: clamp(14px,3vh,28px) 16px clamp(12px,2.5vh,22px);
+            padding: 0 16px clamp(10px,2vh,18px);
             box-sizing: border-box;
         }
+        /* Semua konten splash dikumpulkan di bawah */
         #splash-mid {
-            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            /* Glassmorphism strip di bawah agar teks terbaca di atas BG */
+            background: linear-gradient(to top, rgba(15,6,1,0.72) 0%, rgba(15,6,1,0.0) 100%);
+            padding: clamp(10px,2.5vh,22px) 16px clamp(12px,2vh,18px);
+            border-radius: 0;
+        }
+        #splash-title-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: clamp(6px,1.2vh,12px);
+        }
+        #splash-action-block {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             width: 100%;
         }
-        /* Judul naik — pakai flex-end agar mendorong ke atas tengah */
-        #splash-title-block {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            padding-bottom: clamp(14px, 3vh, 32px);
-            width: 100%;
-        }
-        /* Loading + tombol — flex-start agar nempel di bawah judul */
-        #splash-action-block {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            width: 100%;
-        }
         #splash-footer {
             flex-shrink: 0;
-            font-size: clamp(9px,1.5vw,11px);
-            color: rgba(255,255,255,0.9);
+            font-size: clamp(8px,1.2vw,10px);
+            color: rgba(255,255,255,0.75);
             font-family: 'Nunito', sans-serif;
             text-shadow: 1px 1px 2px #000;
             font-weight: 700;
             letter-spacing: 0.5px;
             text-align: center;
+            margin-top: clamp(6px,1vh,10px);
         }
 
 
@@ -1639,33 +1639,33 @@
 
         /* NEW: LOADING BAR STYLES */
         #loading-container {
-            width: 70%;
-            max-width: 350px;
-            height: 16px;
+            width: clamp(200px, 55vw, 320px);
+            max-width: 320px;
+            height: 12px;
             background: #573315;
-            border-radius: 10px;
-            margin-top: 20px;
+            border-radius: 8px;
+            margin-top: clamp(8px,1.5vh,14px);
             overflow: hidden;
             position: relative;
-            border: 3px solid #fcd34d;
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+            border: 2px solid #fcd34d;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
         }
 
         #loading-bar {
             width: 0%;
             height: 100%;
-            background: repeating-linear-gradient(45deg, #84cc16, #84cc16 10px, #65a30d 10px, #65a30d 20px);
+            background: repeating-linear-gradient(45deg, #84cc16, #84cc16 8px, #65a30d 8px, #65a30d 16px);
             transition: width 0.2s;
             box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
         }
 
         #loading-text {
             font-family: 'Fredoka', sans-serif;
-            font-size: 14px;
+            font-size: clamp(10px,2vw,13px);
             color: #fff;
-            margin-top: 10px;
+            margin-top: clamp(5px,0.8vh,8px);
             letter-spacing: 1px;
-            text-shadow: 2px 2px 0 #000;
+            text-shadow: 1px 1px 0 #000;
             font-weight: bold;
         }
 
@@ -1674,21 +1674,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: clamp(12px,3vw,30px);
+            gap: clamp(10px,2.5vw,22px);
             flex-shrink: 0;
             margin-bottom: 0;
         }
         .logo-main {
-            width: clamp(52px,8vw,90px);
+            width: clamp(38px,5.5vw,62px);
             height: auto;
-            filter: drop-shadow(0 0 20px rgba(251,191,36,0.7));
+            filter: drop-shadow(0 0 14px rgba(251,191,36,0.7));
             transition: transform 0.3s;
         }
         .logo-side {
-            width: clamp(36px,6vw,66px);
+            width: clamp(28px,4vw,48px);
             height: auto;
             opacity: 0.95;
-            filter: drop-shadow(0 0 10px rgba(6,182,212,0.5));
+            filter: drop-shadow(0 0 8px rgba(6,182,212,0.5));
         }
 
         @keyframes fadeOut {
@@ -6316,49 +6316,49 @@
         <!-- 1. SPLASH SCREEN -->
         <div id="splash-screen">
 
-            <!-- ZONA 1: LOGO INSTANSI — ATAS -->
-            <div class="splash-logos">
-                <img src="images/loganailul.png" alt="Nailul Authar" class="logo-side"
-                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDcwIDcwIj48Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSIzMCIgZmlsbD0iIzA2YjZkNCIgb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjM1IiB5PSI0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwNmI2ZDQiPlRLSjwvdGV4dD48L3N2Zz4='">
-                <img src="images/logosmk.png" alt="SMK Negeri 1 Brondong" class="logo-main"
-                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDUiIGZpbGw9IiNmYmJmMjQiIG9wYWNpdHk9IjAuMiIgc3Ryb2tlPSIjZmJiZjI0IiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSI1MCIgeT0iNTUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmJiZjI0Ij5OQUlMVUw8L3RleHQ+PC9zdmc+'">
-                <img src="images/logotkj.png" alt="Jurusan TKJ" class="logo-side"
-                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDcwIDcwIj48Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSIzMCIgZmlsbD0iIzA2YjZkNCIgb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjM1IiB5PSI0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwNmI2ZDQiPlRLSjwvdGV4dD48L3N2Zz4='">
-            </div>
-
-            <!-- ZONA 2: JUDUL + LOADING + TOMBOL — TENGAH (flex:1) -->
+            <!-- SEMUA KONTEN DI BAWAH — background kelihatan penuh di atas -->
             <div id="splash-mid">
 
-                <!-- Blok judul — naik ke atas area tengah -->
+                <!-- Logo instansi -->
+                <div class="splash-logos" style="margin-bottom:clamp(4px,1vh,10px);">
+                    <img src="images/loganailul.png" alt="Nailul Authar" class="logo-side"
+                        onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDcwIDcwIj48Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSIzMCIgZmlsbD0iIzA2YjZkNCIgb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjM1IiB5PSI0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwNmI2ZDQiPlRLSjwvdGV4dD48L3N2Zz4='">
+                    <img src="images/logosmk.png" alt="SMK Negeri 1 Brondong" class="logo-main"
+                        onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDUiIGZpbGw9IiNmYmJmMjQiIG9wYWNpdHk9IjAuMiIgc3Ryb2tlPSIjZmJiZjI0IiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSI1MCIgeT0iNTUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmJiZjI0Ij5OQUlMVUw8L3RleHQ+PC9zdmc+'">
+                    <img src="images/logotkj.png" alt="Jurusan TKJ" class="logo-side"
+                        onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MCIgaGVpZ2h0PSI3MCIgdmlld0JveD0iMCAwIDcwIDcwIj48Y2lyY2xlIGN4PSIzNSIgY3k9IjM1IiByPSIzMCIgZmlsbD0iIzA2YjZkNCIgb3BhY2l0eT0iMC4yIiBzdHJva2U9IiMwNmI2ZDQiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjM1IiB5PSI0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiMwNmI2ZDQiPlRLSjwvdGV4dD48L3N2Zz4='">
+                </div>
+
+                <!-- Judul & Subjudul — lebih kecil -->
                 <div id="splash-title-block">
-                    <h1 style="font-size: clamp(42px,9vw,72px); text-align:center; line-height:1.1;
-                        font-family:'Fredoka'; margin:0 0 4px; color:#fff;
-                        text-shadow: 4px 4px 0 #a16207, 0 0 30px rgba(251,191,36,0.3);
-                        -webkit-text-stroke: 2px #a16207;
+                    <h1 style="font-size: clamp(28px,6.5vw,52px); text-align:center; line-height:1.05;
+                        font-family:'Fredoka'; margin:0 0 2px; color:#fff;
+                        text-shadow: 3px 3px 0 #a16207, 0 0 20px rgba(251,191,36,0.35);
+                        -webkit-text-stroke: 1.5px #a16207;
                         animation: splashTitleAnim 3s infinite ease-in-out;">
                         NUSANTARA ARSA
                     </h1>
-                    <p style="font-size: clamp(16px,4vw,26px); font-family:'Fredoka'; font-weight:700;
-                        color:#fef08a; letter-spacing:4px; text-transform:uppercase;
-                        text-shadow: 2px 2px 0 #a16207; margin:0;">
+                    <p style="font-size: clamp(11px,2.8vw,18px); font-family:'Fredoka'; font-weight:700;
+                        color:#fef08a; letter-spacing:3px; text-transform:uppercase;
+                        text-shadow: 1px 1px 0 #a16207; margin:0;">
                         — Pilih Jalanmu, Hadapi Duniamu —
                     </p>
                 </div>
 
-                <!-- Blok aksi — loading + tombol di bawah judul -->
+                <!-- Loading bar + tombol mulai -->
                 <div id="splash-action-block">
                     <div id="loading-container">
                         <div id="loading-bar"></div>
                     </div>
                     <div id="loading-text">MENYIAPKAN DATA... 0%</div>
-                    <div id="splash-start-btn" style="display:none; margin-top:clamp(14px,2.5vh,24px); cursor:pointer;" class="resume-btn">
+                    <div id="splash-start-btn" style="display:none; margin-top:clamp(10px,1.8vh,18px); cursor:pointer;" class="resume-btn">
                         ▶ KETUK UNTUK MEMULAI
                     </div>
                 </div>
 
             </div>
 
-            <!-- ZONA 3: COPYRIGHT FOOTER — BAWAH -->
+            <!-- Footer copyright -->
             <div id="splash-footer">
                 &copy; 2026 &middot; NAILUL AUTHAR &middot; TKJ SMK NEGERI 1 BRONDONG
             </div>
@@ -8490,6 +8490,7 @@
                 <div id="kh-tabs">
                   <button class="kh-tab on" onclick="khTab('peri')">🧚 Para Peri</button>
                   <button class="kh-tab"    onclick="khTab('bangunan')">🏗️ Bangunan</button>
+                  <button class="kh-tab"    onclick="khTab('statistik')">📊 Statistik</button>
                 </div>
                 <div id="kh-body">
                   <!-- TAB PERI -->
@@ -8510,6 +8511,10 @@
                   <div id="kh-t-bangunan" style="display:none;">
                     <div id="kh-blist"></div>
                     <div id="kh-catalog-wrap"></div>
+                  </div>
+                  <!-- TAB STATISTIK -->
+                  <div id="kh-t-statistik" style="display:none; padding:10px 12px; overflow-y:auto; max-height:320px;">
+                    <div id="kh-stat-content"></div>
                   </div>
                 </div>
               </div>
@@ -18421,10 +18426,10 @@ ${reward.tip}`,
 
             // ═══════════════════════════════════════════════════════════════
             // FAIRY VILLAGE MAP — Terintegrasi ke sistem maps utama
-            // Ukuran 3× lebih besar (240×150), TANPA TEMBOK/BORDER
+            // Ukuran disesuaikan bg kayangan (45×30 tiles = ~1260×840px), TANPA TEMBOK/BORDER
             // ═══════════════════════════════════════════════════════════════
             (function initFairyVillageMap() {
-                const FW = 60, FH = 40;
+                const FW = 45, FH = 30;
                 // Tile 20 = Lantai Peri (semua tile adalah lantai, TANPA border wall)
                 const tiles = new Array(FW * FH).fill(20);
                 // Tidak ada border/tembok — peta terbuka luas
@@ -18451,7 +18456,7 @@ ${reward.tip}`,
                         {
                             id: 'pohon_energi',
                             name: 'Pohon Energi',
-                            x: 28, y: 33,
+                            x: 21, y: 24,
                             w: 38, h: 58,
                             imgSrc: 'images/pohonperi.png',
                             sprite: 'images/pohonperi.png',
@@ -18463,7 +18468,7 @@ ${reward.tip}`,
                         {
                             id: 'fv_wening',
                             name: 'Wening',
-                            x: 15, y: 10,
+                            x: 11, y: 8,
                             w: 38, h: 58,
                             imgSrc: 'images/wening.png',
                             sprite: 'images/wening.png',
@@ -18474,7 +18479,7 @@ ${reward.tip}`,
                         {
                             id: 'fv_sekar',
                             name: 'Sekar',
-                            x: 45, y: 8,
+                            x: 34, y: 6,
                             w: 38, h: 58,
                             imgSrc: 'images/sekar.png',
                             sprite: 'images/sekar.png',
@@ -18485,7 +18490,7 @@ ${reward.tip}`,
                         {
                             id: 'fv_bening',
                             name: 'Bening',
-                            x: 55, y: 2,
+                            x: 41, y: 2,
                             w: 38, h: 58,
                             imgSrc: 'images/bening.png',
                             sprite: 'images/bening.png',
@@ -18496,7 +18501,7 @@ ${reward.tip}`,
                         {
                             id: 'fv_juna',
                             name: 'Juna',
-                            x: 30, y: 18,
+                            x: 22, y: 14,
                             w: 38, h: 58,
                             imgSrc: 'images/juna.png',
                             sprite: 'images/juna.png',
@@ -23694,176 +23699,187 @@ ${reward.tip}`,
                 // Hanya berlaku jika sudah menikah dan role pemain adalah 'family' (Bapak/Ibu RT)
                 if (STATE.player.married && STATE.player.role === 'family') {
 
-                    // Tentukan siapa yang bekerja: pasangan atau pemain
                     const playerIsWorker = STATE.player.homeRole === 'worker';
+                    const p = STATE.player;
 
-                    // 1. WAKTUNYA BERANGKAT KERJA (07:30)
-                    // Cek range waktu kecil agar tidak terlewat
-                    if (STATE.time >= 730 && STATE.time < 740 && STATE.player.spouseWorkStatus !== 'working') {
-                        STATE.player.spouseWorkStatus = 'working';
+                    // 1. PASANGAN / PEMAIN BERANGKAT KERJA JAM 08:00
+                    if (STATE.time >= 800 && STATE.time < 810 && p.spouseWorkStatus !== 'working') {
+                        p.spouseWorkStatus = 'working';
 
-                        // Ambil gambar pasangan
                         let sImg = 'images/girl.png';
-                        const sId = STATE.player.spouseId;
-                        if (sId === 'lover1girl') sImg = "images/lover1girl.png";
-                        else if (sId === 'lover2girl') sImg = "images/lover2girl.png";
-                        else if (sId === 'lover1boy') sImg = "images/lover1boy.png";
-                        else if (sId === 'lover2boy') sImg = "images/lover2boy.png";
+                        const sId = p.spouseId;
+                        if (sId === 'lover1girl') sImg = 'images/lover1girl.png';
+                        else if (sId === 'lover2girl') sImg = 'images/lover2girl.png';
+                        else if (sId === 'lover1boy') sImg = 'images/lover1boy.png';
+                        else if (sId === 'lover2boy') sImg = 'images/lover2boy.png';
 
                         if (playerIsWorker) {
-                            // PEMAIN yang bekerja di luar — pasangan tetap di rumah
-                            // Jangan hapus pasangan dari peta rumah
+                            // PEMAIN yang bekerja — pasangan tetap di rumah
                             if (STATE.location === 'house') {
                                 const sName = SPOUSE_NAMES[sId] || 'Pasangan';
-                                // Tampilkan notifikasi pamit pedagogis (menggantikan dialog standar)
                                 showPedagogicalDepartureNotif(sImg, sName);
                             } else {
-                                showToast("💼 Waktunya berangkat kerja! Pulang sebelum 17:00 ya.");
+                                showToast('💼 Sudah jam 08:00! Waktunya berangkat kerja. Pulang sebelum 16:00 ya.');
                             }
                         } else {
-                            // PASANGAN yang bekerja di luar — hapus pasangan dari peta
+                            // PASANGAN yang bekerja — hapus dari peta rumah
                             const houseMap = maps['house'];
-                            if (houseMap) {
-                                houseMap.npcs = houseMap.npcs.filter(n => n.id !== STATE.player.spouseId);
-                            }
+                            if (houseMap) houseMap.npcs = houseMap.npcs.filter(n => n.id !== p.spouseId);
 
-                            // Notifikasi / Dialog
                             if (STATE.location === 'house') {
                                 const sNameDep = SPOUSE_NAMES[sId] || 'Pasangan';
-                                const month = getMarriageMonth();
-                                const conflictLevel = STATE.player.marriageConflictLevel || 0;
+                                const conflictLevel = p.marriageConflictLevel || 0;
                                 let depMsg = conflictLevel >= 2
-                                    ? `"Aku berangkat." (Singkat, tanpa senyum seperti biasanya)\n\n😔 Ada jarak yang mulai terasa di antara kalian.`
-                                    : `"Sayang, aku berangkat kerja dulu ya. Jaga rumah baik-baik. 💼"\n\n"Aku pulang jam 16:00 nanti!"`;
+                                    ? '"Aku berangkat." (Singkat, tanpa senyum seperti biasanya)\n\n😔 Ada jarak yang mulai terasa di antara kalian.'
+                                    : '"Sayang, aku berangkat kerja dulu ya. Jaga rumah baik-baik. 💼"\n\n"Aku pulang sekitar jam 16:00!"';
 
                                 showDialogue(sNameDep,
-                                    depMsg + `\n\n━━━━━━━━━━━━━━━━━━━━\n` +
-                                    `📌 KAMU BISA CARI PENGHASILAN TAMBAHAN:\n` +
-                                    `🎣 Mancing → Jual ikan ke Merchant\n` +
-                                    `⚔️ Dungeon → Jual item drop (hati-hati!)\n` +
-                                    `🌙 Part-Time → Bengkel/Jahit/Klinik (15:00–19:00)\n\n` +
-                                    `💡 Ijazah SMA/SMK masih membuka banyak peluang informal. Manfaatkan waktumu!`,
+                                    depMsg + '\n\n━━━━━━━━━━━━━━━━━━━━\n' +
+                                    '📌 KAMU BISA CARI PENGHASILAN TAMBAHAN:\n' +
+                                    '🎣 Mancing → Jual ikan ke Merchant\n' +
+                                    '⚔️ Dungeon → Jual item drop (hati-hati!)\n' +
+                                    '🌙 Part-Time → Bengkel/Jahit/Klinik (15:00–19:00)\n\n' +
+                                    '💡 Manfaatkan waktu dengan baik! Kalau kerja part-time, boleh pulang sampai jam 20:00.',
                                     [{
-                                        text: "Hati-hati di jalan!",
+                                        text: 'Hati-hati di jalan!',
                                         action: () => {
                                             closeDialogue();
-                                            // Tampilkan Menu Rencana Harian setelah pasangan pergi
                                             setTimeout(showDailyHousekeepingMenu, 800);
                                         }
                                     }],
                                     sImg
                                 );
                             } else {
-                                showToast("ℹ️ Pasanganmu telah berangkat kerja.");
+                                showToast('ℹ️ Pasanganmu sudah berangkat kerja jam 08:00.');
                             }
                         }
                     }
 
-                    // 2. WAKTUNYA PULANG KERJA (16:00 untuk pasangan RT / 17:00 untuk pemain kerja)
-                    // Skenario A: Pasangan yang kerja → pulang jam 16:00
-                    if (!playerIsWorker && STATE.time >= 1600 && STATE.time < 1610 && STATE.player.spouseWorkStatus === 'working') {
-                        STATE.player.spouseWorkStatus = 'home';
+                    // 2. PASANGAN PULANG JAM 16:00 (skenario: pasangan yang kerja)
+                    if (!playerIsWorker && STATE.time >= 1600 && STATE.time < 1610 && p.spouseWorkStatus === 'working') {
+                        p.spouseWorkStatus = 'home';
 
-                        // Ambil gambar pasangan
                         let sImg = 'images/girl.png';
-                        const sId = STATE.player.spouseId;
+                        const sId = p.spouseId;
                         const sName = SPOUSE_NAMES[sId] || 'Pasangan';
-                        if (sId === 'lover1girl') sImg = "images/lover1girl.png";
-                        else if (sId === 'lover2girl') sImg = "images/lover2girl.png";
-                        else if (sId === 'lover1boy') sImg = "images/lover1boy.png";
-                        else if (sId === 'lover2boy') sImg = "images/lover2boy.png";
+                        if (sId === 'lover1girl') sImg = 'images/lover1girl.png';
+                        else if (sId === 'lover2girl') sImg = 'images/lover2girl.png';
+                        else if (sId === 'lover1boy') sImg = 'images/lover1boy.png';
+                        else if (sId === 'lover2boy') sImg = 'images/lover2boy.png';
 
-                        // Tambahkan kembali pasangan ke rumah
                         regenerateHouseMap();
 
-                        // CEK APAKAH PEMAIN ADA DI RUMAH?
                         if (STATE.location === 'house') {
-                            // Pemain disiplin ada di rumah
-                            STATE.player.spouseAngry = false;
-
-                            // Efek partikel hati
-                            createParticle(STATE.player.x, STATE.player.y, '#ec4899');
+                            p.spouseAngry = false;
+                            createParticle(p.x, p.y, '#ec4899');
                             if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
 
-                            // --- UPDATE: CEK HASIL KERJA RUMAH TANGGA ---
-                            let choresBonusMsg = "";
+                            let choresBonusMsg = '';
                             let choresBonusRep = 0;
-
-                            if (STATE.player.dailyChores) {
-                                if (STATE.player.dailyChores.cooking) {
-                                    choresBonusMsg += "\nWah, wangi masakan enak! Kamu masak ya? Makasih sayang! 🍲";
-                                    choresBonusRep += 2;
-                                }
-                                if (STATE.player.dailyChores.cleaning) {
-                                    choresBonusMsg += "\nRumah juga bersih banget. Kamu rajin sekali! ✨";
-                                    choresBonusRep += 2;
-                                }
-                                if (STATE.player.dailyChores.laundry) {
-                                    choresBonusMsg += "\nBaju-bajuku sudah dicuci! Terima kasih ya sayang~ 👔";
-                                    choresBonusRep += 1;
-                                }
-                                if (STATE.player.dailyChores.garden) {
-                                    choresBonusMsg += "\nTanaman di kebun juga sudah disiram, bagus banget! 🌱";
-                                    choresBonusRep += 1;
-                                }
-                                // Reset chores harian
-                                STATE.player.dailyChores = {};
+                            if (p.dailyChores) {
+                                if (p.dailyChores.cooking)  { choresBonusMsg += '\nWah, wangi masakan enak! Kamu masak ya? Makasih sayang! 🍲'; choresBonusRep += 2; }
+                                if (p.dailyChores.cleaning) { choresBonusMsg += '\nRumah juga bersih banget. Kamu rajin sekali! ✨'; choresBonusRep += 2; }
+                                if (p.dailyChores.laundry)  { choresBonusMsg += '\nBaju-bajuku sudah dicuci! Terima kasih ya sayang~ 👔'; choresBonusRep += 1; }
+                                if (p.dailyChores.garden)   { choresBonusMsg += '\nTanaman di kebun juga sudah disiram, bagus banget! 🌱'; choresBonusRep += 1; }
+                                p.dailyChores = {};
                             }
-                            // -------------------------------------------
 
                             showDialogue(sName,
-                                "Aku pulang! 🏠\nSenang sekali melihatmu sudah di rumah menyambutku." + choresBonusMsg + "\n\n(Hubungan Makin Harmonis ❤️)",
-                                [{ text: "Selamat datang kembali!", action: closeDialogue }],
+                                'Aku pulang! 🏠\nSenang sekali melihatmu sudah di rumah menyambutku.' + choresBonusMsg + '\n\n(Hubungan Makin Harmonis ❤️)',
+                                [{ text: 'Selamat datang kembali!', action: closeDialogue }],
                                 sImg
                             );
-
-                            // Bonus Reputasi
-                            STATE.player.reputation += (2 + choresBonusRep);
-                            updateRelationship({ id: sId }, 2 + choresBonusRep, "Disiplin & Rajin");
+                            p.reputation += (2 + choresBonusRep);
+                            updateRelationship({ id: sId }, 2 + choresBonusRep, 'Disiplin & Rajin');
 
                         } else {
-                            // Pemain keluyuran (Marah Besar)
-                            STATE.player.spouseAngry = true;
-
-                            showToast("⚠️ GAWAT! Pasangan pulang tapi kamu tidak di rumah!");
+                            // Pemain tidak di rumah saat pasangan pulang → marah
+                            p.spouseAngry = true;
+                            showToast('⚠️ GAWAT! Pasangan pulang jam 16:00 tapi kamu tidak di rumah!');
                             if (typeof AudioService !== 'undefined') AudioService.playSFX('hit');
-
-                            // Hukuman Reputasi Langsung
-                            STATE.player.reputation = Math.max(0, STATE.player.reputation - 5);
+                            p.reputation = Math.max(0, p.reputation - 5);
+                            updateRelationship({ id: sId }, -5, 'Tidak Ada di Rumah');
                         }
                     }
 
-                    // Skenario B: Pemain yang kerja → pasangan tunggu di rumah, batas jam 17:00
-                    if (playerIsWorker && STATE.time >= 1700 && STATE.time < 1710 && STATE.player.spouseWorkStatus === 'working') {
-                        STATE.player.spouseWorkStatus = 'home';
-                        const sId2 = STATE.player.spouseId;
-                        let sImg2 = 'images/girl.png';
-                        if (sId2 === 'lover1girl') sImg2 = "images/lover1girl.png";
-                        else if (sId2 === 'lover2girl') sImg2 = "images/lover2girl.png";
-                        else if (sId2 === 'lover1boy') sImg2 = "images/lover1boy.png";
-                        else if (sId2 === 'lover2boy') sImg2 = "images/lover2boy.png";
+                    // 3. PEMAIN PULANG KERJA (skenario: pemain yang kerja di luar)
+                    //    Batas normal: jam 16:00. Toleransi part-time: jam 20:00.
+                    if (playerIsWorker && p.spouseWorkStatus === 'working') {
+                        const hasPartTime = p.partTimeStatus === 'working';
 
-                        if (STATE.location === 'house') {
-                            // Pemain sudah pulang tepat waktu
-                            STATE.player.spouseAngry = false;
-                            createParticle(STATE.player.x, STATE.player.y, '#ec4899');
-                            if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
-                            const spouseNpc = maps['house']?.npcs?.find(n => n.id === STATE.player.spouseId);
-                            const spouseName2 = SPOUSE_NAMES[sId2] || (spouseNpc ? spouseNpc.name : 'Pasangan');
-                            showDialogue(spouseName2,
-                                "Akhirnya pulang juga! ❤️\nAku sudah tunggu dari tadi sambil masak kesukaanmu.\n\nSyukurlah kamu tepat waktu. Ayo makan malam bareng! 🍽️\n\n(Hubungan Makin Harmonis ❤️)",
-                                [{ text: "Makasih sayang, masakan kamu pasti enak!", action: closeDialogue }],
-                                sImg2
-                            );
-                            STATE.player.reputation += 3;
-                            updateRelationship({ id: sId2 }, 3, "Pulang Tepat Waktu");
-                        } else {
-                            // Pemain masih belum pulang jam 17:00 → pasangan marah
-                            STATE.player.spouseAngry = true;
-                            showToast("⚠️ Sudah jam 17:00! Pasanganmu menunggumu di rumah!");
-                            if (typeof AudioService !== 'undefined') AudioService.playSFX('hit');
-                            STATE.player.reputation = Math.max(0, STATE.player.reputation - 5);
-                            updateRelationship({ id: sId2 }, -3, "Terlambat Pulang");
+                        // Jam 16:00 — mulai ingatkan jika belum di rumah
+                        if (STATE.time >= 1600 && STATE.time < 1610 && STATE.location !== 'house') {
+                            if (!hasPartTime) {
+                                showToast('⏰ Sudah jam 16:00! Pasanganmu menunggu di rumah. Segera pulang!');
+                                if (typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+                            } else {
+                                showToast('⏰ Jam 16:00 — kamu kerja part-time, boleh pulang sampai jam 20:00 ya!');
+                            }
+                        }
+
+                        // Batas NORMAL jam 16:00 (tanpa part-time)
+                        if (!hasPartTime && STATE.time >= 1600 && STATE.time < 1610) {
+                            p.spouseWorkStatus = 'home';
+                            const sId2 = p.spouseId;
+                            let sImg2 = 'images/girl.png';
+                            if (sId2 === 'lover1girl') sImg2 = 'images/lover1girl.png';
+                            else if (sId2 === 'lover2girl') sImg2 = 'images/lover2girl.png';
+                            else if (sId2 === 'lover1boy') sImg2 = 'images/lover1boy.png';
+                            else if (sId2 === 'lover2boy') sImg2 = 'images/lover2boy.png';
+
+                            if (STATE.location === 'house') {
+                                p.spouseAngry = false;
+                                createParticle(p.x, p.y, '#ec4899');
+                                if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                const spouseName2 = SPOUSE_NAMES[sId2] || 'Pasangan';
+                                showDialogue(spouseName2,
+                                    'Akhirnya pulang juga! ❤️\nAku sudah tunggu dari tadi sambil masak kesukaanmu.\n\nSyukurlah kamu tepat waktu. Ayo makan malam bareng! 🍽️\n\n(Hubungan Makin Harmonis ❤️)',
+                                    [{ text: 'Makasih sayang, masakan kamu pasti enak!', action: closeDialogue }],
+                                    sImg2
+                                );
+                                p.reputation += 3;
+                                updateRelationship({ id: sId2 }, 3, 'Pulang Tepat Waktu');
+                            } else {
+                                // Belum pulang jam 16:00, tanpa part-time
+                                p.spouseAngry = true;
+                                showToast('⚠️ Sudah jam 16:00! Pasanganmu menunggu di rumah dan mulai khawatir!');
+                                if (typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+                                p.reputation = Math.max(0, p.reputation - 3);
+                                updateRelationship({ id: sId2 }, -3, 'Terlambat Pulang');
+                            }
+                        }
+
+                        // Batas TOLERANSI part-time: jam 20:00
+                        if (hasPartTime && STATE.time >= 2000 && STATE.time < 2010) {
+                            p.spouseWorkStatus = 'home';
+                            const sId3 = p.spouseId;
+                            let sImg3 = 'images/girl.png';
+                            if (sId3 === 'lover1girl') sImg3 = 'images/lover1girl.png';
+                            else if (sId3 === 'lover2girl') sImg3 = 'images/lover2girl.png';
+                            else if (sId3 === 'lover1boy') sImg3 = 'images/lover1boy.png';
+                            else if (sId3 === 'lover2boy') sImg3 = 'images/lover2boy.png';
+                            const spouseName3 = SPOUSE_NAMES[sId3] || 'Pasangan';
+
+                            if (STATE.location === 'house') {
+                                p.spouseAngry = false;
+                                createParticle(p.x, p.y, '#ec4899');
+                                if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
+                                showDialogue(spouseName3,
+                                    'Kamu baru pulang ya... sudah malam! 😅\nTapi aku mengerti, kamu kerja part-time tadi kan?\n\nMakasih sudah kerja keras! Ini ada makan malam untukmu. 🍽️\n\n(Hubungan Tetap Harmonis ❤️)',
+                                    [{ text: 'Makasih sudah nunggu sayang!', action: closeDialogue }],
+                                    sImg3
+                                );
+                                p.reputation += 2;
+                                updateRelationship({ id: sId3 }, 2, 'Pulang dari Part-Time');
+                            } else {
+                                // Masih belum pulang jam 20:00 meskipun part-time
+                                p.spouseAngry = true;
+                                showToast('😡 Sudah jam 20:00! Pasanganmu SANGAT marah — bahkan toleransi part-time sudah habis!');
+                                if (typeof AudioService !== 'undefined') AudioService.playSFX('hit');
+                                p.reputation = Math.max(0, p.reputation - 8);
+                                updateRelationship({ id: sId3 }, -10, 'Pulang Sangat Terlambat');
+                                p.marriageConflictLevel = Math.min(3, (p.marriageConflictLevel || 0) + 1);
+                            }
                         }
                     }
                 }
@@ -37486,37 +37502,10 @@ Pilih masakan:
                 });
 
 
-                // ── Overlay Kahyangan Wilis — update HTML HUD bar ──
-                if (STATE.location === 'fairyVillage') {
-                    // Sembunyikan main HUD player, tampilkan fv-hud-bar
-                    const _mainHud = document.getElementById('main-hud');
-                    const _fvBar   = document.getElementById('fv-hud-bar');
-                    if (_mainHud) _mainHud.style.display = 'none';
-                    if (_fvBar) {
-                        _fvBar.style.display = 'flex';
-                        const _fvRes = (STATE.player.fairyVillage||{resources:{}}).resources||{};
-                        const _fvFv  = STATE.player.fairyVillage||{};
-                        const _fvCap = typeof getFairyVillageStats==='function' ? getFairyVillageStats(_fvFv).totalCap : '?';
-                        const el = id => document.getElementById(id);
-                        if(el('fvbar-debu'))    el('fvbar-debu').textContent    = _fvRes.debu    || 0;
-                        if(el('fvbar-kristal')) el('fvbar-kristal').textContent = _fvRes.kristal || 0;
-                        if(el('fvbar-cahaya'))  el('fvbar-cahaya').textContent  = _fvRes.cahaya  || 0;
-                        if(el('fvbar-makanan')) el('fvbar-makanan').textContent = _fvRes.makanan || 0;
-                        if(el('fvbar-pop'))     el('fvbar-pop').textContent     = `${(_fvFv.fairies||[]).length}/${_fvCap}`;
-                        // Update time+season label
-                        if(el('fvbar-time-label') && typeof getFVTimeOfDay==='function') {
-                            const _tod2 = getFVTimeOfDay();
-                            const _sea2 = getFVSeason();
-                            const _todIco = {pagi:'🌅',siang:'☀️',sore:'🌤️',senja:'🌇',malam:'🌙'};
-                            el('fvbar-time-label').textContent = (_todIco[_tod2]||'🌙')+' '+(_tod2.charAt(0).toUpperCase()+_tod2.slice(1))+'  |  '+_sea2.label;
-                        }
-                    }
-                } else {
-                    // Kembali ke lokasi lain — tampilkan main HUD, sembunyikan fv-hud-bar
-                    const _mainHud = document.getElementById('main-hud');
-                    const _fvBar   = document.getElementById('fv-hud-bar');
-                    if (_mainHud && _mainHud.style.display === 'none') _mainHud.style.display = '';
-                    if (_fvBar)   _fvBar.style.display = 'none';
+                // ── Kahyangan Wilis: pakai HUD utama, fv-hud-bar dihapus ──
+                {
+                    const _fvBar = document.getElementById('fv-hud-bar');
+                    if (_fvBar) _fvBar.style.display = 'none'; // Selalu sembunyikan — tidak dipakai lagi
                 }
 
                 if (STATE.location === 'village') {
@@ -41878,6 +41867,98 @@ Pilih masakan:
                 }
             });
 
+            // ═══════════════════════════════════════════════════════════
+            // 🔊 SISTEM SFX CLICK GLOBAL — Web Audio API (tanpa file)
+            // ═══════════════════════════════════════════════════════════
+            (function initClickSFX() {
+                let _sfxCtx = null;
+
+                function getSfxCtx() {
+                    if (!_sfxCtx) {
+                        try { _sfxCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+                    }
+                    return _sfxCtx;
+                }
+
+                const SFX_TYPES = {
+                    btn_primary:   { type:'sine',     freq:520, freq2:680, dur:0.09, vol:0.18, sweep:true },
+                    btn_secondary: { type:'sine',     freq:380, freq2:320, dur:0.08, vol:0.14, sweep:true },
+                    tap:           { type:'triangle', freq:600, freq2:600, dur:0.055,vol:0.12, sweep:false },
+                    dialog:        { type:'sine',     freq:440, freq2:660, dur:0.13, vol:0.15, sweep:true },
+                    close:         { type:'sine',     freq:580, freq2:380, dur:0.10, vol:0.13, sweep:true },
+                    confirm:       { type:'sine',     freq:523, freq2:784, dur:0.12, vol:0.16, sweep:true },
+                    default:       { type:'sine',     freq:480, freq2:520, dur:0.07, vol:0.13, sweep:true },
+                };
+
+                function playSFXClick(sfxType) {
+                    if (typeof AUDIO !== 'undefined' && !AUDIO.enabled) return;
+                    const ctx = getSfxCtx();
+                    if (!ctx) return;
+                    try {
+                        if (ctx.state === 'suspended') ctx.resume();
+                        const s = SFX_TYPES[sfxType] || SFX_TYPES.default;
+                        const osc  = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.type = s.type;
+                        const now = ctx.currentTime;
+                        osc.frequency.setValueAtTime(s.freq, now);
+                        if (s.sweep) osc.frequency.linearRampToValueAtTime(s.freq2, now + s.dur);
+                        gain.gain.setValueAtTime(s.vol, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + s.dur + 0.03);
+                        osc.start(now);
+                        osc.stop(now + s.dur + 0.04);
+                    } catch(e) {}
+                }
+
+                function detectSFXType(el) {
+                    if (!el) return 'default';
+                    const tag = el.tagName;
+                    const cls = (el.className || '').toLowerCase();
+                    const id  = (el.id || '').toLowerCase();
+                    const txt = (el.textContent || '').trim().toLowerCase().slice(0, 20);
+                    if (/close|tutup|keluar|back|batal|cancel/.test(cls + id + txt)) return 'close';
+                    if (/confirm|lanjut|mulai|start|submit|kirim|selesai/.test(cls + id + txt)) return 'confirm';
+                    if (/modal|dialog|popup|panel/.test(cls + id)) return 'dialog';
+                    if (tag === 'BUTTON') {
+                        if (/secondary|back|cancel|gray|grey/.test(cls)) return 'btn_secondary';
+                        return 'btn_primary';
+                    }
+                    if (/btn|button|menu|action|tab/.test(cls + id)) return 'btn_primary';
+                    if (tag === 'LI' || /item|card|slot|choice|opt/.test(cls + id)) return 'tap';
+                    return 'default';
+                }
+
+                let _lastSFX = 0;
+
+                document.addEventListener('pointerdown', function(e) {
+                    const now = Date.now();
+                    if (now - _lastSFX < 80) return;
+                    _lastSFX = now;
+                    let el = e.target;
+                    for (let i = 0; i < 4; i++) {
+                        if (!el || el === document.body) break;
+                        const tag  = el.tagName;
+                        const role = el.getAttribute('role') || '';
+                        const cls  = (el.className || '').toLowerCase();
+                        const id   = (el.id || '').toLowerCase();
+                        const isInteractive = (
+                            tag === 'BUTTON' || tag === 'A' || tag === 'LI' ||
+                            role === 'button' || el.onclick ||
+                            /btn|button|menu|tab|choice|item|card|slot|action/.test(cls + id)
+                        );
+                        if (isInteractive) {
+                            playSFXClick(detectSFXType(el));
+                            return;
+                        }
+                        el = el.parentElement;
+                    }
+                }, { passive: true });
+
+                window.playSFXClick = playSFXClick;
+            })();
+
             // Tambahan: Kadang di HP orientasi berubah bikin fullscreen lepas
             window.addEventListener("resize", function () {
                 // Cek tinggi layar, jika mendadak kecil (status bar muncul), tawarkan fullscreen lagi
@@ -44063,31 +44144,31 @@ const FV_SPEED = 2.4;
 
 // 12 slot bangunan tersebar di peta 60×40
 const FAIRY_SLOTS = [
-    // Baris atas (y~6)
-    {id:'s1', x:5,  y:6 }, {id:'s2', x:16, y:6 }, {id:'s3', x:27, y:6 },
-    {id:'s4', x:38, y:6 }, {id:'s5', x:49, y:6 },
-    // Baris tengah (y~18)
-    {id:'s6', x:5,  y:18}, {id:'s7', x:16, y:18}, {id:'s8', x:27, y:18},
-    {id:'s9', x:38, y:18}, {id:'s10',x:49, y:18},
-    // Baris bawah (y~29)
-    {id:'s11',x:10, y:29}, {id:'s12',x:42, y:29},
+    // Baris atas (y~5) — disesuaikan ke map 45x30
+    {id:'s1', x:3,  y:5 }, {id:'s2', x:12, y:5 }, {id:'s3', x:21, y:5 },
+    {id:'s4', x:30, y:5 }, {id:'s5', x:39, y:5 },
+    // Baris tengah (y~14)
+    {id:'s6', x:3,  y:14}, {id:'s7', x:12, y:14}, {id:'s8', x:21, y:14},
+    {id:'s9', x:30, y:14}, {id:'s10',x:39, y:14},
+    // Baris bawah (y~22)
+    {id:'s11',x:8,  y:22}, {id:'s12',x:32, y:22},
 ];
 
 // Posisi NPC & objek penting — proporsional
 const FV_RARA_POS  = { x:2,  y:2  };   // Rara Wilis — pojok kiri atas
-const FV_POHON_POS = { x:28, y:33 };   // Pohon Energi — tengah-bawah
+const FV_POHON_POS = { x:21, y:24 };   // Pohon Energi — tengah-bawah
 // Pohon dekoratif pinggir peta
 const FV_DECO_TREES = [
-    {x:2,y:2},{x:10,y:1},{x:20,y:1},{x:40,y:1},{x:50,y:2},{x:57,y:2},
-    {x:1,y:10},{x:58,y:10},{x:1,y:22},{x:58,y:22},{x:1,y:32},{x:58,y:32},
-    {x:10,y:37},{x:28,y:38},{x:46,y:37},
+    {x:2,y:1},{x:8,y:1},{x:15,y:1},{x:30,y:1},{x:38,y:1},{x:43,y:1},
+    {x:1,y:8},{x:43,y:8},{x:1,y:17},{x:43,y:17},{x:1,y:24},{x:43,y:24},
+    {x:8,y:27},{x:21,y:28},{x:35,y:27},
 ];
 
 // ── STATE RUNTIME ──────────────────────────────────────────────
 let FVG = null;
 let fvCanvas, fvCtx;
 let fvCam = { x:0, y:0 };
-let fvPlayer = { x:57*TS, y:12*TS, facing:'down' };
+let fvPlayer = { x:43*TS, y:10*TS, facing:'down' };
 let fvKeys = {};
 let fvActiveDialog = null;
 let fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
@@ -44106,6 +44187,16 @@ let fvBgImage = null;
 
 // ── KAHYANGAN: Siang/Malam & Musim ─────────────────────────────
 function getFVTimeOfDay() {
+    // Sinkron dengan STATE.time dunia manusia (0–2400)
+    const t = (typeof STATE !== 'undefined' && STATE.time !== undefined) ? STATE.time : -1;
+    if (t >= 0) {
+        if (t >= 500  && t < 1200) return 'pagi';
+        if (t >= 1200 && t < 1500) return 'siang';
+        if (t >= 1500 && t < 1800) return 'sore';
+        if (t >= 1800 && t < 2000) return 'senja';
+        return 'malam';
+    }
+    // fallback jam nyata jika STATE belum siap
     const h = new Date().getHours();
     if (h >= 5 && h < 12)  return 'pagi';
     if (h >= 12 && h < 15) return 'siang';
@@ -44114,15 +44205,119 @@ function getFVTimeOfDay() {
     return 'malam';
 }
 function isFVNight() {
-    const h = new Date().getHours();
-    return h >= 20 || h < 5;
+    return getFVTimeOfDay() === 'malam';
 }
 function getFVSeason() {
-    const m = new Date().getMonth(); // 0-11
-    if (m >= 2 && m <= 4)  return { id:'semi',    label:'Musim Semi 🌸',   color:'#f9a8d4' };
-    if (m >= 5 && m <= 7)  return { id:'panas',   label:'Musim Panas ☀️',  color:'#fde68a' };
-    if (m >= 8 && m <= 10) return { id:'gugur',   label:'Musim Gugur 🍂',  color:'#fb923c' };
-    return                          { id:'dingin', label:'Musim Dingin ❄️', color:'#bae6fd' };
+    // Sinkron dengan STATE.season dunia manusia
+    const s = (typeof STATE !== 'undefined') ? (STATE.season || 'spring') : 'spring';
+    if (s === 'spring') return { id:'semi',    label:'Musim Semi 🌸',   color:'#f9a8d4' };
+    if (s === 'summer') return { id:'panas',   label:'Musim Panas ☀️',  color:'#fde68a' };
+    if (s === 'autumn') return { id:'gugur',   label:'Musim Gugur 🍂',  color:'#fb923c' };
+    return                     { id:'dingin',  label:'Musim Dingin ❄️', color:'#bae6fd' };
+}
+
+// ── KAHYANGAN: Partikel Musim — sinkron STATE.season ──────────
+let _fvSeasonParts = [];
+function _initFVSeasonParts(W, H, count) {
+    if (_fvSeasonParts.length >= count) return;
+    while (_fvSeasonParts.length < count) {
+        _fvSeasonParts.push({
+            x: Math.random() * W,
+            y: Math.random() * H - H,
+            vx: (Math.random() - 0.5) * 0.6,
+            vy: 0.4 + Math.random() * 0.8,
+            rot: Math.random() * Math.PI * 2,
+            rotV: (Math.random() - 0.5) * 0.04,
+            size: 3 + Math.random() * 5,
+            alpha: 0.5 + Math.random() * 0.5,
+            phase: Math.random() * Math.PI * 2,
+        });
+    }
+}
+function drawFVSeasonParticles(ctx, W, H, t, season) {
+    const sid = season ? season.id : 'semi';
+    // Reset partikel jika musim berubah
+    if (drawFVSeasonParticles._lastSeason !== sid) {
+        _fvSeasonParts = [];
+        drawFVSeasonParticles._lastSeason = sid;
+    }
+
+    const COUNT = 28;
+    _initFVSeasonParts(W, H, COUNT);
+
+    ctx.save();
+    ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
+
+    _fvSeasonParts.forEach(p => {
+        // Update posisi
+        p.x  += p.vx + Math.sin(t/1800 + p.phase) * 0.4;
+        p.y  += p.vy;
+        p.rot += p.rotV;
+        if (p.y > FH*TS + 20) { p.y = -10; p.x = Math.random() * FW*TS; }
+        if (p.x < 0) p.x = FW*TS;
+        if (p.x > FW*TS) p.x = 0;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = p.alpha * 0.75;
+
+        if (sid === 'semi') {
+            // Kelopak sakura — pink lembut
+            ctx.fillStyle = '#f9a8d4';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, p.size, p.size*0.55, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#fce7f3';
+            ctx.beginPath();
+            ctx.ellipse(0, -p.size*0.2, p.size*0.5, p.size*0.3, 0, 0, Math.PI*2);
+            ctx.fill();
+        } else if (sid === 'panas') {
+            // Serbuk cahaya / pollen — kuning berkilau
+            const pulse = 0.5 + 0.5*Math.sin(t/400 + p.phase);
+            ctx.globalAlpha = p.alpha * 0.6 * pulse;
+            const grd = ctx.createRadialGradient(0,0,0, 0,0,p.size);
+            grd.addColorStop(0, '#fef08a');
+            grd.addColorStop(1, 'rgba(253,224,71,0)');
+            ctx.fillStyle = grd;
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size, 0, Math.PI*2);
+            ctx.fill();
+        } else if (sid === 'gugur') {
+            // Daun gugur — oranye/merah/coklat
+            const leafColors = ['#fb923c','#ef4444','#a16207','#dc2626','#f97316'];
+            ctx.fillStyle = leafColors[Math.floor(p.phase*3) % leafColors.length];
+            ctx.beginPath();
+            ctx.ellipse(0, 0, p.size*0.7, p.size, p.rot*0.5, 0, Math.PI*2);
+            ctx.fill();
+            // Tulang daun
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -p.size); ctx.lineTo(0, p.size);
+            ctx.stroke();
+        } else if (sid === 'dingin') {
+            // Butir salju — biru-putih lembut
+            ctx.fillStyle = '#e0f2fe';
+            ctx.strokeStyle = '#bae6fd';
+            ctx.lineWidth = 0.5;
+            // Kristal salju sederhana
+            for (let a=0; a<6; a++) {
+                ctx.save();
+                ctx.rotate(a * Math.PI/3);
+                ctx.beginPath();
+                ctx.moveTo(0,0); ctx.lineTo(0, -p.size*1.1);
+                ctx.stroke();
+                ctx.restore();
+            }
+            ctx.beginPath();
+            ctx.arc(0, 0, p.size*0.3, 0, Math.PI*2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    });
+    ctx.restore();
 }
 
 // ── KAHYANGAN: Kunang-kunang (Fireflies) ────────────────────────
@@ -44821,12 +45016,15 @@ function closeFairyVillage() {
     STATE.player.y  = window._fvPrevY !== undefined ? window._fvPrevY : 600;
     // 7. Reset input agar tidak ada tombol tertahan
     if (typeof resetInputs === 'function') resetInputs();
-    // 8. FIX: Pastikan insideperi berhenti jika masih diputar saat keluar pulau peri
-    if (typeof AudioService !== 'undefined' && AudioService.enabled) {
-        if (AudioService.currentTrack === 'insideperi' || AudioService.currentTrack === 'pulauperi') {
-            // Biarkan AudioService.update() di gameLoop yang handle musik desa
-            AudioService.currentTrack = null;
-        }
+    // 8. FIX: Stop musik pulau peri saat keluar — pause track aktual + reset currentTrack
+    if (typeof AudioService !== 'undefined') {
+        const stopTrack = (name) => {
+            const t = AudioService.tracks && AudioService.tracks[name];
+            if (t && !t.paused) { t.pause(); t.currentTime = 0; }
+        };
+        stopTrack('pulauperi');
+        stopTrack('insideperi');
+        AudioService.currentTrack = null;
     }
     manualSave();
     showToast('🏝️ Kembali ke Pulau Arsa');
@@ -45614,14 +45812,17 @@ function drawFairyWorld(ts) {
         [8,20,30].forEach(ty=> { for(let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS,ty*TS,TS,TS); });
     }
 
-    // Stars — tetap ada di atas bg (transparan)
-    ctx.fillStyle='rgba(255,255,220,1)';
-    for (let i=0;i<80;i++) {
-        const sx=((i*173+20)%(FW*TS)), sy=((i*97+10)%(FH*TS));
-        const pulse = 0.3+0.5*Math.sin(t/800+i*1.3);
-        ctx.globalAlpha=pulse*0.4; ctx.fillRect(sx,sy,2,2);
+    // Stars — hanya muncul saat senja & malam (sinkron dunia manusia)
+    if (_tod === 'senja' || _tod === 'malam') {
+        const _starAlpha = _tod === 'malam' ? 0.55 : 0.25; // senja redup, malam terang
+        ctx.fillStyle='rgba(255,255,220,1)';
+        for (let i=0;i<80;i++) {
+            const sx=((i*173+20)%(FW*TS)), sy=((i*97+10)%(FH*TS));
+            const pulse = 0.3+0.5*Math.sin(t/800+i*1.3);
+            ctx.globalAlpha=pulse*_starAlpha; ctx.fillRect(sx,sy,2,2);
+        }
+        ctx.globalAlpha=1;
     }
-    ctx.globalAlpha=1;
 
     // Slot markers (kosong)
     const builtSlots   = new Set((fv.buildings||[]).map(b=>b.slotId));
@@ -45919,9 +46120,12 @@ function drawFairyWorld(ts) {
     ctx.globalAlpha=1;
 
     // Kunang-kunang — muncul saat senja & malam
-    if (_night || _tod === 'senja' || _tod === 'malam') {
+    if (_tod === 'senja' || _tod === 'malam') {
         drawFVFireflies(ctx, t);
     }
+
+    // ── PARTIKEL MUSIM — sinkron STATE.season dunia manusia ─────
+    drawFVSeasonParticles(ctx, W, H, t, _season);
 
     ctx.restore();
 
@@ -46257,14 +46461,125 @@ function _khRefRes() {
     s('kh-fcount',  fv.resources.makanan|| 0);
 }
 
+// ── Tooltip helper untuk tab Statistik ──────────────────────────
+function _fvTip(id, text) {
+    // Tampilkan/sembunyikan tooltip inline di bawah kartu
+    const el = document.getElementById('fvtip-' + id);
+    if (!el) return;
+    const vis = el.style.display === 'block';
+    // Sembunyikan semua tooltip dulu
+    document.querySelectorAll('.fvstat-tip').forEach(t => t.style.display = 'none');
+    if (!vis) el.style.display = 'block';
+}
+
+function _fvStatCard(id, emoji, label, value, valColor, borderColor, tipText) {
+    return `<div onclick="_fvTip('${id}')" style="cursor:pointer;background:#fff;border-radius:8px;padding:5px 10px;border:1px solid ${borderColor};display:flex;justify-content:space-between;align-items:center;flex-direction:column;gap:2px;position:relative;">
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+        <span style="font-size:12px;">${emoji} ${label}</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <b style="font-size:13px;color:${valColor};">${value}</b>
+          <span style="font-size:10px;color:#a78bfa;opacity:0.8;">ⓘ</span>
+        </div>
+      </div>
+      <div id="fvtip-${id}" class="fvstat-tip" style="display:none;margin-top:4px;width:100%;background:#1e1b4b;color:#e9d5ff;font-size:10px;border-radius:6px;padding:5px 8px;line-height:1.5;text-align:left;">${tipText}</div>
+    </div>`;
+}
+
+function _fvStatCardCenter(id, emoji, label, value, valColor, borderColor, tipText) {
+    return `<div onclick="_fvTip('${id}')" style="cursor:pointer;background:#fff;border:1px solid ${borderColor};border-radius:8px;padding:6px;text-align:center;position:relative;">
+      <div style="font-size:18px;font-weight:800;color:${valColor};">${value}</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:3px;">
+        <div style="font-size:10px;color:#6b7280;">${label}</div>
+        <span style="font-size:10px;color:#a78bfa;opacity:0.8;">ⓘ</span>
+      </div>
+      <div id="fvtip-${id}" class="fvstat-tip" style="display:none;margin-top:4px;background:#1e1b4b;color:#e9d5ff;font-size:10px;border-radius:6px;padding:5px 8px;line-height:1.5;text-align:left;">${tipText}</div>
+    </div>`;
+}
+
+function _khRenderStatistik() {
+    const fv  = getFairyVillage();
+    const st  = getFairyVillageStats(fv);
+    const el  = document.getElementById('kh-stat-content');
+    if (!el) return;
+    const bCount   = (fv.buildings||[]).length;
+    const qCount   = (fv.buildQueue||[]).length;
+    const topFairy = (fv.fairies||[]).slice().sort((a,b)=>(b.level||1)-(a.level||1))[0];
+    const avgLvl   = (fv.fairies||[]).length
+        ? ((fv.fairies||[]).reduce((s,f)=>s+(f.level||1),0) / fv.fairies.length).toFixed(1)
+        : '–';
+
+    el.innerHTML = `
+      <div style="font-family:Fredoka,sans-serif; color:#422006;">
+        <div style="font-size:10px;color:#a78bfa;text-align:right;margin-bottom:6px;opacity:0.8;">Ketuk kartu untuk keterangan ⓘ</div>
+
+        <!-- Sumber Daya -->
+        <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:10px 12px;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:6px;">💰 Sumber Daya</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            ${_fvStatCard('debu','✨','Debu Peri', fv.resources.debu||0, '#d97706','#fde68a',
+              'Mata uang utama Kahyangan. Dihasilkan peri bekerja di bangunan setiap hari. Dipakai untuk membangun & upgrade semua fasilitas.')}
+            ${_fvStatCard('kristal','💎','Kristal', fv.resources.kristal||0, '#2563eb','#bfdbfe',
+              'Material langka dari Sungai Brantas. Dibutuhkan untuk bangunan tier 2–3. Bisa didapat dari Kolam Kristal atau event khusus.')}
+            ${_fvStatCard('cahaya','🌟','Cahaya', fv.resources.cahaya||0, '#ca8a04','#fef08a',
+              'Energi suci peri. Diperlukan untuk bangunan tier 3 & upgrade istana. Dihasilkan Menara Cahaya 1×/minggu.')}
+            ${_fvStatCard('makanan','🍽️','Makanan', fv.resources.makanan||0, '#16a34a','#bbf7d0',
+              'Konsumsi harian peri. Tiap peri butuh 1 porsi/hari. Jika habis, kebahagiaan peri turun & produksi berhenti. Beli dari Rara Wilis.')}
+          </div>
+        </div>
+
+        <!-- Populasi Peri -->
+        <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:10px 12px;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:6px;">🧚 Populasi Peri</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+            ${_fvStatCardCenter('pop-aktif','🧚','Peri Aktif', (fv.fairies||[]).length, '#16a34a','#86efac',
+              'Jumlah peri yang tinggal di Kahyangan saat ini. Peri baru lahir dari Pondok Peri & bangunan berkapasitas tinggi setiap hari.')}
+            ${_fvStatCardCenter('pop-cap','🏠','Kapasitas', st.totalCap||0, '#16a34a','#86efac',
+              'Batas maksimal peri yang bisa tinggal. Ditentukan oleh jumlah & tier bangunan hunian. Bangun lebih banyak Pondok/Omah Widadari untuk menambah kapasitas.')}
+            ${_fvStatCardCenter('pop-lvl','⭐','Rata-rata Lvl', avgLvl, '#7c3aed','#e9d5ff',
+              'Rata-rata level semua peri. Peri naik level saat bekerja & bahagia. Level tinggi meningkatkan produksi debu & peluang lahir peri baru.')}
+          </div>
+          ${topFairy ? `<div onclick="_fvTip('top-fairy')" style="cursor:pointer;margin-top:8px;background:#fff;border:1px solid #c084fc;border-radius:8px;padding:6px 10px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;">🏆</span>
+              <div style="flex:1;">
+                <div style="font-size:11px;font-weight:700;color:#7c3aed;">${topFairy.name} — Level ${topFairy.level||1}</div>
+                <div style="font-size:10px;color:#94a3b8;">Peri Tertinggi Levelnya <span style="color:#a78bfa;">ⓘ</span></div>
+              </div>
+            </div>
+            <div id="fvtip-top-fairy" class="fvstat-tip" style="display:none;margin-top:5px;background:#1e1b4b;color:#e9d5ff;font-size:10px;border-radius:6px;padding:5px 8px;line-height:1.5;">
+              Peri dengan level tertinggi di Kahyangan. Semakin tinggi levelnya, semakin besar bonus produksi yang dia berikan ke bangunan tempat dia ditugaskan. Jaga kebahagiaannya agar terus berkembang!
+            </div>
+          </div>` : ''}
+        </div>
+
+        <!-- Infrastruktur -->
+        <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:10px 12px;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;color:#1e40af;margin-bottom:6px;">🏗️ Infrastruktur</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            ${_fvStatCardCenter('b-aktif','🏘️','Bangunan Aktif', bCount, '#2563eb','#93c5fd',
+              'Jumlah bangunan yang sudah selesai dibangun & beroperasi. Setiap bangunan menghasilkan sumber daya & tempat tinggal peri.')}
+            ${_fvStatCardCenter('b-antrian','⏳','Dalam Antrian', qCount, '#f59e0b','#fde68a',
+              'Bangunan yang sedang dalam proses pembangunan. Setiap bangunan butuh waktu 1 menit untuk selesai. Kamu bisa punya beberapa antrian sekaligus.')}
+            ${_fvStatCardCenter('b-debu','⚙️','Debu/Hari', st.dustPerDay||0, '#16a34a','#86efac',
+              'Total debu peri yang dihasilkan semua bangunan dalam satu hari permainan. Semakin banyak peri bekerja & semakin tinggi tier bangunan, semakin besar produksinya.')}
+            ${_fvStatCardCenter('b-cahaya','🌟','Cahaya/Minggu', st.cahayaPerWeek||0, '#ca8a04','#fef08a',
+              'Total cahaya yang dihasilkan bangunan Menara Cahaya setiap minggu. Cahaya sangat langka — kelola dengan bijak untuk upgrade bangunan istimewa.')}
+          </div>
+        </div>
+      </div>`;
+}
+
 function khTab(tab) {
-    document.querySelectorAll('.kh-tab').forEach((t,i) => t.classList.toggle('on', i===(tab==='peri'?0:1)));
+    document.querySelectorAll('.kh-tab').forEach((t,i) => t.classList.toggle('on', i===(tab==='peri'?0:tab==='bangunan'?1:2)));
     const tp = document.getElementById('kh-t-peri');
     const tb = document.getElementById('kh-t-bangunan');
-    if (tp) tp.style.display = tab==='peri' ? 'block' : 'none';
-    if (tb) tb.style.display = tab==='bangunan' ? 'block' : 'none';
-    if (tab==='peri')     _khRenderPeri(_khIdx);
-    if (tab==='bangunan') _khRenderBangunan();
+    const ts = document.getElementById('kh-t-statistik');
+    if (tp) tp.style.display = tab==='peri'      ? 'block' : 'none';
+    if (tb) tb.style.display = tab==='bangunan'  ? 'block' : 'none';
+    if (ts) ts.style.display = tab==='statistik' ? 'block' : 'none';
+    if (tab==='peri')      _khRenderPeri(_khIdx);
+    if (tab==='bangunan')  _khRenderBangunan();
+    if (tab==='statistik') _khRenderStatistik();
 }
 
 // ── TAB PERI ────────────────────────────────────────────────────
@@ -47216,43 +47531,11 @@ function earnFairyKristal(amount){
 
         </script>
 <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 80×50                    -->
+<!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
 
-<!-- FV HUD BAR -->
-<div id="fv-hud-bar" style="display:none; position:fixed; top:0; left:0; right:0; z-index:8000; height:44px; background:linear-gradient(135deg,rgba(30,5,60,0.96) 0%,rgba(60,10,110,0.96) 60%,rgba(20,5,45,0.96) 100%); border-bottom:1.5px solid rgba(167,139,250,0.45); box-shadow:0 2px 16px rgba(139,92,246,0.35); align-items:center; justify-content:space-between; padding:0 10px; gap:6px; font-family:Fredoka,sans-serif; backdrop-filter:blur(8px);">
-    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <span style="font-size:16px;filter:drop-shadow(0 0 6px #a78bfa);">&#10024;</span>
-        <div style="line-height:1.1;">
-            <div style="font-size:11px;font-weight:700;color:#e9d5ff;letter-spacing:0.5px;">KAHYANGAN WILIS</div>
-            <div id="fvbar-time-label" style="font-size:9px;color:#a78bfa;">&#127774; Siang &nbsp;|&nbsp; &#127800; Musim Semi</div>
-        </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:5px;flex:1;justify-content:center;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:3px;background:rgba(253,224,71,0.13);border:1px solid rgba(253,224,71,0.35);border-radius:20px;padding:3px 9px;">
-            <span style="font-size:12px;">&#10024;</span>
-            <span id="fvbar-debu" style="font-size:12px;font-weight:600;color:#fde047;">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:3px;background:rgba(96,165,250,0.13);border:1px solid rgba(96,165,250,0.35);border-radius:20px;padding:3px 9px;">
-            <span style="font-size:12px;">&#128142;</span>
-            <span id="fvbar-kristal" style="font-size:12px;font-weight:600;color:#93c5fd;">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:3px;background:rgba(250,204,21,0.13);border:1px solid rgba(250,204,21,0.35);border-radius:20px;padding:3px 9px;">
-            <span style="font-size:12px;">&#127775;</span>
-            <span id="fvbar-cahaya" style="font-size:12px;font-weight:600;color:#fcd34d;">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:3px;background:rgba(52,211,153,0.13);border:1px solid rgba(52,211,153,0.35);border-radius:20px;padding:3px 9px;">
-            <span style="font-size:12px;">&#127807;</span>
-            <span id="fvbar-makanan" style="font-size:12px;font-weight:600;color:#6ee7b7;">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:3px;background:rgba(232,121,249,0.13);border:1px solid rgba(232,121,249,0.35);border-radius:20px;padding:3px 9px;">
-            <span style="font-size:12px;">&#129498;</span>
-            <span id="fvbar-pop" style="font-size:12px;font-weight:600;color:#f0abfc;">0/0</span>
-        </div>
-    </div>
-    <button onclick="if(typeof closeFairyVillage==='function')closeFairyVillage();" style="flex-shrink:0;background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.5);border-radius:16px;color:#fca5a5;font-family:Fredoka,sans-serif;font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;">&#8592; Keluar</button>
-</div>
+<!-- fv-hud-bar dihapus — statistik peri ada di tab Statistik kh-modal (Kastil Utama Peri) -->
 
         <!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
         <div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
