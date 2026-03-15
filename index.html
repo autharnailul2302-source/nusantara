@@ -11238,7 +11238,7 @@
 
                             // Fallback: Jika dokumen tidak ada atau update gagal, coba set merge null
                             try {
-                                await db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(studentEmail).set({ saveData: null }, { merge: true });
+                                await db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(studentEmail).set({ saveData: { isReset: true, lastActive: Date.now() } }, { merge: true });
                                 return { success: true, type: 'cloud_fallback' };
                             } catch (e2) {
                                 return { success: false, msg: "Koneksi Cloud Gagal: " + e.message };
@@ -11387,24 +11387,31 @@
 
                     if ((this.mode === 'firebase' || navigator.onLine) && db) {
                         // --- MODE CLOUD: REALTIME SNAPSHOT ---
-                        this.unsubscribeMsg = db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(this.user.email).onSnapshot((doc) => {
+                        this.unsubscribeMsg = db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(this.user.email).onSnapshot(async (doc) => {
                             const data = doc.data();
 
-                            // --- NEW: DETEKSI REMOTE RESET (FITUR PENTING) ---
-                            // Jika Guru menghapus saveData di server (data.saveData === undefined/null)
-                            // TAPI siswa sedang berada di dalam game (STATE.screen === 'play' / bukan prologue)
-                            // MAKA: Paksa Reset Client Siswa.
-                            if (data && !data.saveData && typeof STATE !== 'undefined' && STATE.screen !== 'splash' && STATE.screen !== 'title' && !STATE.isPrologue) {
+                            // --- DETEKSI REMOTE RESET (hanya jika ada flag isReset eksplisit) ---
+                            // FIX BUG LOOP: Hanya trigger reset jika saveData.isReset === true (flag eksplisit dari guru)
+                            // Bukan setiap kali saveData null/kosong, karena bisa terjadi saat data belum tersimpan
+                            const _isRemoteReset = data && data.saveData && data.saveData.isReset === true;
+                            if (_isRemoteReset && typeof STATE !== 'undefined' && STATE.screen !== 'splash' && STATE.screen !== 'title' && !STATE.isPrologue) {
                                 console.warn("⚠️ REMOTE RESET DETECTED! GURU MENGHAPUS DATA.");
 
                                 // 1. Hentikan Auto Save agar tidak menimpa penghapusan guru
                                 if (window.saveIntervalId) clearInterval(window.saveIntervalId);
 
-                                // 2. Hapus sesi lokal agar bersih total
+                                // 2. FIX BUG LOOP: Hapus flag isReset dari Firestore SEBELUM reload
+                                //    agar saat login berikutnya tidak terpicu lagi
+                                try {
+                                    const _uRef = db.collection('artifacts').doc('nusantara-arsa').collection('users').doc(DataService.user.email);
+                                    await _uRef.update({ 'saveData': firebase.firestore.FieldValue.delete() });
+                                } catch(e) { console.warn('Gagal clear reset flag:', e); }
+
+                                // 3. Hapus sesi lokal agar bersih total
                                 localStorage.removeItem(SESSION_KEY);
                                 DataService.user = null;
 
-                                // 3. Tampilkan Pesan & Reload
+                                // 4. Tampilkan Pesan & Reload
                                 alert("⚠️ PERINGATAN SISTEM ⚠️\n\nData permainan Anda telah di-reset oleh Guru/Admin.\nGame akan dimuat ulang ke awal.");
                                 location.reload();
                                 return;
@@ -11418,9 +11425,17 @@
                             const dbLocal = this.getDB();
                             const myData = dbLocal[this.user.email];
 
-                            // Cek Reset Lokal juga (jika dihapus via inspect element/tab lain)
-                            if (myData && !myData.saveData && typeof STATE !== 'undefined' && STATE.screen === 'play' && !STATE.isPrologue) {
+                            // Cek Reset Lokal — FIX BUG LOOP: hanya trigger jika isReset === true
+                            if (myData && myData.saveData && myData.saveData.isReset === true && typeof STATE !== 'undefined' && STATE.screen === 'play' && !STATE.isPrologue) {
                                 if (window.saveIntervalId) clearInterval(window.saveIntervalId);
+                                // Hapus flag reset dari localStorage sebelum reload
+                                try {
+                                    const _db2 = this.getDB();
+                                    if (_db2[this.user.email]) {
+                                        _db2[this.user.email].saveData = null;
+                                        this.saveDB(_db2);
+                                    }
+                                } catch(e) {}
                                 alert("⚠️ Data lokal hilang/reset. Game akan dimuat ulang.");
                                 location.reload();
                                 return;
@@ -11714,10 +11729,17 @@
                                 } else {
                                     console.log("✅ Data Cloud Sinkron/Lebih Baru/Reset. Update Lokal.");
 
-                                    // FIX: JIKA DATA CLOUD ADALAH 'RESET TICKET', BERSIHKAN LOCAL JUGA
+                                    // FIX: JIKA DATA CLOUD ADALAH 'RESET TICKET', BERSIHKAN LOCAL & CLOUD
                                     if (isCloudReset) {
                                         console.log("🧹 MENDETEKSI PERINTAH RESET DARI CLOUD!");
                                         cloudUser.saveData = null; // Hapus flag reset dari memori user aktif
+                                        // FIX BUG LOOP: Hapus isReset dari Firestore agar tidak terpicu terus
+                                        try {
+                                            await docRef.update({ 'saveData': firebase.firestore.FieldValue.delete() });
+                                            console.log("✅ Flag isReset berhasil dihapus dari Cloud.");
+                                        } catch(e) {
+                                            console.warn("Gagal hapus flag reset dari cloud:", e);
+                                        }
                                     }
 
                                     // Update Local Storage agar sinkron dengan Cloud terbaru
