@@ -8818,9 +8818,11 @@
                     inside: new Audio('audio/inside.mp3'),
                     dungeon: new Audio('audio/dungeon.mp3'),
                     boss: new Audio('audio/boss.mp3'),
+                    battle: new Audio('audio/battle.mp3'),       // FIX: BGM battle/combat di dungeon
                     knock: new Audio('audio/knock.mp3'),
                     wedding: new Audio('audio/wedding.mp3'),
-                    pulauperi: new Audio('audio/pulauperi.mp3')
+                    pulauperi: new Audio('audio/pulauperi.mp3'),
+                    insideperi: new Audio('audio/insideperi.mp3') // FIX: Musik dalam bangunan pulau peri
                 },
                 currentTrack: null,
                 currentAmbience: null, // NEW: Track Ambience (Suara Latar)
@@ -8840,6 +8842,8 @@
 
                         // --- MUSIK KAHYANGAN WILIS ---
                         if (this.tracks.pulauperi) this.tracks.pulauperi.loop = true;
+                        if (this.tracks.insideperi) this.tracks.insideperi.loop = true;  // FIX: loop dalam bangunan peri
+                        if (this.tracks.battle) this.tracks.battle.loop = true;           // FIX: loop battle music
 
                         // --- NEW: SETTING MUSIK MUSIM ---
                         if (this.tracks.spring) this.tracks.spring.loop = true;
@@ -8875,9 +8879,11 @@
                         if (this.tracks.inside) this.tracks.inside.volume = 0.5;
                         if (this.tracks.dungeon) this.tracks.dungeon.volume = 0.6;
                         if (this.tracks.boss) this.tracks.boss.volume = 0.8;
+                        if (this.tracks.battle) this.tracks.battle.volume = 0.75;         // FIX: volume battle
                         if (this.tracks.knock) this.tracks.knock.volume = 1.0;
                         if (this.tracks.wedding) this.tracks.wedding.volume = 0.8;
                         if (this.tracks.pulauperi) this.tracks.pulauperi.volume = 0.55;
+                        if (this.tracks.insideperi) this.tracks.insideperi.volume = 0.6;  // FIX: volume insideperi
                     } catch (e) {
                         console.warn("Audio Init Error (Non-Fatal):", e);
                     }
@@ -8885,7 +8891,14 @@
 
                 playBGM: function (trackName) {
                     if (!this.enabled) return;
-                    if (this.currentTrack === trackName) return;
+                    // FIX: Jika track sama tapi sudah pause (gagal main sebelumnya), coba play ulang
+                    if (this.currentTrack === trackName) {
+                        const t = this.tracks[trackName];
+                        if (t && t.paused) {
+                            t.play().catch(() => {});
+                        }
+                        return;
+                    }
 
                     // Stop track sebelumnya
                     if (this.currentTrack && this.tracks[this.currentTrack]) {
@@ -8956,46 +8969,56 @@
                     if (!this.enabled) return;
 
                     // 1. UPDATE BGM UTAMA
-                    if (STATE.screen === 'title' || STATE.screen === 'login' || STATE.screen === 'prologue') {
+                    // FIX: Juga update saat screen === 'cutscene' agar musik dungeon/boss
+                    // tidak berhenti ketika cutscene dimainkan
+                    const _scr = STATE.screen;
+                    if (_scr === 'title' || _scr === 'login' || _scr === 'prologue') {
                         this.playBGM('opening');
-                    } else if (STATE.screen === 'play') {
-                        // Logika Musik Berdasarkan Lokasi
+                    } else if (_scr === 'play' || _scr === 'cutscene') {
                         if (STATE.location === 'village') {
-
-                            // --- FIX: MUSIK MUSIM DIPUTAR 24 JAM (TIDAK PEDULI SIANG/MALAM) ---
-                            if (STATE.season === 'spring') {
-                                this.playBGM('spring');
-                            } else if (STATE.season === 'summer') {
-                                this.playBGM('summer');
-                            } else if (STATE.season === 'autumn') {
-                                this.playBGM('autumn'); // file: audio/fall.mp3
-                            } else if (STATE.season === 'winter') {
-                                this.playBGM('winter');
-                            } else {
-                                this.playBGM('village'); // Fallback
+                            // Hanya update musik saat screen benar-benar play (bukan cutscene)
+                            if (_scr === 'play') {
+                                if (STATE.season === 'spring') {
+                                    this.playBGM('spring');
+                                } else if (STATE.season === 'summer') {
+                                    this.playBGM('summer');
+                                } else if (STATE.season === 'autumn') {
+                                    this.playBGM('autumn');
+                                } else if (STATE.season === 'winter') {
+                                    this.playBGM('winter');
+                                } else {
+                                    this.playBGM('village');
+                                }
+                                if (STATE.time >= 1800 || STATE.time < 500) {
+                                    this.playAmbience('night');
+                                } else {
+                                    this.stopAmbience();
+                                }
                             }
-
-                            // --- FIX: SUARA MALAM HANYA SEBAGAI BACKGROUND (AMBIENCE) ---
-                            // Jika Jam 18:00 s/d 05:00 pagi, nyalakan layer suara jangkrik
-                            if (STATE.time >= 1800 || STATE.time < 500) {
-                                this.playAmbience('night');
-                            } else {
-                                this.stopAmbience(); // Matikan suara malam saat siang
-                            }
-
                         } else if (STATE.location === 'dungeon') {
-                            this.stopAmbience(); // Matikan suara malam di dungeon
+                            this.stopAmbience();
+                            // Logika asli: boss → boss.mp3, else → dungeon.mp3
+                            // battle.mp3 hanya dipakai jika file ada (opsional enhancement)
                             if (STATE.bossSpawned) {
                                 this.playBGM('boss');
+                            } else if (this.tracks.battle && this.tracks.battle.src &&
+                                       this.tracks.battle.src !== window.location.href &&
+                                       this.tracks.battle.readyState > 0) {
+                                // Hanya pakai battle.mp3 jika file benar-benar ada dan sudah loaded
+                                this.playBGM('battle');
                             } else {
+                                // Fallback ke dungeon.mp3 (selalu ada)
                                 this.playBGM('dungeon');
                             }
                         } else if (STATE.location === 'fairyVillage') {
                             this.stopAmbience();
-                            this.playBGM('pulauperi');
+                            // Jangan override insideperi saat popup interior bangunan sedang terbuka
+                            const _fvInteriorOpen = !!document.getElementById('fv-building-interior');
+                            if (!_fvInteriorOpen) {
+                                this.playBGM('pulauperi');
+                            }
                         } else {
-                            this.stopAmbience(); // Matikan suara malam di dalam rumah
-                            // Interior
+                            this.stopAmbience();
                             if (STATE.location === 'wedding_interior') {
                                 this.playBGM('wedding');
                             } else {
@@ -25651,6 +25674,10 @@ ${reward.tip}`,
                     STATE.player.x = TILE_SIZE * 5;
                     STATE.player.y = TILE_SIZE * 5;
                     createParticle(STATE.player.x, STATE.player.y, '#06b6d4');
+                    // FIX: Langsung putar dungeon BGM saat masuk (tidak tunggu update() agar tidak terganjal cutscene)
+                    if (typeof AudioService !== 'undefined' && AudioService.enabled) {
+                        AudioService.playBGM('dungeon');
+                    }
                     spawnEnemies();
 
                     if (!STATE.player.hasSeenDungeonTutorial) {
@@ -25692,6 +25719,10 @@ ${reward.tip}`,
                     manualSave();
                     showToast(`🌀 WARPING TO LEVEL ${STATE.dungeonLevel}...`);
                     spawnEnemies();
+                    // FIX: Langsung mainkan dungeon music saat naik level
+                    if (typeof AudioService !== 'undefined' && AudioService.enabled) {
+                        AudioService.playBGM('dungeon');
+                    }
                 }
             }
 
@@ -25801,48 +25832,34 @@ ${reward.tip}`,
             function checkObjectCollision(x, y) {
                 const map = maps[STATE.location];
                 for (let obj of map.objects) {
-                    // --- [BARU] CEK MUSIM OBJEK ---
-                    // Jika objek punya syarat musim (misal: 'winter') dan sekarang bukan musim itu, LEWATI (jangan dianggap ada)
                     if (obj.seasonReq && obj.seasonReq !== STATE.season) continue;
-                    // -----------------------------
 
                     const ox = obj.x * TILE_SIZE;
                     const oy = obj.y * TILE_SIZE;
-
-                    // UPDATE: Support Custom Width/Height untuk Objek
                     const ow = (obj.w || 1) * TILE_SIZE;
-                    const originalH = (obj.h || 1) * TILE_SIZE;
+                    const oh = (obj.h || 1) * TILE_SIZE;
 
-                    let oh = originalH;
-                    let yOffset = 0;
+                    // ── HITBOX OBJEK: hanya zona KAKI (bawah) ──
+                    // Semua objek — meja, kursi, kasur, perabotan, pohon, dll —
+                    // hanya solid di bagian bawah agar player bisa jalan di belakang.
+                    // - Objek tipis (h=1 tile): solid seluruhnya
+                    // - Objek tinggi (h>1): solid 40% bawah saja
+                    let footH, footTop;
 
-                    // CUSTOM COLLISION: MEJA, KURSI, & KASUR (Agar bisa jalan di belakangnya)
-                    // Hitbox hanya aktif di setengah bagian bawah (kaki kursi/meja/kasur)
-                    // Bagian atas (sandaran) bisa dilewati (walkable)
-                    // UPDATE: Menambahkan 'papanguild' DAN 'mejamakanguild' agar hitbox-nya juga hanya setengah bawah
-                    // FIX: Tambahkan 'bed' agar area kepala kasur bisa dilewati
-                    /* REVISI: Tambahkan 'catalog' (Meja Telepon) agar bisa jalan di belakangnya */
-                    /* UPDATE: Tambahkan 'sumur' dan 'papantani' agar bisa jalan di belakangnya */
-                    /* UPDATE: Tambahkan 'orangsawah' agar bisa jalan di belakangnya */
-                    /* UPDATE TERBARU: Menambahkan 'arcacandi' agar belakang patung bisa dilewati */
-                    /* UPDATE TERBARU: Menambahkan 'prasasticandi' agar belakang prasasti bisa dilewati */
-                    /* UPDATE TERBARU: Menambahkan 'gucicandi' agar belakang guci bisa dilewati */
-                    // UPDATE TERBARU: Menambahkan 'kebunayu' agar belakang kebun bisa dilewati
-                    // UPDATE TERBARU: Menambahkan 'lemariobat' dan 'arsiprekammedis' agar belakang rak klinik bisa dilewati
-                    // UPDATE TERBARU: Menambahkan 'jaringikan' dan 'mejamakanikan' agar belakangnya bisa dilewati
-                    // UPDATE TERBARU: Menambahkan 'rakmentor', 'pialamentor', 'vasmentor' agar belakangnya bisa dilewati
-                    // UPDATE TERBARU: Menambahkan 'mejamasterguild' agar belakangnya bisa dilewati
-                    // UPDATE TERBARU: Menambahkan aset rumah Ayu (dapur, lemari, kasur, meja) agar belakangnya bisa dilewati
-                    if ((obj.type === 'table' || obj.type === 'bed' || obj.type === 'catalog' || (obj.img && (obj.img.includes('papanguild') || obj.img.includes('mejamakanguild') || obj.img.includes('mejatelpon') || obj.img.includes('sumur') || obj.img.includes('papantani') || obj.img.includes('orangsawah') || obj.img.includes('arcacandi') || obj.img.includes('mejaaltar') || obj.img.includes('prasasticandi') || obj.img.includes('gucicandi') || obj.img.includes('kebunayu') || obj.img.includes('lemariobat') || obj.img.includes('arsiprekammedis') || obj.img.includes('jaringikan') || obj.img.includes('mejamakanikan') || obj.img.includes('rakmentor') || obj.img.includes('pialamentor') || obj.img.includes('vasmentor') || obj.img.includes('mejamasterguild') || obj.img.includes('dapurayaayu') || obj.img.includes('lemariayaayu') || obj.img.includes('kasurayaayu') || obj.img.includes('mejaayaayu')))) && (obj.h || 1) > 0) {
-                        yOffset = originalH * 0.4; // Turunkan hitbox 40% dari atas
-                        oh = originalH * 0.6;      // Sisa tinggi hitbox 60%
+                    const isTall = (obj.h || 1) > 1;
+                    if (isTall) {
+                        footH   = Math.round(oh * 0.40);
+                        footTop = oy + oh - footH;
+                    } else {
+                        // Objek 1 tile tinggi: solid penuh (tidak ada bagian atas yang bisa dilewati)
+                        footH   = oh;
+                        footTop = oy;
                     }
 
-                    const pw = 20; const ph = 20;
+                    const pw = 20, ph = 16;
 
-                    // Cek tabrakan dengan hitbox yang sudah disesuaikan
-                    if (x < ox + ow && x + pw > ox &&
-                        y < oy + yOffset + oh && y + ph > oy + yOffset) {
+                    if (x + pw > ox && x < ox + ow &&
+                        y + ph > footTop && y < footTop + footH) {
                         return obj;
                     }
                 }
@@ -25854,41 +25871,33 @@ ${reward.tip}`,
                 if (!map.buildings) return false;
 
                 for (let b of map.buildings) {
-                    // FIX: Trigger (Portal) tidak boleh punya collision fisik agar bisa diinjak
-                    // UPDATE: 'port' (Dermaga) juga dibuat walkable agar bisa jalan di atasnya
                     if (b.type === 'trigger' || b.id === 'port') continue;
 
-                    // FIX: fairy village pakai TS=28, lokasi lain pakai TILE_SIZE=30
                     const _bTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
                     const bx = b.x * _bTS;
                     const bw = b.w * _bTS;
+                    const bh = b.h * _bTS;
 
-                    // CUSTOM COLLISION FOR ROCKS & BUILDINGS
-
-                    let collisionHeight, yOffset;
+                    // ── HITBOX BANGUNAN: Hanya bagian BAWAH (kaki bangunan) ──
+                    // Player bisa berjalan di belakang bangunan (area atas/atap tidak solid)
+                    // tapi tidak bisa menembus dari depan/samping
+                    let footH, footTop;
 
                     if (b.type === 'dungeon_rock') {
-                        // Batu hitboxnya cuma setengah bawah (15px)
-                        collisionHeight = 15;
-                        yOffset = (b.h * _bTS) - collisionHeight;
+                        // Batu: hitbox setengah bawah
+                        footH   = Math.round(bh * 0.5);
+                        footTop = b.y * _bTS + bh - footH;
                     } else {
-                        const isTall = b.h > 2;
-                        const solidTiles = isTall ? 1.8 : b.h;
-
-                        collisionHeight = solidTiles * _bTS;
-                        yOffset = (b.h * _bTS) - collisionHeight;
+                        // Bangunan normal: hitbox 35% bawah
+                        // (1 tile = kaki bangunan, sisanya atap yang bisa dilalui dari belakang)
+                        footH   = Math.max(_bTS, Math.round(bh * 0.35));
+                        footTop = b.y * _bTS + bh - footH;
                     }
 
-                    // Koordinat hitbox absolut
-                    const hitboxY = (b.y * _bTS) + yOffset;
+                    const pw = 20, ph = 16;
 
-                    const pw = 20;
-                    const ph = 20;
-
-                    // Cek tabrakan: Pemain (x,y) vs Hitbox Bangunan
-                    // Logika AABB standard
-                    if (x < bx + bw && x + pw > bx &&
-                        y < hitboxY + collisionHeight && y + ph > hitboxY) {
+                    if (x + pw > bx && x < bx + bw &&
+                        y + ph > footTop && y < footTop + footH) {
                         return true;
                     }
                 }
@@ -25900,37 +25909,30 @@ ${reward.tip}`,
                 for (let npc of map.npcs) {
                     if (!isNPCActive(npc)) continue;
 
-                    // --- FIX: HITBOX DINAMIS MENGIKUTI TINGGI NPC (KAKI SOLID) ---
-                    // Masalah sebelumnya: Hitbox fix di tengah, sehingga kaki NPC tinggi bisa ditembus.
-                    // Solusi: Hitbox dikunci ke area KAKI (Visual Height - Offset).
-
                     const npcW = npc.w || 40;
-                    const npcH = npc.h || 60; // Default height standar NPC
+                    const npcH = npc.h || 60;
 
-                    // Pusat X Hitbox = Pusat Sprite secara Horizontal
-                    // (npc.x * TILE_SIZE) adalah pojok kiri grid
-                    const npcCenterX = (npc.x * TILE_SIZE) + (npcW / 2); // Sesuaikan dengan lebar visual
+                    // Posisi pixel kiri-atas NPC
+                    const npcPX = npc.x * TILE_SIZE;
+                    const npcPY = npc.y * TILE_SIZE;
 
-                    // Pusat Y Hitbox = KAKI Sprite (Y + H) dikurangi sedikit (sekitar 10-15px dari bawah)
-                    // Ini memastikan area kepala (atas) kosong bisa dilewati, tapi kaki (bawah) padat.
-                    const npcCenterY = (npc.y * TILE_SIZE) + npcH - 10;
+                    // ── HITBOX NPC: hanya area KAKI (bawah 30% sprite) ──
+                    // Ini membuat player bisa berjalan di belakang NPC (kepala/badan tidak solid)
+                    // tapi tidak bisa menembus kaki/tubuh bawah NPC dari depan/samping
+                    const footH    = Math.round(npcH * 0.30); // tinggi zona solid (kaki)
+                    const footTop  = npcPY + npcH - footH;    // Y atas zona solid
+                    const footLeft = npcPX + Math.round(npcW * 0.15); // sedikit inden kiri
+                    const footW    = Math.round(npcW * 0.70);  // lebar zona solid
 
-                    // Player Center (Estimasi titik tengah kaki pemain)
-                    const playerCenterX = x + 10; // Player W = 20, setengahnya 10
-                    const playerCenterY = y + 15; // Player H = 20, kaki di y+20, pusat kaki ~y+15
+                    // Hitbox player (kaki player) — sesuai dengan drawPlayer
+                    // player.x/y adalah posisi kaki kiri player, hitbox 20×20
+                    const pw = 20, ph = 16; // sedikit lebih kecil dari 20 agar tidak terlalu sensitif
 
-                    const distX = Math.abs(playerCenterX - npcCenterX);
-                    const distY = Math.abs(playerCenterY - npcCenterY);
+                    // AABB check
+                    const colX = x + pw > footLeft && x < footLeft + footW;
+                    const colY = y + ph > footTop  && y < footTop  + footH;
 
-                    // RADIUS COLLISION:
-                    // X: Setengah lebar NPC dikurangi sedikit toleransi (biar tidak terlalu lebar/gemuk)
-                    const hitRadX = (npcW / 2) - 5;
-
-                    // Y: Radius vertikal kecil (12px)
-                    // Agar tabrakan hanya terjadi jika kaki pemain sejajar dengan kaki NPC
-                    const hitRadY = 12;
-
-                    if (distX < hitRadX && distY < hitRadY) {
+                    if (colX && colY) {
                         return npc;
                     }
                 }
@@ -29755,12 +29757,50 @@ ${reward.tip}`,
                                                                         createParticle(STATE.player.x, STATE.player.y, '#ec4899');
                                                                         if (typeof AudioService !== 'undefined') AudioService.playSFX('item');
                                                                         showDialogue(spouse.name,
-                                                                            "Selamat pagi sayang! ❤️ \n\nRasanya seperti mimpi kita sudah tinggal serumah.\nAku sangat bahagia bisa melihat wajahmu saat bangun tidur.\n\nSemoga hari ini menyenangkan ya!",
+                                                                            "Selamat pagi sayang! ❤️ \n\nRasanya seperti mimpi kita sudah tinggal serumah.\nAku sangat bahagia bisa melihat wajahmu saat bangun tidur.\n\nOh iya... soal keseharian kita, aku ingin diskusi denganmu.",
                                                                             [{
-                                                                                text: "Pagi juga cintaku! (Cium Kening)",
+                                                                                text: "Pagi juga cintaku! Ada apa?",
                                                                                 action: () => {
                                                                                     createParticle(STATE.player.x, STATE.player.y, '#fbbf24');
                                                                                     closeDialogue();
+                                                                                    // Munculkan pilihan peran RT vs Kerja Luar
+                                                                                    setTimeout(() => {
+                                                                                        const pGender = STATE.player.gender;
+                                                                                        const spouseGender = (targetId === 'lover1boy' || targetId === 'lover2boy') ? 'boy' : 'girl';
+                                                                                        const pRoleLabel = pGender === 'boy' ? 'Bapak Rumah Tangga' : 'Ibu Rumah Tangga';
+                                                                                        const spouseRoleLabel = spouseGender === 'boy' ? 'Bapak Rumah Tangga' : 'Ibu Rumah Tangga';
+                                                                                        const pImg2 = pGender === 'boy' ? 'images/boy.png' : 'images/girl.png';
+                                                                                        showDialogue(spouse.name,
+                                                                                            "Sayang... kita perlu memutuskan pembagian peran kita. 🏡\n\nSalah satu dari kita akan mengurus rumah, dan yang lain bekerja di luar.\n\nKamu mau pilih peran yang mana?",
+                                                                                            [
+                                                                                                {
+                                                                                                    text: `🏠 Aku jadi ${pRoleLabel} (Urus Rumah)`,
+                                                                                                    action: () => {
+                                                                                                        STATE.player.homeRole = 'homemaker';
+                                                                                                        closeDialogue();
+                                                                                                        showDialogue(pImg2 === 'images/boy.png' ? "SUAMI" : "ISTRI",
+                                                                                                            `Baiklah! Aku akan menjadi **${pRoleLabel}** yang mengurus rumah dengan sepenuh hati. 🏡\n\nPasanganku akan bekerja mencari nafkah, dan aku akan memastikan rumah selalu nyaman saat dia pulang.\n\nTugas harianku: memasak, bersih-bersih, dan menjaga rumah tetap hangat. Ayo semangat! 💪`,
+                                                                                                            [{ text: "Siap! Bismillah~", action: () => { closeDialogue(); showToast(`Peranmu: ${pRoleLabel} 🏠`); } }],
+                                                                                                            pImg2
+                                                                                                        );
+                                                                                                    }
+                                                                                                },
+                                                                                                {
+                                                                                                    text: `💼 Aku bekerja di luar, pasanganku jadi ${spouseRoleLabel}`,
+                                                                                                    action: () => {
+                                                                                                        STATE.player.homeRole = 'worker';
+                                                                                                        closeDialogue();
+                                                                                                        showDialogue(spouse.name,
+                                                                                                            `Oke sayang, aku akan menjadi **${spouseRoleLabel}** dan urus rumah di sini ya! 🏡\n\nTapi... kamu harus **pulang sebelum jam 17:00** ya! Jangan sampai telat, aku tunggu di rumah.\n\nKalau kamu terlambat pulang, pasti aku marah-marahin hehe... 😤\n\nSetiap pagi kamu pamit, aku doakan supaya lancar kerjanya! 🙏`,
+                                                                                                            [{ text: "Siap! Aku akan pulang tepat waktu!", action: () => { closeDialogue(); showToast("Kamu berangkat kerja. Pulang sebelum jam 17:00! 💼"); } }],
+                                                                                                            spouse.imgSrc
+                                                                                                        );
+                                                                                                    }
+                                                                                                }
+                                                                                            ],
+                                                                                            spouse.imgSrc
+                                                                                        );
+                                                                                    }, 800);
                                                                                 }
                                                                             }],
                                                                             spouse.imgSrc
@@ -36058,6 +36098,13 @@ Pilih masakan:
                 STATE.enemies = [];
                 if (STATE.location !== 'dungeon') return;
 
+                // FIX: Pastikan dungeon music berjalan saat musuh spawn
+                if (typeof AudioService !== 'undefined' && AudioService.enabled) {
+                    if (AudioService.currentTrack !== 'boss') {
+                        AudioService.playBGM('dungeon');
+                    }
+                }
+
                 // Reset Flags
                 STATE.bossSpawned = false;
 
@@ -36622,14 +36669,9 @@ Pilih masakan:
                     const _fvTS = (typeof TS !== 'undefined') ? TS : 28;
                     const _fvW  = maps['fairyVillage'].w * _fvTS;
                     const _fvH  = maps['fairyVillage'].h * _fvTS;
-                    // Coba pakai images/kayangan.png sebagai background
+                    // Gambar kayangan.png 1x saja sebagai 1 gambar utuh (bukan tile berulang)
                     if (typeof fvBgImage !== 'undefined' && fvBgImage && fvBgImage.complete && fvBgImage.naturalWidth > 0) {
-                        const bw = fvBgImage.naturalWidth, bh = fvBgImage.naturalHeight;
-                        for (let _tx = 0; _tx < _fvW; _tx += bw) {
-                            for (let _ty = 0; _ty < _fvH; _ty += bh) {
-                                ctx.drawImage(fvBgImage, _tx, _ty, bw, bh);
-                            }
-                        }
+                        ctx.drawImage(fvBgImage, 0, 0, _fvW, _fvH);
                     } else {
                         // Fallback gradient ungu gelap
                         const fvGrad = ctx.createLinearGradient(0, 0, 0, _fvH);
@@ -36658,6 +36700,9 @@ Pilih masakan:
                                 } else if (STATE.location === 'house') {
                                     // Skip floor (10) and wall (11) if BG is loaded so we see the image
                                     if (t === 10 || t === 11) continue;
+                                } else if (STATE.location === 'fairyVillage') {
+                                    // Skip semua tile lantai/tembok peri — kayangan.png sudah jadi bg utuh
+                                    continue;
                                 }
                             }
 
@@ -37341,19 +37386,12 @@ Pilih masakan:
                 // UPDATE: Pindahkan Objek ke RenderList agar support Z-Sorting (Pemain bisa di belakang kursi)
                 // Sebelumnya objek digambar langsung sebelum loop ini, sekarang digabung.
                 if (map.objects) {
-
                     map.objects.forEach(o => {
-
-                        // --- [BARU] CEK MUSIM SAAT RENDERING ---
                         if (o.seasonReq && o.seasonReq !== STATE.season) return;
-                        // ---------------------------------------
 
-                        // Sort berdasarkan bagian bawah objek
+                        // Y-sort: pakai posisi KAKI objek (bawah sprite)
                         const h = (o.h || 1);
-                        let sortY = (o.y + h) * TILE_SIZE;
-
-                        // Sedikit penyesuaian agar tidak flickering dengan pemain
-                        if (o.type === 'table') sortY -= 5;
+                        const sortY = (o.y + h) * TILE_SIZE;
 
                         renderList.push({
                             type: 'object',
@@ -37367,16 +37405,12 @@ Pilih masakan:
                     map.buildings.forEach(b => {
                         if (typeof b.y !== 'number' || typeof b.h !== 'number') return;
 
-                        // FIX: Menentukan prioritas gambar (Z-Index)
-                        // Default: Urutkan berdasarkan kaki bangunan (Y + Height) agar pemain bisa tertutup saat di belakangnya
-                        // FIX: fairy village pakai TS=28
                         const _rTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
-                        let sortY = (b.y + b.h) * _rTS;
 
-                        // EXCEPTION: Untuk 'port' (Dermaga) yang merupakan lantai datar/walkable
-                        if (b.id === 'port') {
-                            sortY = (b.y * _rTS);
-                        }
+                        // Y-sort bangunan: pakai kaki bangunan (y + h)
+                        // 'port' (dermaga) digambar sebagai lantai → sort dari atas
+                        let sortY = (b.y + b.h) * _rTS;
+                        if (b.id === 'port') sortY = b.y * _rTS;
 
                         renderList.push({
                             type: 'building',
@@ -37388,9 +37422,11 @@ Pilih masakan:
 
                 renderList.push({
                     type: 'player',
-                    // FIX: Gunakan tinggi sprite visual (58px) bukan hitbox h:20
-                    // agar z-sorting konsisten dengan NPC yang juga pakai visualHeight
-                    y: STATE.player.y + 58,
+                    // Y-sort pakai posisi KAKI player yang sebenarnya
+                    // Player sprite digambar: ctx.translate(p.x+p.w/2, p.y+p.h/2) lalu drawImage(-19,-46,38,58)
+                    // → kaki sprite ada di p.y + p.h/2 + (58-46) = p.y + 10 + 12 = p.y + 22
+                    // Gunakan p.y + 22 agar y-sort tepat di kaki
+                    y: STATE.player.y + 22,
                     data: STATE.player
                 });
 
@@ -37411,18 +37447,15 @@ Pilih masakan:
                 map.npcs.forEach(n => {
                     if (!isNPCActive(n)) return;
 
-                    // --- UPDATE: Z-INDEX SORTING FIX ---
-                    // Masalah: Player terlihat "menginjak" NPC saat berjalan di belakangnya.
-                    // Penyebab: Sorting sebelumnya menggunakan Grid Tile (n.y * 30 + 30).
-                    // Solusi: Gunakan tinggi visual NPC (h=60) untuk sorting. 
-                    // Rumus: Y Kaki Visual = (n.y * 30) + Tinggi Sprite (n.h) - Offset Gambar (5)
-
-                    const visualHeight = n.h || 48; // Default tinggi sprite
-                    const sortY = (n.y * TILE_SIZE) + visualHeight - 5;
+                    // Y-sort NPC: pakai posisi KAKI sprite
+                    // NPC digambar mulai dari n.y * TILE_SIZE, tinggi sprite = n.h
+                    // Kaki ada di bagian bawah: (n.y * TILE_SIZE) + (n.h || 48)
+                    // Kurangi sedikit (4px) agar NPC tepat di depan player yang sejajar kaki
+                    const npcFootY = (n.y * TILE_SIZE) + (n.h || 48) - 4;
 
                     renderList.push({
                         type: 'npc',
-                        y: sortY,
+                        y: npcFootY,
                         data: n
                     });
                 });
@@ -39934,6 +39967,13 @@ Pilih masakan:
 
                 // CEK CLEARED CONDITION SEPERTI BIASA
                 if (STATE.location === 'dungeon' && STATE.enemies.length === 0) {
+                    // FIX: Semua musuh mati → pastikan dungeon ambience kembali (jika boss belum spawn)
+                    if (typeof AudioService !== 'undefined' && AudioService.enabled) {
+                        if (!STATE.bossSpawned && AudioService.currentTrack !== 'dungeon') {
+                            AudioService.playBGM('dungeon');
+                        }
+                    }
+
                     if (STATE.dungeonLevel === 5 && !STATE.bossSpawned) {
                         spawnFinalBoss();
                         return;
@@ -44630,21 +44670,28 @@ function fairyDailyTick(fv) {
 function refreshFairyVillageMap() {
     if (!maps['fairyVillage']) return;
     const fv = getFairyVillage();
-    // FIX: jangan shadow global TS=28, pakai nama berbeda
-    const _rfTS = 28;
 
-    // Buildings: Rara Wilis & Pohon Energi selalu ada sebagai solid (posisi 3×)
+    // FIX: Gunakan posisi yang benar dari FV_RARA_POS dan FV_POHON_POS
+    // Sebelumnya pakai x:113, y:4 yang SALAH BESAR (di luar peta FW=60!)
     const buildings = [
-        { id: 'rara_wilis_bld', x: 113, y: 4, w: 3, h: 3, solid: true, name: 'Rara Wilis' },
-        { id: 'pohon_energi_bld', x: 112, y: 112, w: 5, h: 5, solid: true, name: 'Pohon Energi' },
+        {
+            id: 'rara_wilis_bld',
+            x: FV_RARA_POS.x, y: FV_RARA_POS.y,
+            w: 2, h: 3,
+            solid: true, name: 'Rara Wilis'
+        },
+        {
+            id: 'pohon_energi_bld',
+            x: FV_POHON_POS.x, y: FV_POHON_POS.y,
+            w: 3, h: 3,
+            solid: true, name: 'Pohon Energi'
+        },
     ];
 
     // Tambahkan bangunan yang sudah selesai dibangun
-    // FIX: bangunan menyimpan slotId (string ID), bukan slot (object)
-    // Lookup posisi dari FAIRY_SLOTS menggunakan slotId
     (fv.buildings || []).forEach(b => {
         const slot = FAIRY_SLOTS.find(s => s.id === b.slotId);
-        if (!slot) return; // skip jika slotId tidak valid
+        if (!slot) return;
         const bDef = (typeof FAIRY_BUILDINGS !== 'undefined') ? FAIRY_BUILDINGS[b.bid] : null;
         buildings.push({
             id: 'fv_bld_' + b.bid,
@@ -44659,7 +44706,7 @@ function refreshFairyVillageMap() {
 
     maps['fairyVillage'].buildings = buildings;
 
-    // Update NPC agar drawNPC dan interactNPC bisa bekerja
+    // Update NPC
     maps['fairyVillage'].npcs.forEach(n => {
         n.imgSrc = n.sprite || n.imgSrc;
         n.schedule = 'always';
@@ -44672,7 +44719,6 @@ function refreshFairyVillageMap() {
         if (n.id === 'pohon_energi') {
             n.dialogFn = 'collectFairyDust';
         }
-        // Wening, Sekar, Bening, Juna: pakai dialog NPC peri kecil
         if (['fv_wening','fv_sekar','fv_bening','fv_juna'].includes(n.id)) {
             n.type = n.type || 'wander';
             n.dialogFn = 'openFairyNPCDialog_' + n.id;
@@ -44775,6 +44821,13 @@ function closeFairyVillage() {
     STATE.player.y  = window._fvPrevY !== undefined ? window._fvPrevY : 600;
     // 7. Reset input agar tidak ada tombol tertahan
     if (typeof resetInputs === 'function') resetInputs();
+    // 8. FIX: Pastikan insideperi berhenti jika masih diputar saat keluar pulau peri
+    if (typeof AudioService !== 'undefined' && AudioService.enabled) {
+        if (AudioService.currentTrack === 'insideperi' || AudioService.currentTrack === 'pulauperi') {
+            // Biarkan AudioService.update() di gameLoop yang handle musik desa
+            AudioService.currentTrack = null;
+        }
+    }
     manualSave();
     showToast('🏝️ Kembali ke Pulau Arsa');
 }
@@ -45493,17 +45546,12 @@ function drawFairyWorld(ts) {
     const fv = getFairyVillage();
     const t = ts || performance.now();
 
-    // ── BACKGROUND: images/kayangan.png ────────────────────────
+    // ── BACKGROUND: images/kayangan.png sebagai 1 gambar utuh ────
     if (fvBgImage && fvBgImage.complete && fvBgImage.naturalWidth > 0) {
-        // Gambar tile background sesuai ukuran world (FW*TS × FH*TS), tapi clipped ke viewport
         ctx.save();
         ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
-        const bw = fvBgImage.naturalWidth, bh = fvBgImage.naturalHeight;
-        for (let tx = 0; tx < FW * TS; tx += bw) {
-            for (let ty = 0; ty < FH * TS; ty += bh) {
-                ctx.drawImage(fvBgImage, tx, ty, bw, bh);
-            }
-        }
+        // Gambar 1x saja, di-stretch mengisi seluruh world (FW*TS × FH*TS)
+        ctx.drawImage(fvBgImage, 0, 0, FW * TS, FH * TS);
         ctx.restore();
     } else {
         // Fallback gradient jika gambar belum load
@@ -45546,30 +45594,32 @@ function drawFairyWorld(ts) {
     ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
     const visY0 = Math.floor(fvCam.y/TS)-1, visY1 = visY0+Math.ceil(H/TS)+2;
 
-    // Ground tiles — lebih terang, hijau gelap yang hangat
-    for (let ty=Math.max(0,visY0); ty<Math.min(FH,visY1); ty++) {
-        for (let tx=Math.max(0,visX0); tx<Math.min(FW,visX1); tx++) {
-            const even=(tx+ty)%2===0;
-            ctx.fillStyle = even?'#1c3a20':'#1f4024';
-            ctx.fillRect(tx*TS, ty*TS, TS, TS);
+    // Ground tiles — hanya tampil jika kayangan.png TIDAK berhasil dimuat
+    if (!(fvBgImage && fvBgImage.complete && fvBgImage.naturalWidth > 0)) {
+        for (let ty=Math.max(0,visY0); ty<Math.min(FH,visY1); ty++) {
+            for (let tx=Math.max(0,visX0); tx<Math.min(FW,visX1); tx++) {
+                const even=(tx+ty)%2===0;
+                ctx.fillStyle = even?'#1c3a20':'#1f4024';
+                ctx.fillRect(tx*TS, ty*TS, TS, TS);
+            }
         }
+
+        // Main path — jalur utama (hanya tanpa bg)
+        ctx.fillStyle='#2a1e10';
+        for (let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS, Math.floor(FH/2)*TS, TS, TS*2);
+        for (let ty=0;ty<FH;ty++) ctx.fillRect(Math.floor(FW/2)*TS, ty*TS, TS*2, TS);
+
+        // Secondary paths
+        ctx.fillStyle='#251a0c';
+        [8,20,30].forEach(ty=> { for(let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS,ty*TS,TS,TS); });
     }
 
-    // Main path — jalur utama
-    ctx.fillStyle='#2a1e10';
-    for (let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS, Math.floor(FH/2)*TS, TS, TS*2);  // horizontal tengah
-    for (let ty=0;ty<FH;ty++) ctx.fillRect(Math.floor(FW/2)*TS, ty*TS, TS*2, TS);  // vertikal tengah
-
-    // Secondary paths
-    ctx.fillStyle='#251a0c';
-    [8,20,30].forEach(ty=> { for(let tx=0;tx<FW;tx++) ctx.fillRect(tx*TS,ty*TS,TS,TS); });
-
-    // Stars
+    // Stars — tetap ada di atas bg (transparan)
     ctx.fillStyle='rgba(255,255,220,1)';
     for (let i=0;i<80;i++) {
         const sx=((i*173+20)%(FW*TS)), sy=((i*97+10)%(FH*TS));
         const pulse = 0.3+0.5*Math.sin(t/800+i*1.3);
-        ctx.globalAlpha=pulse*0.6; ctx.fillRect(sx,sy,2,2);
+        ctx.globalAlpha=pulse*0.4; ctx.fillRect(sx,sy,2,2);
     }
     ctx.globalAlpha=1;
 
@@ -46726,6 +46776,19 @@ function openBuildingInterior(bldg, slot) {
     const b   = FAIRY_BUILDINGS[bldg.bid];
     if (!b) return;
 
+    // FIX: Putar musik insideperi saat masuk bangunan di pulau peri
+    if (typeof AudioService !== 'undefined' && AudioService.enabled) {
+        // Force reset agar selalu mulai dari awal saat masuk bangunan
+        if (AudioService.tracks.insideperi) {
+            AudioService.tracks.insideperi.currentTime = 0;
+        }
+        // Gunakan currentTrack null dulu agar playBGM tidak di-skip
+        if (AudioService.currentTrack === 'insideperi') {
+            AudioService.currentTrack = null;
+        }
+        AudioService.playBGM('insideperi');
+    }
+
     // Peri yang bekerja di sini
     const workers = (bldg.workers || []).map(wid => fv.fairies.find(f=>f.id===wid)).filter(Boolean);
     // Peri yang tidak bekerja di mana pun
@@ -46913,7 +46976,13 @@ function closeBuildingInterior() {
     if (!el) return;
     const panel = el.querySelector('#fvbi-panel');
     if (panel) panel.classList.remove('fvbi-in');
-    setTimeout(()=>el.remove(), 220);
+    setTimeout(() => el.remove(), 220);
+    // FIX: Kembali ke musik pulauperi setelah keluar dari bangunan
+    if (typeof AudioService !== 'undefined' && AudioService.enabled) {
+        if (AudioService.currentTrack === 'insideperi') {
+            AudioService.playBGM('pulauperi');
+        }
+    }
 }
 
 function fvFireWorker(slotId, workerIdx) {
