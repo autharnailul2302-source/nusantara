@@ -8397,6 +8397,11 @@
                             style="margin-top:4px; cursor:pointer; font-size:9px; color:#e9d5ff; background:rgba(88,28,135,0.7); padding:4px 8px; border-radius:12px; border:1px solid #a855f7; display:flex; align-items:center; gap:4px; transition:0.2s; box-shadow:0 2px 5px rgba(168,85,247,0.4);">
                             🧚 Test Peri
                         </div>
+                        <!-- 👹 TOMBOL TEST MODE MONSTER PENCURI SKRIPSI -->
+                        <div id="skripsi-test-btn" onclick="openSkripsiThiefTestMode()"
+                            style="margin-top:4px; cursor:pointer; font-size:9px; color:#fde68a; background:rgba(120,53,15,0.75); padding:4px 8px; border-radius:12px; border:1px solid #d97706; display:flex; align-items:center; gap:4px; transition:0.2s; box-shadow:0 2px 5px rgba(217,119,6,0.4);">
+                            👹 Test Skripsi
+                        </div>
                     </div>
                 </div>
 
@@ -22481,7 +22486,10 @@ ${reward.tip}`,
 
                 // UPDATE: Waktu diperlambat (1 Jam Game = 60 Detik Real Time)
                 // Rumus: 100 unit (1 jam) / 60 detik / 60 fps ≈ 0.028
-                STATE.time += 0.028;
+                // FIX: Jangan tambah waktu saat proses ganti hari sedang berlangsung
+                if (!STATE.isDayChanging) {
+                    STATE.time += 0.028;
+                }
                 // --- FESTIVAL AMBIENT PARTICLES ---
                 updateFestivalAmbientParticles();
 
@@ -22595,7 +22603,7 @@ ${reward.tip}`,
                     document.getElementById('trial-display').innerText = "∞ Free Roam";
                 }
 
-                if (STATE.time >= 2400) {
+                if (STATE.time >= 2400 && !STATE.isDayChanging) {
                     STATE.time = 0;
                     STATE.day++;
 
@@ -33770,6 +33778,16 @@ Pilih masakan:
                 STATE.screen = 'cutscene'; // FIX: Stop update loop saat tidur
                 STATE.isDayChanging = true; // Kunci proses
 
+                // FIX: Bekukan waktu agar tidak bertambah selama proses ganti hari
+                // Safety timeout: jika 10 detik lebih tidak selesai, paksa reset
+                const _sleepSafetyTimer = setTimeout(() => {
+                    if (STATE.isDayChanging) {
+                        STATE.isDayChanging = false;
+                        STATE.screen = 'play';
+                        console.warn('[Sleep] Safety reset triggered — isDayChanging stuck');
+                    }
+                }, 10000);
+
                 let oversleep = false;
                 // MECHANIC: OVERSLEEP IF ENERGY LOW
                 if (STATE.player.energy < 20) {
@@ -33887,6 +33905,7 @@ Pilih masakan:
 
                             STATE.screen = 'play'; // FIX: Resume game setelah bangun
                             STATE.isDayChanging = false; // Buka kunci
+                            clearTimeout(_sleepSafetyTimer); // Batalkan safety timer
 
                             // --- BIRTHDAY NOTIFICATION PAGI HARI ---
                             setTimeout(() => {
@@ -38419,10 +38438,13 @@ Pilih masakan:
 
                 // FIX: Bangunan Fairy Village — render pakai gambar tier untuk hunian, emoji untuk lainnya
                 if (b.id && b.id.startsWith('fv_bld_')) {
-                    // FIX: fairy village pakai TS=28, bukan TILE_SIZE=30
-                    const _ts = (typeof TS !== 'undefined') ? TS : 28;
+                    const _ts = (typeof TS !== 'undefined') ? TS : 40;
+                    const _vs = (typeof FV_BLDG_VISUAL_SCALE !== 'undefined') ? FV_BLDG_VISUAL_SCALE : 1.8;
                     const bx = b.x * _ts, by = b.y * _ts;
                     const bw = (b.w || 2) * _ts, bh = (b.h || 2) * _ts;
+                    // Visual scale — gambar lebih besar, anchor bawah
+                    const vw = bw * _vs, vh = bh * _vs;
+                    const vx = bx + bw/2 - vw/2, vy = by + bh - vh;
                     const bid2 = b._fvBid || '';
                     // Hunian: pakai gambar omah-tier
                     const _omahMap = { pondok_peri: 1, rumah_peri: 2, dalem_widadari: 3 };
@@ -38430,11 +38452,16 @@ Pilih masakan:
                     if (_omahTier && typeof FV_OMAH_IMAGES !== 'undefined') {
                         const _img = FV_OMAH_IMAGES[_omahTier];
                         if (_img && _img.complete && _img.naturalWidth > 0) {
-                            ctx.drawImage(_img, bx, by, bw, bh);
+                            ctx.drawImage(_img, vx, vy, vw, vh);
                             return;
                         }
                     }
-                    // Bangunan lain: tetap pakai emoji + warna tier
+                    // Bangunan lain: pakai drawFVBuildingCanvas dengan ukuran visual
+                    if (typeof drawFVBuildingCanvas === 'function') {
+                        drawFVBuildingCanvas(ctx, bid2, vx, vy, vw, vh, performance.now());
+                        return;
+                    }
+                    // Fallback emoji jika drawFVBuildingCanvas tidak ada
                     const bgColors = ['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
                     const borderColors = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
                     const tier = b._fvTier || 0;
@@ -44296,8 +44323,11 @@ const FAIRY_NAMES_GIRL = ['Ayu','Wulan','Sekar','Endah','Ratih','Dewi','Larasati
 
 // ── LAYOUT SLOT BANGUNAN DI PETA 120×75 (setengah dari sebelumnya) ──
 const FW = 60, FH = 40;    // peta lebih kecil — lebih padat & intim
-const TS = 28;              // tile lebih besar agar bangunan terlihat jelas
+const TS = 40;              // tile diperbesar agar bangunan terlihat jelas seperti peta utama
 const FV_SPEED = 2.4;
+// Skala visual bangunan: gambar di-render lebih besar dari hitbox tile (Stardew-style)
+// Hitbox tetap w*TS × h*TS, tapi gambar di-render FV_BLDG_VISUAL_SCALE × lebih besar
+const FV_BLDG_VISUAL_SCALE = 1.8;
 
 // 12 slot bangunan tersebar di peta 60×40
 const FAIRY_SLOTS = [
@@ -46023,15 +46053,17 @@ function drawFairyWorld(ts) {
     // ── Dekorasi pohon pinggir peta (render sebelum bangunan) ──
     FV_DECO_TREES.forEach(({x,y},i) => {
         if ((fv.buildings?.length||0) <= i*2) return;
-        const sway = Math.sin(t/1500+i)*1.5;
+        const sway = Math.sin(t/1500+i)*2;
+        const ts2 = TS * 1.5; // pohon dekorasi lebih besar dari tile
+        const cx = x*TS + TS*0.5, cy = y*TS + TS*0.5;
         // Batang
         ctx.fillStyle='#7c5c2e';
-        ctx.fillRect(x*TS+TS*0.45+sway, y*TS+TS*0.55, TS*0.1, TS*0.45);
-        // Kanopi 3 lapis
-        [[0,'#14532d',TS*0.55],[TS*0.07,'#15803d',TS*0.45],[TS*0.14,'#22c55e',TS*0.3]].forEach(([dy2,col,r])=>{
+        ctx.fillRect(cx - ts2*0.06 + sway*0.3, cy + ts2*0.1, ts2*0.12, ts2*0.55);
+        // Kanopi 3 lapis lebih besar
+        [[0,'#14532d',ts2*0.52],[ts2*0.06,'#15803d',ts2*0.42],[ts2*0.13,'#22c55e',ts2*0.28]].forEach(([dy2,col,r])=>{
             ctx.fillStyle=col;
             ctx.beginPath();
-            ctx.arc(x*TS+TS*0.5+sway, y*TS+TS*0.35+dy2, r, 0, Math.PI*2);
+            ctx.arc(cx + sway*0.5, cy - ts2*0.1 + dy2, r, 0, Math.PI*2);
             ctx.fill();
         });
     });
@@ -46040,39 +46072,50 @@ function drawFairyWorld(ts) {
     (fv.buildings||[]).forEach(({slotId, bid, workers}) => {
         const slot=FAIRY_SLOTS.find(s=>s.id===slotId); if(!slot) return;
         const b=FAIRY_BUILDINGS[bid]; if(!b) return;
+        // Hitbox (collision) — tetap kecil
         const bx=slot.x*TS, by=slot.y*TS, bw=TS*(b.w||2), bh=TS*(b.h||2);
+        // Visual size — lebih besar, di-anchor ke bawah hitbox (Stardew-style)
+        const VS = FV_BLDG_VISUAL_SCALE || 1.8;
+        const vw = bw * VS, vh = bh * VS;
+        const vx = bx + bw/2 - vw/2;       // tengah horizontal
+        const vy = by + bh - vh;            // anchor bawah
         // Shadow tanah
-        ctx.fillStyle='rgba(0,0,0,0.3)';
-        ctx.beginPath(); ctx.ellipse(bx+bw/2, by+bh+2, bw*0.45, 4, 0, 0, Math.PI*2); ctx.fill();
-        // Gambar bangunan Canvas
-        drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t);
+        ctx.fillStyle='rgba(0,0,0,0.28)';
+        ctx.beginPath(); ctx.ellipse(bx+bw/2, by+bh+3, bw*0.5, 5, 0, 0, Math.PI*2); ctx.fill();
+        // Gambar bangunan — pakai ukuran visual yang besar
+        drawFVBuildingCanvas(ctx, bid, vx, vy, vw, vh, t);
         // Glow + label saat player dekat
         const bCx=bx+bw/2;
         const nearDist = Math.hypot(fvPlayer.x+TS*0.5-bCx, fvPlayer.y+TS*0.5-(by+bh*0.5));
         if (nearDist < TS*3) {
             const bc = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'][b.tier]||'#d97706';
-            ctx.strokeStyle=bc; ctx.lineWidth=2; ctx.shadowColor=bc; ctx.shadowBlur=10;
-            ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,5); ctx.stroke();
+            ctx.strokeStyle=bc; ctx.lineWidth=2.5; ctx.shadowColor=bc; ctx.shadowBlur=12;
+            ctx.beginPath(); ctx.roundRect(vx,vy,vw,vh,6); ctx.stroke();
             ctx.shadowBlur=0;
-            ctx.fillStyle='#fef9c3'; ctx.font='bold 7px Nunito,sans-serif'; ctx.textAlign='center';
-            ctx.fillText('▼ Masuk', bCx, by-5);
+            ctx.fillStyle='#fef9c3'; ctx.font='bold 9px Nunito,sans-serif'; ctx.textAlign='center';
+            ctx.fillText('▼ Masuk', bCx, vy-6);
             ctx.textAlign='left';
         }
         ctx.shadowBlur=0;
-        // Indikator peri bekerja
+        // Indikator peri bekerja (dot hijau di sudut atas kanan visual)
         (workers||[]).forEach((w,wi)=>{
-            ctx.fillStyle='#22c55e'; ctx.strokeStyle='#fff'; ctx.lineWidth=0.8;
-            ctx.beginPath(); ctx.arc(bx+6+wi*8, by+6, 3.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle='#22c55e'; ctx.strokeStyle='#fff'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.arc(vx+vw-8-wi*12, vy+8, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
         });
     });
 
-    // ── Pohon Energi (Canvas drawn) ──
-    const poX=FV_POHON_POS.x*TS, poY=FV_POHON_POS.y*TS;
-    drawFVPohonEnergi(ctx, poX, poY, TS, t);
+    // ── Pohon Energi (Canvas drawn) — render lebih besar ──
+    const poHitW = TS*3, poHitH = TS*3; // hitbox 3x3 tile
+    const poVS = FV_BLDG_VISUAL_SCALE || 1.8;
+    const poVW = poHitW * poVS, poVH = poHitH * poVS;
+    const poX = FV_POHON_POS.x*TS, poY = FV_POHON_POS.y*TS;
+    const poVX = poX + poHitW/2 - poVW/2;
+    const poVY = poY + poHitH - poVH;
+    drawFVPohonEnergi(ctx, poVX, poVY, poVW/2, t);
     const distP = Math.hypot(fvPlayer.x-(poX+TS), fvPlayer.y-(poY+TS));
-    if (distP < TS*3) {
-        ctx.fillStyle='#fbbf24'; ctx.font='bold 18px sans-serif'; ctx.textAlign='center';
-        ctx.fillText('!', poX+TS, poY-8);
+    if (distP < TS*3.5) {
+        ctx.fillStyle='#fbbf24'; ctx.font='bold 22px sans-serif'; ctx.textAlign='center';
+        ctx.fillText('!', poX+poHitW/2, poVY-10);
         ctx.textAlign='left';
     }
 
@@ -46137,7 +46180,7 @@ function drawFairyWorld(ts) {
         const rt = fvNpcRuntime[n.id];
         const px_ = rt ? rt.px : n.x * TS;
         const py_ = rt ? rt.py : n.y * TS;
-        const nW = 30, nH = 46; // ukuran display NPC
+        const nW = Math.round(TS * 0.85), nH = Math.round(TS * 1.3); // ukuran display NPC ikut TS
         _drawables.push({ sortY: py_ + nH, type:'npc', n, px:px_, py:py_, nW, nH, rt });
     });
 
@@ -47719,6 +47762,96 @@ function openFairyTestMode(){
     refreshFairyVillageMap();
     showToast('🧚 TEST MODE — Masuk Kahyangan Wilis! (Gunakan menu Rara Wilis → Test Kelahiran)');
     openFairyVillage();
+}
+
+// ══════════════════════════════════════════════════════════════
+// 👹 TEST MODE — MONSTER PENCURI SKRIPSI / IJAZAH
+// Masuk langsung ke ruins_battle dengan stat & inventory siap tempur
+// ══════════════════════════════════════════════════════════════
+function openSkripsiThiefTestMode() {
+    const p = STATE.player;
+
+    // --- 1. Setup dasar player ---
+    STATE.isPrologue = false;
+    STATE.screen = 'play';
+    STATE.isDayChanging = false;
+
+    // Pastikan sprite sudah terpilih
+    if (!p.spriteIdle) selectGender(p.gender || 'boy', true);
+    if (!p.name || !p.name.trim()) p.name = document.getElementById('hud-name')?.textContent?.trim() || 'Arsa';
+
+    // Tutup semua dialog/modal yang terbuka
+    const dialogBox = document.getElementById('dialogue-wrapper');
+    if (dialogBox) dialogBox.style.display = 'none';
+    if (typeof closeFairyVillage === 'function') closeFairyVillage();
+
+    // --- 2. Boost stat agar bisa bertarung ---
+    p.hp        = p.maxHp = 200;
+    p.energy    = 100;
+    p.str       = (p.str    || 0) < 30 ? 30 : p.str;
+    p.int       = (p.int    || 0) < 20 ? 20 : p.int;
+    p.level     = (p.level  || 1) < 5  ? 5  : p.level;
+    p.role      = p.role || 'student';
+    p.attackCooldown = 0;
+    p.skillCooldown  = 0;
+    p.invincible     = false;
+    p.damageCooldown = 0;
+
+    // Pastikan tidak sedang Pingsan/GameOver
+    if (typeof STATE.enemies !== 'undefined') STATE.enemies = [];
+
+    // --- 3. Set quest flag agar monster_skripsi muncul ---
+    if (!p.quests) p.quests = {};
+    p.quests['find_draft'] = { status: 'active', day: STATE.day };
+
+    // --- 4. Teleport ke map village dulu (biar state bersih) ---
+    STATE.location = 'village';
+    p.x = 48 * TILE_SIZE;
+    p.y = 14 * TILE_SIZE;
+
+    // --- 5. Tampilkan dialog intro lalu langsung masuk battle ---
+    setTimeout(() => {
+        showDialogue(
+            '👹 TEST MODE — PENCURI NASKAH',
+            '🔧 Stat sudah di-boost:\n' +
+            `• HP: ${p.hp}/${p.maxHp}\n` +
+            `• STR: ${p.str} | INT: ${p.int}\n` +
+            `• Energi: ${p.energy}\n\n` +
+            '📋 Quest "Cari Draft Skripsi" sudah aktif.\n\n' +
+            'Klik "Langsung Battle!" untuk masuk arena atau "Pergi ke Lokasi" untuk melihat monster_skripsi di peta dulu.',
+            [
+                {
+                    text: '⚔️ Langsung Battle!',
+                    action: () => {
+                        closeDialogue();
+                        // Langsung jalankan startRuinsBattle
+                        setTimeout(() => {
+                            if (typeof startRuinsBattle === 'function') {
+                                startRuinsBattle();
+                            } else {
+                                showToast('⚠️ startRuinsBattle tidak ditemukan!');
+                            }
+                        }, 200);
+                    }
+                },
+                {
+                    text: '🗺️ Pergi ke Lokasi Monster',
+                    action: () => {
+                        closeDialogue();
+                        // Teleport ke area dekat monster_skripsi di village
+                        STATE.location = 'village';
+                        p.x = 48 * TILE_SIZE;
+                        p.y = 12 * TILE_SIZE;
+                        showToast('📍 Cari NPC Pencuri Naskah di timur laut peta! (sekitar x:50, y:13)');
+                    }
+                },
+                { text: 'Batal', action: closeDialogue }
+            ],
+            'images/monster-thief.png'
+        );
+    }, 300);
+
+    showToast('👹 TEST MODE Skripsi aktif — Stat sudah di-boost!');
 }
 
 // ── TEST: Trigger kelahiran peri manual (dari menu Rara Wilis di test mode) ──
