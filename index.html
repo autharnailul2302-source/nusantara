@@ -23645,7 +23645,17 @@ ${reward.tip}`,
                 }
 
                 if (STATE.location === 'dungeon') {
-                    updateEnemies();
+                    // FIX: Jangan update musuh saat dialogue/tutorial sedang terbuka
+                    const _dialogueOpen = (function() {
+                        const dw = document.getElementById('dialogue-wrapper');
+                        if (dw && dw.style.display !== 'none') return true;
+                        if (STATE.cutsceneOverride) return true;
+                        if (STATE.isPrologue) return true;
+                        return false;
+                    })();
+                    if (!_dialogueOpen) {
+                        updateEnemies();
+                    }
                 }
 
                 if (STATE.fishing.active) {
