@@ -5441,39 +5441,59 @@
         @keyframes fvbiFloat {
             0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}
         }
+        @keyframes fvbiBounce {
+            0%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} 60%{transform:translateY(-4px)}
+        }
+        @keyframes fvbiIdle {
+            0%,100%{transform:scaleX(1)} 50%{transform:scaleX(-1)}
+        }
         /* Peri slots di dalam scene */
         #fvbi-fairy-row {
             position:absolute; bottom:10px; left:0; right:0;
-            display:flex; justify-content:center; align-items:flex-end; gap:12px;
+            display:flex; justify-content:center; align-items:flex-end; gap:16px;
             padding:0 16px;
         }
         .fvbi-fairy-slot {
             display:flex; flex-direction:column; align-items:center; gap:3px;
             cursor:pointer; transition:transform .18s;
         }
-        .fvbi-fairy-slot:hover { transform:translateY(-4px) scale(1.06); }
+        .fvbi-fairy-slot:hover { transform:translateY(-6px) scale(1.08); }
+        /* Animasi bounce berbeda tiap slot peri */
+        .fvbi-fairy-slot:nth-child(1) .fvbi-fairy-slot-img { animation:fvbiBounce 2.8s ease-in-out infinite; }
+        .fvbi-fairy-slot:nth-child(2) .fvbi-fairy-slot-img { animation:fvbiBounce 2.8s ease-in-out infinite .5s; }
+        .fvbi-fairy-slot:nth-child(3) .fvbi-fairy-slot-img { animation:fvbiBounce 2.8s ease-in-out infinite 1s; }
+        .fvbi-fairy-slot:nth-child(4) .fvbi-fairy-slot-img { animation:fvbiBounce 2.8s ease-in-out infinite 1.5s; }
         .fvbi-fairy-slot-img {
-            width:52px; height:64px; object-fit:contain; border-radius:10px;
+            width:54px; height:68px; object-fit:contain; object-position:top; border-radius:10px;
             border:2px solid rgba(167,139,250,.7);
             background:rgba(109,40,217,.3);
-            filter:drop-shadow(0 4px 8px rgba(139,92,246,.5));
+            filter:drop-shadow(0 4px 12px rgba(139,92,246,.6));
+            image-rendering:pixelated;
         }
         .fvbi-fairy-slot-name {
             font-family:'Fredoka',sans-serif; font-size:10px; color:#e9d5ff;
             font-weight:700; text-align:center; text-shadow:0 1px 4px rgba(0,0,0,.8);
-            max-width:52px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+            max-width:56px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
         }
         /* Slot Kosong */
         .fvbi-fairy-slot-empty .fvbi-fairy-slot-img {
             background:rgba(109,40,217,.12);
             border:2px dashed rgba(167,139,250,.35);
             display:flex; align-items:center; justify-content:center; font-size:22px;
-            filter:none;
+            filter:none; animation:none !important;
         }
         .fvbi-fairy-slot-empty .fvbi-fairy-slot-name { color:#a78bfa; opacity:.7; }
         .fvbi-fairy-slot-empty:hover .fvbi-fairy-slot-img {
             background:rgba(109,40,217,.3);
             border-color:rgba(167,139,250,.7);
+        }
+        /* Narasi suasana di atas scene */
+        #fvbi-scene-narasi {
+            position:absolute; top:8px; left:0; right:0;
+            text-align:center; font-size:10px; color:rgba(233,213,255,.7);
+            font-family:'Nunito',sans-serif; font-style:italic;
+            padding:0 12px; pointer-events:none;
+            text-shadow:0 1px 4px rgba(0,0,0,.9);
         }
         /* Badge kerja */
         .fvbi-work-badge {
@@ -5585,10 +5605,31 @@
         .fvbi-assign-empty { font-size:12px; color:#a78bfa; text-align:center; padding:12px; }
 
         #fvbi-desc {
-            padding:8px 14px 14px; font-size:11px; color:#a78bfa;
+            padding:8px 14px 10px; font-size:11px; color:#a78bfa;
             font-style:italic; border-top:1px dashed rgba(167,139,250,.2); flex-shrink:0;
             background:rgba(0,0,0,.15);
         }
+        /* Footer tombol aksi interior */
+        #fvbi-footer {
+            display:flex; gap:8px; padding:10px 14px 14px; flex-shrink:0;
+            background:rgba(0,0,0,.2); border-top:1px solid rgba(167,139,250,.15);
+        }
+        .fvbi-btn-upgrade {
+            flex:1; padding:8px 10px; border:none; border-radius:10px; cursor:pointer;
+            font-family:'Fredoka',sans-serif; font-size:13px; font-weight:700;
+            background:linear-gradient(135deg,#7c3aed,#9333ea);
+            color:#fff; box-shadow:0 3px 0 rgba(109,40,217,.5);
+            transition:transform .12s, box-shadow .12s;
+        }
+        .fvbi-btn-upgrade:active { transform:translateY(2px); box-shadow:0 1px 0 rgba(109,40,217,.5); }
+        .fvbi-btn-close {
+            padding:8px 16px; border:none; border-radius:10px; cursor:pointer;
+            font-family:'Fredoka',sans-serif; font-size:13px; font-weight:700;
+            background:rgba(239,68,68,.15); color:#fca5a5;
+            border:1.5px solid rgba(239,68,68,.4);
+            transition:background .15s;
+        }
+        .fvbi-btn-close:hover { background:rgba(239,68,68,.3); }
 
         /* ══════════════════════════════════════════════
            FAIRY BIRTH POPUP
@@ -18448,10 +18489,10 @@ ${reward.tip}`,
 
             // ═══════════════════════════════════════════════════════════════
             // FAIRY VILLAGE MAP — Terintegrasi ke sistem maps utama
-            // Ukuran disesuaikan bg kayangan (45×30 tiles = ~1260×840px), TANPA TEMBOK/BORDER
+            // Ukuran disesuaikan FW=60, FH=40 (sama dengan konstanta global fairy village)
             // ═══════════════════════════════════════════════════════════════
             (function initFairyVillageMap() {
-                const FW = 45, FH = 30;
+                const FW = 60, FH = 40;
                 // Tile 20 = Lantai Peri (semua tile adalah lantai, TANPA border wall)
                 const tiles = new Array(FW * FH).fill(20);
                 // Tidak ada border/tembok — peta terbuka luas
@@ -23751,7 +23792,44 @@ ${reward.tip}`,
                                 const sName = SPOUSE_NAMES[sId] || 'Pasangan';
                                 showPedagogicalDepartureNotif(sImg, sName);
                             } else {
-                                showToast('💼 Sudah jam 08:00! Waktunya berangkat kerja. Pulang sebelum 16:00 ya.');
+                                // Player di luar rumah — tampilkan notif pamit yang personal
+                                const sNameOut = SPOUSE_NAMES[sId] || 'Pasangan';
+                                const conflictLvl = STATE.player.marriageConflictLevel || 0;
+                                const pamitMsg = conflictLvl >= 2
+                                    ? `"Aku berangkat kerja." — ${sNameOut} mengirim pesan singkat.`
+                                    : `💌 ${sNameOut}: "Sayang, aku berangkat kerja dulu ya. Hati-hati di luar! Pulang sebelum jam 16:00 ya ❤️"`;
+                                showToast(pamitMsg);
+                                // Tampilkan popup kecil di layar dengan gambar pasangan
+                                (function showPamitPopup() {
+                                    const existing = document.getElementById('pamit-popup-notif');
+                                    if (existing) existing.remove();
+                                    const div = document.createElement('div');
+                                    div.id = 'pamit-popup-notif';
+                                    div.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9990;background:rgba(255,253,245,0.97);border:2px solid #a16207;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 18px rgba(0,0,0,0.25);max-width:320px;width:90%;animation:slideUp 0.3s ease;';
+                                    const img = document.createElement('img');
+                                    img.src = sImg;
+                                    img.style.cssText = 'width:44px;height:44px;object-fit:cover;border-radius:50%;border:2px solid #a16207;flex-shrink:0;';
+                                    const txtDiv = document.createElement('div');
+                                    txtDiv.style.cssText = 'flex:1;';
+                                    const name = document.createElement('div');
+                                    name.style.cssText = 'font-family:Fredoka,sans-serif;font-size:13px;font-weight:700;color:#422006;';
+                                    name.textContent = sNameOut + ' — Pamit Bekerja';
+                                    const msg = document.createElement('div');
+                                    msg.style.cssText = 'font-size:11px;color:#78350f;margin-top:2px;line-height:1.4;';
+                                    msg.textContent = conflictLvl >= 2 ? '"Aku berangkat." (singkat, tanpa senyum)' : '"Hati-hati ya, sayang! Pulang sebelum jam 16:00 ❤️"';
+                                    const closeBtn = document.createElement('button');
+                                    closeBtn.textContent = '✕';
+                                    closeBtn.style.cssText = 'background:none;border:none;font-size:14px;color:#a16207;cursor:pointer;padding:2px 4px;align-self:flex-start;';
+                                    closeBtn.onclick = function() { div.remove(); };
+                                    txtDiv.appendChild(name);
+                                    txtDiv.appendChild(msg);
+                                    div.appendChild(img);
+                                    div.appendChild(txtDiv);
+                                    div.appendChild(closeBtn);
+                                    document.body.appendChild(div);
+                                    // Auto-hilang setelah 6 detik
+                                    setTimeout(function() { if (div.parentNode) div.remove(); }, 6000);
+                                })();
                             }
                         } else {
                             // PASANGAN yang bekerja — hapus dari peta rumah
@@ -23782,7 +23860,42 @@ ${reward.tip}`,
                                     sImg
                                 );
                             } else {
-                                showToast('ℹ️ Pasanganmu sudah berangkat kerja jam 08:00.');
+                                // Player di luar rumah — pasangan berangkat kerja tanpa bisa diajak bicara
+                                const sNameDep2 = SPOUSE_NAMES[sId] || 'Pasangan';
+                                const conflictLvl2 = p.marriageConflictLevel || 0;
+                                const pamitMsg2 = conflictLvl2 >= 2
+                                    ? `😔 ${sNameDep2} sudah berangkat kerja. Kamu tidak sempat melepasnya.`
+                                    : `💌 ${sNameDep2}: "Aku berangkat ya sayang, kamu sudah di luar ya? Hati-hati! Aku pulang sekitar jam 16:00 ❤️"`;
+                                showToast(pamitMsg2);
+                                (function showPamitPopup2() {
+                                    const existing2 = document.getElementById('pamit-popup-notif');
+                                    if (existing2) existing2.remove();
+                                    const div2 = document.createElement('div');
+                                    div2.id = 'pamit-popup-notif';
+                                    div2.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9990;background:rgba(255,253,245,0.97);border:2px solid #a16207;border-radius:14px;padding:10px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 18px rgba(0,0,0,0.25);max-width:320px;width:90%;';
+                                    const img2 = document.createElement('img');
+                                    img2.src = sImg;
+                                    img2.style.cssText = 'width:44px;height:44px;object-fit:cover;border-radius:50%;border:2px solid #a16207;flex-shrink:0;';
+                                    const txtDiv2 = document.createElement('div');
+                                    txtDiv2.style.cssText = 'flex:1;';
+                                    const name2 = document.createElement('div');
+                                    name2.style.cssText = 'font-family:Fredoka,sans-serif;font-size:13px;font-weight:700;color:#422006;';
+                                    name2.textContent = sNameDep2 + ' — Berangkat Kerja';
+                                    const msg2 = document.createElement('div');
+                                    msg2.style.cssText = 'font-size:11px;color:#78350f;margin-top:2px;line-height:1.4;';
+                                    msg2.textContent = conflictLvl2 >= 2 ? '(Berangkat tanpa pamit padamu...)' : '"Aku pulang sekitar jam 16:00 ya ❤️"';
+                                    const closeBtn2 = document.createElement('button');
+                                    closeBtn2.textContent = '✕';
+                                    closeBtn2.style.cssText = 'background:none;border:none;font-size:14px;color:#a16207;cursor:pointer;padding:2px 4px;align-self:flex-start;';
+                                    closeBtn2.onclick = function() { div2.remove(); };
+                                    txtDiv2.appendChild(name2);
+                                    txtDiv2.appendChild(msg2);
+                                    div2.appendChild(img2);
+                                    div2.appendChild(txtDiv2);
+                                    div2.appendChild(closeBtn2);
+                                    document.body.appendChild(div2);
+                                    setTimeout(function() { if (div2.parentNode) div2.remove(); }, 6000);
+                                })();
                             }
                         }
                     }
@@ -38304,12 +38417,24 @@ Pilih masakan:
                 // Bangunan collision-only di fairy village (sudah ada sprite NPC) — skip render
                 if (b.id === 'rara_wilis_bld' || b.id === 'pohon_energi_bld') return;
 
-                // FIX: Bangunan Fairy Village — render pakai emoji + warna tier
+                // FIX: Bangunan Fairy Village — render pakai gambar tier untuk hunian, emoji untuk lainnya
                 if (b.id && b.id.startsWith('fv_bld_')) {
                     // FIX: fairy village pakai TS=28, bukan TILE_SIZE=30
                     const _ts = (typeof TS !== 'undefined') ? TS : 28;
                     const bx = b.x * _ts, by = b.y * _ts;
                     const bw = (b.w || 2) * _ts, bh = (b.h || 2) * _ts;
+                    const bid2 = b._fvBid || '';
+                    // Hunian: pakai gambar omah-tier
+                    const _omahMap = { pondok_peri: 1, rumah_peri: 2, dalem_widadari: 3 };
+                    const _omahTier = _omahMap[bid2];
+                    if (_omahTier && typeof FV_OMAH_IMAGES !== 'undefined') {
+                        const _img = FV_OMAH_IMAGES[_omahTier];
+                        if (_img && _img.complete && _img.naturalWidth > 0) {
+                            ctx.drawImage(_img, bx, by, bw, bh);
+                            return;
+                        }
+                    }
+                    // Bangunan lain: tetap pakai emoji + warna tier
                     const bgColors = ['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
                     const borderColors = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
                     const tier = b._fvTier || 0;
@@ -44217,6 +44342,16 @@ let fvBgImage = null;
     fvBgImage.src = 'images/kayangan.png';
 })();
 
+// ── HUNIAN TIER IMAGES: omah-tier1.png, omah-tier2.png, omah-tier3.png ──
+const FV_OMAH_IMAGES = {};
+(function(){
+    [1,2,3].forEach(function(t){
+        const img = new Image();
+        img.src = 'images/omah-tier' + t + '.png';
+        FV_OMAH_IMAGES[t] = img;
+    });
+})();
+
 // ── KAHYANGAN: Siang/Malam & Musim ─────────────────────────────
 function getFVTimeOfDay() {
     // Sinkron dengan STATE.time dunia manusia (0–2400)
@@ -44928,6 +45063,7 @@ function refreshFairyVillageMap() {
             name: (bDef && bDef.name) || 'Bangunan',
             _fvEmoji: (bDef && bDef.emoji) || '🏠',
             _fvTier: (bDef && bDef.tier) || 0,
+            _fvBid: b.bid,
         });
     });
 
@@ -45344,51 +45480,39 @@ function drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t) {
     }
 
     // ──────────────── HUNIAN ────────────────
+    // ──────────────── HUNIAN (pakai gambar omah-tier1/2/3.png) ────────────────
     if (bid==='pondok_peri') {
-        wall('#d4a96a'); // dinding kayu
-        // Atap jerami
-        roof('#a0752a', cx, by-2, bx-3, bx+bw+3, by+bh*0.38);
-        ctx.fillStyle='#c99a45';
-        ctx.beginPath(); ctx.roundRect(bx-3, by+bh*0.36, bw+6, bh*0.07, 2); ctx.fill();
-        door('#7c4b1a', bw*0.24, bh*0.32);
-        window_('#7c4b1a', bx+bw*0.1, by+bh*0.45);
-        window_('#7c4b1a', bx+bw*0.72, by+bh*0.45);
-        outlineBldg('#8b5e2a');
+        const img1 = FV_OMAH_IMAGES[1];
+        if (img1 && img1.complete && img1.naturalWidth > 0) {
+            ctx.drawImage(img1, bx, by, bw, bh);
+        } else {
+            // Fallback canvas jika gambar belum load
+            wall('#d4a96a');
+            roof('#a0752a', cx, by-2, bx-3, bx+bw+3, by+bh*0.38);
+            door('#7c4b1a', bw*0.24, bh*0.32);
+            outlineBldg('#8b5e2a');
+        }
     } else if (bid==='rumah_peri') {
-        wall('#e8d5b0'); // dinding bata muda
-        // Bata pattern
-        ctx.fillStyle='rgba(180,120,60,0.18)';
-        for(let row=0;row<4;row++) for(let col=0;col<3;col++) {
-            const ox=(row%2)*bw*0.16;
-            ctx.beginPath(); ctx.roundRect(bx+bw*0.05+col*bw*0.3+ox, by+bh*0.4+row*bh*0.14, bw*0.27, bh*0.11, 1); ctx.fill();
+        const img2 = FV_OMAH_IMAGES[2];
+        if (img2 && img2.complete && img2.naturalWidth > 0) {
+            ctx.drawImage(img2, bx, by, bw, bh);
+        } else {
+            wall('#e8d5b0');
+            roof('#c0392b', cx, by-4, bx-4, bx+bw+4, by+bh*0.37);
+            door('#5d3a1a', bw*0.25, bh*0.33);
+            outlineBldg('#c0392b');
         }
-        roof('#c0392b', cx, by-4, bx-4, bx+bw+4, by+bh*0.37);
-        ctx.fillStyle='#922b21'; // lisplang atap
-        ctx.beginPath(); ctx.roundRect(bx-4, by+bh*0.35, bw+8, bh*0.05, 1); ctx.fill();
-        door('#5d3a1a', bw*0.25, bh*0.33);
-        window_('#5d3a1a', bx+bw*0.08, by+bh*0.44);
-        window_('#5d3a1a', bx+bw*0.68, by+bh*0.44);
-        outlineBldg('#c0392b');
     } else if (bid==='dalem_widadari') {
-        // Rumah Jawa — joglo
-        wall('#f5e6cc');
-        ctx.fillStyle='rgba(150,100,30,0.15)';
-        for(let r=0;r<5;r++) for(let c=0;c<4;c++) {
-            ctx.beginPath(); ctx.roundRect(bx+bw*0.04+c*bw*0.23, by+bh*0.38+r*bh*0.12, bw*0.2, bh*0.09, 1); ctx.fill();
+        const img3 = FV_OMAH_IMAGES[3];
+        if (img3 && img3.complete && img3.naturalWidth > 0) {
+            ctx.drawImage(img3, bx, by, bw, bh);
+        } else {
+            wall('#f5e6cc');
+            roof('#8B4513', cx, by-6, bx-6, bx+bw+6, by+bh*0.32);
+            roof('#a0522d', cx, by+bh*0.22, bx-2, bx+bw+2, by+bh*0.4);
+            door('#4a2a0d', bw*0.26, bh*0.35);
+            outlineBldg('#8B4513');
         }
-        // Atap susun dua
-        roof('#8B4513', cx, by-6, bx-6, bx+bw+6, by+bh*0.32);
-        roof('#a0522d', cx, by+bh*0.22, bx-2, bx+bw+2, by+bh*0.4);
-        ctx.fillStyle='#6b3410';
-        ctx.beginPath(); ctx.roundRect(bx-6, by+bh*0.30, bw+12, bh*0.04, 1); ctx.fill();
-        ctx.beginPath(); ctx.roundRect(bx-2, by+bh*0.38, bw+4, bh*0.04, 1); ctx.fill();
-        door('#4a2a0d', bw*0.26, bh*0.35);
-        window_('#4a2a0d', bx+bw*0.07, by+bh*0.43);
-        window_('#4a2a0d', bx+bw*0.67, by+bh*0.43);
-        // Ornamen emas
-        ctx.fillStyle='#fbbf24'; ctx.font=`${bh*0.12}px serif`; ctx.textAlign='center';
-        ctx.fillText('◆', cx, by+bh*0.27); ctx.textAlign='left';
-        outlineBldg('#8B4513');
 
     // ──────────────── TAMAN ────────────────
     } else if (bid==='taman_mini') {
@@ -46444,6 +46568,16 @@ function openRaraWilisDialog() {
             showFVDialog('RARA WILIS', lore, [{ text: 'Aku mengerti...', action: openRaraWilisDialog }], 'images/rarawilis.png');
         }});
     }
+    opts.push({ text: '🙏 Terima kasih atas informasinya', action: () => {
+        if (typeof closeDialogue === 'function') closeDialogue();
+        // Pesan balasan Rara Wilis saat pamit
+        const pamitRara = fase >= 4
+            ? 'showToast("✨ Kahyangan Wilis selalu menantimu kembali. Terima kasih, Pahlawan Wilis! 🌸")'
+            : fase >= 2
+            ? 'showToast("🌿 Perjalananmu membawa harapan bagi kami. Sampai jumpa lagi! 🙏")'
+            : 'showToast("🌱 Terima kasih sudah mendengarkan kisah kami. Kami menunggumu kembali... ✨")';
+        setTimeout(function() { eval(pamitRara); }, 200);
+    }});
     opts.push({ text: '🚪 Tinggalkan Kahyangan', action: () => {
         // Tutup dialogue wrapper dulu baru close fairy village
         if (typeof closeDialogue === 'function') closeDialogue();
@@ -47105,14 +47239,33 @@ function collectFairyDust() {
 // ─────────────────────────────────────────────────────────────
 // ── Building interior BG images per category ──
 const FVBI_BG = {
-    pohon_energi:'images/pohonperi.png',
-    pondok_peri:'images/kayangan.png', rumah_peri:'images/kayangan.png', dalem_widadari:'images/kayangan.png',
-    istana_mini:'images/kayangan.png', pohon_kehidupan:'images/pohonperi.png',
-    taman_mini:'images/kayangan.png', taman_mekar:'images/kayangan.png', kebun_raya:'images/kayangan.png',
-    kolam_kristal:'images/kayangan.png', kolam_agung:'images/kayangan.png', telaga_nirmala:'images/kayangan.png',
-    sekolah_peri:'images/kayangan.png', sanggar_tari:'images/kayangan.png', akademi_agung:'images/kayangan.png',
-    pasar_peri:'images/kayangan.png', balai_dagang:'images/kayangan.png', pusat_niaga:'images/kayangan.png',
-    menara_kecil:'images/kayangan.png', menara_wilis:'images/kayangan.png', menara_cahaya:'images/kayangan.png',
+    pohon_energi:    'images/pohonperi.png',
+    // Hunian — pakai gambar omah-tier
+    pondok_peri:     'images/omah-tier1.png',
+    rumah_peri:      'images/omah-tier2.png',
+    dalem_widadari:  'images/omah-tier3.png',
+    istana_mini:     'images/omah-tier3.png',
+    pohon_kehidupan: 'images/pohonperi.png',
+    // Taman
+    taman_mini:      'images/lahan-liar.png',
+    taman_mekar:     'images/lahan-liar.png',
+    kebun_raya:      'images/lahan-liar.png',
+    // Kolam
+    kolam_kristal:   'images/kayangan.png',
+    kolam_agung:     'images/kayangan.png',
+    telaga_nirmala:  'images/kayangan.png',
+    // Sekolah
+    sekolah_peri:    'images/kayangan.png',
+    sanggar_tari:    'images/kayangan.png',
+    akademi_agung:   'images/kayangan.png',
+    // Pasar
+    pasar_peri:      'images/kayangan.png',
+    balai_dagang:    'images/kayangan.png',
+    pusat_niaga:     'images/kayangan.png',
+    // Menara
+    menara_kecil:    'images/kayangan.png',
+    menara_wilis:    'images/kayangan.png',
+    menara_cahaya:   'images/kayangan.png',
 };
 
 // Slot index sedang di-assign
@@ -47156,15 +47309,18 @@ function openBuildingInterior(bldg, slot) {
         const wf = workers[i];
         if (wf) {
             const img = _khImg(wf);
-            return `<div class="fvbi-fairy-slot" title="${wf.name}" onclick="fvFireWorkerPrompt('${bldg.slotId}',${i})">
-                <div class="fvbi-work-badge">⚙</div>
+            const moodEmoji = (wf.happiness >= 80) ? '😊' : (wf.happiness >= 50) ? '😐' : '😢';
+            const activityEmoji = b.dustPerDay ? '✨' : b.foodPerDay ? '🍳' : b.happinessBonus ? '💧' : b.xpBonus ? '📖' : b.enableTrading ? '🛒' : b.dustMultiplier ? '🕯️' : '⚙️';
+            return `<div class="fvbi-fairy-slot" title="${wf.name} — Klik untuk kelola" onclick="fvFireWorkerPrompt('${bldg.slotId}',${i})">
+                <div class="fvbi-work-badge">${activityEmoji}</div>
                 <img src="${img}" onerror="this.src='images/rarawilis.png'" class="fvbi-fairy-slot-img">
-                <div class="fvbi-fairy-slot-name">${wf.name}</div>
+                <div class="fvbi-fairy-slot-name">${wf.name} ${moodEmoji}</div>
             </div>`;
         } else {
-            return `<div class="fvbi-fairy-slot fvbi-fairy-slot-empty" title="Tempatkan peri" onclick="fvbiOpenAssign(${i})">
-                <div class="fvbi-fairy-slot-img" style="display:flex;align-items:center;justify-content:center;font-size:24px;">🧚</div>
-                <div class="fvbi-fairy-slot-name">Kosong</div>
+            const hasFreeFairy = freeFairies.length > 0;
+            return `<div class="fvbi-fairy-slot fvbi-fairy-slot-empty" title="${hasFreeFairy ? 'Ketuk untuk tugaskan peri' : 'Tidak ada peri bebas'}" onclick="fvbiOpenAssign(${i})">
+                <div class="fvbi-fairy-slot-img" style="display:flex;align-items:center;justify-content:center;font-size:26px;">${hasFreeFairy ? '🧚' : '🌫️'}</div>
+                <div class="fvbi-fairy-slot-name" style="font-size:9px;">${hasFreeFairy ? '+ Tugaskan' : 'Kosong'}</div>
             </div>`;
         }
     }).join('');
@@ -47228,6 +47384,31 @@ function openBuildingInterior(bldg, slot) {
           }).join('')
         : `<div class="fvbi-assign-empty">Tidak ada peri bebas saat ini 🧚</div>`;
 
+    // ── Narasi suasana per tipe bangunan ──
+    const FVBI_NARASI = {
+        pondok_peri:    workers.length ? '🌸 Para Widadari beristirahat dengan tenang di sini...' : '🌫️ Bangunan sepi... belum ada Widadari yang tinggal.',
+        rumah_peri:     workers.length ? '🏡 Suara tawa lembut terdengar dari dalam rumah...' : '🌫️ Pintu terbuka, tapi rumah masih kosong.',
+        dalem_widadari: workers.length ? '✨ Aroma bunga kenanga mengisi tiap sudut dalem...' : '🌫️ Dalem yang megah menunggu sang penghuni.',
+        taman_mini:     workers.length ? '🌸 Peri bunga bersenandung sambil merawat tanaman...' : '🌿 Taman segar menunggu tangan teladan peri.',
+        taman_mekar:    workers.length ? '🌺 Wangi kenanga menguar, peri sibuk menyiram...' : '🌿 Kebun subur, tapi belum ada yang merawat.',
+        kebun_raya:     workers.length ? '🌳 Dedaunan berdesir, para peri bekerja gembira...' : '🌳 Kebun raya menunggu peri-peri rajin.',
+        kolam_kristal:  workers.length ? '💧 Suara gemericik air jernih menenangkan jiwa...' : '💧 Sendang yang bening, sepi tanpa penunggu.',
+        kolam_agung:    workers.length ? '🌊 Cipratan air suci membawa berkah Kahyangan...' : '🌊 Air sendang beriak-riak menunggu sang peri.',
+        telaga_nirmala: workers.length ? '🌈 Cahaya pelangi memantul di permukaan telaga...' : '🌈 Telaga ajaib sepi tanpa penjaganya.',
+        sekolah_peri:   workers.length ? '📚 Suara hafalan ilmu bergema di padepokan...' : '📚 Padepokan ilmu sunyi menunggu guru peri.',
+        sanggar_tari:   workers.length ? '🎓 Gemerincing gelang peri mengiringi tarian...' : '🎓 Sanggar tari sepi, tunggu peri berbakat.',
+        akademi_agung:  workers.length ? '🏛️ Para cendekiawan peri berdiskusi serius...' : '🏛️ Akademi agung menantikan para pelajar.',
+        pasar_peri:     workers.length ? '🛒 Riuh transaksi dan tawa para pedagang peri...' : '🛒 Lapak dagang siap, menunggu peri berdagang.',
+        balai_dagang:   workers.length ? '🏪 Aroma kayu segar dari balai yang ramai...' : '🏪 Balai dagang menunggu niagawan peri.',
+        pusat_niaga:    workers.length ? '🏦 Kristal berkilau ditumpuk rapi di pusat niaga...' : '🏦 Brankas terbuka, menunggu peri bijak.',
+        menara_kecil:   workers.length ? '🕯️ Cahaya lilin berkedip lembut di puncak menara...' : '🕯️ Menara berdiri kokoh, belum ada yang menjaga.',
+        menara_wilis:   workers.length ? '✨ Sinar Wilis memancar dari puncak menara...' : '✨ Menara Wilis siap, menunggu penjaga setia.',
+        menara_cahaya:  workers.length ? '🌟 Cahaya surgawi bersinar terang dari puncak...' : '🌟 Menara cahaya tertinggi, butuh peri kuat.',
+        pohon_energi:   '🌳 Pohon Energi berdenyut penuh kekuatan Wilis...',
+        pohon_kehidupan:'🌳 Akar pohon beringin agung mengaliri energi Kahyangan...',
+    };
+    const narasiText = FVBI_NARASI[bldg.bid] || (workers.length ? '✨ Para Widadari sibuk bekerja dengan riang...' : '🌫️ Bangunan ini masih menunggu Widadari penghuni.');
+
     const bgSrc = FVBI_BG[bldg.bid] || 'images/kayangan.png';
 
     el.innerHTML = `
@@ -47247,6 +47428,7 @@ function openBuildingInterior(bldg, slot) {
             <div id="fvbi-scene">
                 <img id="fvbi-scene-bg" src="${bgSrc}" onerror="this.style.display='none'" alt="">
                 <div id="fvbi-scene-overlay"></div>
+                <div id="fvbi-scene-narasi">${narasiText}</div>
                 <div id="fvbi-fairy-row">${sceneSlots}</div>
 
                 <!-- Assign overlay (muncul saat klik slot kosong di scene) -->
@@ -47274,6 +47456,12 @@ function openBuildingInterior(bldg, slot) {
 
             <!-- DESC -->
             <div id="fvbi-desc">💬 ${b.desc||''}</div>
+
+            <!-- FOOTER ACTIONS -->
+            <div id="fvbi-footer">
+                ${b.upgradeTo ? `<button class="fvbi-btn-upgrade" onclick="closeBuildingInterior(); setTimeout(()=>openKastilModal?.(), 100);">⬆️ Upgrade Bangunan</button>` : `<div></div>`}
+                <button class="fvbi-btn-close" onclick="closeBuildingInterior()">🚪 Keluar</button>
+            </div>
         </div>
     `;
     document.body.appendChild(el);
