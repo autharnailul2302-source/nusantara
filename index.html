@@ -47862,11 +47862,12 @@ function openFairyTestMode(){
         { slotId:'s11', bid:'kolam_kristal', workers:[] },
     ];
     fv.buildQueue = [];
-    fv.tutorialDone = true;
-    fv.fvTutorialDone = true; // skip tutorial di test mode
-    fv.isTestMode = true;     // tombol test selalu muncul di menu Rara Wilis
+    fv.isTestMode = true;         // tombol test selalu muncul di menu Rara Wilis
+    fv.fvTutorialDone = false;    // reset agar tutorial jalan saat masuk
+    fv.tutorialDone   = false;    // reset flag lama juga
+    fv.isFirstVisit   = false;    // jangan reset resource ke starter (resource sudah di-set di atas)
     refreshFairyVillageMap();
-    showToast('🧚 TEST MODE — Masuk Kahyangan Wilis! (Gunakan menu Rara Wilis → Test Kelahiran)');
+    showToast('🧚 TEST MODE — Masuk Kahyangan Wilis!');
     openFairyVillage();
 }
 
