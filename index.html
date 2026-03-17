@@ -40,6 +40,14 @@
     <link rel="preload" as="image" href="images/peri_pr4.png">
     <link rel="preload" as="image" href="images/peri_lk1.png">
     <link rel="preload" as="image" href="images/peri_lk2.png">
+    <!-- PRELOAD SENDANG TIER -->
+    <link rel="preload" as="image" href="images/sendang-tier1.png">
+    <link rel="preload" as="image" href="images/sendang-tier2.png">
+    <link rel="preload" as="image" href="images/sendang-tier3.png">
+    <!-- PRELOAD TAMAN TIER -->
+    <link rel="preload" as="image" href="images/taman-tier1.png">
+    <link rel="preload" as="image" href="images/taman-tier2.png">
+    <link rel="preload" as="image" href="images/taman-tier3.png">
 
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -44382,6 +44390,26 @@ const FV_OMAH_IMAGES = {};
     });
 })();
 
+// ── SENDANG TIER IMAGES: sendang-tier1.png, sendang-tier2.png, sendang-tier3.png ──
+const FV_SENDANG_IMAGES = {};
+(function(){
+    [1,2,3].forEach(function(t){
+        const img = new Image();
+        img.src = 'images/sendang-tier' + t + '.png';
+        FV_SENDANG_IMAGES[t] = img;
+    });
+})();
+
+// ── TAMAN TIER IMAGES: taman-tier1.png, taman-tier2.png, taman-tier3.png ──
+const FV_TAMAN_IMAGES = {};
+(function(){
+    [1,2,3].forEach(function(t){
+        const img = new Image();
+        img.src = 'images/taman-tier' + t + '.png';
+        FV_TAMAN_IMAGES[t] = img;
+    });
+})();
+
 // ── KAHYANGAN: Siang/Malam & Musim ─────────────────────────────
 function getFVTimeOfDay() {
     // Sinkron dengan STATE.time dunia manusia (0–2400)
@@ -45546,65 +45574,87 @@ function drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t) {
 
     // ──────────────── TAMAN ────────────────
     } else if (bid==='taman_mini') {
-        // Taman bunga: tanah + bunga
-        ctx.fillStyle='#4a7c2f';
-        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.5, bw, bh*0.5, [0,0,4,4]); ctx.fill();
-        ctx.fillStyle='#2d5a1b';
-        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.5, bw, bh*0.06, 0); ctx.fill();
-        // Pagar kayu
-        ctx.strokeStyle='#8b6914'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.48, bw-2, bh*0.52, 3); ctx.stroke();
-        for(let i=0;i<4;i++) {
-            ctx.beginPath(); ctx.moveTo(bx+bw*0.12+i*bw*0.23, by+bh*0.48); ctx.lineTo(bx+bw*0.12+i*bw*0.23, by+bh); ctx.stroke();
-        }
-        // Bunga
-        const flowerColors=['#f472b6','#facc15','#fb923c','#a78bfa'];
-        for(let i=0;i<5;i++) {
-            const fx2=bx+bw*0.1+i*(bw*0.18), fy2=by+bh*0.62;
-            ctx.fillStyle=flowerColors[i%4];
-            for(let p=0;p<5;p++) {
-                const ang=p*Math.PI*2/5;
-                ctx.beginPath(); ctx.arc(fx2+Math.cos(ang)*4, fy2+Math.sin(ang)*4+Math.sin(t/800+i)*1.5, 3, 0, Math.PI*2); ctx.fill();
+        const imgT1 = FV_TAMAN_IMAGES[1];
+        if (imgT1 && imgT1.complete && imgT1.naturalWidth > 0) {
+            const srcAR = 700/400; const dstAR = bw/bh;
+            let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR > dstAR) { sw=Math.round(400*dstAR); sx=Math.round((700-sw)/2); }
+            else { sh=Math.round(700/dstAR); sy=Math.round((400-sh)/2); }
+            ctx.drawImage(imgT1, sx,sy,sw,sh, bx,by,bw,bh);
+        } else {
+            // Fallback canvas
+            ctx.fillStyle='#4a7c2f';
+            ctx.beginPath(); ctx.roundRect(bx, by+bh*0.5, bw, bh*0.5, [0,0,4,4]); ctx.fill();
+            ctx.fillStyle='#2d5a1b';
+            ctx.beginPath(); ctx.roundRect(bx, by+bh*0.5, bw, bh*0.06, 0); ctx.fill();
+            ctx.strokeStyle='#8b6914'; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.48, bw-2, bh*0.52, 3); ctx.stroke();
+            for(let i=0;i<4;i++) {
+                ctx.beginPath(); ctx.moveTo(bx+bw*0.12+i*bw*0.23, by+bh*0.48); ctx.lineTo(bx+bw*0.12+i*bw*0.23, by+bh); ctx.stroke();
             }
-            ctx.fillStyle='#fef08a'; ctx.beginPath(); ctx.arc(fx2, fy2+Math.sin(t/800+i)*1.5, 2.5, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle='#16a34a'; ctx.lineWidth=1.5; ctx.strokeStyle='#16a34a';
-            ctx.beginPath(); ctx.moveTo(fx2, fy2+4+Math.sin(t/800+i)*1.5); ctx.lineTo(fx2, by+bh-2); ctx.stroke();
+            const flowerColors=['#f472b6','#facc15','#fb923c','#a78bfa'];
+            for(let i=0;i<5;i++) {
+                const fx2=bx+bw*0.1+i*(bw*0.18), fy2=by+bh*0.62;
+                ctx.fillStyle=flowerColors[i%4];
+                for(let p=0;p<5;p++) {
+                    const ang=p*Math.PI*2/5;
+                    ctx.beginPath(); ctx.arc(fx2+Math.cos(ang)*4, fy2+Math.sin(ang)*4+Math.sin(t/800+i)*1.5, 3, 0, Math.PI*2); ctx.fill();
+                }
+                ctx.fillStyle='#fef08a'; ctx.beginPath(); ctx.arc(fx2, fy2+Math.sin(t/800+i)*1.5, 2.5, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle='#16a34a'; ctx.lineWidth=1.5; ctx.strokeStyle='#16a34a';
+                ctx.beginPath(); ctx.moveTo(fx2, fy2+4+Math.sin(t/800+i)*1.5); ctx.lineTo(fx2, by+bh-2); ctx.stroke();
+            }
         }
     } else if (bid==='taman_mekar') {
-        ctx.fillStyle='#3a6b22';
-        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.45, bw, bh*0.55, [0,0,4,4]); ctx.fill();
-        // Path batu
-        ctx.fillStyle='#9ca3af';
-        for(let i=0;i<3;i++) { ctx.beginPath(); ctx.arc(cx+(-1+i)*bw*0.2, by+bh*0.78, bw*0.07, 0, Math.PI*2); ctx.fill(); }
-        // Pohon kecil di sudut
-        [[bx+bw*0.12, by+bh*0.5],[bx+bw*0.78, by+bh*0.5]].forEach(([tx2,ty2])=>{
-            ctx.fillStyle='#5c3d1e'; ctx.fillRect(tx2, ty2+bh*0.18, bw*0.06, bh*0.18);
-            ctx.fillStyle='#15803d'; ctx.beginPath(); ctx.arc(tx2+bw*0.03, ty2, bw*0.1, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(tx2+bw*0.03, ty2-bh*0.04, bw*0.07, 0, Math.PI*2); ctx.fill();
-        });
-        // Kenanga bunga
-        const flC=['#fde68a','#f9a8d4','#a5f3fc','#bbf7d0'];
-        for(let i=0;i<8;i++) {
-            const fx2=bx+bw*0.08+i*(bw*0.11), fy2=by+bh*0.62+Math.sin(i)*bh*0.06;
-            ctx.fillStyle=flC[i%4]; ctx.beginPath(); ctx.arc(fx2, fy2, 4, 0, Math.PI*2); ctx.fill();
+        const imgT2 = FV_TAMAN_IMAGES[2];
+        if (imgT2 && imgT2.complete && imgT2.naturalWidth > 0) {
+            const srcAR = 700/400; const dstAR = bw/bh;
+            let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR > dstAR) { sw=Math.round(400*dstAR); sx=Math.round((700-sw)/2); }
+            else { sh=Math.round(700/dstAR); sy=Math.round((400-sh)/2); }
+            ctx.drawImage(imgT2, sx,sy,sw,sh, bx,by,bw,bh);
+        } else {
+            // Fallback canvas
+            ctx.fillStyle='#3a6b22';
+            ctx.beginPath(); ctx.roundRect(bx, by+bh*0.45, bw, bh*0.55, [0,0,4,4]); ctx.fill();
+            ctx.fillStyle='#9ca3af';
+            for(let i=0;i<3;i++) { ctx.beginPath(); ctx.arc(cx+(-1+i)*bw*0.2, by+bh*0.78, bw*0.07, 0, Math.PI*2); ctx.fill(); }
+            [[bx+bw*0.12, by+bh*0.5],[bx+bw*0.78, by+bh*0.5]].forEach(([tx2,ty2])=>{
+                ctx.fillStyle='#5c3d1e'; ctx.fillRect(tx2, ty2+bh*0.18, bw*0.06, bh*0.18);
+                ctx.fillStyle='#15803d'; ctx.beginPath(); ctx.arc(tx2+bw*0.03, ty2, bw*0.1, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(tx2+bw*0.03, ty2-bh*0.04, bw*0.07, 0, Math.PI*2); ctx.fill();
+            });
+            const flC=['#fde68a','#f9a8d4','#a5f3fc','#bbf7d0'];
+            for(let i=0;i<8;i++) {
+                const fx2=bx+bw*0.08+i*(bw*0.11), fy2=by+bh*0.62+Math.sin(i)*bh*0.06;
+                ctx.fillStyle=flC[i%4]; ctx.beginPath(); ctx.arc(fx2, fy2, 4, 0, Math.PI*2); ctx.fill();
+            }
+            ctx.strokeStyle='#16a34a'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.44, bw-2, bh*0.56, 4); ctx.stroke();
         }
-        ctx.strokeStyle='#16a34a'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.44, bw-2, bh*0.56, 4); ctx.stroke();
     } else if (bid==='kebun_raya') {
-        ctx.fillStyle='#166534';
-        ctx.beginPath(); ctx.roundRect(bx, by+bh*0.4, bw, bh*0.6, [0,0,4,4]); ctx.fill();
-        // Gerbang masuk
-        ctx.fillStyle='#7c5c2e'; ctx.fillRect(cx-bw*0.12, by+bh*0.38, bw*0.24, bh*0.08);
-        ctx.fillRect(cx-bw*0.12, by+bh*0.4, bw*0.04, bh*0.2);
-        ctx.fillRect(cx+bw*0.08, by+bh*0.4, bw*0.04, bh*0.2);
-        // Banyak tanaman
-        const gC=['#16a34a','#22c55e','#4ade80','#15803d'];
-        for(let i=0;i<12;i++) {
-            const fx2=bx+bw*0.06+i*(bw*0.08), fy2=by+bh*0.55+Math.sin(i*1.3)*bh*0.1;
-            ctx.fillStyle=gC[i%4]; ctx.beginPath(); ctx.arc(fx2, fy2, 4+Math.sin(i)*1.5, 0, Math.PI*2); ctx.fill();
+        const imgT3 = FV_TAMAN_IMAGES[3];
+        if (imgT3 && imgT3.complete && imgT3.naturalWidth > 0) {
+            const srcAR = 700/400; const dstAR = bw/bh;
+            let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR > dstAR) { sw=Math.round(400*dstAR); sx=Math.round((700-sw)/2); }
+            else { sh=Math.round(700/dstAR); sy=Math.round((400-sh)/2); }
+            ctx.drawImage(imgT3, sx,sy,sw,sh, bx,by,bw,bh);
+        } else {
+            // Fallback canvas
+            ctx.fillStyle='#166534';
+            ctx.beginPath(); ctx.roundRect(bx, by+bh*0.4, bw, bh*0.6, [0,0,4,4]); ctx.fill();
+            ctx.fillStyle='#7c5c2e'; ctx.fillRect(cx-bw*0.12, by+bh*0.38, bw*0.24, bh*0.08);
+            ctx.fillRect(cx-bw*0.12, by+bh*0.4, bw*0.04, bh*0.2);
+            ctx.fillRect(cx+bw*0.08, by+bh*0.4, bw*0.04, bh*0.2);
+            const gC=['#16a34a','#22c55e','#4ade80','#15803d'];
+            for(let i=0;i<12;i++) {
+                const fx2=bx+bw*0.06+i*(bw*0.08), fy2=by+bh*0.55+Math.sin(i*1.3)*bh*0.1;
+                ctx.fillStyle=gC[i%4]; ctx.beginPath(); ctx.arc(fx2, fy2, 4+Math.sin(i)*1.5, 0, Math.PI*2); ctx.fill();
+            }
+            ctx.strokeStyle='#15803d'; ctx.lineWidth=1.5;
+            ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.39, bw-2, bh*0.61, 4); ctx.stroke();
         }
-        ctx.strokeStyle='#15803d'; ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.roundRect(bx+1, by+bh*0.39, bw-2, bh*0.61, 4); ctx.stroke();
 
     // ──────────────── KOLAM ────────────────
     } else if (bid==='kolam_kristal') {
@@ -47289,14 +47339,14 @@ const FVBI_BG = {
     dalem_widadari:  'images/omah-tier3.png',
     istana_mini:     'images/omah-tier3.png',
     pohon_kehidupan: 'images/pohonperi.png',
-    // Taman
-    taman_mini:      'images/lahan-liar.png',
-    taman_mekar:     'images/lahan-liar.png',
-    kebun_raya:      'images/lahan-liar.png',
-    // Kolam
-    kolam_kristal:   'images/kayangan.png',
-    kolam_agung:     'images/kayangan.png',
-    telaga_nirmala:  'images/kayangan.png',
+    // Taman — pakai gambar taman-tier
+    taman_mini:      'images/taman-tier1.png',
+    taman_mekar:     'images/taman-tier2.png',
+    kebun_raya:      'images/taman-tier3.png',
+    // Kolam / Sendang — pakai gambar sendang-tier
+    kolam_kristal:   'images/sendang-tier1.png',
+    kolam_agung:     'images/sendang-tier2.png',
+    telaga_nirmala:  'images/sendang-tier3.png',
     // Sekolah
     sekolah_peri:    'images/kayangan.png',
     sanggar_tari:    'images/kayangan.png',
