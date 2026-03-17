@@ -48,6 +48,20 @@
     <link rel="preload" as="image" href="images/taman-tier1.png">
     <link rel="preload" as="image" href="images/taman-tier2.png">
     <link rel="preload" as="image" href="images/taman-tier3.png">
+    <!-- PRELOAD SEKOLAH TIER -->
+    <link rel="preload" as="image" href="images/sekolah-tier1.png">
+    <link rel="preload" as="image" href="images/sekolah-tier2.png">
+    <link rel="preload" as="image" href="images/sekolah-tier3.png">
+    <!-- PRELOAD PASAR TIER -->
+    <link rel="preload" as="image" href="images/pasar-tier1.png">
+    <link rel="preload" as="image" href="images/pasar-tier2.png">
+    <link rel="preload" as="image" href="images/pasar-tier3.png">
+    <!-- PRELOAD MENARA TIER -->
+    <link rel="preload" as="image" href="images/menara-tier1.png">
+    <link rel="preload" as="image" href="images/menara-tier2.png">
+    <link rel="preload" as="image" href="images/menara-tier3.png">
+    <!-- PRELOAD ISTANA -->
+    <link rel="preload" as="image" href="images/istana-tier1.png">
 
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -5646,18 +5660,26 @@
             position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:9500;
             backdrop-filter:blur(4px);
         }
+        #fbp-scroll-wrap {
+            position:fixed; inset:0; z-index:9501;
+            display:flex; align-items:flex-start; justify-content:center;
+            overflow-y:auto; -webkit-overflow-scrolling:touch;
+            padding:16px 0 40px;
+            pointer-events:auto;
+        }
         #fbp-card {
-            position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.8);
+            position:relative;
+            transform:scale(0.8);
             opacity:0; transition:transform .28s cubic-bezier(.34,1.56,.64,1), opacity .2s;
-            z-index:9501;
             background:#fffbeb;
             border:4px solid #d97706; border-radius:24px;
             box-shadow:0 16px 0 rgba(161,98,7,.25), 0 0 50px rgba(217,119,6,.25);
             padding:20px 22px 18px; width:min(92vw,340px);
             display:flex; flex-direction:column; align-items:center; gap:10px;
             font-family:'Nunito',sans-serif;
+            margin:auto; flex-shrink:0;
         }
-        #fbp-card.fbp-in { transform:translate(-50%,-50%) scale(1); opacity:1; }
+        #fbp-card.fbp-in { transform:scale(1); opacity:1; }
         #fbp-sparkle {
             font-size:22px; letter-spacing:4px;
             animation:fbpSpark .7s ease infinite alternate;
@@ -36281,6 +36303,8 @@ Pilih masakan:
                     showDialogue("PENCURI NASKAH", "Hehehe! Mau ambil buku ini? Langkahi dulu mayatku!", [{ text: "Maju sini!", action: closeDialogue }], 'images/monster-thief.png');
                 }, 500);
             }
+            // Expose ke global agar bisa dipanggil dari test mode di luar closure
+            window.startRuinsBattle = startRuinsBattle;
 
             function spawnEnemies() {
                 STATE.enemies = [];
@@ -44410,6 +44434,46 @@ const FV_TAMAN_IMAGES = {};
     });
 })();
 
+// ── SEKOLAH TIER IMAGES: sekolah-tier1.png, sekolah-tier2.png, sekolah-tier3.png ──
+const FV_SEKOLAH_IMAGES = {};
+(function(){
+    [1,2,3].forEach(function(t){
+        const img = new Image();
+        img.src = 'images/sekolah-tier' + t + '.png';
+        FV_SEKOLAH_IMAGES[t] = img;
+    });
+})();
+
+// ── PASAR TIER IMAGES: pasar-tier1.png, pasar-tier2.png, pasar-tier3.png ──
+const FV_PASAR_IMAGES = {};
+(function(){
+    [1,2,3].forEach(function(t){
+        const img = new Image();
+        img.src = 'images/pasar-tier' + t + '.png';
+        FV_PASAR_IMAGES[t] = img;
+    });
+})();
+
+// ── MENARA TIER IMAGES: menara-tier1.png, menara-tier2.png, menara-tier3.png ──
+const FV_MENARA_IMAGES = {};
+(function(){
+    [1,2,3].forEach(function(t){
+        const img = new Image();
+        img.src = 'images/menara-tier' + t + '.png';
+        FV_MENARA_IMAGES[t] = img;
+    });
+})();
+
+// ── ISTANA IMAGES: istana-tier1.png ──
+const FV_ISTANA_IMAGES = {};
+(function(){
+    [1].forEach(function(t){
+        const img = new Image();
+        img.src = 'images/istana-tier' + t + '.png';
+        FV_ISTANA_IMAGES[t] = img;
+    });
+})();
+
 // ── KAHYANGAN: Siang/Malam & Musim ─────────────────────────────
 function getFVTimeOfDay() {
     // Sinkron dengan STATE.time dunia manusia (0–2400)
@@ -44667,50 +44731,52 @@ function showFairyBirthPopup(fairy, buildingName) {
     const el = document.createElement('div');
     el.id = 'fairy-birth-popup';
     el.innerHTML = `
-        <div id="fbp-overlay" onclick="closeFairyBirthPopup()"></div>
-        <div id="fbp-card">
-            <div id="fbp-sparkle">🌟 ✨ 🌟</div>
-            <div id="fbp-title">🥚 Peri Baru Lahir!</div>
-            <div id="fbp-sub">dari ${genderLabel} di ${bname}</div>
+        <div id="fbp-overlay"></div>
+        <div id="fbp-scroll-wrap">
+            <div id="fbp-card">
+                <div id="fbp-sparkle">🌟 ✨ 🌟</div>
+                <div id="fbp-title">🥚 Peri Baru Lahir!</div>
+                <div id="fbp-sub">dari ${genderLabel} di ${bname}</div>
 
-            <img id="fbp-img"
-                src="${img}"
-                onerror="this.src='images/${fairy.gender==='girl'?'wening':'juna'}.png'"
-                alt="peri baru">
+                <img id="fbp-img"
+                    src="${img}"
+                    onerror="this.src='images/${fairy.gender==='girl'?'wening':'juna'}.png'"
+                    alt="peri baru">
 
-            <div style="display:flex;align-items:center;gap:8px;width:100%">
-                <span style="font-size:11px;font-weight:800;color:${rarityColor};background:${rarityColor}18;border:1.5px solid ${rarityColor}55;border-radius:20px;padding:2px 10px">${rarityLabel}</span>
-                <span style="font-size:11px;color:#a16207;font-weight:600">Total Stat: ${rarity}/90</span>
-            </div>
-
-            <div id="fbp-stats">
-                <div class="fbp-stat">
-                    <span>🧠 Intel</span>
-                    ${statBar(fairy.intel,'#60a5fa')}
-                    <span class="fbp-val">${fairy.intel}</span>
+                <div style="display:flex;align-items:center;gap:8px;width:100%">
+                    <span style="font-size:11px;font-weight:800;color:${rarityColor};background:${rarityColor}18;border:1.5px solid ${rarityColor}55;border-radius:20px;padding:2px 10px">${rarityLabel}</span>
+                    <span style="font-size:11px;color:#a16207;font-weight:600">Total Stat: ${rarity}/90</span>
                 </div>
-                <div class="fbp-stat">
-                    <span>⚡ Gesit</span>
-                    ${statBar(fairy.agility,'#fbbf24')}
-                    <span class="fbp-val">${fairy.agility}</span>
-                </div>
-                <div class="fbp-stat">
-                    <span>🌟 Semangat</span>
-                    ${statBar(fairy.spirit,'#f472b6')}
-                    <span class="fbp-val">${fairy.spirit}</span>
-                </div>
-            </div>
 
-            <div style="width:100%">
-                <div id="fbp-name-label">✏️ Beri Nama:</div>
-                <div id="fbp-name-row">
-                    <input id="fbp-name-input" type="text" value="${fairy.name}" maxlength="20" placeholder="Nama peri...">
+                <div id="fbp-stats">
+                    <div class="fbp-stat">
+                        <span>🧠 Intel</span>
+                        ${statBar(fairy.intel,'#60a5fa')}
+                        <span class="fbp-val">${fairy.intel}</span>
+                    </div>
+                    <div class="fbp-stat">
+                        <span>⚡ Gesit</span>
+                        ${statBar(fairy.agility,'#fbbf24')}
+                        <span class="fbp-val">${fairy.agility}</span>
+                    </div>
+                    <div class="fbp-stat">
+                        <span>🌟 Semangat</span>
+                        ${statBar(fairy.spirit,'#f472b6')}
+                        <span class="fbp-val">${fairy.spirit}</span>
+                    </div>
                 </div>
-                <div style="font-size:10px;color:#a16207;text-align:center;margin-top:3px">Nama bisa diubah lagi nanti dari menu Para Peri</div>
-            </div>
 
-            <div id="fbp-btns">
-                <button id="fbp-btn-ok" onclick="confirmFairyBirth('${fairy.id}')">💖 Sambut ke Kahyangan!</button>
+                <div style="width:100%">
+                    <div id="fbp-name-label">✏️ Beri Nama:</div>
+                    <div id="fbp-name-row">
+                        <input id="fbp-name-input" type="text" value="${fairy.name}" maxlength="20" placeholder="Nama peri...">
+                    </div>
+                    <div style="font-size:10px;color:#a16207;text-align:center;margin-top:3px">Nama bisa diubah lagi nanti dari menu Para Peri</div>
+                </div>
+
+                <div id="fbp-btns">
+                    <button id="fbp-btn-ok" onclick="confirmFairyBirth('${fairy.id}')">💖 Sambut ke Kahyangan!</button>
+                </div>
             </div>
         </div>
     `;
@@ -45484,13 +45550,19 @@ function updateFVActionBtn() {
     }
 
     // Cek bangunan selesai — enter building
+    // Titik referensi & jarak HARUS sama dengan glow "▼ Masuk" di drawFairyWorld (TS*3)
     const buildings = fv.buildings || [];
     for (const bldg of buildings) {
         const slot = FAIRY_SLOTS.find(s=>s.id===bldg.slotId);
         if (!slot) continue;
-        const bx = slot.x*TS + TS, by = slot.y*TS + TS;
-        if (Math.hypot(px-bx, py-by) < TS*2) {
-            const b = FAIRY_BUILDINGS[bldg.bid];
+        const bDef = FAIRY_BUILDINGS[bldg.bid]; if (!bDef) continue;
+        const bw2 = TS*(bDef.w||2), bh2 = TS*(bDef.h||2);
+        // Titik tengah hitbox — sama persis dengan bCx/bCy di drawFairyWorld
+        const bCx = slot.x*TS + bw2/2;
+        const bCy = slot.y*TS + bh2/2;
+        const dist = Math.hypot(fvPlayer.x + TS*0.5 - bCx, fvPlayer.y + TS*0.5 - bCy);
+        if (dist < TS*3) {
+            const b = bDef;
             btn.style.display='block';
             btn.textContent=`🚪 Masuk ${b?.emoji||'🏠'} ${(b?.name||'Bangunan').replace(/^[^\s]+\s/,'')}`;
             btn.onclick = () => openBuildingInterior(bldg, slot);
@@ -45721,188 +45793,169 @@ function drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t) {
 
     // ──────────────── SEKOLAH ────────────────
     } else if (bid==='sekolah_peri') {
-        wall('#fef9c3');
-        roof('#6366f1', cx, by-3, bx-3, bx+bw+3, by+bh*0.38);
-        ctx.fillStyle='#4f46e5'; ctx.beginPath(); ctx.roundRect(bx-3, by+bh*0.36, bw+6, bh*0.05, 1); ctx.fill();
-        // Papan tulis kecil di depan
-        ctx.fillStyle='#1e3a5f'; ctx.beginPath(); ctx.roundRect(cx-bw*0.18, by+bh*0.42, bw*0.36, bh*0.16, 2); ctx.fill();
-        ctx.fillStyle='#93c5fd'; ctx.font=`${bh*0.08}px serif`; ctx.textAlign='center';
-        ctx.fillText('📚', cx, by+bh*0.54); ctx.textAlign='left';
-        door('#4338ca', bw*0.24, bh*0.31);
-        window_('#4f46e5', bx+bw*0.08, by+bh*0.44);
-        window_('#4f46e5', bx+bw*0.68, by+bh*0.44);
-        // Bendera
-        ctx.fillStyle='#f1f5f9'; ctx.fillRect(cx+bw*0.2, by+bh*0.02, bw*0.05, bh*0.04);
-        ctx.fillStyle='#6366f1'; ctx.fillRect(cx+bw*0.2, by+bh*0.02, bw*0.11, bh*0.08);
-        ctx.strokeStyle='#4f46e5'; ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo(cx+bw*0.2+bw*0.025, by); ctx.lineTo(cx+bw*0.2+bw*0.025, by+bh*0.12); ctx.stroke();
-        outlineBldg('#6366f1');
-    } else if (bid==='sanggar_tari') {
-        wall('#fdf4ff');
-        roof('#9333ea', cx, by-5, bx-4, bx+bw+4, by+bh*0.36);
-        ctx.fillStyle='#7e22ce'; ctx.beginPath(); ctx.roundRect(bx-4, by+bh*0.34, bw+8, bh*0.05, 1); ctx.fill();
-        // Ornamen tari di dinding
-        ctx.fillStyle='rgba(167,139,250,0.3)';
-        ctx.beginPath(); ctx.arc(cx, by+bh*0.55, bw*0.2, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle='#a855f7'; ctx.font=`${bh*0.2}px serif`; ctx.textAlign='center';
-        ctx.fillText('🎭', cx, by+bh*0.62); ctx.textAlign='left';
-        door('#6b21a8', bw*0.25, bh*0.32);
-        window_('#9333ea', bx+bw*0.07, by+bh*0.44);
-        window_('#9333ea', bx+bw*0.67, by+bh*0.44);
-        outlineBldg('#9333ea');
-    } else if (bid==='akademi_agung') {
-        // Kuil / akademi besar
-        wall('#fefce8');
-        // Tiang-tiang
-        for(let i=0;i<4;i++) {
-            ctx.fillStyle='#e2e8f0';
-            ctx.beginPath(); ctx.roundRect(bx+bw*0.08+i*bw*0.24, by+bh*0.35, bw*0.08, bh*0.65, 2); ctx.fill();
-            ctx.strokeStyle='#94a3b8'; ctx.lineWidth=0.8;
-            ctx.beginPath(); ctx.roundRect(bx+bw*0.08+i*bw*0.24, by+bh*0.35, bw*0.08, bh*0.65, 2); ctx.stroke();
+        const imgSk1 = FV_SEKOLAH_IMAGES[1];
+        if (imgSk1 && imgSk1.complete && imgSk1.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgSk1,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            wall('#fef9c3');
+            roof('#6366f1', cx, by-3, bx-3, bx+bw+3, by+bh*0.38);
+            ctx.fillStyle='#4f46e5'; ctx.beginPath(); ctx.roundRect(bx-3, by+bh*0.36, bw+6, bh*0.05, 1); ctx.fill();
+            ctx.fillStyle='#1e3a5f'; ctx.beginPath(); ctx.roundRect(cx-bw*0.18, by+bh*0.42, bw*0.36, bh*0.16, 2); ctx.fill();
+            ctx.fillStyle='#93c5fd'; ctx.font=`${bh*0.08}px serif`; ctx.textAlign='center';
+            ctx.fillText('📚', cx, by+bh*0.54); ctx.textAlign='left';
+            door('#4338ca', bw*0.24, bh*0.31);
+            window_('#4f46e5', bx+bw*0.08, by+bh*0.44); window_('#4f46e5', bx+bw*0.68, by+bh*0.44);
+            outlineBldg('#6366f1');
         }
-        // Atap kuil
-        roof('#1d4ed8', cx, by-7, bx-5, bx+bw+5, by+bh*0.33);
-        roof('#2563eb', cx, by+bh*0.2, bx-2, bx+bw+2, by+bh*0.38);
-        ctx.fillStyle='#1e40af'; ctx.beginPath(); ctx.roundRect(bx-5, by+bh*0.31, bw+10, bh*0.04, 1); ctx.fill();
-        door('#1e3a8a', bw*0.26, bh*0.36);
-        // Lambang akademi
-        ctx.fillStyle='#fbbf24'; ctx.font=`bold ${bh*0.14}px serif`; ctx.textAlign='center';
-        ctx.fillText('🏛', cx, by+bh*0.3); ctx.textAlign='left';
-        outlineBldg('#2563eb');
+    } else if (bid==='sanggar_tari') {
+        const imgSk2 = FV_SEKOLAH_IMAGES[2];
+        if (imgSk2 && imgSk2.complete && imgSk2.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgSk2,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            wall('#fdf4ff');
+            roof('#9333ea', cx, by-5, bx-4, bx+bw+4, by+bh*0.36);
+            ctx.fillStyle='#7e22ce'; ctx.beginPath(); ctx.roundRect(bx-4, by+bh*0.34, bw+8, bh*0.05, 1); ctx.fill();
+            ctx.fillStyle='rgba(167,139,250,0.3)'; ctx.beginPath(); ctx.arc(cx, by+bh*0.55, bw*0.2, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='#a855f7'; ctx.font=`${bh*0.2}px serif`; ctx.textAlign='center';
+            ctx.fillText('🎭', cx, by+bh*0.62); ctx.textAlign='left';
+            door('#6b21a8', bw*0.25, bh*0.32);
+            window_('#9333ea', bx+bw*0.07, by+bh*0.44); window_('#9333ea', bx+bw*0.67, by+bh*0.44);
+            outlineBldg('#9333ea');
+        }
+    } else if (bid==='akademi_agung') {
+        const imgSk3 = FV_SEKOLAH_IMAGES[3];
+        if (imgSk3 && imgSk3.complete && imgSk3.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgSk3,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            wall('#fefce8');
+            for(let i=0;i<4;i++){ctx.fillStyle='#e2e8f0';ctx.beginPath();ctx.roundRect(bx+bw*0.08+i*bw*0.24,by+bh*0.35,bw*0.08,bh*0.65,2);ctx.fill();}
+            roof('#1d4ed8', cx, by-7, bx-5, bx+bw+5, by+bh*0.33);
+            roof('#2563eb', cx, by+bh*0.2, bx-2, bx+bw+2, by+bh*0.38);
+            door('#1e3a8a', bw*0.26, bh*0.36); outlineBldg('#2563eb');
+        }
 
     // ──────────────── PASAR ────────────────
     } else if (bid==='pasar_peri') {
-        wall('#fef3c7');
-        // Tenda pasar
-        ctx.fillStyle='#dc2626';
-        ctx.beginPath(); ctx.moveTo(bx-2,by+bh*0.42); ctx.lineTo(cx,by+bh*0.2); ctx.lineTo(bx+bw+2,by+bh*0.42); ctx.closePath(); ctx.fill();
-        // Stripe tenda
-        ctx.fillStyle='#fbbf24';
-        for(let i=0;i<5;i++) {
-            const tx2=bx+i*(bw/4.5);
-            ctx.beginPath(); ctx.moveTo(tx2,by+bh*0.42); ctx.lineTo(tx2+bw*0.06,by+bh*0.42);
-            ctx.lineTo(tx2+bw*0.1,by+bh*0.28); ctx.lineTo(tx2+bw*0.04,by+bh*0.28); ctx.closePath(); ctx.fill();
+        const imgPs1 = FV_PASAR_IMAGES[1];
+        if (imgPs1 && imgPs1.complete && imgPs1.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgPs1,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            wall('#fef3c7');
+            ctx.fillStyle='#dc2626'; ctx.beginPath(); ctx.moveTo(bx-2,by+bh*0.42); ctx.lineTo(cx,by+bh*0.2); ctx.lineTo(bx+bw+2,by+bh*0.42); ctx.closePath(); ctx.fill();
+            ctx.fillStyle='#7c3aed'; ctx.beginPath(); ctx.roundRect(cx-bw*0.25,by+bh*0.55,bw*0.5,bh*0.18,2); ctx.fill();
+            ctx.fillStyle='#fde68a'; ctx.font=`${bh*0.12}px serif`; ctx.textAlign='center';
+            ctx.fillText('🛒', cx, by+bh*0.68); ctx.textAlign='left';
+            outlineBldg('#dc2626');
         }
-        // Gerai jualan
-        ctx.fillStyle='#7c3aed';
-        ctx.beginPath(); ctx.roundRect(cx-bw*0.25, by+bh*0.55, bw*0.5, bh*0.18, 2); ctx.fill();
-        ctx.fillStyle='#fde68a'; ctx.font=`${bh*0.12}px serif`; ctx.textAlign='center';
-        ctx.fillText('🛒', cx, by+bh*0.68); ctx.textAlign='left';
-        outlineBldg('#dc2626');
     } else if (bid==='balai_dagang') {
-        wall('#fff7ed');
-        roof('#ea580c', cx, by-4, bx-3, bx+bw+3, by+bh*0.37);
-        ctx.fillStyle='#c2410c'; ctx.beginPath(); ctx.roundRect(bx-3, by+bh*0.35, bw+6, bh*0.05, 1); ctx.fill();
-        // Toko sign
-        ctx.fillStyle='#1e3a5f'; ctx.beginPath(); ctx.roundRect(cx-bw*0.22, by+bh*0.4, bw*0.44, bh*0.16, 3); ctx.fill();
-        ctx.fillStyle='#fde68a'; ctx.font=`${bh*0.11}px serif`; ctx.textAlign='center';
-        ctx.fillText('🏪', cx, by+bh*0.53); ctx.textAlign='left';
-        door('#7c2d12', bw*0.24, bh*0.33);
-        window_('#ea580c', bx+bw*0.07, by+bh*0.44);
-        window_('#ea580c', bx+bw*0.67, by+bh*0.44);
-        outlineBldg('#ea580c');
-    } else if (bid==='pusat_niaga') {
-        wall('#fefce8');
-        // Gedung tinggi
-        ctx.fillStyle='#d4a72c';
-        ctx.beginPath(); ctx.roundRect(bx+bw*0.1, by+bh*0.05, bw*0.8, bh*0.35, [4,4,0,0]); ctx.fill();
-        // Jendela berjajar
-        for(let r=0;r<3;r++) for(let c=0;c<3;c++) {
-            const glow2 = 0.4+0.4*Math.sin(t/600+r+c);
-            ctx.fillStyle=`rgba(254,240,138,${glow2})`;
-            ctx.beginPath(); ctx.roundRect(bx+bw*0.17+c*bw*0.24, by+bh*0.1+r*bh*0.1, bw*0.14, bh*0.07, 1); ctx.fill();
+        const imgPs2 = FV_PASAR_IMAGES[2];
+        if (imgPs2 && imgPs2.complete && imgPs2.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgPs2,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            wall('#fff7ed');
+            roof('#ea580c', cx, by-4, bx-3, bx+bw+3, by+bh*0.37);
+            ctx.fillStyle='#1e3a5f'; ctx.beginPath(); ctx.roundRect(cx-bw*0.22,by+bh*0.4,bw*0.44,bh*0.16,3); ctx.fill();
+            ctx.fillStyle='#fde68a'; ctx.font=`${bh*0.11}px serif`; ctx.textAlign='center';
+            ctx.fillText('🏪', cx, by+bh*0.53); ctx.textAlign='left';
+            door('#7c2d12', bw*0.24, bh*0.33); outlineBldg('#ea580c');
         }
-        // Tanda emas
-        ctx.fillStyle='#b45309'; ctx.beginPath(); ctx.roundRect(bx, by+bh*0.38, bw, bh*0.62, [0,0,4,4]); ctx.fill();
-        ctx.fillStyle='#fbbf24'; ctx.font=`${bh*0.18}px serif`; ctx.textAlign='center';
-        ctx.fillText('🏦', cx, by+bh*0.7); ctx.textAlign='left';
-        outlineBldg('#b45309');
+    } else if (bid==='pusat_niaga') {
+        const imgPs3 = FV_PASAR_IMAGES[3];
+        if (imgPs3 && imgPs3.complete && imgPs3.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgPs3,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            wall('#fefce8');
+            ctx.fillStyle='#d4a72c'; ctx.beginPath(); ctx.roundRect(bx+bw*0.1,by+bh*0.05,bw*0.8,bh*0.35,[4,4,0,0]); ctx.fill();
+            ctx.fillStyle='#b45309'; ctx.beginPath(); ctx.roundRect(bx,by+bh*0.38,bw,bh*0.62,[0,0,4,4]); ctx.fill();
+            ctx.fillStyle='#fbbf24'; ctx.font=`${bh*0.18}px serif`; ctx.textAlign='center';
+            ctx.fillText('🏦', cx, by+bh*0.7); ctx.textAlign='left';
+            outlineBldg('#b45309');
+        }
 
     // ──────────────── MENARA ────────────────
     } else if (bid==='menara_kecil') {
-        const mw=bw*0.45, mx2=cx-mw/2;
-        // Badan menara
-        ctx.fillStyle='#d1d5db';
-        ctx.beginPath(); ctx.roundRect(mx2, by+bh*0.25, mw, bh*0.75, 3); ctx.fill();
-        // Batu pattern
-        ctx.fillStyle='rgba(100,116,139,0.3)';
-        for(let r=0;r<5;r++) {
-            const ox=(r%2)*mw*0.25;
-            for(let c=0;c<2;c++) {
-                ctx.beginPath(); ctx.roundRect(mx2+mw*0.05+c*mw*0.45+ox, by+bh*0.3+r*bh*0.13, mw*0.37, bh*0.10, 1); ctx.fill();
-            }
+        const imgMn1 = FV_MENARA_IMAGES[1];
+        if (imgMn1 && imgMn1.complete && imgMn1.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgMn1,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            const mw=bw*0.45, mx2=cx-mw/2;
+            ctx.fillStyle='#d1d5db'; ctx.beginPath(); ctx.roundRect(mx2,by+bh*0.25,mw,bh*0.75,3); ctx.fill();
+            ctx.fillStyle='#6b7280'; ctx.beginPath(); ctx.moveTo(cx,by); ctx.lineTo(mx2-2,by+bh*0.27); ctx.lineTo(mx2+mw+2,by+bh*0.27); ctx.closePath(); ctx.fill();
+            const glCandle=0.5+0.4*Math.sin(t/400);
+            ctx.fillStyle=`rgba(254,240,138,${glCandle})`; ctx.beginPath(); ctx.arc(cx,by+bh*0.45,mw*0.2,0,Math.PI*2); ctx.fill();
+            outlineBldg('#6b7280');
         }
-        // Puncak lancip
-        ctx.fillStyle='#6b7280';
-        ctx.beginPath(); ctx.moveTo(cx,by); ctx.lineTo(mx2-2,by+bh*0.27); ctx.lineTo(mx2+mw+2,by+bh*0.27); ctx.closePath(); ctx.fill();
-        // Jendela bulat
-        const glCandle = 0.5+0.4*Math.sin(t/400);
-        ctx.fillStyle=`rgba(254,240,138,${glCandle})`;
-        ctx.beginPath(); ctx.arc(cx, by+bh*0.45, mw*0.2, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle='#6b7280'; ctx.lineWidth=1.5;
-        ctx.beginPath(); ctx.arc(cx, by+bh*0.45, mw*0.2, 0, Math.PI*2); ctx.stroke();
-        outlineBldg('#6b7280');
     } else if (bid==='menara_wilis') {
-        const mw=bw*0.5, mx2=cx-mw/2;
-        ctx.fillStyle='#c7d2fe';
-        ctx.beginPath(); ctx.roundRect(mx2, by+bh*0.2, mw, bh*0.8, 3); ctx.fill();
-        ctx.fillStyle='rgba(99,102,241,0.2)';
-        for(let r=0;r<6;r++) {
-            ctx.beginPath(); ctx.roundRect(mx2+mw*0.08, by+bh*0.25+r*bh*0.12, mw*0.8, bh*0.08, 1); ctx.fill();
+        const imgMn2 = FV_MENARA_IMAGES[2];
+        if (imgMn2 && imgMn2.complete && imgMn2.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgMn2,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            const mw=bw*0.5, mx2=cx-mw/2;
+            ctx.fillStyle='#c7d2fe'; ctx.beginPath(); ctx.roundRect(mx2,by+bh*0.2,mw,bh*0.8,3); ctx.fill();
+            ctx.fillStyle='#4f46e5'; ctx.beginPath(); ctx.moveTo(cx,by-2); ctx.lineTo(mx2-3,by+bh*0.22); ctx.lineTo(mx2+mw+3,by+bh*0.22); ctx.closePath(); ctx.fill();
+            const glW=0.6+0.4*Math.sin(t/350);
+            ctx.fillStyle=`rgba(199,210,254,${glW})`; ctx.beginPath(); ctx.arc(cx,by+bh*0.4,mw*0.22,0,Math.PI*2); ctx.fill();
+            outlineBldg('#6366f1');
         }
-        // Atap menara bintang
-        ctx.fillStyle='#4f46e5';
-        ctx.beginPath(); ctx.moveTo(cx,by-2); ctx.lineTo(mx2-3,by+bh*0.22); ctx.lineTo(mx2+mw+3,by+bh*0.22); ctx.closePath(); ctx.fill();
-        const glW = 0.6+0.4*Math.sin(t/350);
-        ctx.fillStyle=`rgba(199,210,254,${glW})`;
-        ctx.beginPath(); ctx.arc(cx, by+bh*0.4, mw*0.22, 0, Math.PI*2); ctx.fill();
-        // Bintang berputar
-        ctx.fillStyle='#fbbf24'; ctx.font=`${mw*0.5}px serif`; ctx.textAlign='center';
-        ctx.save(); ctx.translate(cx,by+bh*0.4); ctx.rotate(Math.sin(t/2000)*0.5); ctx.fillText('✨',0,mw*0.15); ctx.restore();
-        ctx.textAlign='left';
-        outlineBldg('#6366f1');
     } else if (bid==='menara_cahaya') {
-        const mw=bw*0.5, mx2=cx-mw/2;
-        const mGrd = ctx.createLinearGradient(mx2, by, mx2+mw, by+bh);
-        mGrd.addColorStop(0,'#fef9c3'); mGrd.addColorStop(0.5,'#fde68a'); mGrd.addColorStop(1,'#fbbf24');
-        ctx.fillStyle=mGrd;
-        ctx.beginPath(); ctx.roundRect(mx2, by+bh*0.18, mw, bh*0.82, 3); ctx.fill();
-        // Cahaya berputar di puncak
-        const glMC = 0.7+0.3*Math.sin(t/300);
-        const mcGrd = ctx.createRadialGradient(cx,by+bh*0.25,0,cx,by+bh*0.25,mw*1.5);
-        mcGrd.addColorStop(0,`rgba(254,240,138,${glMC})`);
-        mcGrd.addColorStop(1,'rgba(251,191,36,0)');
-        ctx.fillStyle=mcGrd; ctx.beginPath(); ctx.arc(cx,by+bh*0.25,mw*1.5,0,Math.PI*2); ctx.fill();
-        // Puncak emas
-        ctx.fillStyle='#d97706';
-        ctx.beginPath(); ctx.moveTo(cx,by-5); ctx.lineTo(mx2-3,by+bh*0.2); ctx.lineTo(mx2+mw+3,by+bh*0.2); ctx.closePath(); ctx.fill();
-        for(let i=0;i<5;i++) {
-            const ang=i*Math.PI*2/5+t/1200;
-            ctx.fillStyle='#fbbf24'; ctx.beginPath();
-            ctx.arc(cx+Math.cos(ang)*mw*0.55, by+bh*0.55+Math.sin(ang)*bh*0.18, 3, 0, Math.PI*2); ctx.fill();
+        const imgMn3 = FV_MENARA_IMAGES[3];
+        if (imgMn3 && imgMn3.complete && imgMn3.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgMn3,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            const mw=bw*0.5, mx2=cx-mw/2;
+            const mGrd=ctx.createLinearGradient(mx2,by,mx2+mw,by+bh);
+            mGrd.addColorStop(0,'#fef9c3'); mGrd.addColorStop(1,'#fbbf24');
+            ctx.fillStyle=mGrd; ctx.beginPath(); ctx.roundRect(mx2,by+bh*0.18,mw,bh*0.82,3); ctx.fill();
+            ctx.fillStyle='#d97706'; ctx.beginPath(); ctx.moveTo(cx,by-5); ctx.lineTo(mx2-3,by+bh*0.2); ctx.lineTo(mx2+mw+3,by+bh*0.2); ctx.closePath(); ctx.fill();
+            outlineBldg('#d97706');
         }
-        outlineBldg('#d97706');
 
     // ──────────────── ISTANA / LEGACY ────────────────
     } else if (bid==='istana_mini') {
-        wall('#fef9c3');
-        // Menara samping
-        [[bx,by+bh*0.15,bw*0.22],[bx+bw*0.78,by+bh*0.15,bw*0.22]].forEach(([tx2,ty2,tw2])=>{
-            ctx.fillStyle='#e2e8f0'; ctx.beginPath(); ctx.roundRect(tx2, ty2, tw2, bh*0.85, 2); ctx.fill();
-            ctx.fillStyle='#94a3b8'; ctx.beginPath(); ctx.moveTo(tx2,ty2); ctx.lineTo(tx2+tw2/2,by); ctx.lineTo(tx2+tw2,ty2); ctx.closePath(); ctx.fill();
-        });
-        wall('#fef9c3', bw*0.2, bh*0.28, bw*0.6, bh*0.72, 3);
-        roof('#7c3aed', cx, by+bh*0.15, bx+bw*0.18, bx+bw*0.82, by+bh*0.35);
-        door('#4c1d95', bw*0.22, bh*0.3, cx-bw*0.11);
-        // Bendera
-        for(let flag=0;flag<3;flag++) {
-            const fx3=[bx+bw*0.11,cx,bx+bw*0.89][flag];
-            ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1;
-            ctx.beginPath(); ctx.moveTo(fx3, by); ctx.lineTo(fx3, by+bh*0.18); ctx.stroke();
-            ctx.fillStyle=['#dc2626','#7c3aed','#dc2626'][flag];
-            ctx.beginPath(); ctx.moveTo(fx3,by); ctx.lineTo(fx3+bw*0.1,by+bh*0.05); ctx.lineTo(fx3,by+bh*0.1); ctx.closePath(); ctx.fill();
+        const imgIs1 = FV_ISTANA_IMAGES[1];
+        if (imgIs1 && imgIs1.complete && imgIs1.naturalWidth > 0) {
+            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgIs1,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            wall('#fef9c3');
+            [[bx,by+bh*0.15,bw*0.22],[bx+bw*0.78,by+bh*0.15,bw*0.22]].forEach(([tx2,ty2,tw2])=>{
+                ctx.fillStyle='#e2e8f0'; ctx.beginPath(); ctx.roundRect(tx2,ty2,tw2,bh*0.85,2); ctx.fill();
+                ctx.fillStyle='#94a3b8'; ctx.beginPath(); ctx.moveTo(tx2,ty2); ctx.lineTo(tx2+tw2/2,by); ctx.lineTo(tx2+tw2,ty2); ctx.closePath(); ctx.fill();
+            });
+            wall('#fef9c3', bw*0.2, bh*0.28, bw*0.6, bh*0.72, 3);
+            roof('#7c3aed', cx, by+bh*0.15, bx+bw*0.18, bx+bw*0.82, by+bh*0.35);
+            door('#4c1d95', bw*0.22, bh*0.3, cx-bw*0.11);
+            outlineBldg('#7c3aed');
         }
-        outlineBldg('#7c3aed');
     } else {
         // Default fallback — kotak warna
         const bgC=['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
@@ -46677,8 +46730,8 @@ function openRaraWilisDialog() {
         setTimeout(() => closeFairyVillage(), 40);
     }});
 
-    // TEST MODE: tombol test kelahiran
-    if (STATE.player.sylvariaQuestComplete && (fv.resources.debu >= 9000 || STATE.freeRoamMode)) {
+    // TEST MODE: tombol test kelahiran — muncul jika isTestMode ATAU freeRoamMode aktif
+    if (fv.isTestMode || STATE.freeRoamMode) {
         opts.push({ text: '🥚 [TEST] Lahirkan Peri Baru', action: testFairyBirth });
     }
 
@@ -47347,18 +47400,20 @@ const FVBI_BG = {
     kolam_kristal:   'images/sendang-tier1.png',
     kolam_agung:     'images/sendang-tier2.png',
     telaga_nirmala:  'images/sendang-tier3.png',
-    // Sekolah
-    sekolah_peri:    'images/kayangan.png',
-    sanggar_tari:    'images/kayangan.png',
-    akademi_agung:   'images/kayangan.png',
-    // Pasar
-    pasar_peri:      'images/kayangan.png',
-    balai_dagang:    'images/kayangan.png',
-    pusat_niaga:     'images/kayangan.png',
-    // Menara
-    menara_kecil:    'images/kayangan.png',
-    menara_wilis:    'images/kayangan.png',
-    menara_cahaya:   'images/kayangan.png',
+    // Sekolah — pakai gambar sekolah-tier
+    sekolah_peri:    'images/sekolah-tier1.png',
+    sanggar_tari:    'images/sekolah-tier2.png',
+    akademi_agung:   'images/sekolah-tier3.png',
+    // Pasar — pakai gambar pasar-tier
+    pasar_peri:      'images/pasar-tier1.png',
+    balai_dagang:    'images/pasar-tier2.png',
+    pusat_niaga:     'images/pasar-tier3.png',
+    // Menara — pakai gambar menara-tier
+    menara_kecil:    'images/menara-tier1.png',
+    menara_wilis:    'images/menara-tier2.png',
+    menara_cahaya:   'images/menara-tier3.png',
+    // Istana
+    istana_mini:     'images/istana-tier1.png',
 };
 
 // Slot index sedang di-assign
@@ -47809,6 +47864,7 @@ function openFairyTestMode(){
     fv.buildQueue = [];
     fv.tutorialDone = true;
     fv.fvTutorialDone = true; // skip tutorial di test mode
+    fv.isTestMode = true;     // tombol test selalu muncul di menu Rara Wilis
     refreshFairyVillageMap();
     showToast('🧚 TEST MODE — Masuk Kahyangan Wilis! (Gunakan menu Rara Wilis → Test Kelahiran)');
     openFairyVillage();
@@ -47816,7 +47872,9 @@ function openFairyTestMode(){
 
 // ══════════════════════════════════════════════════════════════
 // 👹 TEST MODE — MONSTER PENCURI SKRIPSI / IJAZAH
-// Masuk langsung ke ruins_battle dengan stat & inventory siap tempur
+// ══════════════════════════════════════════════════════════════
+// 👹 TEST MODE — MONSTER PENCURI SKRIPSI / IJAZAH
+// Alur: set quest → monster muncul di peta → teleport dekat → klik → battle
 // ══════════════════════════════════════════════════════════════
 function openSkripsiThiefTestMode() {
     const p = STATE.player;
@@ -47830,54 +47888,54 @@ function openSkripsiThiefTestMode() {
     if (!p.spriteIdle) selectGender(p.gender || 'boy', true);
     if (!p.name || !p.name.trim()) p.name = document.getElementById('hud-name')?.textContent?.trim() || 'Arsa';
 
-    // Tutup semua dialog/modal yang terbuka
+    // Tutup semua dialog/modal
     const dialogBox = document.getElementById('dialogue-wrapper');
     if (dialogBox) dialogBox.style.display = 'none';
     if (typeof closeFairyVillage === 'function') closeFairyVillage();
 
-    // --- 2. Boost stat agar bisa bertarung ---
-    p.hp        = p.maxHp = 200;
-    p.energy    = 100;
-    p.str       = (p.str    || 0) < 30 ? 30 : p.str;
-    p.int       = (p.int    || 0) < 20 ? 20 : p.int;
-    p.level     = (p.level  || 1) < 5  ? 5  : p.level;
-    p.role      = p.role || 'student';
-    p.attackCooldown = 0;
-    p.skillCooldown  = 0;
-    p.invincible     = false;
-    p.damageCooldown = 0;
-
-    // Pastikan tidak sedang Pingsan/GameOver
+    // --- 2. Boost stat ---
+    p.hp = p.maxHp = 200;
+    p.energy = 100;
+    p.str   = (p.str  || 0) < 30 ? 30 : p.str;
+    p.int   = (p.int  || 0) < 20 ? 20 : p.int;
+    p.level = (p.level|| 1) < 5  ? 5  : p.level;
+    p.role  = p.role || 'student';
+    p.attackCooldown = 0; p.skillCooldown = 0;
+    p.invincible = false; p.damageCooldown = 0;
     if (typeof STATE.enemies !== 'undefined') STATE.enemies = [];
 
-    // --- 3. Set quest flag agar monster_skripsi muncul ---
+    // --- 3. Set activeQuest = 'find_draft' agar monster_skripsi muncul di peta ---
+    //    (renderer cek STATE.player.activeQuest, bukan p.quests)
+    p.activeQuest = 'find_draft';
     if (!p.quests) p.quests = {};
     p.quests['find_draft'] = { status: 'active', day: STATE.day };
 
-    // --- 4. Teleport ke map village dulu (biar state bersih) ---
+    // --- 4. Teleport ke dekat monster (x:50,y:13 di village) ---
     STATE.location = 'village';
-    p.x = 48 * TILE_SIZE;
-    p.y = 14 * TILE_SIZE;
+    p.x = 47 * TILE_SIZE;
+    p.y = 13 * TILE_SIZE;
 
-    // --- 5. Tampilkan dialog intro lalu langsung masuk battle ---
+    // --- 5. Update HUD & tampilkan toast petunjuk ---
+    if (typeof updateHUD === 'function') updateHUD();
+    showToast('👹 Monster Pencuri Naskah muncul! Dekati dan klik untuk battle!');
+
+    // --- 6. Setelah 600ms tampilkan dialog pengantar singkat ---
     setTimeout(() => {
         showDialogue(
             '👹 TEST MODE — PENCURI NASKAH',
             '🔧 Stat sudah di-boost:\n' +
-            `• HP: ${p.hp}/${p.maxHp}\n` +
-            `• STR: ${p.str} | INT: ${p.int}\n` +
-            `• Energi: ${p.energy}\n\n` +
-            '📋 Quest "Cari Draft Skripsi" sudah aktif.\n\n' +
-            'Klik "Langsung Battle!" untuk masuk arena atau "Pergi ke Lokasi" untuk melihat monster_skripsi di peta dulu.',
+            `• HP: ${p.hp}/${p.maxHp}  STR: ${p.str}  INT: ${p.int}\n\n` +
+            '👁️ Monster Pencuri Naskah sudah muncul di peta!\n' +
+            'Dekati lalu klik untuk mulai battle.\n\n' +
+            'Atau tekan "⚔️ Langsung Battle!" untuk skip ke arena.',
             [
                 {
                     text: '⚔️ Langsung Battle!',
                     action: () => {
                         closeDialogue();
-                        // Langsung jalankan startRuinsBattle
                         setTimeout(() => {
-                            if (typeof startRuinsBattle === 'function') {
-                                startRuinsBattle();
+                            if (typeof window.startRuinsBattle === 'function') {
+                                window.startRuinsBattle();
                             } else {
                                 showToast('⚠️ startRuinsBattle tidak ditemukan!');
                             }
@@ -47885,23 +47943,16 @@ function openSkripsiThiefTestMode() {
                     }
                 },
                 {
-                    text: '🗺️ Pergi ke Lokasi Monster',
+                    text: '🗺️ Oke, Cari Dulu',
                     action: () => {
                         closeDialogue();
-                        // Teleport ke area dekat monster_skripsi di village
-                        STATE.location = 'village';
-                        p.x = 48 * TILE_SIZE;
-                        p.y = 12 * TILE_SIZE;
-                        showToast('📍 Cari NPC Pencuri Naskah di timur laut peta! (sekitar x:50, y:13)');
+                        showToast('📍 Monster ada di sekitar x:50, y:13 — timur laut peta!');
                     }
-                },
-                { text: 'Batal', action: closeDialogue }
+                }
             ],
             'images/monster-thief.png'
         );
-    }, 300);
-
-    showToast('👹 TEST MODE Skripsi aktif — Stat sudah di-boost!');
+    }, 600);
 }
 
 // ── TEST: Trigger kelahiran peri manual (dari menu Rara Wilis di test mode) ──
