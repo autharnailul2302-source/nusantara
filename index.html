@@ -5243,8 +5243,9 @@
         #fv-tutorial {
             position: fixed; inset: 0; z-index: 9800;
             background: rgba(5,2,20,0.88);
-            display: none; align-items: flex-end; justify-content: center;
-            padding-bottom: 12px; box-sizing: border-box;
+            display: none; align-items: flex-start; justify-content: center;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding: 16px 0 32px; box-sizing: border-box;
             backdrop-filter: blur(3px);
         }
         #fv-tutorial.active { display: flex; }
@@ -5257,6 +5258,8 @@
             box-shadow: 0 0 50px rgba(124,58,237,.45), 0 8px 32px rgba(0,0,0,.6);
             overflow: hidden;
             animation: fvTutSlide .3s cubic-bezier(.34,1.4,.64,1);
+            margin: auto;
+            flex-shrink: 0;
         }
         @keyframes fvTutSlide {
             from { transform: translateY(60px); opacity:0; }
@@ -9078,19 +9081,19 @@
                             }
                         } else if (STATE.location === 'dungeon') {
                             this.stopAmbience();
-                            // Logika asli: boss → boss.mp3, else → dungeon.mp3
-                            // battle.mp3 hanya dipakai jika file ada (opsional enhancement)
                             if (STATE.bossSpawned) {
                                 this.playBGM('boss');
                             } else if (this.tracks.battle && this.tracks.battle.src &&
                                        this.tracks.battle.src !== window.location.href &&
                                        this.tracks.battle.readyState > 0) {
-                                // Hanya pakai battle.mp3 jika file benar-benar ada dan sudah loaded
                                 this.playBGM('battle');
                             } else {
-                                // Fallback ke dungeon.mp3 (selalu ada)
                                 this.playBGM('dungeon');
                             }
+                        } else if (STATE.location === 'ruins_battle') {
+                            // Monster Pencuri Skripsi — selalu pakai boss music
+                            this.stopAmbience();
+                            this.playBGM('boss');
                         } else if (STATE.location === 'fairyVillage') {
                             this.stopAmbience();
                             // Jangan override insideperi saat popup interior bangunan sedang terbuka
@@ -23025,7 +23028,7 @@ ${reward.tip}`,
                 let actionIcon = '💬';
 
                 // 1. Cek Dungeon (Selalu Muncul untuk Serang)
-                if (STATE.location === 'dungeon') {
+                if (STATE.location === 'dungeon' || STATE.location === 'ruins_battle') {
                     showActionButton = true;
                     actionIcon = '⚔️';
                 }
@@ -23723,7 +23726,7 @@ ${reward.tip}`,
                 else if (tile === 8 && STATE.location === 'house') {
                 }
 
-                if (STATE.location === 'dungeon') {
+                if (STATE.location === 'dungeon' || STATE.location === 'ruins_battle') {
                     // FIX: Jangan update musuh saat dialogue/tutorial sedang terbuka
                     const _dialogueOpen = (function() {
                         const dw = document.getElementById('dialogue-wrapper');
@@ -26555,7 +26558,7 @@ ${reward.tip}`,
                     return;
                 }
 
-                if (STATE.location === 'dungeon') {
+                if (STATE.location === 'dungeon' || STATE.location === 'ruins_battle') {
                     if (STATE.player.attackCooldown <= 0) {
                         // UPDATE: Integrasi Stamina untuk Bertarung
                         const attackCost = 2; // Biaya stamina per pukulan
@@ -37672,7 +37675,7 @@ Pilih masakan:
                     });
                 });
 
-                if (STATE.location === 'dungeon') {
+                if (STATE.location === 'dungeon' || STATE.location === 'ruins_battle') {
                     STATE.enemies.forEach(e => {
                         renderList.push({
                             type: 'enemy',
@@ -40297,6 +40300,7 @@ Pilih masakan:
                 const labelEl = document.getElementById('minimap-label');
                 if (labelEl) {
                     if (STATE.location === 'dungeon') labelEl.innerText = `LV ${STATE.dungeonLevel}`;
+                    else if (STATE.location === 'ruins_battle') labelEl.innerText = '👹 PENCURI NASKAH';
                     else if (STATE.location === 'village') labelEl.innerText = "DESA";
                     else if (STATE.location === 'fairyVillage') labelEl.innerText = "🧚 KAHYANGAN WILIS";
                     else {
@@ -40370,8 +40374,8 @@ Pilih masakan:
                     });
                 }
 
-                // 4. DRAW ENEMIES (Dungeon Only)
-                if (STATE.location === 'dungeon') {
+                // 4. DRAW ENEMIES (Dungeon + Ruins Battle)
+                if (STATE.location === 'dungeon' || STATE.location === 'ruins_battle') {
                     STATE.enemies.forEach(e => {
                         const ex = e.x * scaleX;
                         const ey = e.y * scaleY;
@@ -45268,6 +45272,22 @@ function openFairyVillage() {
     const _dw = document.getElementById('dialogue-wrapper');
     if (_dw) _dw.style.display = 'none';
 
+    // ── SET fvCanvas ke gameCanvas utama & start loop ────────────
+    const _gc = document.getElementById('gameCanvas');
+    if (_gc) {
+        fvCanvas = _gc;
+        fvCtx    = _gc.getContext('2d');
+    }
+    fvPlayer = { x: (FV_RARA_POS.x+3)*TS, y: (FV_RARA_POS.y+3)*TS, facing:'down' };
+    fvCam    = { x:0, y:0 };
+    fvKeys   = {};
+    fvActiveDialog = null;
+    fvParticles    = [];
+    fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
+    setupFairyInput();
+    startFairyLoop();
+    updateFVHUD();
+
     // ── TUTORIAL PERTAMA KALI ──────────────────────────────────────
     // FIX: Tunda 1000ms agar canvas sudah ter-render sebelum tutorial muncul
     if (!fv.fvTutorialDone) {
@@ -45308,6 +45328,9 @@ function closeFairyVillage() {
     STATE.player.y  = window._fvPrevY !== undefined ? window._fvPrevY : 600;
     // 7. Reset input agar tidak ada tombol tertahan
     if (typeof resetInputs === 'function') resetInputs();
+    // 7b. Stop fairyLoop dan clear fvCanvas agar tidak bentrok dengan main render
+    stopFairyLoop();
+    fvCanvas = null; fvCtx = null;
     // 8. FIX: Stop musik pulau peri saat keluar — pause track aktual + reset currentTrack
     if (typeof AudioService !== 'undefined') {
         const stopTrack = (name) => {
@@ -45372,7 +45395,7 @@ function stopFairyLoop() {
 }
 
 function fairyLoop(ts) {
-    if (!fvCanvas || document.getElementById('fairy-village-modal').style.display==='none') { FVG=null; return; }
+    if (!fvCanvas || STATE.location !== 'fairyVillage') { FVG=null; return; }
     const dt = Math.min(32, ts - fvLastTime);
     fvLastTime = ts;
     checkBuildQueue();
@@ -45489,18 +45512,30 @@ function updateFairyPlayer(dt) {
         const bDef = FAIRY_BUILDINGS[bid]; if(!bDef) return;
         const bx_ = slot.x*TS, by_ = slot.y*TS;
         const bw_ = TS*(bDef.w||2), bh_ = TS*(bDef.h||2);
-        // Hitbox bangunan = area bawah 60% (kaki bangunan, bukan atap)
-        const bHitX = bx_ + bw_*0.05;
-        const bHitY = by_ + bh_*0.4;
-        const bHitW = bw_*0.9;
-        const bHitH = bh_*0.6;
 
-        const ox = _pHitX + _pw > bHitX && _pHitX < bHitX+bHitW &&
-                   _pHitYc + _ph > bHitY && _pHitYc < bHitY+bHitH;
-        const oy = _pHitXc + _pw > bHitX && _pHitXc < bHitX+bHitW &&
-                   _pHitY + _ph > bHitY && _pHitY < bHitY+bHitH;
-        if (ox) _blockedX = true;
-        if (oy) _blockedY = true;
+        // Hitbox dibagi 3 zona dengan CELAH PINTU di tengah bawah (35% lebar)
+        const doorW = bw_ * 0.35;
+        const doorX = bx_ + bw_*0.5 - doorW*0.5;
+
+        // Zona atas (atap + dinding atas)
+        const topHitX = bx_ + bw_*0.05, topHitY = by_ + bh_*0.4;
+        const topHitW = bw_*0.9,        topHitH = bh_*0.35;
+        // Zona kiri bawah
+        const leftHitX = bx_ + bw_*0.05, leftHitY = by_ + bh_*0.75;
+        const leftHitW = doorX - leftHitX, leftHitH = bh_*0.25;
+        // Zona kanan bawah
+        const rightHitX = doorX + doorW,  rightHitY = by_ + bh_*0.75;
+        const rightHitW = (bx_+bw_*0.95) - rightHitX, rightHitH = bh_*0.25;
+
+        const oxTop = _pHitX+_pw>topHitX && _pHitX<topHitX+topHitW && _pHitYc+_ph>topHitY && _pHitYc<topHitY+topHitH;
+        const oyTop = _pHitXc+_pw>topHitX && _pHitXc<topHitX+topHitW && _pHitY+_ph>topHitY && _pHitY<topHitY+topHitH;
+        const oxL = leftHitW>0 && _pHitX+_pw>leftHitX && _pHitX<leftHitX+leftHitW && _pHitYc+_ph>leftHitY && _pHitYc<leftHitY+leftHitH;
+        const oyL = leftHitW>0 && _pHitXc+_pw>leftHitX && _pHitXc<leftHitX+leftHitW && _pHitY+_ph>leftHitY && _pHitY<leftHitY+leftHitH;
+        const oxR = rightHitW>0 && _pHitX+_pw>rightHitX && _pHitX<rightHitX+rightHitW && _pHitYc+_ph>rightHitY && _pHitYc<rightHitY+rightHitH;
+        const oyR = rightHitW>0 && _pHitXc+_pw>rightHitX && _pHitXc<rightHitX+rightHitW && _pHitY+_ph>rightHitY && _pHitY<rightHitY+rightHitH;
+
+        if (oxTop||oxL||oxR) _blockedX = true;
+        if (oyTop||oyL||oyR) _blockedY = true;
     });
 
     // Pohon Energi collision
@@ -45730,65 +45765,48 @@ function drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t) {
 
     // ──────────────── KOLAM ────────────────
     } else if (bid==='kolam_kristal') {
-        // Badan kolam oval
-        ctx.fillStyle='#e0f2fe';
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.68, bw*0.4, bh*0.28, 0, 0, Math.PI*2); ctx.fill();
-        // Air berkilau
-        const shimmer = 0.4+0.3*Math.sin(t/500);
-        ctx.fillStyle=`rgba(56,189,248,${shimmer})`;
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.68, bw*0.32, bh*0.21, 0, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle='#0284c7'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.68, bw*0.4, bh*0.28, 0, 0, Math.PI*2); ctx.stroke();
-        // Batu tepi
-        for(let i=0;i<6;i++) {
-            const ang=i*Math.PI/3;
-            ctx.fillStyle='#94a3b8'; ctx.beginPath();
-            ctx.arc(cx+Math.cos(ang)*bw*0.38, by+bh*0.68+Math.sin(ang)*bh*0.26, 4, 0, Math.PI*2); ctx.fill();
+        const imgS1 = FV_SENDANG_IMAGES[1];
+        if (imgS1 && imgS1.complete && imgS1.naturalWidth > 0) {
+            const srcAR=700/400,dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if(srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgS1,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            ctx.fillStyle='#e0f2fe'; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.68,bw*0.4,bh*0.28,0,0,Math.PI*2); ctx.fill();
+            const shimmer=0.4+0.3*Math.sin(t/500);
+            ctx.fillStyle=`rgba(56,189,248,${shimmer})`; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.68,bw*0.32,bh*0.21,0,0,Math.PI*2); ctx.fill();
+            ctx.strokeStyle='#0284c7'; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.68,bw*0.4,bh*0.28,0,0,Math.PI*2); ctx.stroke();
+            for(let i=0;i<6;i++){const ang=i*Math.PI/3;ctx.fillStyle='#94a3b8';ctx.beginPath();ctx.arc(cx+Math.cos(ang)*bw*0.38,by+bh*0.68+Math.sin(ang)*bh*0.26,4,0,Math.PI*2);ctx.fill();}
+            ctx.fillStyle='#7c5c2e'; ctx.beginPath(); ctx.roundRect(cx-bw*0.18,by+bh*0.32,bw*0.36,bh*0.14,3); ctx.fill();
+            ctx.fillStyle='#fef9c3'; ctx.font=`bold ${bh*0.08}px Nunito,sans-serif`; ctx.textAlign='center';
+            ctx.fillText('Sendang',cx,by+bh*0.42); ctx.textAlign='left';
         }
-        // Papan nama
-        ctx.fillStyle='#7c5c2e'; ctx.beginPath(); ctx.roundRect(cx-bw*0.18, by+bh*0.32, bw*0.36, bh*0.14, 3); ctx.fill();
-        ctx.fillStyle='#fef9c3'; ctx.font=`bold ${bh*0.08}px Nunito,sans-serif`; ctx.textAlign='center';
-        ctx.fillText('Sendang', cx, by+bh*0.42); ctx.textAlign='left';
     } else if (bid==='kolam_agung') {
-        // Kolam lebih besar dengan tier batu
-        ctx.fillStyle='#bfdbfe';
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.65, bw*0.44, bh*0.31, 0, 0, Math.PI*2); ctx.fill();
-        const sh2=0.45+0.3*Math.sin(t/450);
-        ctx.fillStyle=`rgba(14,165,233,${sh2})`;
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.65, bw*0.36, bh*0.24, 0, 0, Math.PI*2); ctx.fill();
-        // Pancuran kecil
-        ctx.strokeStyle='rgba(147,197,253,0.7)'; ctx.lineWidth=2;
-        for(let i=0;i<3;i++) {
-            const ang=-Math.PI/2+(-0.3+i*0.3);
-            ctx.beginPath();
-            ctx.moveTo(cx, by+bh*0.42);
-            ctx.quadraticCurveTo(cx+Math.cos(ang)*bw*0.15, by+bh*0.38, cx+Math.cos(ang)*bw*0.2, by+bh*0.55);
-            ctx.stroke();
-        }
-        ctx.strokeStyle='#0369a1'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.65, bw*0.44, bh*0.31, 0, 0, Math.PI*2); ctx.stroke();
-        for(let i=0;i<8;i++) {
-            const ang=i*Math.PI/4;
-            ctx.fillStyle='#64748b'; ctx.beginPath();
-            ctx.arc(cx+Math.cos(ang)*bw*0.42, by+bh*0.65+Math.sin(ang)*bh*0.29, 4.5, 0, Math.PI*2); ctx.fill();
+        const imgS2 = FV_SENDANG_IMAGES[2];
+        if (imgS2 && imgS2.complete && imgS2.naturalWidth > 0) {
+            const srcAR=700/400,dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if(srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgS2,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            ctx.fillStyle='#bfdbfe'; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.65,bw*0.44,bh*0.31,0,0,Math.PI*2); ctx.fill();
+            const sh2=0.45+0.3*Math.sin(t/450);
+            ctx.fillStyle=`rgba(14,165,233,${sh2})`; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.65,bw*0.36,bh*0.24,0,0,Math.PI*2); ctx.fill();
+            ctx.strokeStyle='#0369a1'; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.65,bw*0.44,bh*0.31,0,0,Math.PI*2); ctx.stroke();
         }
     } else if (bid==='telaga_nirmala') {
-        // Telaga pelangi
-        const telGrd = ctx.createRadialGradient(cx,by+bh*0.62,0,cx,by+bh*0.62,bw*0.46);
-        telGrd.addColorStop(0,'rgba(232,121,249,0.9)');
-        telGrd.addColorStop(0.4,'rgba(56,189,248,0.8)');
-        telGrd.addColorStop(0.8,'rgba(74,222,128,0.6)');
-        telGrd.addColorStop(1,'rgba(251,191,36,0.3)');
-        ctx.fillStyle=telGrd;
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.62, bw*0.46, bh*0.34, 0, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle='#a855f7'; ctx.lineWidth=2.5;
-        ctx.beginPath(); ctx.ellipse(cx, by+bh*0.62, bw*0.46, bh*0.34, 0, 0, Math.PI*2); ctx.stroke();
-        // Partikel cahaya
-        for(let i=0;i<6;i++) {
-            const ang=i*Math.PI/3+t/1000;
-            const pr=bw*0.3; const gl=0.5+0.4*Math.sin(t/400+i);
-            ctx.fillStyle=`rgba(255,255,150,${gl})`; ctx.beginPath();
-            ctx.arc(cx+Math.cos(ang)*pr, by+bh*0.62+Math.sin(ang)*bh*0.2, 3, 0, Math.PI*2); ctx.fill();
+        const imgS3 = FV_SENDANG_IMAGES[3];
+        if (imgS3 && imgS3.complete && imgS3.naturalWidth > 0) {
+            const srcAR=700/400,dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
+            if(srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
+            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
+            ctx.drawImage(imgS3,sx,sy,sw,sh,bx,by,bw,bh);
+        } else {
+            const telGrd=ctx.createRadialGradient(cx,by+bh*0.62,0,cx,by+bh*0.62,bw*0.46);
+            telGrd.addColorStop(0,'rgba(232,121,249,0.9)'); telGrd.addColorStop(0.4,'rgba(56,189,248,0.8)');
+            telGrd.addColorStop(0.8,'rgba(74,222,128,0.6)'); telGrd.addColorStop(1,'rgba(251,191,36,0.3)');
+            ctx.fillStyle=telGrd; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.62,bw*0.46,bh*0.34,0,0,Math.PI*2); ctx.fill();
+            ctx.strokeStyle='#a855f7'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.ellipse(cx,by+bh*0.62,bw*0.46,bh*0.34,0,0,Math.PI*2); ctx.stroke();
         }
 
     // ──────────────── SEKOLAH ────────────────
@@ -46209,7 +46227,7 @@ function drawFairyWorld(ts) {
 
     // ── Pohon Energi (Canvas drawn) — render lebih besar ──
     const poHitW = TS*3, poHitH = TS*3; // hitbox 3x3 tile
-    const poVS = FV_BLDG_VISUAL_SCALE || 1.8;
+    const poVS = 2.8; // lebih besar dari bangunan biasa (FV_BLDG_VISUAL_SCALE)
     const poVW = poHitW * poVS, poVH = poHitH * poVS;
     const poX = FV_POHON_POS.x*TS, poY = FV_POHON_POS.y*TS;
     const poVX = poX + poHitW/2 - poVW/2;
@@ -46565,18 +46583,64 @@ function showFVDialog(name,text,options,portrait) {
 // ── Minimap ────────────────────────────────────────────────────
 function drawFVMinimap(ctx, W, H, fv) {
     const mw=90,mh=56,mx=W-mw-6,my=6;
+    // Background
     ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx,my,mw,mh,4); ctx.fill();
     ctx.strokeStyle='rgba(124,58,237,0.6)'; ctx.lineWidth=1; ctx.stroke();
-    const sx=mw/FW,sy=mh/FH;
-    (fv.buildings||[]).forEach(({slotId})=>{ const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return; ctx.fillStyle='#60a5fa'; ctx.fillRect(mx+s.x*sx,my+s.y*sy,sx*2+1,sy*2+1); });
-    (fv.buildQueue||[]).forEach(({slotId})=>{ const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return; ctx.fillStyle='#fbbf24'; ctx.fillRect(mx+s.x*sx,my+s.y*sy,sx*2+1,sy*2+1); });
-    ctx.fillStyle='#4ade80'; ctx.fillRect(mx+FV_POHON_POS.x*sx,my+FV_POHON_POS.y*sy,sx*2,sy*2);
-    ctx.fillStyle='#e9d5ff'; ctx.fillRect(mx+FV_RARA_POS.x*sx,my+FV_RARA_POS.y*sy,sx*2,sy*2);
-    ctx.fillStyle='#fbbf24'; ctx.beginPath();
-    ctx.arc(mx+fvPlayer.x/TS*sx,my+fvPlayer.y/TS*sy,2.5,0,Math.PI*2); ctx.fill();
+    const sx=mw/FW, sy=mh/FH;
+
+    // Bangunan selesai (biru) — dari fv.buildings yang selalu fresh
+    (fv.buildings||[]).forEach(({slotId})=>{
+        const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return;
+        ctx.fillStyle='#60a5fa';
+        ctx.fillRect(mx+s.x*sx, my+s.y*sy, Math.max(3,sx*2+1), Math.max(3,sy*2+1));
+    });
+    // Bangunan dalam konstruksi (kuning)
+    (fv.buildQueue||[]).forEach(({slotId})=>{
+        const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return;
+        ctx.fillStyle='#fbbf24';
+        ctx.fillRect(mx+s.x*sx, my+s.y*sy, Math.max(3,sx*2+1), Math.max(3,sy*2+1));
+    });
+
+    // Pohon Energi (hijau, lebih besar)
+    const ptx=mx+FV_POHON_POS.x*sx, pty=my+FV_POHON_POS.y*sy;
+    ctx.fillStyle='#4ade80';
+    ctx.beginPath(); ctx.arc(ptx+sx, pty+sy, 4, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#16a34a'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(ptx+sx, pty+sy, 4, 0, Math.PI*2); ctx.stroke();
+
+    // Rara Wilis (ungu muda)
+    const rrx=mx+FV_RARA_POS.x*sx, rry=my+FV_RARA_POS.y*sy;
+    ctx.fillStyle='#e9d5ff';
+    ctx.beginPath(); ctx.arc(rrx+sx, rry+sy, 2.5, 0, Math.PI*2); ctx.fill();
+
+    // Peri wandering (pink dot kecil, dari fv.fairies)
+    (fv.fairies||[]).forEach(f => {
+        const rt = fvNpcRuntime['fv_'+f.id] || null;
+        // Cari posisi dari runtime NPC atau default ke posisi Rara
+        let fx, fy;
+        if (rt) {
+            fx = mx + (rt.px/TS)*sx;
+            fy = my + (rt.py/TS)*sy;
+        } else {
+            // Posisi default — scatter berdasar index
+            const idx = (fv.fairies||[]).indexOf(f);
+            fx = mx + (FV_RARA_POS.x+2+idx%3)*sx;
+            fy = my + (FV_RARA_POS.y+1+Math.floor(idx/3))*sy;
+        }
+        ctx.fillStyle = f.gender==='girl' ? '#f472b6' : '#60a5fa';
+        ctx.beginPath(); ctx.arc(fx, fy, 2, 0, Math.PI*2); ctx.fill();
+    });
+
+    // Player (kuning, paling menonjol)
+    const plx=mx+fvPlayer.x/TS*sx, ply=my+fvPlayer.y/TS*sy;
+    ctx.fillStyle='#fbbf24';
+    ctx.beginPath(); ctx.arc(plx, ply, 3, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(plx, ply, 3, 0, Math.PI*2); ctx.stroke();
+
     // Legend
     ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='5px sans-serif';
-    ctx.fillText('🔵 Bangunan  🟡 Konstruksi  🟢 Pohon  🔴 Kamu', mx+2, my+mh+9);
+    ctx.fillText('🔵Bangunan 🟡Konstruksi 🟢Pohon 🩷Peri 🟡Kamu', mx+2, my+mh+9);
 }
 
 // ─────────────────────────────────────────────────────────────
