@@ -61,7 +61,7 @@
     <link rel="preload" as="image" href="images/menara-tier2.png">
     <link rel="preload" as="image" href="images/menara-tier3.png">
     <!-- PRELOAD ISTANA -->
-    <link rel="preload" as="image" href="images/istana-tier1.png">
+    <link rel="preload" as="image" href="images/istanaperi.png">
 
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -23496,8 +23496,9 @@ ${reward.tip}`,
                 STATE.camera.y = STATE.player.y - GAME_HEIGHT / 2 + STATE.player.h / 2;
 
                 const curMap = maps[STATE.location];
-                STATE.camera.x = Math.max(0, Math.min(STATE.camera.x, curMap.w * TILE_SIZE - GAME_WIDTH));
-                STATE.camera.y = Math.max(0, Math.min(STATE.camera.y, curMap.h * TILE_SIZE - GAME_HEIGHT));
+                const _mapTileSize = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                STATE.camera.x = Math.max(0, Math.min(STATE.camera.x, curMap.w * _mapTileSize - GAME_WIDTH));
+                STATE.camera.y = Math.max(0, Math.min(STATE.camera.y, curMap.h * _mapTileSize - GAME_HEIGHT));
 
                 curMap.npcs.forEach(npc => {
                     const distToPlayer = Math.hypot(STATE.player.x - npc.x * TILE_SIZE, STATE.player.y - npc.y * TILE_SIZE);
@@ -25446,6 +25447,9 @@ ${reward.tip}`,
                 const pCenterY = STATE.player.y + (STATE.player.h / 2);
 
                 for (let b of map.buildings) {
+                    // fv_building: tidak auto-teleport, cukup pakai tombol aksi (updateFVActionBtn)
+                    if (b.type === 'fv_building') continue;
+
                     if (b.entrance) {
                         // Titik tengah entrance (Pintu)
                         const eCenterX = (b.entrance.x * TILE_SIZE) + (TILE_SIZE / 2);
@@ -26306,23 +26310,25 @@ ${reward.tip}`,
             }
 
             function checkEntranceProximity() {
-                // Fairy village tidak punya entrance/teleport standar
-                if (STATE.location === 'fairyVillage') return null;
                 const map = maps[STATE.location];
                 if (!map.buildings) return null;
 
                 const pCenterX = STATE.player.x + (STATE.player.w / 2);
                 const pCenterY = STATE.player.y + (STATE.player.h / 2);
 
+                // Gunakan TS untuk fairyVillage, TILE_SIZE untuk map lain
+                const _ts = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+
                 for (let b of map.buildings) {
                     if (b.entrance) {
-                        const eCenterX = (b.entrance.x * TILE_SIZE) + (TILE_SIZE / 2);
-                        const eCenterY = (b.entrance.y * TILE_SIZE) + (TILE_SIZE / 2);
+                        const eCenterX = (b.entrance.x * _ts) + (_ts / 2);
+                        const eCenterY = (b.entrance.y * _ts) + (_ts / 2);
 
                         const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
 
-                        // UPDATE: Jarak interaksi tombol aksi juga diperbesar jadi 60px
-                        if (dist < 60) return b;
+                        // Radius lebih besar untuk fairy (bangunan lebih besar secara visual)
+                        const radius = (STATE.location === 'fairyVillage') ? _ts * 1.5 : 60;
+                        if (dist < radius) return b;
                     }
                 }
                 return null;
@@ -26374,7 +26380,17 @@ ${reward.tip}`,
 
                 if (entranceBuilding) {
 
-                    // --- LOGIC REFACTORED TO USE processTeleport ---
+                    // ── FAIRY VILLAGE BUILDING — buka interior popup ──
+                    if (entranceBuilding.type === 'fv_building' && entranceBuilding._fvSlotId) {
+                        const fv = getFairyVillage();
+                        const bldg = (fv.buildings||[]).find(bl => bl.slotId === entranceBuilding._fvSlotId);
+                        const slot = FAIRY_SLOTS ? FAIRY_SLOTS.find(s=>s.id===entranceBuilding._fvSlotId) : null;
+                        if (bldg && slot && typeof openBuildingInterior === 'function') {
+                            if (typeof AudioService !== 'undefined') AudioService.playSFX('door');
+                            openBuildingInterior(bldg, slot);
+                        }
+                        return;
+                    }
                     // Cek apakah bangunan ini termasuk tipe auto-teleport
                     // UPDATE: MENAMBAHKAN SCHOOL, GUILD, BLACKSMITH KE DAFTAR AGAR LOGIKA LATE/TUTUP JALAN
                     const teleporters = [
@@ -37700,6 +37716,11 @@ Pilih masakan:
                     }
                 });
 
+                // ── Fairy Village: render bangunan, peri, partikel, minimap ──
+                if (STATE.location === 'fairyVillage' && typeof drawFairyWorld === 'function' && fvCtx) {
+                    drawFairyWorld(performance.now());
+                }
+
 
                 // ── Kahyangan Wilis: pakai HUD utama, fv-hud-bar dihapus ──
                 {
@@ -38474,46 +38495,65 @@ Pilih masakan:
                 // FIX: Bangunan Fairy Village — render pakai gambar tier untuk hunian, emoji untuk lainnya
                 if (b.id && b.id.startsWith('fv_bld_')) {
                     const _ts = (typeof TS !== 'undefined') ? TS : 40;
-                    const _vs = (typeof FV_BLDG_VISUAL_SCALE !== 'undefined') ? FV_BLDG_VISUAL_SCALE : 1.8;
                     const bx = b.x * _ts, by = b.y * _ts;
                     const bw = (b.w || 2) * _ts, bh = (b.h || 2) * _ts;
-                    // Visual scale — gambar lebih besar, anchor bawah
-                    const vw = bw * _vs, vh = bh * _vs;
-                    const vx = bx + bw/2 - vw/2, vy = by + bh - vh;
                     const bid2 = b._fvBid || '';
-                    // Hunian: pakai gambar omah-tier
+
+                    // Gambar bangunan langsung di posisi tile (nempel tanah seperti map utama)
                     const _omahMap = { pondok_peri: 1, rumah_peri: 2, dalem_widadari: 3 };
                     const _omahTier = _omahMap[bid2];
+                    let drawn = false;
                     if (_omahTier && typeof FV_OMAH_IMAGES !== 'undefined') {
                         const _img = FV_OMAH_IMAGES[_omahTier];
                         if (_img && _img.complete && _img.naturalWidth > 0) {
-                            ctx.drawImage(_img, vx, vy, vw, vh);
-                            return;
+                            ctx.drawImage(_img, bx, by, bw, bh);
+                            drawn = true;
                         }
                     }
-                    // Bangunan lain: pakai drawFVBuildingCanvas dengan ukuran visual
-                    if (typeof drawFVBuildingCanvas === 'function') {
-                        drawFVBuildingCanvas(ctx, bid2, vx, vy, vw, vh, performance.now());
-                        return;
+                    if (!drawn && typeof drawFVBuildingCanvas === 'function') {
+                        drawFVBuildingCanvas(ctx, bid2, bx, by, bw, bh, performance.now());
+                        drawn = true;
                     }
-                    // Fallback emoji jika drawFVBuildingCanvas tidak ada
-                    const bgColors = ['#fef3c7','#dbeafe','#f3e8ff','#ffedd5','#fef9c3'];
-                    const borderColors = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
-                    const tier = b._fvTier || 0;
-                    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-                    ctx.fillRect(bx+4, by+bh-2, bw, 6);
-                    ctx.fillStyle = bgColors[tier] || '#fef3c7';
-                    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 6); ctx.fill();
-                    ctx.strokeStyle = borderColors[tier] || '#d97706';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 6); ctx.stroke();
-                    ctx.font = (Math.min(bw, bh) * 0.55) + 'px serif';
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(b._fvEmoji || '🏠', bx + bw/2, by + bh/2 - 4);
-                    ctx.fillStyle = borderColors[tier] || '#d97706';
-                    ctx.font = 'bold 7px Nunito, sans-serif';
-                    ctx.fillText((b.name||'').replace(/^[^ ]+ /,'').substring(0,12), bx + bw/2, by + bh - 5);
-                    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+                    // ── Label PILL di ATAS bangunan (sama dengan map utama) ──
+                    if (b.name) {
+                        ctx.save();
+                        const labelText = (b._fvEmoji||'🏠') + ' ' + b.name.replace(/^[^ ]+ /,'');
+                        ctx.font = 'bold 9px Nunito, sans-serif';
+                        const tw = ctx.measureText(labelText).width;
+                        const pillW = tw + 16, pillH = 18;
+                        const pillX = bx + bw/2 - pillW/2;
+                        const pillY = by - 26;
+                        // Shadow
+                        ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=6; ctx.shadowOffsetY=3;
+                        // Background pill ungu (tema peri)
+                        ctx.fillStyle='rgba(30,5,60,0.92)';
+                        ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, 5); ctx.fill();
+                        ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+                        // Border warna tier
+                        const tierColors=['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
+                        ctx.strokeStyle=tierColors[b._fvTier||0]||'#9333ea'; ctx.lineWidth=1.5;
+                        ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, 5); ctx.stroke();
+                        // Teks
+                        ctx.fillStyle='#e9d5ff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+                        ctx.fillText(labelText, bx+bw/2, pillY+pillH/2);
+                        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+                        ctx.restore();
+                    }
+
+                    // ── Portal entrance (sama dengan map utama) ──
+                    if (b.entrance) {
+                        const ex = b.entrance.x * _ts;
+                        const ey = b.entrance.y * _ts;
+                        const pulse = Math.abs(Math.sin(Date.now()/300));
+                        ctx.fillStyle = `rgba(6,182,212,${pulse})`;
+                        ctx.beginPath(); ctx.arc(ex+_ts/2, ey+_ts/2, _ts*0.28, 0, Math.PI*2); ctx.fill();
+                        ctx.strokeStyle='#fff'; ctx.lineWidth=1;
+                        ctx.beginPath(); ctx.arc(ex+_ts/2, ey+_ts/2, _ts*0.28+pulse*6, 0, Math.PI*2); ctx.stroke();
+                        ctx.font=`bold 8px Nunito,sans-serif`; ctx.fillStyle='#fff'; ctx.textAlign='center';
+                        ctx.fillText('MASUK', ex+_ts/2, ey-4);
+                        ctx.textAlign='left';
+                    }
                     return;
                 }
 
@@ -44468,14 +44508,12 @@ const FV_MENARA_IMAGES = {};
     });
 })();
 
-// ── ISTANA IMAGES: istana-tier1.png ──
+// ── ISTANA IMAGE: istanaperi.png ──
 const FV_ISTANA_IMAGES = {};
 (function(){
-    [1].forEach(function(t){
-        const img = new Image();
-        img.src = 'images/istana-tier' + t + '.png';
-        FV_ISTANA_IMAGES[t] = img;
-    });
+    const img = new Image();
+    img.src = 'images/istanaperi.png';
+    FV_ISTANA_IMAGES[1] = img;
 })();
 
 // ── KAHYANGAN: Siang/Malam & Musim ─────────────────────────────
@@ -45183,15 +45221,25 @@ function refreshFairyVillageMap() {
         const slot = FAIRY_SLOTS.find(s => s.id === b.slotId);
         if (!slot) return;
         const bDef = (typeof FAIRY_BUILDINGS !== 'undefined') ? FAIRY_BUILDINGS[b.bid] : null;
+        const bw = (bDef && bDef.w) || 2;
+        const bh = (bDef && bDef.h) || 2;
+        // Entrance di tengah bawah bangunan (seperti map utama)
+        const entranceX = slot.x + Math.floor(bw/2);
+        const entranceY = slot.y + bh;
         buildings.push({
-            id: 'fv_bld_' + b.bid,
+            id: 'fv_bld_' + b.slotId,
             x: slot.x, y: slot.y,
-            w: (bDef && bDef.w) || 2, h: (bDef && bDef.h) || 2,
+            w: bw, h: bh,
             solid: true,
+            type: 'fv_building',
             name: (bDef && bDef.name) || 'Bangunan',
             _fvEmoji: (bDef && bDef.emoji) || '🏠',
             _fvTier: (bDef && bDef.tier) || 0,
             _fvBid: b.bid,
+            _fvSlotId: b.slotId,
+            // Entrance trigger — player bisa masuk dari depan pintu
+            entrance: { x: entranceX, y: entranceY },
+            open24h: true,
         });
     });
 
@@ -45395,17 +45443,17 @@ function stopFairyLoop() {
 }
 
 function fairyLoop(ts) {
-    if (!fvCanvas || STATE.location !== 'fairyVillage') { FVG=null; return; }
+    if (STATE.location !== 'fairyVillage') { FVG=null; return; }
     const dt = Math.min(32, ts - fvLastTime);
     fvLastTime = ts;
     checkBuildQueue();
     updateFairyPlayer(dt);
-    drawFairyWorld(ts);
-    // Cek daily tick saat di dalam pulau — jika hari berubah sejak terakhir masuk
+    // Cek daily tick
     const fv = getFairyVillage();
     if (fv.lastTickDay !== STATE.day) {
         fairyDailyTick(fv);
     }
+    // drawFairyWorld dipanggil oleh main render loop
     FVG = requestAnimationFrame(fairyLoop);
 }
 
@@ -45447,124 +45495,39 @@ function checkBuildQueue() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// UPDATE PLAYER
+// ═══════════════════════════════════════════════════════════════
+// UPDATE PLAYER DI FAIRY VILLAGE
+// Player movement sudah dihandle main game loop
+// Fungsi ini hanya update facing dan action button
 // ═══════════════════════════════════════════════════════════════
 function updateFairyPlayer(dt) {
-    if (fvActiveDialog) return;
-    const speed = FV_SPEED * (dt/16);
-    let dx=0, dy=0;
+    // Sync fvPlayer dari STATE.player
+    fvPlayer.x = STATE.player.x;
+    fvPlayer.y = STATE.player.y;
 
-    // Keyboard
-    if (fvKeys['ArrowLeft'] ||fvKeys['a']) { dx=-1; fvPlayer.facing='left'; }
-    if (fvKeys['ArrowRight']||fvKeys['d']) { dx= 1; fvPlayer.facing='right'; }
-    if (fvKeys['ArrowUp']   ||fvKeys['w']) { dy=-1; fvPlayer.facing='up'; }
-    if (fvKeys['ArrowDown'] ||fvKeys['s']) { dy= 1; fvPlayer.facing='down'; }
+    // Update facing dari input (untuk animasi sprite)
+    if (fvKeys['ArrowLeft'] ||fvKeys['a']) fvPlayer.facing='left';
+    else if (fvKeys['ArrowRight']||fvKeys['d']) fvPlayer.facing='right';
+    else if (fvKeys['ArrowUp']   ||fvKeys['w']) fvPlayer.facing='up';
+    else if (fvKeys['ArrowDown'] ||fvKeys['s']) fvPlayer.facing='down';
 
-    // Joystick virtual (floating, sama seperti main game)
     if (fvJoy.active) {
         const mag = Math.sqrt(fvJoy.dx*fvJoy.dx + fvJoy.dy*fvJoy.dy);
         if (mag > 8) {
-            dx = fvJoy.dx/mag; dy = fvJoy.dy/mag;
             if (Math.abs(fvJoy.dx)>Math.abs(fvJoy.dy)) fvPlayer.facing = fvJoy.dx>0?'right':'left';
             else fvPlayer.facing = fvJoy.dy>0?'down':'up';
         }
     }
 
-    // Diagonal normalization
-    if (dx!==0 && dy!==0) { dx*=0.707; dy*=0.707; }
-
-    // ── NPC Collision (solid NPCs menghalangi player) ─────────
-    const _npx = fvPlayer.x + dx*speed;
-    const _npy = fvPlayer.y + dy*speed;
-    const _pw = 20, _ph = 20; // hitbox player (kaki)
-    const _pHitX = _npx + 4;
-    const _pHitY = _npy + TS*0.7; // hitbox di kaki
-    const _pHitXc = fvPlayer.x + 4;
-    const _pHitYc = fvPlayer.y + TS*0.7;
-    const _map = (typeof maps !== 'undefined') ? maps['fairyVillage'] : null;
-    let _blockedX = false, _blockedY = false;
-
-    if (_map && _map.npcs) {
-        for (const _npc of _map.npcs) {
-            if (!_npc.solid) continue;
-            // Gunakan runtime position jika ada (wander NPC)
-            const rt = fvNpcRuntime[_npc.id];
-            const _nxp = rt ? rt.px : _npc.x * TS;
-            const _nyp = rt ? rt.py : _npc.y * TS;
-            const _nw  = 28, _nh = 28; // hitbox NPC kaki
-            const _nHitX = _nxp + 2;
-            const _nHitY = _nyp + TS*0.65;
-
-            const overlapX = _pHitX + _pw > _nHitX && _pHitX < _nHitX + _nw &&
-                             _pHitYc + _ph > _nHitY && _pHitYc < _nHitY + _nh;
-            const overlapY = _pHitXc + _pw > _nHitX && _pHitXc < _nHitX + _nw &&
-                             _pHitY + _ph > _nHitY && _pHitY < _nHitY + _nh;
-
-            if (overlapX) _blockedX = true;
-            if (overlapY) _blockedY = true;
-        }
-    }
-
-    // ── Building Collision ────────────────────────────────────
-    const fv2 = getFairyVillage();
-    (fv2.buildings||[]).forEach(({slotId, bid}) => {
-        const slot = FAIRY_SLOTS.find(s=>s.id===slotId); if(!slot) return;
-        const bDef = FAIRY_BUILDINGS[bid]; if(!bDef) return;
-        const bx_ = slot.x*TS, by_ = slot.y*TS;
-        const bw_ = TS*(bDef.w||2), bh_ = TS*(bDef.h||2);
-
-        // Hitbox dibagi 3 zona dengan CELAH PINTU di tengah bawah (35% lebar)
-        const doorW = bw_ * 0.35;
-        const doorX = bx_ + bw_*0.5 - doorW*0.5;
-
-        // Zona atas (atap + dinding atas)
-        const topHitX = bx_ + bw_*0.05, topHitY = by_ + bh_*0.4;
-        const topHitW = bw_*0.9,        topHitH = bh_*0.35;
-        // Zona kiri bawah
-        const leftHitX = bx_ + bw_*0.05, leftHitY = by_ + bh_*0.75;
-        const leftHitW = doorX - leftHitX, leftHitH = bh_*0.25;
-        // Zona kanan bawah
-        const rightHitX = doorX + doorW,  rightHitY = by_ + bh_*0.75;
-        const rightHitW = (bx_+bw_*0.95) - rightHitX, rightHitH = bh_*0.25;
-
-        const oxTop = _pHitX+_pw>topHitX && _pHitX<topHitX+topHitW && _pHitYc+_ph>topHitY && _pHitYc<topHitY+topHitH;
-        const oyTop = _pHitXc+_pw>topHitX && _pHitXc<topHitX+topHitW && _pHitY+_ph>topHitY && _pHitY<topHitY+topHitH;
-        const oxL = leftHitW>0 && _pHitX+_pw>leftHitX && _pHitX<leftHitX+leftHitW && _pHitYc+_ph>leftHitY && _pHitYc<leftHitY+leftHitH;
-        const oyL = leftHitW>0 && _pHitXc+_pw>leftHitX && _pHitXc<leftHitX+leftHitW && _pHitY+_ph>leftHitY && _pHitY<leftHitY+leftHitH;
-        const oxR = rightHitW>0 && _pHitX+_pw>rightHitX && _pHitX<rightHitX+rightHitW && _pHitYc+_ph>rightHitY && _pHitYc<rightHitY+rightHitH;
-        const oyR = rightHitW>0 && _pHitXc+_pw>rightHitX && _pHitXc<rightHitX+rightHitW && _pHitY+_ph>rightHitY && _pHitY<rightHitY+rightHitH;
-
-        if (oxTop||oxL||oxR) _blockedX = true;
-        if (oyTop||oyL||oyR) _blockedY = true;
-    });
-
-    // Pohon Energi collision
-    const _poHitX = FV_POHON_POS.x*TS + TS*0.2;
-    const _poHitY = FV_POHON_POS.y*TS + TS*0.8;
-    const _poHitW = TS*1.6, _poHitH = TS*1.2;
-    if (_pHitX+_pw>_poHitX && _pHitX<_poHitX+_poHitW && _pHitYc+_ph>_poHitY && _pHitYc<_poHitY+_poHitH) _blockedX=true;
-    if (_pHitXc+_pw>_poHitX && _pHitXc<_poHitX+_poHitW && _pHitY+_ph>_poHitY && _pHitY<_poHitY+_poHitH) _blockedY=true;
-
-    fvPlayer.x = Math.max(0, Math.min((FW-1)*TS, _blockedX ? fvPlayer.x : fvPlayer.x + dx*speed));
-    fvPlayer.y = Math.max(0, Math.min((FH-1)*TS, _blockedY ? fvPlayer.y : fvPlayer.y + dy*speed));
-
-    // Camera smooth follow
-    const cw = fvCanvas.width, ch = fvCanvas.height;
-    const targetCX = fvPlayer.x - cw/2;
-    const targetCY = fvPlayer.y - ch/2;
-    fvCam.x += (targetCX - fvCam.x) * 0.12;
-    fvCam.y += (targetCY - fvCam.y) * 0.12;
-    fvCam.x = Math.max(0, Math.min(FW*TS - cw, fvCam.x));
-    fvCam.y = Math.max(0, Math.min(FH*TS - ch, fvCam.y));
-
     updateFVActionBtn();
 }
 
 function updateFVActionBtn() {
+    // fv-action-btn hanya untuk Rara Wilis & Pohon Energi
+    // Bangunan sudah handle via btn-action utama (checkEntranceProximity)
     const btn = document.getElementById('fv-action-btn');
     if (!btn) return;
     const px = fvPlayer.x, py = fvPlayer.y;
-    const fv = getFairyVillage();
 
     // Rara Wilis
     const rx = FV_RARA_POS.x*TS+TS, ry = FV_RARA_POS.y*TS+TS;
@@ -45582,27 +45545,6 @@ function updateFVActionBtn() {
         btn.textContent='✨ Kumpulkan Serbuk Wilis';
         btn.onclick = collectFairyDust;
         return;
-    }
-
-    // Cek bangunan selesai — enter building
-    // Titik referensi & jarak HARUS sama dengan glow "▼ Masuk" di drawFairyWorld (TS*3)
-    const buildings = fv.buildings || [];
-    for (const bldg of buildings) {
-        const slot = FAIRY_SLOTS.find(s=>s.id===bldg.slotId);
-        if (!slot) continue;
-        const bDef = FAIRY_BUILDINGS[bldg.bid]; if (!bDef) continue;
-        const bw2 = TS*(bDef.w||2), bh2 = TS*(bDef.h||2);
-        // Titik tengah hitbox — sama persis dengan bCx/bCy di drawFairyWorld
-        const bCx = slot.x*TS + bw2/2;
-        const bCy = slot.y*TS + bh2/2;
-        const dist = Math.hypot(fvPlayer.x + TS*0.5 - bCx, fvPlayer.y + TS*0.5 - bCy);
-        if (dist < TS*3) {
-            const b = bDef;
-            btn.style.display='block';
-            btn.textContent=`🚪 Masuk ${b?.emoji||'🏠'} ${(b?.name||'Bangunan').replace(/^[^\s]+\s/,'')}`;
-            btn.onclick = () => openBuildingInterior(bldg, slot);
-            return;
-        }
     }
 
     btn.style.display='none';
@@ -46047,41 +45989,28 @@ function drawFVPohonEnergi(ctx, px, py, TS2, t) {
 function drawFairyWorld(ts) {
     if (!fvCtx) return;
     const ctx = fvCtx;
-    const W = fvCanvas.width, H = fvCanvas.height;
+    // Pakai GAME_WIDTH/GAME_HEIGHT (logical size, sudah discale main loop)
+    const W = (typeof GAME_WIDTH !== 'undefined') ? GAME_WIDTH : (fvCanvas ? fvCanvas.width : 480);
+    const H = (typeof GAME_HEIGHT !== 'undefined') ? GAME_HEIGHT : (fvCanvas ? fvCanvas.height : 270);
     const fv = getFairyVillage();
     const t = ts || performance.now();
+    const now = Date.now();
 
-    // ── BACKGROUND: images/kayangan.png sebagai 1 gambar utuh ────
-    if (fvBgImage && fvBgImage.complete && fvBgImage.naturalWidth > 0) {
-        ctx.save();
-        ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
-        // Gambar 1x saja, di-stretch mengisi seluruh world (FW*TS × FH*TS)
-        ctx.drawImage(fvBgImage, 0, 0, FW * TS, FH * TS);
-        ctx.restore();
-    } else {
-        // Fallback gradient jika gambar belum load
-        const sky = ctx.createLinearGradient(0,0,0,H);
-        sky.addColorStop(0,'#0c0620'); sky.addColorStop(1,'#1a0e35');
-        ctx.fillStyle = sky; ctx.fillRect(0,0,W,H);
-    }
+    // ── Sinkronkan fvCam dengan STATE.camera (diupdate main loop) ──
+    fvCam.x = STATE.camera.x;
+    fvCam.y = STATE.camera.y;
 
-    // ── OVERLAY SIANG/MALAM ─────────────────────────────────────
+    // ── Sinkronkan fvPlayer dengan STATE.player ──
+    fvPlayer.x = STATE.player.x;
+    fvPlayer.y = STATE.player.y;
+
+    // ── LABEL WAKTU & MUSIM (screen space - kompensasi kamera) ──────
     const _tod = getFVTimeOfDay();
-    const _night = isFVNight();
-    const _overlayMap = {
-        pagi:  'rgba(255,220,100,0.13)',
-        siang: 'rgba(255,255,200,0.08)',
-        sore:  'rgba(255,150,60,0.18)',
-        senja: 'rgba(180,60,60,0.22)',
-        malam: 'rgba(5,0,30,0.52)',
-    };
-    ctx.fillStyle = _overlayMap[_tod] || 'rgba(5,0,30,0.52)';
-    ctx.fillRect(0, 0, W, H);
-
-    // ── LABEL WAKTU & MUSIM (sudut kiri atas) ──────────────────
     const _season = getFVSeason();
     const _todLabel = { pagi:'🌅 Pagi', siang:'☀️ Siang', sore:'🌤️ Sore', senja:'🌇 Senja', malam:'🌙 Malam' };
     ctx.save();
+    // Kompensasi translate kamera agar label tetap di pojok kiri atas layar
+    ctx.translate(Math.floor(fvCam.x), Math.floor(fvCam.y));
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
@@ -46091,12 +46020,8 @@ function drawFairyWorld(ts) {
     ctx.fillText((_todLabel[_tod]||'🌙 Malam') + '  |  ' + _season.label, 10, 10);
     ctx.restore();
 
-    // ── Init kunang-kunang ──────────────────────────────────────
-    initFVFireflies(W, H);
-    updateFVFireflies();
-
-    ctx.save();
-    ctx.translate(-Math.floor(fvCam.x), -Math.floor(fvCam.y));
+    // Viewport culling (berdasarkan fvCam yang sudah sync STATE.camera)
+    const visX0 = Math.floor(fvCam.x/TS)-1, visX1 = visX0+Math.ceil(W/TS)+2;
     const visY0 = Math.floor(fvCam.y/TS)-1, visY1 = visY0+Math.ceil(H/TS)+2;
 
     // Ground tiles — hanya tampil jika kayangan.png TIDAK berhasil dimuat
@@ -46143,7 +46068,6 @@ function drawFairyWorld(ts) {
     });
 
     // Bangunan dalam antrian (animasi konstruksi)
-    const now = Date.now();
     (fv.buildQueue||[]).forEach(({slotId, bid, finishTime}) => {
         const slot = FAIRY_SLOTS.find(s=>s.id===slotId); if (!slot) return;
         const b = FAIRY_BUILDINGS[bid]; if (!b) return;
@@ -46189,43 +46113,9 @@ function drawFairyWorld(ts) {
         });
     });
 
-    // ── Bangunan selesai — render dengan gambar Canvas proper ──
-    (fv.buildings||[]).forEach(({slotId, bid, workers}) => {
-        const slot=FAIRY_SLOTS.find(s=>s.id===slotId); if(!slot) return;
-        const b=FAIRY_BUILDINGS[bid]; if(!b) return;
-        // Hitbox (collision) — tetap kecil
-        const bx=slot.x*TS, by=slot.y*TS, bw=TS*(b.w||2), bh=TS*(b.h||2);
-        // Visual size — lebih besar, di-anchor ke bawah hitbox (Stardew-style)
-        const VS = FV_BLDG_VISUAL_SCALE || 1.8;
-        const vw = bw * VS, vh = bh * VS;
-        const vx = bx + bw/2 - vw/2;       // tengah horizontal
-        const vy = by + bh - vh;            // anchor bawah
-        // Shadow tanah
-        ctx.fillStyle='rgba(0,0,0,0.28)';
-        ctx.beginPath(); ctx.ellipse(bx+bw/2, by+bh+3, bw*0.5, 5, 0, 0, Math.PI*2); ctx.fill();
-        // Gambar bangunan — pakai ukuran visual yang besar
-        drawFVBuildingCanvas(ctx, bid, vx, vy, vw, vh, t);
-        // Glow + label saat player dekat
-        const bCx=bx+bw/2;
-        const nearDist = Math.hypot(fvPlayer.x+TS*0.5-bCx, fvPlayer.y+TS*0.5-(by+bh*0.5));
-        if (nearDist < TS*3) {
-            const bc = ['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'][b.tier]||'#d97706';
-            ctx.strokeStyle=bc; ctx.lineWidth=2.5; ctx.shadowColor=bc; ctx.shadowBlur=12;
-            ctx.beginPath(); ctx.roundRect(vx,vy,vw,vh,6); ctx.stroke();
-            ctx.shadowBlur=0;
-            ctx.fillStyle='#fef9c3'; ctx.font='bold 9px Nunito,sans-serif'; ctx.textAlign='center';
-            ctx.fillText('▼ Masuk', bCx, vy-6);
-            ctx.textAlign='left';
-        }
-        ctx.shadowBlur=0;
-        // Indikator peri bekerja (dot hijau di sudut atas kanan visual)
-        (workers||[]).forEach((w,wi)=>{
-            ctx.fillStyle='#22c55e'; ctx.strokeStyle='#fff'; ctx.lineWidth=1;
-            ctx.beginPath(); ctx.arc(vx+vw-8-wi*12, vy+8, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        });
-    });
+    // Bangunan dirender oleh main loop via drawBuilding — tidak perlu render ulang di sini
 
-    // ── Pohon Energi (Canvas drawn) — render lebih besar ──
+    // ── Pohon Energi (Canvas drawn) — render lebih besar ──    // ── Pohon Energi (Canvas drawn) — render lebih besar ──
     const poHitW = TS*3, poHitH = TS*3; // hitbox 3x3 tile
     const poVS = 2.8; // lebih besar dari bangunan biasa (FV_BLDG_VISUAL_SCALE)
     const poVW = poHitW * poVS, poVH = poHitH * poVS;
@@ -46301,7 +46191,8 @@ function drawFairyWorld(ts) {
         const rt = fvNpcRuntime[n.id];
         const px_ = rt ? rt.px : n.x * TS;
         const py_ = rt ? rt.py : n.y * TS;
-        const nW = Math.round(TS * 0.85), nH = Math.round(TS * 1.3); // ukuran display NPC ikut TS
+        // Ukuran NPC sama dengan map utama: 38x58
+        const nW = n.w || 38, nH = n.h || 58;
         _drawables.push({ sortY: py_ + nH, type:'npc', n, px:px_, py:py_, nW, nH, rt });
     });
 
@@ -46333,99 +46224,82 @@ function drawFairyWorld(ts) {
         _drawables.push({ sortY: rt.py+TS*1.2, type:'fairy', f, px:rt.px, py:rt.py });
     });
 
-    // Player
-    const pSprSrc = (STATE.player.gender==='girl') ? 'images/girl.png' : 'images/boy.png';
-    _drawables.push({ sortY: fvPlayer.y+TS*1.1, type:'player' });
+    // Player TIDAK dirender di sini — sudah dirender main loop via drawPlayer
+    // Hanya NPC map + peri wandering yang perlu Y-sorted di sini
 
     // Sort by Y
     _drawables.sort((a,b2) => a.sortY - b2.sortY);
 
-    // Draw semua
+    // Draw semua (skip player)
     _drawables.forEach(d => {
-        if (d.type === 'player') {
-            // Shadow
-            ctx.fillStyle='rgba(0,0,0,0.28)';
-            ctx.beginPath();
-            ctx.ellipse(fvPlayer.x+TS*0.5, fvPlayer.y+TS*1.0, TS*0.38, TS*0.13, 0, 0, Math.PI*2);
-            ctx.fill();
-            // Sprite atau fallback emoji
-            const _pImg = fvSpriteCache['__player__'];
-            if (_pImg && _pImg.complete && _pImg.naturalWidth>0) {
-                const _pw2=TS*1.15, _ph2=TS*1.6;
-                ctx.drawImage(_pImg, fvPlayer.x+TS*0.5-_pw2/2, fvPlayer.y+TS*0.5-_ph2*0.65, _pw2, _ph2);
-            } else {
-                if (!_pImg) { const i2=new Image(); i2.src=pSprSrc; fvSpriteCache['__player__']=i2; }
-                ctx.font=`${TS*1.25}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-                ctx.fillText(STATE.player.gender==='girl'?'👧':'👦', fvPlayer.x+TS*0.5, fvPlayer.y+TS*0.45);
-                ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-            }
-            // Nametag player
-            ctx.fillStyle='rgba(0,0,0,0.55)';
-            const _pName = STATE.player.name||'Kamu';
-            ctx.font='bold 7px Nunito,sans-serif';
-            const _pnw = ctx.measureText(_pName).width+6;
-            ctx.fillRect(fvPlayer.x+TS*0.5-_pnw/2, fvPlayer.y-10, _pnw, 11);
-            ctx.fillStyle='#fef9c3'; ctx.textAlign='center';
-            ctx.fillText(_pName, fvPlayer.x+TS*0.5, fvPlayer.y-1);
-            ctx.textAlign='left';
-        } else if (d.type === 'npc') {
+        if (d.type === 'player') return; // skip - sudah dirender main loop
+        else if (d.type === 'npc') {
             const {n, px:nx2, py:ny2, nW, nH} = d;
             // Shadow
-            ctx.fillStyle='rgba(0,0,0,0.22)';
-            ctx.beginPath(); ctx.ellipse(nx2+nW/2, ny2+nH*0.95, nW*0.4, nH*0.1, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.ellipse(nx2+nW/2, ny2+nH-5, nW/3, 4, 0, 0, Math.PI*2); ctx.fill();
             // Float effect untuk fairy_npc
-            const floatOff = (n.type==='fairy_npc') ? Math.sin(t/600+nx2)*3 : 0;
-            const imgSrc2 = n.imgSrc||n.sprite||'';
-            const cachedNpc = fvSpriteCache[imgSrc2];
-            if (cachedNpc && cachedNpc.complete && cachedNpc.naturalWidth>0) {
-                ctx.drawImage(cachedNpc, nx2, ny2-floatOff, nW, nH);
+            let floatOff = 0;
+            if (n.id==='rara_wilis') {
+                floatOff = 0; // berdiri di tanah
+            } else if (n.type==='fairy_npc' || n.type==='wander') {
+                floatOff = Math.sin(t/500+nx2)*5 - 8;
+            }
+            // Load sprite sama seperti drawNPC map utama
+            if (!n.imgSrc && n.sprite) n.imgSrc = n.sprite;
+            if (!n.loadedImg) {
+                n.loadedImg = new Image();
+                n.loadedImg.src = n.imgSrc || 'images/rarawilis.png';
+            }
+            if (n.loadedImg.complete && n.loadedImg.naturalWidth>0) {
+                ctx.drawImage(n.loadedImg, nx2, ny2+floatOff, nW, nH);
             } else {
-                if (imgSrc2 && !cachedNpc) { const i2=new Image(); i2.src=imgSrc2; fvSpriteCache[imgSrc2]=i2; }
-                ctx.font=`${nH*0.7}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-                ctx.fillText('🧚', nx2+nW/2, ny2+nH/2-floatOff);
+                ctx.font=`${nH*0.6}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText('🧚', nx2+nW/2, ny2+nH/2+floatOff);
                 ctx.textAlign='left'; ctx.textBaseline='alphabetic';
             }
             // Nametag
             if (!n.noNameTag && n.name) {
-                ctx.font='bold 7px Nunito,sans-serif';
+                ctx.font='bold 9px Nunito,sans-serif';
                 const _nw2 = ctx.measureText(n.name).width+6;
                 ctx.fillStyle='rgba(30,5,60,0.7)';
-                ctx.fillRect(nx2+nW/2-_nw2/2, ny2-floatOff-12, _nw2, 11);
+                ctx.fillRect(nx2+nW/2-_nw2/2, ny2+floatOff-14, _nw2, 12);
                 ctx.fillStyle='#e9d5ff'; ctx.textAlign='center';
-                ctx.fillText(n.name, nx2+nW/2, ny2-floatOff-3);
+                ctx.fillText(n.name, nx2+nW/2, ny2+floatOff-4);
                 ctx.textAlign='left';
             }
-            // Sparkle di atas Rara Wilis
+            // Sparkle Rara Wilis
             if (n.id==='rara_wilis') {
                 const sz=0.4+0.3*Math.sin(t/300);
                 ctx.fillStyle=`rgba(255,220,80,${sz})`;
                 ctx.font=`${TS*0.7}px serif`; ctx.textAlign='center';
-                ctx.fillText('✨', nx2+nW/2, ny2-floatOff-14);
+                ctx.fillText('✨', nx2+nW/2, ny2-16);
                 ctx.textAlign='left';
             }
         } else if (d.type === 'fairy') {
             const {f, px:fx, py:fy} = d;
-            const floatOff2 = Math.sin(t/700 + fx*0.01)*4;
-            ctx.fillStyle='rgba(0,0,0,0.18)';
-            ctx.beginPath(); ctx.ellipse(fx+TS*0.5, fy+TS*1.1, TS*0.3, TS*0.1, 0, 0, Math.PI*2); ctx.fill();
+            const floatOff2 = Math.sin(t/700 + fx*0.01)*5 - 8;
+            // Shadow
+            ctx.fillStyle='rgba(0,0,0,0.25)';
+            ctx.beginPath(); ctx.ellipse(fx+19, fy+58-5, 13, 4, 0, 0, Math.PI*2); ctx.fill();
+            // Sprite peri ukuran 38×58 (sama NPC)
             const imgSrc3 = _khImg(f);
             const cached3 = fvSpriteCache[imgSrc3];
             if (cached3 && cached3.complete && cached3.naturalWidth>0) {
-                const sw3=TS*1.0, sh3=TS*1.4;
-                ctx.drawImage(cached3, fx-sw3/2+TS*0.5, fy-sh3*0.6-floatOff2, sw3, sh3);
+                ctx.drawImage(cached3, fx, fy+floatOff2, 38, 58);
             } else {
                 if (!cached3) { const i2=new Image(); i2.src=imgSrc3; fvSpriteCache[imgSrc3]=i2; }
-                ctx.font=`${TS*0.85}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-                ctx.fillText(f.gender==='boy'?'🧚‍♂️':'🧚‍♀️', fx+TS*0.5, fy+TS*0.3-floatOff2);
+                ctx.font=`38px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText(f.gender==='boy'?'🧚‍♂️':'🧚‍♀️', fx+19, fy+29+floatOff2);
                 ctx.textAlign='left'; ctx.textBaseline='alphabetic';
             }
             // Nametag peri
-            ctx.font='6px Nunito,sans-serif';
-            const _fnw = ctx.measureText(f.name).width+4;
-            ctx.fillStyle='rgba(30,5,60,0.65)';
-            ctx.fillRect(fx+TS*0.5-_fnw/2, fy-floatOff2-10, _fnw, 9);
-            ctx.fillStyle='#fde68a'; ctx.textAlign='center';
-            ctx.fillText(f.name, fx+TS*0.5, fy-floatOff2-3);
+            ctx.font='bold 9px Nunito,sans-serif';
+            const _fw = ctx.measureText(f.name||'').width+6;
+            ctx.fillStyle='rgba(30,5,60,0.7)';
+            ctx.fillRect(fx+19-_fw/2, fy+floatOff2-14, _fw, 12);
+            ctx.fillStyle='#f9a8d4'; ctx.textAlign='center';
+            ctx.fillText(f.name||'', fx+19, fy+floatOff2-4);
             ctx.textAlign='left';
         }
     });
@@ -46447,16 +46321,15 @@ function drawFairyWorld(ts) {
     // ── PARTIKEL MUSIM — sinkron STATE.season dunia manusia ─────
     drawFVSeasonParticles(ctx, W, H, t, _season);
 
-    ctx.restore();
-
     // Dialog overlay
     if (fvActiveDialog) drawFVDialog(ctx, W, H);
 
-    // Timer bar bangunan aktif (di atas canvas, tidak perlu translate)
+    // Timer bar dan Minimap (screen space - kompensasi kamera)
+    ctx.save();
+    ctx.translate(Math.floor(fvCam.x), Math.floor(fvCam.y));
     drawFVBuildTimerBar(ctx, W, fv, now);
-
-    // Minimap
     drawFVMinimap(ctx, W, H, fv);
+    ctx.restore();
 }
 
 // ── Timer bar konstruksi ───────────────────────────────────────
@@ -46614,16 +46487,14 @@ function drawFVMinimap(ctx, W, H, fv) {
     ctx.beginPath(); ctx.arc(rrx+sx, rry+sy, 2.5, 0, Math.PI*2); ctx.fill();
 
     // Peri wandering (pink dot kecil, dari fv.fairies)
-    (fv.fairies||[]).forEach(f => {
-        const rt = fvNpcRuntime['fv_'+f.id] || null;
-        // Cari posisi dari runtime NPC atau default ke posisi Rara
+    (fv.fairies||[]).forEach((f, idx) => {
+        const rt = fvNpcRuntime['fairy_'+f.id] || null;
         let fx, fy;
         if (rt) {
             fx = mx + (rt.px/TS)*sx;
             fy = my + (rt.py/TS)*sy;
         } else {
             // Posisi default — scatter berdasar index
-            const idx = (fv.fairies||[]).indexOf(f);
             fx = mx + (FV_RARA_POS.x+2+idx%3)*sx;
             fy = my + (FV_RARA_POS.y+1+Math.floor(idx/3))*sy;
         }
@@ -47477,7 +47348,7 @@ const FVBI_BG = {
     menara_wilis:    'images/menara-tier2.png',
     menara_cahaya:   'images/menara-tier3.png',
     // Istana
-    istana_mini:     'images/istana-tier1.png',
+    istana_mini:     'images/istanaperi.png',
 };
 
 // Slot index sedang di-assign
