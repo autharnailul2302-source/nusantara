@@ -18545,7 +18545,7 @@ ${reward.tip}`,
                         {
                             id: 'rara_wilis',
                             name: 'Rara Wilis',
-                            x: 2, y: 2,
+                            x: 28, y: 17,
                             w: 38, h: 58,
                             imgSrc: 'images/rarawilis.png',
                             sprite: 'images/rarawilis.png',
@@ -26385,9 +26385,14 @@ ${reward.tip}`,
                         const fv = getFairyVillage();
                         const bldg = (fv.buildings||[]).find(bl => bl.slotId === entranceBuilding._fvSlotId);
                         const slot = FAIRY_SLOTS ? FAIRY_SLOTS.find(s=>s.id===entranceBuilding._fvSlotId) : null;
-                        if (bldg && slot && typeof openBuildingInterior === 'function') {
+                        if (bldg && slot) {
                             if (typeof AudioService !== 'undefined') AudioService.playSFX('door');
-                            openBuildingInterior(bldg, slot);
+                            // Istana = menu management Kahyangan (sama seperti Rara Wilis)
+                            if (bldg.bid === 'istana_mini' || bldg.bid === 'pohon_kehidupan') {
+                                if (typeof openRaraWilisDialog === 'function') openRaraWilisDialog();
+                            } else {
+                                if (typeof openBuildingInterior === 'function') openBuildingInterior(bldg, slot);
+                            }
                         }
                         return;
                     }
@@ -38495,53 +38500,54 @@ Pilih masakan:
                 // FIX: Bangunan Fairy Village — render pakai gambar tier untuk hunian, emoji untuk lainnya
                 if (b.id && b.id.startsWith('fv_bld_')) {
                     const _ts = (typeof TS !== 'undefined') ? TS : 40;
+                    const _vs = (typeof FV_BLDG_VISUAL_SCALE !== 'undefined') ? FV_BLDG_VISUAL_SCALE : 1.8;
                     const bx = b.x * _ts, by = b.y * _ts;
                     const bw = (b.w || 2) * _ts, bh = (b.h || 2) * _ts;
+                    // Visual scale — lebih besar, anchor bawah agar nempel tanah
+                    const vw = bw * _vs, vh = bh * _vs;
+                    const vx = bx + bw/2 - vw/2;
+                    const vy = by + bh - vh;
                     const bid2 = b._fvBid || '';
 
-                    // Gambar bangunan langsung di posisi tile (nempel tanah seperti map utama)
+                    // Gambar bangunan dengan ukuran visual (besar, anchor bawah)
                     const _omahMap = { pondok_peri: 1, rumah_peri: 2, dalem_widadari: 3 };
                     const _omahTier = _omahMap[bid2];
                     let drawn = false;
                     if (_omahTier && typeof FV_OMAH_IMAGES !== 'undefined') {
                         const _img = FV_OMAH_IMAGES[_omahTier];
                         if (_img && _img.complete && _img.naturalWidth > 0) {
-                            ctx.drawImage(_img, bx, by, bw, bh);
+                            ctx.drawImage(_img, vx, vy, vw, vh);
                             drawn = true;
                         }
                     }
                     if (!drawn && typeof drawFVBuildingCanvas === 'function') {
-                        drawFVBuildingCanvas(ctx, bid2, bx, by, bw, bh, performance.now());
+                        drawFVBuildingCanvas(ctx, bid2, vx, vy, vw, vh, performance.now());
                         drawn = true;
                     }
 
-                    // ── Label PILL di ATAS bangunan (sama dengan map utama) ──
+                    // ── Label PILL di ATAS bangunan (pakai posisi visual) ──
                     if (b.name) {
                         ctx.save();
                         const labelText = (b._fvEmoji||'🏠') + ' ' + b.name.replace(/^[^ ]+ /,'');
                         ctx.font = 'bold 9px Nunito, sans-serif';
                         const tw = ctx.measureText(labelText).width;
                         const pillW = tw + 16, pillH = 18;
-                        const pillX = bx + bw/2 - pillW/2;
-                        const pillY = by - 26;
-                        // Shadow
+                        const pillX = vx + vw/2 - pillW/2;
+                        const pillY = vy - 26; // di atas gambar visual
                         ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=6; ctx.shadowOffsetY=3;
-                        // Background pill ungu (tema peri)
                         ctx.fillStyle='rgba(30,5,60,0.92)';
                         ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, 5); ctx.fill();
                         ctx.shadowBlur=0; ctx.shadowOffsetY=0;
-                        // Border warna tier
                         const tierColors=['#d97706','#2563eb','#9333ea','#ea580c','#ca8a04'];
                         ctx.strokeStyle=tierColors[b._fvTier||0]||'#9333ea'; ctx.lineWidth=1.5;
                         ctx.beginPath(); ctx.roundRect(pillX, pillY, pillW, pillH, 5); ctx.stroke();
-                        // Teks
                         ctx.fillStyle='#e9d5ff'; ctx.textAlign='center'; ctx.textBaseline='middle';
-                        ctx.fillText(labelText, bx+bw/2, pillY+pillH/2);
+                        ctx.fillText(labelText, vx+vw/2, pillY+pillH/2);
                         ctx.textAlign='left'; ctx.textBaseline='alphabetic';
                         ctx.restore();
                     }
 
-                    // ── Portal entrance (sama dengan map utama) ──
+                    // ── Portal entrance ──
                     if (b.entrance) {
                         const ex = b.entrance.x * _ts;
                         const ey = b.entrance.y * _ts;
@@ -44418,7 +44424,7 @@ const FAIRY_SLOTS = [
 ];
 
 // Posisi NPC & objek penting — proporsional
-const FV_RARA_POS  = { x:2,  y:2  };   // Rara Wilis — pojok kiri atas
+const FV_RARA_POS  = { x:28, y:17 };   // Rara Wilis — tengah peta
 const FV_POHON_POS = { x:21, y:24 };   // Pohon Energi — tengah-bawah
 // Pohon dekoratif pinggir peta
 const FV_DECO_TREES = [
@@ -44446,6 +44452,13 @@ let fvBgImage = null;
 (function(){
     fvBgImage = new Image();
     fvBgImage.src = 'images/kayangan.png';
+})();
+
+// ── POHON ENERGI IMAGE ──
+let fvPohonImg = null;
+(function(){
+    fvPohonImg = new Image();
+    fvPohonImg.src = 'images/pohonperi.png';
 })();
 
 // ── HUNIAN TIER IMAGES: omah-tier1.png, omah-tier2.png, omah-tier3.png ──
@@ -45202,12 +45215,6 @@ function refreshFairyVillageMap() {
     // FIX: Gunakan posisi yang benar dari FV_RARA_POS dan FV_POHON_POS
     // Sebelumnya pakai x:113, y:4 yang SALAH BESAR (di luar peta FW=60!)
     const buildings = [
-        {
-            id: 'rara_wilis_bld',
-            x: FV_RARA_POS.x, y: FV_RARA_POS.y,
-            w: 2, h: 3,
-            solid: true, name: 'Rara Wilis'
-        },
         {
             id: 'pohon_energi_bld',
             x: FV_POHON_POS.x, y: FV_POHON_POS.y,
@@ -46115,14 +46122,19 @@ function drawFairyWorld(ts) {
 
     // Bangunan dirender oleh main loop via drawBuilding — tidak perlu render ulang di sini
 
-    // ── Pohon Energi (Canvas drawn) — render lebih besar ──    // ── Pohon Energi (Canvas drawn) — render lebih besar ──
-    const poHitW = TS*3, poHitH = TS*3; // hitbox 3x3 tile
-    const poVS = 2.8; // lebih besar dari bangunan biasa (FV_BLDG_VISUAL_SCALE)
+    // ── Pohon Energi — pakai gambar pohonperi.png, paling besar di peta ──
+    const poHitW = TS*3, poHitH = TS*3;
+    const poVS = 3.5; // pohon paling besar
     const poVW = poHitW * poVS, poVH = poHitH * poVS;
     const poX = FV_POHON_POS.x*TS, poY = FV_POHON_POS.y*TS;
     const poVX = poX + poHitW/2 - poVW/2;
-    const poVY = poY + poHitH - poVH;
-    drawFVPohonEnergi(ctx, poVX, poVY, poVW/2, t);
+    const poVY = poY + poHitH - poVH; // anchor bawah
+    if (fvPohonImg && fvPohonImg.complete && fvPohonImg.naturalWidth > 0) {
+        ctx.drawImage(fvPohonImg, poVX, poVY, poVW, poVH);
+    } else {
+        // Fallback canvas jika gambar belum load
+        drawFVPohonEnergi(ctx, poVX, poVY, poVW/2, t);
+    }
     const distP = Math.hypot(fvPlayer.x-(poX+TS), fvPlayer.y-(poY+TS));
     if (distP < TS*3.5) {
         ctx.fillStyle='#fbbf24'; ctx.font='bold 22px sans-serif'; ctx.textAlign='center';
