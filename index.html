@@ -23066,17 +23066,29 @@ ${reward.tip}`,
                     let closestNPC = null;
                     let minNPCDist = 80; // Radius deteksi NPC
 
+                    // FIX fairyVillage: gunakan tile size & posisi runtime yang benar
+                    const _btnTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+
                     for (let npc of map.npcs) {
                         if (!isNPCActive(npc)) continue;
                         const pCX = STATE.player.x + (STATE.player.w / 2);
                         const pCY = STATE.player.y + (STATE.player.h / 2);
-                        const nCX = (npc.x * TILE_SIZE) + ((npc.w || 40) / 2);
-                        const nCY = (npc.y * TILE_SIZE) + ((npc.h || 60) / 2);
 
+                        let nCX, nCY;
+                        if (STATE.location === 'fairyVillage' && typeof fvNpcRuntime !== 'undefined' && fvNpcRuntime[npc.id]) {
+                            const rt = fvNpcRuntime[npc.id];
+                            nCX = rt.px + 19;
+                            nCY = rt.py + 29;
+                        } else {
+                            nCX = (npc.x * _btnTS) + ((npc.w || 40) / 2);
+                            nCY = (npc.y * _btnTS) + ((npc.h || 60) / 2);
+                        }
+
+                        const radius = STATE.location === 'fairyVillage' ? _btnTS * 2.5 : 80;
                         const dist = Math.hypot(pCX - nCX, pCY - nCY);
-                        if (dist < minNPCDist) {
+                        if (dist < radius && dist < minNPCDist) {
                             closestNPC = npc;
-                            break;
+                            minNPCDist = dist;
                         }
                     }
 
@@ -23088,6 +23100,12 @@ ${reward.tip}`,
                             actionIcon = '✨';
                         } else {
                             actionIcon = '💬';
+                        }
+                        // FIX fairyVillage: simpan nama NPC untuk label tombol
+                        if (STATE.location === 'fairyVillage' && closestNPC.name) {
+                            btnAction.dataset.fvLabel = actionIcon + ' ' + closestNPC.name;
+                        } else {
+                            btnAction.dataset.fvLabel = '';
                         }
                     }
 
@@ -23180,7 +23198,16 @@ ${reward.tip}`,
                 // UPDATE DOM BUTTON
                 if (showActionButton) {
                     btnAction.style.display = 'flex';
-                    btnAction.innerText = actionIcon;
+                    // FIX fairyVillage: tampilkan nama NPC di tombol (misal "💬 Wening")
+                    if (STATE.location === 'fairyVillage' && btnAction.dataset.fvLabel) {
+                        btnAction.innerText = btnAction.dataset.fvLabel;
+                        btnAction.style.fontSize = '11px';
+                        btnAction.style.padding = '6px 12px';
+                    } else {
+                        btnAction.innerText = actionIcon;
+                        btnAction.style.fontSize = '';
+                        btnAction.style.padding = '';
+                    }
 
                     // --- NEW: DYNAMIC ACTION TOOLTIP (PENJELASAN FUNGSI TOMBOL) ---
                     if (actionIcon === '⚔️') btnAction.title = "Serang Musuh (Attack)";
@@ -23501,6 +23528,9 @@ ${reward.tip}`,
                 STATE.camera.y = Math.max(0, Math.min(STATE.camera.y, curMap.h * _mapTileSize - GAME_HEIGHT));
 
                 curMap.npcs.forEach(npc => {
+                    // FIX: fairyVillage NPC dikelola sepenuhnya oleh fvNpcRuntime di drawFairyWorld, skip di sini
+                    if (STATE.location === 'fairyVillage') return;
+
                     const distToPlayer = Math.hypot(STATE.player.x - npc.x * TILE_SIZE, STATE.player.y - npc.y * TILE_SIZE);
 
                     // --- NEW: EFEK NYANYIAN (BUBBLE NADA) UNTUK DUYUNG, SENIMAN & PENYANYI ---
@@ -26118,23 +26148,23 @@ ${reward.tip}`,
                     const npcW = npc.w || 40;
                     const npcH = npc.h || 60;
 
-                    // Posisi pixel kiri-atas NPC
-                    const npcPX = npc.x * TILE_SIZE;
-                    const npcPY = npc.y * TILE_SIZE;
+                    // FIX: Di fairyVillage, pakai posisi runtime (wandering) bukan posisi tile statis
+                    let npcPX, npcPY;
+                    if (STATE.location === 'fairyVillage' && typeof fvNpcRuntime !== 'undefined' && fvNpcRuntime[npc.id]) {
+                        npcPX = fvNpcRuntime[npc.id].px;
+                        npcPY = fvNpcRuntime[npc.id].py;
+                    } else {
+                        npcPX = npc.x * TILE_SIZE;
+                        npcPY = npc.y * TILE_SIZE;
+                    }
 
                     // ── HITBOX NPC: hanya area KAKI (bawah 30% sprite) ──
-                    // Ini membuat player bisa berjalan di belakang NPC (kepala/badan tidak solid)
-                    // tapi tidak bisa menembus kaki/tubuh bawah NPC dari depan/samping
-                    const footH    = Math.round(npcH * 0.30); // tinggi zona solid (kaki)
-                    const footTop  = npcPY + npcH - footH;    // Y atas zona solid
-                    const footLeft = npcPX + Math.round(npcW * 0.15); // sedikit inden kiri
-                    const footW    = Math.round(npcW * 0.70);  // lebar zona solid
+                    const footH    = Math.round(npcH * 0.30);
+                    const footTop  = npcPY + npcH - footH;
+                    const footLeft = npcPX + Math.round(npcW * 0.15);
+                    const footW    = Math.round(npcW * 0.70);
 
-                    // Hitbox player (kaki player) — sesuai dengan drawPlayer
-                    // player.x/y adalah posisi kaki kiri player, hitbox 20×20
-                    const pw = 20, ph = 16; // sedikit lebih kecil dari 20 agar tidak terlalu sensitif
-
-                    // AABB check
+                    const pw = 20, ph = 16;
                     const colX = x + pw > footLeft && x < footLeft + footW;
                     const colY = y + ph > footTop  && y < footTop  + footH;
 
@@ -26142,6 +26172,30 @@ ${reward.tip}`,
                         return npc;
                     }
                 }
+
+                // FIX: Collision untuk peri wandering bebas (fv.fairies non-default) di fairyVillage
+                if (STATE.location === 'fairyVillage' && typeof fvNpcRuntime !== 'undefined') {
+                    const _DEFAULT_FAIRY_IDS = new Set(['t1','t2','t3','t4','t5']);
+                    const _fvData2 = (typeof getFairyVillage === 'function') ? getFairyVillage() : null;
+                    if (_fvData2 && _fvData2.fairies) {
+                        for (const f of _fvData2.fairies) {
+                            if (_DEFAULT_FAIRY_IDS.has(f.id)) continue;
+                            const rt = fvNpcRuntime['fairy_'+f.id];
+                            if (!rt) continue;
+                            const nW = 38, nH = 58;
+                            const fFootH   = Math.round(nH * 0.30);
+                            const fFootTop = rt.py + nH - fFootH;
+                            const fFootL   = rt.px + Math.round(nW * 0.15);
+                            const fFootW   = Math.round(nW * 0.70);
+                            const pw = 20, ph = 16;
+                            if (x + pw > fFootL && x < fFootL + fFootW &&
+                                y + ph > fFootTop && y < fFootTop + fFootH) {
+                                return f;
+                            }
+                        }
+                    }
+                }
+
                 return null;
             }
 
@@ -26523,17 +26577,30 @@ ${reward.tip}`,
                 let closestNPC = null;
                 let minNPCDist = 60; // Pixel
 
+                // FIX fairyVillage: gunakan fvNpcRuntime untuk posisi NPC wander & TS sebagai tile size
+                const _iTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+
                 for (let npc of map.npcs) {
                     if (!isNPCActive(npc)) continue;
 
                     const pCX = STATE.player.x + 10;
                     const pCY = STATE.player.y + 10;
-                    const nCX = (npc.x * TILE_SIZE) + 15;
-                    const nCY = (npc.y * TILE_SIZE) + 30; // Kaki NPC
+
+                    let nCX, nCY;
+                    if (STATE.location === 'fairyVillage' && typeof fvNpcRuntime !== 'undefined' && fvNpcRuntime[npc.id]) {
+                        // Posisi aktual dari runtime (sudah bergerak)
+                        const rt = fvNpcRuntime[npc.id];
+                        nCX = rt.px + 19;
+                        nCY = rt.py + 29;
+                    } else {
+                        nCX = (npc.x * _iTS) + 15;
+                        nCY = (npc.y * _iTS) + 30;
+                    }
 
                     const dist = Math.hypot(pCX - nCX, pCY - nCY);
+                    const radius = STATE.location === 'fairyVillage' ? _iTS * 2.5 : 60;
 
-                    if (dist < minNPCDist) {
+                    if (dist < radius && dist < minNPCDist) {
                         closestNPC = npc;
                         minNPCDist = dist; // Cari yang paling dekat
                     }
@@ -36881,10 +36948,12 @@ Pilih masakan:
                 const scaledWidth = GAME_WIDTH;
                 const scaledHeight = GAME_HEIGHT;
 
-                const startCol = Math.floor(STATE.camera.x / TILE_SIZE);
-                const endCol = startCol + (scaledWidth / TILE_SIZE) + 1;
-                const startRow = Math.floor(STATE.camera.y / TILE_SIZE);
-                const endRow = startRow + (scaledHeight / TILE_SIZE) + 1;
+                // FIX: gunakan TS untuk fairyVillage agar tile range tepat
+                const _renderTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                const startCol = Math.floor(STATE.camera.x / _renderTS);
+                const endCol = startCol + (scaledWidth / _renderTS) + 1;
+                const startRow = Math.floor(STATE.camera.y / _renderTS);
+                const endRow = startRow + (scaledHeight / _renderTS) + 1;
 
                 let isBgLoaded = false;
                 if (STATE.location === 'village') {
@@ -37656,15 +37725,19 @@ Pilih masakan:
                     });
                 }
 
-                renderList.push({
-                    type: 'player',
-                    // Y-sort pakai posisi KAKI player yang sebenarnya
-                    // Player sprite digambar: ctx.translate(p.x+p.w/2, p.y+p.h/2) lalu drawImage(-19,-46,38,58)
-                    // → kaki sprite ada di p.y + p.h/2 + (58-46) = p.y + 10 + 12 = p.y + 22
-                    // Gunakan p.y + 22 agar y-sort tepat di kaki
-                    y: STATE.player.y + 22,
-                    data: STATE.player
-                });
+                // FIX: Di fairyVillage, player dirender oleh drawFairyWorld() dengan Y-sort bersama peri NPC
+                // Agar player tidak selalu di bawah peri, skip dari renderList di sini
+                if (STATE.location !== 'fairyVillage') {
+                    renderList.push({
+                        type: 'player',
+                        // Y-sort pakai posisi KAKI player yang sebenarnya
+                        // Player sprite digambar: ctx.translate(p.x+p.w/2, p.y+p.h/2) lalu drawImage(-19,-46,38,58)
+                        // → kaki sprite ada di p.y + p.h/2 + (58-46) = p.y + 10 + 12 = p.y + 22
+                        // Gunakan p.y + 22 agar y-sort tepat di kaki
+                        y: STATE.player.y + 22,
+                        data: STATE.player
+                    });
+                }
 
                 // --- NEW: RENDER HANTU PEMAIN LAIN ---
                 if (STATE.ghosts && STATE.ghosts.length > 0) {
@@ -37681,6 +37754,8 @@ Pilih masakan:
                 }
 
                 map.npcs.forEach(n => {
+                    // FIX: Skip NPC render di fairyVillage — drawFairyWorld() sudah render semua NPC di sana
+                    if (STATE.location === 'fairyVillage') return;
                     if (!isNPCActive(n)) return;
 
                     // Y-sort NPC: pakai posisi KAKI sprite
@@ -38494,8 +38569,8 @@ Pilih masakan:
             }
 
             function drawBuilding(ctx, b) {
-                // Bangunan collision-only di fairy village (sudah ada sprite NPC) — skip render
-                if (b.id === 'rara_wilis_bld' || b.id === 'pohon_energi_bld') return;
+                // Bangunan collision-only di fairy village (sudah ada sprite NPC/gambar khusus) — skip render
+                if (b.id === 'rara_wilis_bld' || b.id === 'pohon_energi_bld' || b.id === 'fv_istana_bld') return;
 
                 // FIX: Bangunan Fairy Village — render pakai gambar tier untuk hunian, emoji untuk lainnya
                 if (b.id && b.id.startsWith('fv_bld_')) {
@@ -44426,6 +44501,7 @@ const FAIRY_SLOTS = [
 // Posisi NPC & objek penting — proporsional
 const FV_RARA_POS  = { x:28, y:17 };   // Rara Wilis — tengah peta
 const FV_POHON_POS = { x:21, y:24 };   // Pohon Energi — tengah-bawah
+const FV_ISTANA_POS = { x:25, y:8  };  // Istana Peri — tengah-atas peta, tidak terpotong
 // Pohon dekoratif pinggir peta
 const FV_DECO_TREES = [
     {x:2,y:1},{x:8,y:1},{x:15,y:1},{x:30,y:1},{x:38,y:1},{x:43,y:1},
@@ -44525,6 +44601,7 @@ const FV_MENARA_IMAGES = {};
 const FV_ISTANA_IMAGES = {};
 (function(){
     const img = new Image();
+    img.onerror = function() { console.warn('istanaperi.png gagal load — cek path images/istanaperi.png'); };
     img.src = 'images/istanaperi.png';
     FV_ISTANA_IMAGES[1] = img;
 })();
@@ -45221,6 +45298,22 @@ function refreshFairyVillageMap() {
             w: 3, h: 3,
             solid: true, name: 'Pohon Energi'
         },
+        {
+            // Istana Peri — landmark permanen, solid, punya pintu masuk
+            id: 'fv_istana_bld',
+            x: FV_ISTANA_POS.x, y: FV_ISTANA_POS.y,
+            w: 3, h: 3,
+            solid: true,
+            type: 'fv_building',
+            name: '🏰 Puri Agung Wilis',
+            _fvEmoji: '🏰',
+            _fvTier: 4,
+            _fvBid: 'istana_mini',
+            _fvSlotId: 'istana_fixed',
+            // Pintu di tengah bawah bangunan
+            entrance: { x: FV_ISTANA_POS.x + 1, y: FV_ISTANA_POS.y + 3 },
+            open24h: true,
+        },
     ];
 
     // Tambahkan bangunan yang sudah selesai dibangun
@@ -45552,6 +45645,25 @@ function updateFVActionBtn() {
         btn.textContent='✨ Kumpulkan Serbuk Wilis';
         btn.onclick = collectFairyDust;
         return;
+    }
+
+    // Peri NPC wandering (Wening, Sekar, Bening, Juna)
+    // Posisi runtime diambil dari fvNpcRuntime karena mereka bergerak
+    const _fvWanderNPCs = [
+        { id:'fv_wening', label:'💬 Bicara dengan Wening',  fn: openFairyNPCDialog_fv_wening },
+        { id:'fv_sekar',  label:'💬 Bicara dengan Sekar',   fn: openFairyNPCDialog_fv_sekar  },
+        { id:'fv_bening', label:'💬 Bicara dengan Bening',  fn: openFairyNPCDialog_fv_bening },
+        { id:'fv_juna',   label:'💬 Bicara dengan Juna',    fn: openFairyNPCDialog_fv_juna   },
+    ];
+    for (const npcDef of _fvWanderNPCs) {
+        const rt = fvNpcRuntime[npcDef.id];
+        if (!rt) continue;
+        if (Math.hypot(px - (rt.px + 19), py - (rt.py + 29)) < TS * 2.5) {
+            btn.style.display = 'block';
+            btn.textContent = npcDef.label;
+            btn.onclick = npcDef.fn;
+            return;
+        }
     }
 
     btn.style.display='none';
@@ -45908,10 +46020,8 @@ function drawFVBuildingCanvas(ctx, bid, bx, by, bw, bh, t) {
     } else if (bid==='istana_mini') {
         const imgIs1 = FV_ISTANA_IMAGES[1];
         if (imgIs1 && imgIs1.complete && imgIs1.naturalWidth > 0) {
-            const srcAR=700/400, dstAR=bw/bh; let sx=0,sy=0,sw=700,sh=400;
-            if (srcAR>dstAR){sw=Math.round(400*dstAR);sx=Math.round((700-sw)/2);}
-            else{sh=Math.round(700/dstAR);sy=Math.round((400-sh)/2);}
-            ctx.drawImage(imgIs1,sx,sy,sw,sh,bx,by,bw,bh);
+            // FIX: gambar langsung tanpa crop — sesuaikan ke ukuran slot
+            ctx.drawImage(imgIs1, bx, by, bw, bh);
         } else {
             wall('#fef9c3');
             [[bx,by+bh*0.15,bw*0.22],[bx+bw*0.78,by+bh*0.15,bw*0.22]].forEach(([tx2,ty2,tw2])=>{
@@ -46122,6 +46232,67 @@ function drawFairyWorld(ts) {
 
     // Bangunan dirender oleh main loop via drawBuilding — tidak perlu render ulang di sini
 
+    // ── ISTANA PERI — landmark permanen, selalu tampil penuh seperti bangunan lain ──
+    {
+        const isHitW = TS*3, isHitH = TS*3;
+        const isVS   = 2.2;
+        const isVW   = isHitW * isVS, isVH = isHitH * isVS;
+        const isX    = FV_ISTANA_POS.x * TS, isY = FV_ISTANA_POS.y * TS;
+        const isVX   = isX + isHitW/2 - isVW/2;
+        const isVY   = isY + isHitH   - isVH; // anchor bawah
+
+        const imgIs = FV_ISTANA_IMAGES[1];
+        if (imgIs && imgIs.complete && imgIs.naturalWidth > 0) {
+            ctx.drawImage(imgIs, isVX, isVY, isVW, isVH);
+        } else {
+            // Fallback canvas — istana megah tanpa efek transparan
+            const cx2 = isVX + isVW/2;
+            // Badan utama
+            ctx.fillStyle = '#fef9c3';
+            ctx.beginPath(); ctx.roundRect(isVX + isVW*0.1, isVY + isVH*0.3, isVW*0.8, isVH*0.7, 6); ctx.fill();
+            // Menara kiri-kanan
+            [[isVX, isVY+isVH*0.15, isVW*0.22],[isVX+isVW*0.78, isVY+isVH*0.15, isVW*0.22]].forEach(([tx3,ty3,tw3])=>{
+                ctx.fillStyle = '#e2e8f0';
+                ctx.beginPath(); ctx.roundRect(tx3, ty3, tw3, isVH*0.85, 3); ctx.fill();
+                ctx.fillStyle = '#7c3aed';
+                ctx.beginPath(); ctx.moveTo(tx3,ty3); ctx.lineTo(tx3+tw3/2,isVY); ctx.lineTo(tx3+tw3,ty3); ctx.closePath(); ctx.fill();
+            });
+            // Atap tengah
+            ctx.fillStyle = '#7c3aed';
+            ctx.beginPath(); ctx.moveTo(isVX+isVW*0.18,isVY+isVH*0.35); ctx.lineTo(cx2,isVY+isVH*0.1); ctx.lineTo(isVX+isVW*0.82,isVY+isVH*0.35); ctx.closePath(); ctx.fill();
+            // Pintu
+            ctx.fillStyle = '#4c1d95';
+            ctx.beginPath(); ctx.roundRect(cx2 - isVW*0.1, isVY+isVH*0.72, isVW*0.2, isVH*0.28, [4,4,0,0]); ctx.fill();
+            // Jendela kiri-kanan
+            ctx.fillStyle = 'rgba(200,230,255,0.8)';
+            ctx.beginPath(); ctx.roundRect(isVX+isVW*0.2, isVY+isVH*0.45, isVW*0.12, isVH*0.13, 2); ctx.fill();
+            ctx.beginPath(); ctx.roundRect(isVX+isVW*0.68, isVY+isVH*0.45, isVW*0.12, isVH*0.13, 2); ctx.fill();
+            // Emoji
+            ctx.font = `${isVH*0.22}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText('🏰', cx2, isVY + isVH*0.22);
+            ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+        }
+
+        // Label nama — selalu tampil seperti bangunan lain
+        ctx.font = 'bold 9px Nunito,sans-serif';
+        const _iLabel = '🏰 Puri Agung Wilis';
+        const _iLW = ctx.measureText(_iLabel).width + 10;
+        ctx.fillStyle = 'rgba(30,5,60,0.85)';
+        ctx.beginPath(); ctx.roundRect(isX + isHitW/2 - _iLW/2, isVY - 16, _iLW, 13, 4); ctx.fill();
+        ctx.fillStyle = '#fde68a'; ctx.textAlign = 'center';
+        ctx.fillText(_iLabel, isX + isHitW/2, isVY - 5);
+        ctx.textAlign = 'left';
+
+        // Tanda seru jika player dekat (sama seperti Pohon Energi)
+        const distIs = Math.hypot(fvPlayer.x - (isX + TS), fvPlayer.y - (isY + TS));
+        if (distIs < TS * 4) {
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 22px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('!', isX + isHitW/2, isVY - 22);
+            ctx.textAlign = 'left';
+        }
+    }
+
     // ── Pohon Energi — pakai gambar pohonperi.png, paling besar di peta ──
     const poHitW = TS*3, poHitH = TS*3;
     const poVS = 3.5; // pohon paling besar
@@ -46167,13 +46338,24 @@ function drawFairyWorld(ts) {
         }
     });
     // Update wander NPCs
+    const _fvPx = typeof fvPlayer !== 'undefined' ? fvPlayer.x : -9999;
+    const _fvPy = typeof fvPlayer !== 'undefined' ? fvPlayer.y : -9999;
     _fvMapNpcs.forEach(n => {
         if (n.type !== 'wander') return;
         const rt = fvNpcRuntime[n.id];
         if (!rt) return;
+
+        // FIX: Stop NPC saat player dekat (radius TS*2.5) — sama seperti NPC darat main game
+        const _nCX = rt.px + 19, _nCY = rt.py + 29;
+        const _distToPlayer = Math.hypot(_fvPx + 10 - _nCX, _fvPy + 10 - _nCY);
+        if (_distToPlayer < TS * 2.5) {
+            rt.vx = 0; rt.vy = 0; // berhenti
+            n._rtx = rt.px / TS; n._rty = rt.py / TS;
+            return;
+        }
+
         rt.timer = (rt.timer||0) - 1;
         if (rt.timer <= 0) {
-            // Pilih arah baru
             const angle = Math.random() * Math.PI * 2;
             const spd = 0.3 + Math.random()*0.4;
             rt.vx = Math.cos(angle)*spd;
@@ -46184,13 +46366,11 @@ function drawFairyWorld(ts) {
         }
         const nx = rt.px + rt.vx;
         const ny = rt.py + rt.vy;
-        // Batas peta
+        // Bounce di batas peta
         rt.px = Math.max(TS, Math.min((FW-3)*TS, nx));
         rt.py = Math.max(TS, Math.min((FH-3)*TS, ny));
-        // Bounce di batas
-        if (nx<=TS || nx>=(FW-3)*TS) rt.vx *= -1;
-        if (ny<=TS || ny>=(FH-3)*TS) rt.vy *= -1;
-        // Sync ke npc record agar collision pakai posisi terbaru
+        if (nx<=TS || nx>=(FW-3)*TS) { rt.vx *= -1; rt.facing = rt.vx>0?'right':'left'; }
+        if (ny<=TS || ny>=(FH-3)*TS) { rt.vy *= -1; rt.facing = rt.vy>0?'down':'up'; }
         n._rtx = rt.px / TS;
         n._rty = rt.py / TS;
     });
@@ -46209,7 +46389,11 @@ function drawFairyWorld(ts) {
     });
 
     // Peri wandering (dari fv.fairies)
+    // Skip peri default (t1–t5: Rara Wilis, Wening, Sekar, Bening, Juna)
+    // karena mereka sudah dirender sebagai NPC peta (maps['fairyVillage'].npcs)
+    const _DEFAULT_FAIRY_IDS = ['t1','t2','t3','t4','t5'];
     fv.fairies.forEach((f,i)=>{
+        if (_DEFAULT_FAIRY_IDS.includes(f.id)) return; // sudah jadi NPC peta, skip
         if (!fvNpcRuntime['fairy_'+f.id]) {
             fvNpcRuntime['fairy_'+f.id] = {
                 px: (8+i*9)*TS + (Math.random()-0.5)*TS*4,
@@ -46217,67 +46401,85 @@ function drawFairyWorld(ts) {
                 vx: (Math.random()-0.5)*0.5,
                 vy: (Math.random()-0.5)*0.5,
                 timer: Math.random()*180,
-                facing: 'down'
+                facing: 'down',
+                stopped: false
             };
         }
         const rt = fvNpcRuntime['fairy_'+f.id];
-        rt.timer = (rt.timer||0) - 1;
-        if (rt.timer <= 0) {
-            const angle = Math.random() * Math.PI * 2;
-            const spd = 0.25 + Math.random()*0.35;
-            rt.vx = Math.cos(angle)*spd; rt.vy = Math.sin(angle)*spd;
-            rt.timer = 100 + Math.random()*200;
-            rt.facing = Math.abs(rt.vx)>Math.abs(rt.vy) ? (rt.vx>0?'right':'left') : (rt.vy>0?'down':'up');
+        // FIX: Stop saat player dekat (sama seperti NPC darat main game)
+        const _bfCX = rt.px + 19, _bfCY = rt.py + 29;
+        const _bfDist = Math.hypot(_fvPx + 10 - _bfCX, _fvPy + 10 - _bfCY);
+        if (_bfDist < TS * 2.5) {
+            rt.vx = 0; rt.vy = 0;
+        } else {
+            rt.timer = (rt.timer||0) - 1;
+            if (rt.timer <= 0) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = 0.25 + Math.random()*0.35;
+                rt.vx = Math.cos(angle)*spd; rt.vy = Math.sin(angle)*spd;
+                rt.timer = 100 + Math.random()*200;
+                rt.facing = Math.abs(rt.vx)>Math.abs(rt.vy) ? (rt.vx>0?'right':'left') : (rt.vy>0?'down':'up');
+            }
+            const _bfNx = rt.px+rt.vx, _bfNy = rt.py+rt.vy;
+            rt.px = Math.max(TS, Math.min((FW-3)*TS, _bfNx));
+            rt.py = Math.max(TS, Math.min((FH-3)*TS, _bfNy));
+            if (_bfNx<=TS || _bfNx>=(FW-3)*TS) { rt.vx*=-1; rt.facing = rt.vx>0?'right':'left'; }
+            if (_bfNy<=TS || _bfNy>=(FH-3)*TS) { rt.vy*=-1; rt.facing = rt.vy>0?'down':'up'; }
         }
-        rt.px = Math.max(TS, Math.min((FW-3)*TS, rt.px+rt.vx));
-        rt.py = Math.max(TS, Math.min((FH-3)*TS, rt.py+rt.vy));
-        if (rt.px<=TS || rt.px>=(FW-3)*TS) rt.vx*=-1;
-        if (rt.py<=TS || rt.py>=(FH-3)*TS) rt.vy*=-1;
         _drawables.push({ sortY: rt.py+TS*1.2, type:'fairy', f, px:rt.px, py:rt.py });
     });
 
-    // Player TIDAK dirender di sini — sudah dirender main loop via drawPlayer
-    // Hanya NPC map + peri wandering yang perlu Y-sorted di sini
+    // FIX: Masukkan player ke _drawables agar Y-sort bersama peri & NPC
+    // Kaki player ada di: p.y + p.h/2 + 12 = p.y + 22
+    _drawables.push({
+        sortY: fvPlayer.y + 22,
+        type: 'player_fv',
+        px: fvPlayer.x,
+        py: fvPlayer.y
+    });
 
-    // Sort by Y
+    // Sort by Y — player, peri, NPC semua diurutkan bersama
     _drawables.sort((a,b2) => a.sortY - b2.sortY);
 
-    // Draw semua (skip player)
+    // Draw semua termasuk player
     _drawables.forEach(d => {
-        if (d.type === 'player') return; // skip - sudah dirender main loop
-        else if (d.type === 'npc') {
+        if (d.type === 'player_fv') {
+            // Render player dengan drawPlayer — ukuran & animasi identik map utama (38×58)
+            if (typeof drawPlayer === 'function') drawPlayer(ctx, STATE.player);
+            return;
+        } else if (d.type === 'npc') {
             const {n, px:nx2, py:ny2, nW, nH} = d;
-            // Shadow
+            // Shadow di tanah (tetap di posisi kaki, tidak ikut animasi)
             ctx.fillStyle='rgba(0,0,0,0.3)';
             ctx.beginPath(); ctx.ellipse(nx2+nW/2, ny2+nH-5, nW/3, 4, 0, 0, Math.PI*2); ctx.fill();
-            // Float effect untuk fairy_npc
-            let floatOff = 0;
-            if (n.id==='rara_wilis') {
-                floatOff = 0; // berdiri di tanah
-            } else if (n.type==='fairy_npc' || n.type==='wander') {
-                floatOff = Math.sin(t/500+nx2)*5 - 8;
-            }
-            // Load sprite sama seperti drawNPC map utama
+            // Animasi nafas saja (sama seperti NPC darat di main game) — TIDAK melayang
+            const _fvBreathe = 1 + Math.sin(Date.now()/300) * 0.015;
+            // Load sprite
             if (!n.imgSrc && n.sprite) n.imgSrc = n.sprite;
             if (!n.loadedImg) {
                 n.loadedImg = new Image();
                 n.loadedImg.src = n.imgSrc || 'images/rarawilis.png';
             }
             if (n.loadedImg.complete && n.loadedImg.naturalWidth>0) {
-                ctx.drawImage(n.loadedImg, nx2, ny2+floatOff, nW, nH);
+                ctx.save();
+                // Pivot di kaki tengah agar tumbuh ke atas (sama persis main game drawNPC)
+                ctx.translate(Math.round(nx2+nW/2), Math.round(ny2+nH-5));
+                ctx.scale(1, _fvBreathe);
+                ctx.drawImage(n.loadedImg, -nW/2, -nH, nW, nH);
+                ctx.restore();
             } else {
                 ctx.font=`${nH*0.6}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-                ctx.fillText('🧚', nx2+nW/2, ny2+nH/2+floatOff);
+                ctx.fillText('🧚', nx2+nW/2, ny2+nH/2);
                 ctx.textAlign='left'; ctx.textBaseline='alphabetic';
             }
-            // Nametag
+            // Nametag (posisi tetap, tidak bergerak)
             if (!n.noNameTag && n.name) {
                 ctx.font='bold 9px Nunito,sans-serif';
                 const _nw2 = ctx.measureText(n.name).width+6;
                 ctx.fillStyle='rgba(30,5,60,0.7)';
-                ctx.fillRect(nx2+nW/2-_nw2/2, ny2+floatOff-14, _nw2, 12);
+                ctx.fillRect(nx2+nW/2-_nw2/2, ny2-14, _nw2, 12);
                 ctx.fillStyle='#e9d5ff'; ctx.textAlign='center';
-                ctx.fillText(n.name, nx2+nW/2, ny2+floatOff-4);
+                ctx.fillText(n.name, nx2+nW/2, ny2-4);
                 ctx.textAlign='left';
             }
             // Sparkle Rara Wilis
@@ -46290,28 +46492,33 @@ function drawFairyWorld(ts) {
             }
         } else if (d.type === 'fairy') {
             const {f, px:fx, py:fy} = d;
-            const floatOff2 = Math.sin(t/700 + fx*0.01)*5 - 8;
-            // Shadow
+            // Animasi nafas saja — TIDAK melayang (sama seperti NPC darat)
+            const _fvBreathe2 = 1 + Math.sin(Date.now()/300) * 0.015;
+            // Shadow di tanah
             ctx.fillStyle='rgba(0,0,0,0.25)';
             ctx.beginPath(); ctx.ellipse(fx+19, fy+58-5, 13, 4, 0, 0, Math.PI*2); ctx.fill();
-            // Sprite peri ukuran 38×58 (sama NPC)
+            // Sprite peri ukuran 38×58
             const imgSrc3 = _khImg(f);
             const cached3 = fvSpriteCache[imgSrc3];
             if (cached3 && cached3.complete && cached3.naturalWidth>0) {
-                ctx.drawImage(cached3, fx, fy+floatOff2, 38, 58);
+                ctx.save();
+                ctx.translate(Math.round(fx+19), Math.round(fy+53));
+                ctx.scale(1, _fvBreathe2);
+                ctx.drawImage(cached3, -19, -58, 38, 58);
+                ctx.restore();
             } else {
                 if (!cached3) { const i2=new Image(); i2.src=imgSrc3; fvSpriteCache[imgSrc3]=i2; }
                 ctx.font=`38px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-                ctx.fillText(f.gender==='boy'?'🧚‍♂️':'🧚‍♀️', fx+19, fy+29+floatOff2);
+                ctx.fillText(f.gender==='boy'?'🧚‍♂️':'🧚‍♀️', fx+19, fy+29);
                 ctx.textAlign='left'; ctx.textBaseline='alphabetic';
             }
-            // Nametag peri
+            // Nametag peri (posisi tetap)
             ctx.font='bold 9px Nunito,sans-serif';
             const _fw = ctx.measureText(f.name||'').width+6;
             ctx.fillStyle='rgba(30,5,60,0.7)';
-            ctx.fillRect(fx+19-_fw/2, fy+floatOff2-14, _fw, 12);
+            ctx.fillRect(fx+19-_fw/2, fy-14, _fw, 12);
             ctx.fillStyle='#f9a8d4'; ctx.textAlign='center';
-            ctx.fillText(f.name||'', fx+19, fy+floatOff2-4);
+            ctx.fillText(f.name||'', fx+19, fy-4);
             ctx.textAlign='left';
         }
     });
@@ -46531,26 +46738,26 @@ function drawFVMinimap(ctx, W, H, fv) {
 // ─────────────────────────────────────────────────────────────
 function openFairyNPCDialog_fv_wening() {
     showFVDialog('WENING', `Selamat datang kembali! 🌿\n\nAku Wening, Widadari penjaga hutan Wilis.\n\nDulu aku merawat ribuan pohon di lereng Gunung Wilis. Sekarang aku baru bisa merawat yang tersisa... tapi dengan bantuanmu, hutan itu perlahan tumbuh kembali.\n\n🌲 Pohon-pohon muda sudah mulai bertunas di sisi utara. Aku merasakan energinya!`,
-        [{ text: 'Teruskan perjuanganmu, Wening!', action: () => fvActiveDialog = null },
-         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        [{ text: 'Teruskan perjuanganmu, Wening!', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } },
+         { text: 'Kembali', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } }],
         'images/wening.png');
 }
 function openFairyNPCDialog_fv_sekar() {
     showFVDialog('SEKAR', `Hei! 🌸\n\nNamaku Sekar — aku peri bunga. Tugasku memastikan setiap bunga di Kahyangan Wilis mekar pada waktunya.\n\nSejak Kahyangan hampir punah, bunganya pun layu. Tapi lihat — kenanga dan melati di sudut selatan mulai mekar lagi!\n\n🌺 Aku sedang menanam taman bunga baru di dekat Pohon Beringin. Doakan berhasil ya!`,
-        [{ text: 'Taman bungamu pasti indah, Sekar!', action: () => fvActiveDialog = null },
-         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        [{ text: 'Taman bungamu pasti indah, Sekar!', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } },
+         { text: 'Kembali', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } }],
         'images/sekar.png');
 }
 function openFairyNPCDialog_fv_bening() {
     showFVDialog('BENING', `Oh! Kamu mau bicara denganku? 💧\n\nAku Bening... Widadari air termuda di sini. Aku lahir saat Kahyangan sudah mulai pudar, jadi aku tidak pernah tahu Kahyangan yang penuh.\n\nTapi Rara Wilis dan Kak Wening sering bercerita betapa indahnya dulu...\n\n💙 Kalau Kahyangan pulih sepenuhnya, aku ingin membuka kembali Sendang Suci Selatan!`,
-        [{ text: 'Aku yakin kamu bisa, Bening!', action: () => fvActiveDialog = null },
-         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        [{ text: 'Aku yakin kamu bisa, Bening!', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } },
+         { text: 'Kembali', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } }],
         'images/bening.png');
 }
 function openFairyNPCDialog_fv_juna() {
     showFVDialog('JUNA', `Hei, manusia! Jarang ada yang mau ngobrol sama peri cowok. 😄\n\nAku Juna — peri angin. Tugasku membawa serbuk bunga dan benih pohon ke seluruh penjuru Wilis lewat hembusan angin.\n\nWaktu longsor terjadi, aku sedang terbang jauh... jadi aku selamat. Tapi aku merasa bersalah tidak bisa menyelamatkan yang lain.\n\n🌬️ Kini aku kembali untuk membantu membangun Kahyangan bersama kalian!`,
-        [{ text: 'Jangan menyesal, Juna. Kamu ada sekarang!', action: () => fvActiveDialog = null },
-         { text: 'Kembali', action: () => fvActiveDialog = null }],
+        [{ text: 'Jangan menyesal, Juna. Kamu ada sekarang!', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } },
+         { text: 'Kembali', action: () => { fvActiveDialog=null; if(typeof closeDialogue==='function') closeDialogue(); } }],
         'images/juna.png');
 }
 
@@ -47208,11 +47415,16 @@ function _khAssign(bldgIdx) {
     const bldg = fv.buildings[bldgIdx];
     if (!bldg) return;
     bldg.workers = bldg.workers || [];
-    if (bldg.workers.length >= 2) { showToast('❌ Slot sudah penuh (maks 2 peri)!'); return; }
+    // FIX: Gunakan maxWorkers dari definisi bangunan (tier 3 = 3 worker), bukan hardcode 2
+    const bDef = FAIRY_BUILDINGS[bldg.bid];
+    const maxW = bDef?.maxWorkers || 2;
+    if (bldg.workers.length >= maxW) { showToast(`❌ Slot sudah penuh (maks ${maxW} peri)!`); return; }
 
     // Peri yang belum ditugaskan di bangunan ini
+    // FIX: Exclude Rara Wilis (t1) — dia NPC utama, bukan worker
+    const _EXCLUDED_WORKER_IDS = ['t1'];
     const assignedAll = new Set(fv.buildings.flatMap(b => b.workers||[]));
-    const available   = (fv.fairies||[]).filter(f => !bldg.workers.includes(f.id));
+    const available   = (fv.fairies||[]).filter(f => !bldg.workers.includes(f.id) && !_EXCLUDED_WORKER_IDS.includes(f.id));
 
     if (!available.length) { showToast('❌ Semua peri sudah ditugaskan!'); return; }
 
@@ -47246,7 +47458,12 @@ function _khDoAssign(bldgIdx, fairyId) {
     const bldg = fv.buildings[bldgIdx];
     if (!bldg) return;
     bldg.workers = bldg.workers || [];
-    if (bldg.workers.length >= 2) { showToast('❌ Slot penuh!'); _khRenderBangunan(); return; }
+    // FIX: Gunakan maxWorkers dari definisi bangunan, bukan hardcode 2
+    const bDef2 = FAIRY_BUILDINGS[bldg.bid];
+    const maxW2 = bDef2?.maxWorkers || 2;
+    if (bldg.workers.length >= maxW2) { showToast(`❌ Slot penuh (maks ${maxW2} peri)!`); _khRenderBangunan(); return; }
+    // FIX: Rara Wilis tidak boleh jadi worker
+    if (fairyId === 't1') { showToast('❌ Rara Wilis tidak bisa ditugaskan!'); _khRenderBangunan(); return; }
     if (bldg.workers.includes(fairyId)) { showToast('⚠️ Peri sudah ada di sini!'); _khRenderBangunan(); return; }
     bldg.workers.push(fairyId);
     const f = (fv.fairies||[]).find(x=>x.id===fairyId);
@@ -47388,7 +47605,8 @@ function openBuildingInterior(bldg, slot) {
     const workers = (bldg.workers || []).map(wid => fv.fairies.find(f=>f.id===wid)).filter(Boolean);
     // Peri yang tidak bekerja di mana pun
     const busyIds = new Set((fv.buildings||[]).flatMap(bl=>bl.workers||[]));
-    const freeFairies = fv.fairies.filter(f => !busyIds.has(f.id));
+    // FIX: Exclude Rara Wilis (t1) — NPC utama, tidak bisa jadi worker
+    const freeFairies = fv.fairies.filter(f => !busyIds.has(f.id) && f.id !== 't1');
     const maxW = b.maxWorkers || 2;
 
     // Hapus popup lama
@@ -47689,6 +47907,12 @@ function removeFairyInput() {
     document.removeEventListener('keyup',   fvKeyUp);
     document.removeEventListener('mousemove', fvJoyMouseMove);
     document.removeEventListener('mouseup',   fvJoyMouseEnd);
+    // FIX: Hapus juga listener canvas agar tidak menumpuk saat openFairyVillage dipanggil ulang
+    if (fvCanvas) {
+        fvCanvas.removeEventListener('click',      tapFVDialog);
+        fvCanvas.removeEventListener('touchstart', fvCanvasTouchStart);
+        fvCanvas.removeEventListener('touchend',   fvCanvasTouchEnd);
+    }
 }
 
 function fvKeyDown(e){ fvKeys[e.key]=true; if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault(); }
