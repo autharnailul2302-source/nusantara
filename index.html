@@ -3449,6 +3449,14 @@
             display: flex;
         }
 
+        /* FIX: Saat di Dunia Peri, minimap tetap di bawah kiri (sama seperti dunia manusia) */
+        /* Tidak perlu class khusus — posisi bottom:80px left:10px sudah benar untuk semua dunia */
+        /* Border berubah ke warna peri (ungu) saat fairyVillage */
+        #minimap-container.fv-mode {
+            border-color: #a78bfa;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.5);
+        }
+
         #minimapCanvas {
             width: 100%;
             height: 100%;
@@ -22447,8 +22455,13 @@ ${reward.tip}`,
                 // 3. Update Audio System (BGM/SFX)
                 if (typeof AudioService !== 'undefined') AudioService.update();
 
-                // 4. Loop Frame berikutnya (60 FPS)
-                // Cek agar tidak loop saat di Title/Splash/Login untuk menghemat memori
+                // 4. FIX: Cek build queue fairy village di setiap frame agar pop-up & bangunan
+                //    muncul otomatis meski player sedang tidak berada di fairyVillage
+                if (typeof checkBuildQueue === 'function' && STATE.screen === 'play') {
+                    checkBuildQueue();
+                }
+
+                // 5. Loop Frame berikutnya (60 FPS)
                 if (STATE.screen !== 'title' && STATE.screen !== 'login' && STATE.screen !== 'splash') {
                     window.gameLoopId = requestAnimationFrame(gameLoop);
                 }
@@ -23098,6 +23111,8 @@ ${reward.tip}`,
                             actionIcon = '💖';
                         } else if (closestNPC.dialogFn === 'collectFairyDust') {
                             actionIcon = '✨';
+                        } else if (closestNPC.dialogFn === 'openIstanaDialog') {
+                            actionIcon = '🏰';
                         } else {
                             actionIcon = '💬';
                         }
@@ -23198,12 +23213,13 @@ ${reward.tip}`,
                 // UPDATE DOM BUTTON
                 if (showActionButton) {
                     btnAction.style.display = 'flex';
-                    // FIX fairyVillage: tampilkan nama NPC di tombol (misal "💬 Wening")
+                    // FIX fairyVillage: NPC tetap tampilkan nama, bangunan cukup ikon 🚪
                     if (STATE.location === 'fairyVillage' && btnAction.dataset.fvLabel) {
                         btnAction.innerText = btnAction.dataset.fvLabel;
                         btnAction.style.fontSize = '11px';
                         btnAction.style.padding = '6px 12px';
                     } else {
+                        // Sama persis seperti peta utama — hanya ikon, font default bulat
                         btnAction.innerText = actionIcon;
                         btnAction.style.fontSize = '';
                         btnAction.style.padding = '';
@@ -25476,21 +25492,23 @@ ${reward.tip}`,
                 const pCenterX = STATE.player.x + (STATE.player.w / 2);
                 const pCenterY = STATE.player.y + (STATE.player.h / 2);
 
+                // FIX: gunakan TS untuk fairyVillage agar entrance position benar
+                const _epTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                const _epRadius = (STATE.location === 'fairyVillage') ? _epTS * 1.8 : 50;
+
                 for (let b of map.buildings) {
                     // fv_building: tidak auto-teleport, cukup pakai tombol aksi (updateFVActionBtn)
                     if (b.type === 'fv_building') continue;
 
                     if (b.entrance) {
                         // Titik tengah entrance (Pintu)
-                        const eCenterX = (b.entrance.x * TILE_SIZE) + (TILE_SIZE / 2);
-                        const eCenterY = (b.entrance.y * TILE_SIZE) + (TILE_SIZE / 2);
+                        const eCenterX = (b.entrance.x * _epTS) + (_epTS / 2);
+                        const eCenterY = (b.entrance.y * _epTS) + (_epTS / 2);
 
                         // Jarak pemain ke titik tengah pintu
                         const dist = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
 
-                        // --- PERBAIKAN: Radius Diperbesar agar Auto-Exit konsisten ---
-                        // Sebelumnya 25 (terlalu sempit, sulit dipicu). Diubah ke 50 (hampir 2 tile).
-                        if (dist < 50) {
+                        if (dist < _epRadius) {
 
                             // --- PERUBAHAN 2: Daftar Otomatis Hanya untuk KELUAR ---
                             // Saya telah MENGHAPUS bangunan masuk (seperti 'player_house', 'merchant', dll) dari sini.
@@ -26038,10 +26056,12 @@ ${reward.tip}`,
 
             function checkWall(x, y) {
                 const map = maps[STATE.location];
-                if (x < 0 || x > map.w * TILE_SIZE || y < 0 || y > map.h * TILE_SIZE) return true;
+                // FIX: gunakan TS (tile size peta peri) jika di fairyVillage
+                const _cwTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                if (x < 0 || x > map.w * _cwTS || y < 0 || y > map.h * _cwTS) return true;
 
-                const tx = Math.floor((x + 10) / TILE_SIZE);
-                const ty = Math.floor((y + 10) / TILE_SIZE);
+                const tx = Math.floor((x + 10) / _cwTS);
+                const ty = Math.floor((y + 10) / _cwTS);
 
                 if (ty >= map.h || tx >= map.w) return true;
 
@@ -26106,33 +26126,59 @@ ${reward.tip}`,
                 const map = maps[STATE.location];
                 if (!map.buildings) return false;
 
+                const isFV = STATE.location === 'fairyVillage';
+                const _bTS = (isFV && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                // Visual scale untuk fairyVillage — gambar 1.8x lebih besar dari hitbox tile
+                // Hitbox tetap pakai ukuran tile asli (w*TS), bukan ukuran visual
+                const _vs = (isFV && typeof FV_BLDG_VISUAL_SCALE !== 'undefined') ? FV_BLDG_VISUAL_SCALE : 1.0;
+
                 for (let b of map.buildings) {
                     if (b.type === 'trigger' || b.id === 'port') continue;
+                    // Hanya bangunan solid yang menghalangi player
+                    if (isFV && !b.solid) continue;
 
-                    const _bTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
-                    const bx = b.x * _bTS;
-                    const bw = b.w * _bTS;
-                    const bh = b.h * _bTS;
+                    const bTileW = b.w * _bTS;
+                    const bTileH = b.h * _bTS;
+                    const bTileX = b.x * _bTS;
+                    const bTileY = b.y * _bTS;
 
-                    // ── HITBOX BANGUNAN: Hanya bagian BAWAH (kaki bangunan) ──
-                    // Player bisa berjalan di belakang bangunan (area atas/atap tidak solid)
-                    // tapi tidak bisa menembus dari depan/samping
-                    let footH, footTop;
+                    let footH, footTop, colLeft, colRight;
 
                     if (b.type === 'dungeon_rock') {
-                        // Batu: hitbox setengah bawah
-                        footH   = Math.round(bh * 0.5);
-                        footTop = b.y * _bTS + bh - footH;
+                        // Batu dungeon: hitbox setengah bawah, lebar penuh
+                        footH    = Math.round(bTileH * 0.5);
+                        footTop  = bTileY + bTileH - footH;
+                        colLeft  = bTileX;
+                        colRight = bTileX + bTileW;
+                    } else if (isFV) {
+                        // ── FAIRY VILLAGE: Collision visual (Stardew-style) ──
+                        // Gambar dirender lebih besar dari tile (anchor bawah, meluas ke atas).
+                        // Player bisa lewat DI BELAKANG bangunan (Y tile < bTileY).
+                        // Tapi tidak bisa menembus area visual dari depan/samping.
+                        let _fvVS = (typeof FV_BLDG_VISUAL_SCALE !== 'undefined') ? FV_BLDG_VISUAL_SCALE : 1.8;
+                        if (b.id === 'fv_istana_bld') _fvVS = 2.2;
+                        else if (b.id === 'pohon_energi_bld') _fvVS = 3.5;
+                        const _fvVisualH = bTileH * _fvVS;
+                        const _fvVisualTop = bTileY + bTileH - _fvVisualH;
+                        const _fvVisualW = bTileW * _fvVS;
+                        const _fvVisualLeft  = bTileX + bTileW/2 - _fvVisualW/2;
+                        const _fvVisualRight = _fvVisualLeft + _fvVisualW;
+                        footH    = _fvVisualH;
+                        footTop  = _fvVisualTop;
+                        colLeft  = _fvVisualLeft;
+                        colRight = _fvVisualRight;
                     } else {
-                        // Bangunan normal: hitbox 35% bawah
-                        // (1 tile = kaki bangunan, sisanya atap yang bisa dilalui dari belakang)
-                        footH   = Math.max(_bTS, Math.round(bh * 0.35));
-                        footTop = b.y * _bTS + bh - footH;
+                        // ── MAP UTAMA: Hitbox 35% bawah (perilaku lama) ──
+                        footH    = Math.max(_bTS, Math.round(bTileH * 0.35));
+                        footTop  = bTileY + bTileH - footH;
+                        colLeft  = bTileX;
+                        colRight = bTileX + bTileW;
                     }
 
+                    // Hitbox player: lebar 20px, tinggi 16px (kaki)
                     const pw = 20, ph = 16;
 
-                    if (x + pw > bx && x < bx + bw &&
+                    if (x + pw > colLeft && x < colRight &&
                         y + ph > footTop && y < footTop + footH) {
                         return true;
                     }
@@ -26436,12 +26482,16 @@ ${reward.tip}`,
 
                     // ── FAIRY VILLAGE BUILDING — buka interior popup ──
                     if (entranceBuilding.type === 'fv_building' && entranceBuilding._fvSlotId) {
+                        if (typeof AudioService !== 'undefined') AudioService.playSFX('door');
+                        // Istana permanen — langsung buka dialog Puri Agung
+                        if (entranceBuilding._fvSlotId === 'istana_fixed') {
+                            if (typeof openIstanaDialog === 'function') openIstanaDialog();
+                            return;
+                        }
                         const fv = getFairyVillage();
                         const bldg = (fv.buildings||[]).find(bl => bl.slotId === entranceBuilding._fvSlotId);
                         const slot = FAIRY_SLOTS ? FAIRY_SLOTS.find(s=>s.id===entranceBuilding._fvSlotId) : null;
                         if (bldg && slot) {
-                            if (typeof AudioService !== 'undefined') AudioService.playSFX('door');
-                            // Istana = menu management Kahyangan (sama seperti Rara Wilis)
                             if (bldg.bid === 'istana_mini' || bldg.bid === 'pohon_kehidupan') {
                                 if (typeof openRaraWilisDialog === 'function') openRaraWilisDialog();
                             } else {
@@ -37710,7 +37760,11 @@ Pilih masakan:
                     map.buildings.forEach(b => {
                         if (typeof b.y !== 'number' || typeof b.h !== 'number') return;
 
-                        const _rTS = (STATE.location === 'fairyVillage' && typeof TS !== 'undefined') ? TS : TILE_SIZE;
+                        // FIX: Di fairyVillage, bangunan dirender oleh drawFairyWorld() dengan Y-sort
+                        // bersama player & peri — skip dari renderList utama agar tidak dobel & Y-sort benar
+                        if (STATE.location === 'fairyVillage') return;
+
+                        const _rTS = TILE_SIZE;
 
                         // Y-sort bangunan: pakai kaki bangunan (y + h)
                         // 'port' (dermaga) digambar sebagai lantai → sort dari atas
@@ -40397,10 +40451,104 @@ Pilih masakan:
             function drawMinimap() {
                 const miniCanvas = document.getElementById('minimapCanvas');
                 if (!miniCanvas) return;
-                const mCtx = miniCanvas.getContext('2d');
 
-                // Clear Area Minimap
+                const minimapContainer = document.getElementById('minimap-container');
+
+                // FIX: fairyVillage kini pakai minimap HTML utama (posisi bawah)
+                // Selalu tampilkan minimap saat ingame (termasuk fairyVillage)
+                if (minimapContainer) minimapContainer.style.display = '';
+
+                const mCtx = miniCanvas.getContext('2d');
                 mCtx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
+
+                // ── SPECIAL: Render peta Kahyangan Wilis di minimap HTML ──
+                if (STATE.location === 'fairyVillage') {
+                    const fv = (typeof getFairyVillage === 'function') ? getFairyVillage() : null;
+                    if (!fv) return;
+
+                    const FW2 = (typeof FW !== 'undefined') ? FW : 60;
+                    const FH2 = (typeof FH !== 'undefined') ? FH : 40;
+                    const TS2 = (typeof TS !== 'undefined') ? TS : 28;
+                    const mW = miniCanvas.width, mH = miniCanvas.height;
+                    const sx = mW / FW2, sy = mH / FH2;
+
+                    // Background peta peri (hijau gelap)
+                    mCtx.fillStyle = '#0f2e13';
+                    mCtx.fillRect(0, 0, mW, mH);
+
+                    // Bangunan selesai (biru ungu)
+                    (fv.buildings || []).forEach(({slotId}) => {
+                        if (typeof FAIRY_SLOTS === 'undefined') return;
+                        const s = FAIRY_SLOTS.find(x => x.id === slotId);
+                        if (!s) return;
+                        mCtx.fillStyle = '#818cf8';
+                        mCtx.fillRect(s.x * sx, s.y * sy, Math.max(3, sx * 2 + 1), Math.max(3, sy * 2 + 1));
+                    });
+
+                    // Bangunan konstruksi (kuning)
+                    (fv.buildQueue || []).forEach(({slotId}) => {
+                        if (typeof FAIRY_SLOTS === 'undefined') return;
+                        const s = FAIRY_SLOTS.find(x => x.id === slotId);
+                        if (!s) return;
+                        mCtx.fillStyle = '#fbbf24';
+                        mCtx.fillRect(s.x * sx, s.y * sy, Math.max(3, sx * 2 + 1), Math.max(3, sy * 2 + 1));
+                    });
+
+                    // Istana Peri (merah muda)
+                    if (typeof FV_ISTANA_POS !== 'undefined') {
+                        mCtx.fillStyle = '#f9a8d4';
+                        mCtx.fillRect(FV_ISTANA_POS.x * sx, FV_ISTANA_POS.y * sy, sx * 3, sy * 3);
+                    }
+
+                    // Pohon Energi (hijau terang)
+                    if (typeof FV_POHON_POS !== 'undefined') {
+                        mCtx.fillStyle = '#4ade80';
+                        mCtx.beginPath();
+                        mCtx.arc(FV_POHON_POS.x * sx + sx, FV_POHON_POS.y * sy + sy, 4, 0, Math.PI * 2);
+                        mCtx.fill();
+                    }
+
+                    // Rara Wilis (ungu muda)
+                    if (typeof FV_RARA_POS !== 'undefined') {
+                        mCtx.fillStyle = '#e9d5ff';
+                        mCtx.beginPath();
+                        mCtx.arc(FV_RARA_POS.x * sx + sx, FV_RARA_POS.y * sy + sy, 2.5, 0, Math.PI * 2);
+                        mCtx.fill();
+                    }
+
+                    // Peri wandering (pink / biru)
+                    if (typeof fvNpcRuntime !== 'undefined') {
+                        (fv.fairies || []).forEach((f, idx) => {
+                            const rt = fvNpcRuntime['fairy_' + f.id];
+                            const fx = rt ? (rt.px / TS2) * sx : (FV_RARA_POS.x + 2 + idx % 3) * sx;
+                            const fy = rt ? (rt.py / TS2) * sy : (FV_RARA_POS.y + 1 + Math.floor(idx / 3)) * sy;
+                            mCtx.fillStyle = f.gender === 'girl' ? '#f472b6' : '#60a5fa';
+                            mCtx.beginPath();
+                            mCtx.arc(fx, fy, 2, 0, Math.PI * 2);
+                            mCtx.fill();
+                        });
+                    }
+
+                    // Player (kuning emas)
+                    if (typeof fvPlayer !== 'undefined') {
+                        const plx = (fvPlayer.x / TS2) * sx;
+                        const ply = (fvPlayer.y / TS2) * sy;
+                        mCtx.fillStyle = '#fbbf24';
+                        mCtx.beginPath();
+                        mCtx.arc(plx, ply, 4, 0, Math.PI * 2);
+                        mCtx.fill();
+                        mCtx.strokeStyle = '#fff';
+                        mCtx.lineWidth = 1.5;
+                        mCtx.beginPath();
+                        mCtx.arc(plx, ply, 4, 0, Math.PI * 2);
+                        mCtx.stroke();
+                    }
+
+                    // Label
+                    const labelEl = document.getElementById('minimap-label');
+                    if (labelEl) labelEl.innerText = '🧚 KAHYANGAN';
+                    return;
+                }
 
                 // Ambil data map aktif (bisa desa, dungeon, atau interior rumah/toko)
                 const currentMap = maps[STATE.location];
@@ -45296,7 +45444,9 @@ function refreshFairyVillageMap() {
             id: 'pohon_energi_bld',
             x: FV_POHON_POS.x, y: FV_POHON_POS.y,
             w: 3, h: 3,
-            solid: true, name: 'Pohon Energi'
+            solid: true,
+            type: 'fv_building',
+            name: 'Pohon Energi'
         },
         {
             // Istana Peri — landmark permanen, solid, punya pintu masuk
@@ -45345,6 +45495,25 @@ function refreshFairyVillageMap() {
 
     maps['fairyVillage'].buildings = buildings;
 
+    // FIX: Tambahkan NPC trigger Istana Peri jika belum ada
+    // NPC ini yang memunculkan dialog "Kelola Kahyangan" saat player mendekati istana
+    const _istanaExists = maps['fairyVillage'].npcs.some(n => n.id === 'fv_istana_npc');
+    if (!_istanaExists) {
+        maps['fairyVillage'].npcs.push({
+            id: 'fv_istana_npc',
+            name: '🏰 Puri Agung Wilis',
+            x: FV_ISTANA_POS.x + 1,
+            y: FV_ISTANA_POS.y + 2,
+            w: 1, h: 1,
+            sprite: '', imgSrc: '',
+            noNameTag: true,
+            noRender: true,        // jangan digambar — sudah ada gambar istana di drawFairyWorld
+            schedule: 'always',
+            type: 'fairy_npc',
+            dialogFn: 'openIstanaDialog'
+        });
+    }
+
     // Update NPC
     maps['fairyVillage'].npcs.forEach(n => {
         n.imgSrc = n.sprite || n.imgSrc;
@@ -45361,6 +45530,13 @@ function refreshFairyVillageMap() {
         if (['fv_wening','fv_sekar','fv_bening','fv_juna'].includes(n.id)) {
             n.type = n.type || 'wander';
             n.dialogFn = 'openFairyNPCDialog_' + n.id;
+        }
+        // FIX: Istana Peri trigger NPC — selalu set dialogFn
+        if (n.id === 'fv_istana_npc') {
+            n.type = 'fairy_npc';
+            n.dialogFn = 'openIstanaDialog';
+            n.noRender = true;
+            n.noNameTag = true;
         }
     });
 }
@@ -45403,9 +45579,9 @@ function openFairyVillage() {
     STATE.location = 'fairyVillage';
     STATE.screen = 'play';
 
-    // Spawn player di bawah Rara Wilis
-    STATE.player.x = FV_RARA_POS ? (FV_RARA_POS.x + 3) * 28 : 140;
-    STATE.player.y = FV_RARA_POS ? (FV_RARA_POS.y + 3) * 28 : 140;
+    // Spawn player di dekat Rara Wilis (tengah peta)
+    STATE.player.x = FV_RARA_POS ? (FV_RARA_POS.x + 3) * TS : 140;
+    STATE.player.y = FV_RARA_POS ? (FV_RARA_POS.y + 3) * TS : 140;
 
     // Sembunyikan modal lama (jika masih ada)
     const oldModal = document.getElementById('fairy-village-modal');
@@ -45427,14 +45603,12 @@ function openFairyVillage() {
         fvCtx    = _gc.getContext('2d');
     }
     fvPlayer = { x: (FV_RARA_POS.x+3)*TS, y: (FV_RARA_POS.y+3)*TS, facing:'down' };
-    fvCam    = { x:0, y:0 };
-    fvKeys   = {};
-    fvActiveDialog = null;
-    fvParticles    = [];
-    fvJoy = { active:false, startX:0, startY:0, dx:0, dy:0 };
-    setupFairyInput();
     startFairyLoop();
     updateFVHUD();
+
+    // FIX: Aktifkan minimap HTML utama dengan style peri (border ungu)
+    const _mmFv = document.getElementById('minimap-container');
+    if (_mmFv) { _mmFv.classList.add('ingame', 'fv-mode'); }
 
     // ── TUTORIAL PERTAMA KALI ──────────────────────────────────────
     // FIX: Tunda 1000ms agar canvas sudah ter-render sebelum tutorial muncul
@@ -45490,6 +45664,9 @@ function closeFairyVillage() {
         AudioService.currentTrack = null;
     }
     manualSave();
+    // FIX: Lepas class fv-mode dari minimap saat keluar dunia peri
+    const _mmFvClose = document.getElementById('minimap-container');
+    if (_mmFvClose) _mmFvClose.classList.remove('fv-mode');
     showToast('🏝️ Kembali ke Pulau Arsa');
 }
 
@@ -45570,27 +45747,47 @@ function checkBuildQueue() {
     if (done.length === 0) return;
     done.forEach(q => {
         const slot = FAIRY_SLOTS.find(s=>s.id===q.slotId);
-        const bName = FAIRY_BUILDINGS[q.bid]?.name || 'Bangunan';
+        const bDef = FAIRY_BUILDINGS[q.bid];
+        const bName = bDef?.name || 'Bangunan';
+        const bEmoji = bDef?.emoji || '🏠';
         if (q.isUpgrade) {
-            // Upgrade in-place — cari bangunan di slot ini dan ganti bid-nya
             const existing = fv.buildings.find(b => b.slotId === q.slotId);
             if (existing) {
                 const oldName = FAIRY_BUILDINGS[existing.bid]?.name || existing.bid;
                 existing.bid = q.bid;
-                // Trim workers jika maxWorkers baru lebih kecil (tidak mungkin terjadi, tapi aman)
                 const newMax = FAIRY_BUILDINGS[q.bid]?.maxWorkers || 2;
                 if ((existing.workers||[]).length > newMax) existing.workers = existing.workers.slice(0, newMax);
-                if (slot) createFVParticles(slot.x*TS+TS, slot.y*TS+TS, 30);
+                if (slot && STATE.location === 'fairyVillage') createFVParticles(slot.x*TS+TS, slot.y*TS+TS, 30);
+                // FIX: Pop-up upgrade selesai
                 showToast(`⬆️ ${oldName} berhasil diupgrade jadi ${bName}!`);
+                if (typeof showDialogue === 'function') {
+                    showDialogue('✨ Upgrade Selesai!',
+                        `${bEmoji} ${bName} telah selesai diupgrade!\n\nBangunan kini lebih kuat dan bisa menampung lebih banyak peri. Kunjungi Kahyangan Wilis untuk melihatnya!`,
+                        [{ text: 'Mantap! 🎉', action: () => { if(typeof closeDialogue==='function') closeDialogue(); } }],
+                        null);
+                }
             }
         } else {
             // Bangunan baru
             fv.buildings.push({ slotId: q.slotId, bid: q.bid, workers: [] });
-            if (slot) createFVParticles(slot.x*TS+TS, slot.y*TS+TS, 20);
-            showToast(`✅ ${bName} selesai dibangun!`);
+            if (slot && STATE.location === 'fairyVillage') createFVParticles(slot.x*TS+TS, slot.y*TS+TS, 20);
+            // FIX: Pop-up bangunan selesai dengan info bangunan
+            showToast(`✅ ${bName} selesai dibangun di Kahyangan Wilis!`);
+            if (typeof showDialogue === 'function') {
+                showDialogue(`${bEmoji} Bangunan Selesai!`,
+                    `${bName} telah selesai dibangun di Kahyangan Wilis!\n\n${bDef?.desc || ''}\n\n🏗️ Tugaskan peri untuk mulai bekerja di bangunan ini agar menghasilkan sumber daya.`,
+                    [{ text: '🧚 Lihat Sekarang', action: () => {
+                        if(typeof closeDialogue==='function') closeDialogue();
+                        if (STATE.location === 'fairyVillage' && typeof openKhModal==='function') openKhModal();
+                    }},
+                    { text: 'Nanti Saja', action: () => { if(typeof closeDialogue==='function') closeDialogue(); } }],
+                    null);
+            }
         }
     });
     fv.buildQueue = fv.buildQueue.filter(q => now < q.finishTime);
+    // FIX: Refresh peta setelah bangunan selesai agar langsung muncul di peta
+    if (typeof refreshFairyVillageMap === 'function') refreshFairyVillageMap();
     updateFVHUD();
 }
 
@@ -46375,8 +46572,19 @@ function drawFairyWorld(ts) {
         n._rty = rt.py / TS;
     });
 
-    // ── Y-sorted draw: NPC map + fairies + player ──
+    // ── Y-sorted draw: Bangunan + NPC map + fairies + player ──
     const _drawables = [];
+
+    // ── BANGUNAN: masuk ke Y-sort agar player bisa di depan/belakang bangunan ──
+    const _fvMap = maps['fairyVillage'];
+    if (_fvMap && _fvMap.buildings) {
+        _fvMap.buildings.forEach(b => {
+            if (typeof b.y !== 'number') return;
+            // sortY = kaki bangunan (baris tile paling bawah)
+            const sortY = (b.y + b.h) * TS;
+            _drawables.push({ sortY, type: 'fv_building', b });
+        });
+    }
 
     // NPC dari maps['fairyVillage'] (Rara Wilis, peri kecil)
     _fvMapNpcs.forEach(n => {
@@ -46443,12 +46651,18 @@ function drawFairyWorld(ts) {
 
     // Draw semua termasuk player
     _drawables.forEach(d => {
-        if (d.type === 'player_fv') {
+        if (d.type === 'fv_building') {
+            // Render bangunan via drawBuilding (fungsi utama — sama persis map utama)
+            if (typeof drawBuilding === 'function') drawBuilding(ctx, d.b);
+            return;
+        } else if (d.type === 'player_fv') {
             // Render player dengan drawPlayer — ukuran & animasi identik map utama (38×58)
             if (typeof drawPlayer === 'function') drawPlayer(ctx, STATE.player);
             return;
         } else if (d.type === 'npc') {
             const {n, px:nx2, py:ny2, nW, nH} = d;
+            // FIX: Skip NPC yang ditandai noRender (misal trigger invisible istana)
+            if (n.noRender) return;
             // Shadow di tanah (tetap di posisi kaki, tidak ikut animasi)
             ctx.fillStyle='rgba(0,0,0,0.3)';
             ctx.beginPath(); ctx.ellipse(nx2+nW/2, ny2+nH-5, nW/3, 4, 0, 0, Math.PI*2); ctx.fill();
@@ -46543,11 +46757,11 @@ function drawFairyWorld(ts) {
     // Dialog overlay
     if (fvActiveDialog) drawFVDialog(ctx, W, H);
 
-    // Timer bar dan Minimap (screen space - kompensasi kamera)
+    // Timer bar (screen space - kompensasi kamera)
+    // FIX: drawFVMinimap dihapus — minimap HTML utama (#minimap-container) yang dipakai
     ctx.save();
     ctx.translate(Math.floor(fvCam.x), Math.floor(fvCam.y));
     drawFVBuildTimerBar(ctx, W, fv, now);
-    drawFVMinimap(ctx, W, H, fv);
     ctx.restore();
 }
 
@@ -46670,67 +46884,6 @@ function showFVDialog(name,text,options,portrait) {
     }
     // Fallback lama (hanya aktif jika fairy-village-modal dipakai)
     fvActiveDialog={name,text,options:options||null,portrait:portrait||'👸'};
-}
-
-// ── Minimap ────────────────────────────────────────────────────
-function drawFVMinimap(ctx, W, H, fv) {
-    const mw=90,mh=56,mx=W-mw-6,my=6;
-    // Background
-    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx,my,mw,mh,4); ctx.fill();
-    ctx.strokeStyle='rgba(124,58,237,0.6)'; ctx.lineWidth=1; ctx.stroke();
-    const sx=mw/FW, sy=mh/FH;
-
-    // Bangunan selesai (biru) — dari fv.buildings yang selalu fresh
-    (fv.buildings||[]).forEach(({slotId})=>{
-        const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return;
-        ctx.fillStyle='#60a5fa';
-        ctx.fillRect(mx+s.x*sx, my+s.y*sy, Math.max(3,sx*2+1), Math.max(3,sy*2+1));
-    });
-    // Bangunan dalam konstruksi (kuning)
-    (fv.buildQueue||[]).forEach(({slotId})=>{
-        const s=FAIRY_SLOTS.find(x=>x.id===slotId); if(!s)return;
-        ctx.fillStyle='#fbbf24';
-        ctx.fillRect(mx+s.x*sx, my+s.y*sy, Math.max(3,sx*2+1), Math.max(3,sy*2+1));
-    });
-
-    // Pohon Energi (hijau, lebih besar)
-    const ptx=mx+FV_POHON_POS.x*sx, pty=my+FV_POHON_POS.y*sy;
-    ctx.fillStyle='#4ade80';
-    ctx.beginPath(); ctx.arc(ptx+sx, pty+sy, 4, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#16a34a'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.arc(ptx+sx, pty+sy, 4, 0, Math.PI*2); ctx.stroke();
-
-    // Rara Wilis (ungu muda)
-    const rrx=mx+FV_RARA_POS.x*sx, rry=my+FV_RARA_POS.y*sy;
-    ctx.fillStyle='#e9d5ff';
-    ctx.beginPath(); ctx.arc(rrx+sx, rry+sy, 2.5, 0, Math.PI*2); ctx.fill();
-
-    // Peri wandering (pink dot kecil, dari fv.fairies)
-    (fv.fairies||[]).forEach((f, idx) => {
-        const rt = fvNpcRuntime['fairy_'+f.id] || null;
-        let fx, fy;
-        if (rt) {
-            fx = mx + (rt.px/TS)*sx;
-            fy = my + (rt.py/TS)*sy;
-        } else {
-            // Posisi default — scatter berdasar index
-            fx = mx + (FV_RARA_POS.x+2+idx%3)*sx;
-            fy = my + (FV_RARA_POS.y+1+Math.floor(idx/3))*sy;
-        }
-        ctx.fillStyle = f.gender==='girl' ? '#f472b6' : '#60a5fa';
-        ctx.beginPath(); ctx.arc(fx, fy, 2, 0, Math.PI*2); ctx.fill();
-    });
-
-    // Player (kuning, paling menonjol)
-    const plx=mx+fvPlayer.x/TS*sx, ply=my+fvPlayer.y/TS*sy;
-    ctx.fillStyle='#fbbf24';
-    ctx.beginPath(); ctx.arc(plx, ply, 3, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.arc(plx, ply, 3, 0, Math.PI*2); ctx.stroke();
-
-    // Legend
-    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='5px sans-serif';
-    ctx.fillText('🔵Bangunan 🟡Konstruksi 🟢Pohon 🩷Peri 🟡Kamu', mx+2, my+mh+9);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -46893,8 +47046,56 @@ function openRaraWilisDialog() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// KAHYANGAN MODAL — Full management UI
+// DIALOG ISTANA PERI — Puri Agung Wilis
+// Dipanggil saat player mendekati & berinteraksi dengan istana peri
 // ═══════════════════════════════════════════════════════════════
+function openIstanaDialog() {
+    const fv = getFairyVillage();
+    const stats = getFairyVillageStats(fv);
+    const res = fv.resources;
+    const bCount = (fv.buildings || []).length;
+    const fase = STATE.player.sylvariaQuestComplete ? 4
+               : bCount === 0 ? 0
+               : bCount <= 3  ? 1
+               : bCount <= 9  ? 2
+               : 3;
+
+    const narasiIstana = [
+        // Fase 0 — Istana masih sepi
+        `Puri Agung Wilis... Dulunya tempat ini penuh suara keceriaan para Widadari.\n\nKini hanya ada angin yang berhembus melewati lorong-lorong sepinya.\n\nBantu kami membangun kembali Kahyangan ini, dan Puri ini akan ramai lagi! 🏰`,
+        // Fase 1 — Mulai ada harapan
+        `Langkah pertama sudah kamu ambil! ${bCount} bangunan sudah berdiri.\n\nPuri ini mulai merasakan kehangatan. Para Widadari mulai mempercayaimu.\n\n✨ Debu: ${res.debu}  💎 Kristal: ${res.kristal}\n🌟 Cahaya: ${res.cahaya}  👥 ${fv.fairies.length}/${stats.totalCap}`,
+        // Fase 2 — Berkembang
+        `${bCount} bangunan berdiri megah! Kahyangan semakin hidup.\n\nDari sinilah para Widadari mengatur tugas dan menjaga keseimbangan alam Wilis.\n\n✨ Debu: ${res.debu}  💎 Kristal: ${res.kristal}\n🌟 Cahaya: ${res.cahaya}  👥 ${fv.fairies.length}/${stats.totalCap}`,
+        // Fase 3 — Hampir pulih
+        `Luar biasa! Puri ini kembali bersinar setelah sekian lama gelap.\n\n${bCount} bangunan sudah berdiri. Hanya sedikit lagi untuk pemulihan sempurna!\n\n✨ Debu: ${res.debu}  💎 Kristal: ${res.kristal}\n🌟 Cahaya: ${res.cahaya}  👥 ${fv.fairies.length}/${stats.totalCap}`,
+        // Fase 4 — Pulih sempurna
+        `🌟 Kahyangan Wilis telah pulih sepenuhnya! 🌟\n\nPuri Agung Wilis kembali menjadi pusat kebudayaan para Widadari.\n\nKamu akan selalu dikenang dalam sejarah Kahyangan, Penjaga Wilis! ✨`,
+    ][fase];
+
+    const opts = [];
+    // Aksi utama: Kelola Kahyangan (buka modal manajemen penuh)
+    opts.push({ text: '🏰 Kelola Kahyangan Wilis', action: () => {
+        fvActiveDialog = null;
+        setTimeout(khOpen, 30);
+    }});
+    // Shortcut: Lihat statistik langsung
+    opts.push({ text: '📊 Lihat Statistik Kahyangan', action: () => {
+        fvActiveDialog = null;
+        setTimeout(() => { khOpen(); setTimeout(() => khTab('statistik'), 80); }, 30);
+    }});
+    // Shortcut: Lihat daftar peri
+    opts.push({ text: '🧚 Daftar Para Widadari', action: () => {
+        fvActiveDialog = null;
+        setTimeout(() => { khOpen(); setTimeout(() => khTab('peri'), 80); }, 30);
+    }});
+    // Kembali
+    opts.push({ text: '🚪 Kembali', action: () => { fvActiveDialog = null; } });
+
+    showFVDialog('🏰 PURI AGUNG WILIS', narasiIstana, opts, 'images/istanaperi.png');
+}
+
+
 const KH_FIXED = ['t1','t2','t3','t4','t5'];
 let _khIdx = 0;
 
