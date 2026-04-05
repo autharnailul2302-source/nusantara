@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Nusantara Arsa: Rise of Student</title>
+
+    <!-- PWA / Mobile Web App Meta Tags (Agar Full Screen saat Add to Home Screen) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- OPTIMASI CACHE: Preload Aset Berat agar tersimpan di memori browser lebih awal -->
+    <link rel="preload" as="image" href="images/bg.png">
+    <link rel="preload" as="image" href="images/landinggame.png">
+    <link rel="preload" as="image" href="images/lobby.png">
+    <link rel="preload" as="image" href="images/boy.png">
+    <link rel="preload" as="image" href="images/girl.png">
+    <!-- NEW: PRELOAD KURCACI -->
+    <link rel="preload" as="image" href="images/kurcacitani.png">
+    <!-- NEW: PRELOAD PERI PANEN -->
+    <link rel="preload" as="image" href="images/peripanen.png">
+    <!-- NEW: PRELOAD ORANG SAWAH -->
+    <link rel="preload" as="image" href="images/orangsawah.png">
+    <!-- NEW: PRELOAD LAHAN LIAR -->
+    <link rel="preload" as="image" href="images/lahan-liar.png">
+    <!-- NEW: PRELOAD FAIRY NPC -->
+    <link rel="preload" as="image" href="images/wening.png">
+    <link rel="preload" as="image" href="images/sekar.png">
+    <link rel="preload" as="image" href="images/bening.png">
+    <link rel="preload" as="image" href="images/juna.png">
+    <link rel="preload" as="image" href="images/pohonperi.png">
+    <!-- PRELOAD PERI LAHIR SPRITES -->
+    <link rel="preload" as="image" href="images/peri_pr1.png">
+    <link rel="preload" as="image" href="images/peri_pr2.png">
+    <link rel="preload" as="image" href="images/peri_pr3.png">
+    <link rel="preload" as="image" href="images/peri_pr4.png">
+    <link rel="preload" as="image" href="images/peri_lk1.png">
+    <link rel="preload" as="image" href="images/peri_lk2.png">
+    <!-- PRELOAD SENDANG TIER -->
+    <link rel="preload" as="image" href="images/sendang-tier1.png">
+    <link rel="preload" as="image" href="images/sendang-tier2.png">
+    <link rel="preload" as="image" href="images/sendang-tier3.png">
+    <!-- PRELOAD TAMAN TIER -->
+    <link rel="preload" as="image" href="images/taman-tier1.png">
+    <link rel="preload" as="image" href="images/taman-tier2.png">
+    <link rel="preload" as="image" href="images/taman-tier3.png">
+    <!-- PRELOAD SEKOLAH TIER -->
+    <link rel="preload" as="image" href="images/sekolah-tier1.png">
+    <link rel="preload" as="image" href="images/sekolah-tier2.png">
+    <link rel="preload" as="image" href="images/sekolah-tier3.png">
+    <!-- PRELOAD PASAR TIER -->
+    <link rel="preload" as="image" href="images/pasar-tier1.png">
+    <link rel="preload" as="image" href="images/pasar-tier2.png">
+    <link rel="preload" as="image" href="images/pasar-tier3.png">
+    <!-- PRELOAD MENARA TIER -->
+    <link rel="preload" as="image" href="images/menara-tier1.png">
+    <link rel="preload" as="image" href="images/menara-tier2.png">
+    <link rel="preload" as="image" href="images/menara-tier3.png">
+    <!-- PRELOAD ISTANA -->
+    <link rel="preload" as="image" href="images/istanaperi.png">
+
+    <!-- Firebase SDK (Compat Version for HTML) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+

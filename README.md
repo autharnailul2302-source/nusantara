@@ -1,68 +1,51 @@
 # Nusantara Arsa: Rise of Student
+## Struktur Proyek (Setelah Dipecah)
 
-Game simulasi RPG berbasis web untuk pembelajaran SMK/SMA/MA.
+File asli `index183.html` (~2.9 MB, 48.455 baris) sudah dipecah menjadi beberapa file agar ringan dan bisa di-upload ke GitHub tanpa error.
 
-## 📁 Struktur Folder
+---
+
+## Struktur Folder
 
 ```
 /
-├── index.html          ← Entry point utama (HTML + link ke CSS & JS)
-├── css/
-│   └── style.css       ← Semua styling (~6.000 baris)
-├── js/
-│   ├── config.js       ← Firebase, aset, audio, variabel global
-│   ├── quest.js        ← Sistem quest, milestone, daily/weekly/monthly
-│   ├── ui.js           ← UI helpers: dialogue, toast, HUD, popup
-│   ├── dashboard.js    ← Dashboard guru BK + Festival Gempita
-│   ├── game.js         ← Game loop, renderer, peta, kamera
-│   ├── npc.js          ← initGame, interaksi NPC & objek dunia
-│   ├── worker.js       ← Sistem pekerjaan & shift kerja
-│   ├── akademi.js      ← Sistem kuliah & akademik
-│   ├── world.js        ← Interaksi dunia, keluarga, wirausaha
-│   ├── battle.js       ← Sistem battle & dungeon
-│   ├── save.js         ← PWA service worker, save/load Firebase
-│   └── fairy.js        ← Fairy Village (Kahyangan Wilis)
-└── images/             ← Semua aset gambar
+├── index.html                  (~200 KB) — Kerangka HTML utama
+├── style.css                   (~197 KB) — Semua CSS
+├── images/                               — Aset gambar (tidak berubah)
+└── js/
+    ├── 01-firebase-init.js     (~197 KB) — Firebase config, login page, sesi
+    ├── 02-login-dashboard.js   (~134 KB) — Google login, dashboard admin/guru
+    ├── 03-jurnal-portofolio.js (~104 KB) — Jurnal siswa, portofolio, Gempita
+    ├── 04-game-engine.js       (~515 KB) — Engine game: TILE, STATE, rendering, pet
+    ├── 05-konflik-sistem.js    (~606 KB) — Konflik akademik & pernikahan dini
+    ├── 06-quest-karir.js       (~570 KB) — Quest, part-time, lowongan, minigame
+    └── 07-fairy-village.js     (~284 KB) — Pasar grosir, Kahyangan Wilis, peri
 ```
 
-## ⚠️ Aturan Penting
+## ⚠️ PENTING: Urutan Script
 
-### Urutan `<script>` di index.html TIDAK BOLEH diubah
-Setiap file bergantung pada variabel yang didefinisikan di file sebelumnya:
+Urutan `<script>` di `index.html` **WAJIB** dipertahankan karena setiap file bergantung pada variabel/fungsi dari file sebelumnya:
+
 ```
-config.js → quest.js → ui.js → dashboard.js → game.js
-→ npc.js → worker.js → akademi.js → world.js → battle.js
-→ save.js → fairy.js
+01 → 02 → 03 → 04 → 05 → 06 → 07
 ```
 
-### Menambahkan fitur baru
-- **Fitur pekerjaan baru** → edit `js/worker.js`
-- **Fitur kuliah baru** → edit `js/akademi.js`
-- **Fitur fairy village** → edit `js/fairy.js`
-- **Quest/misi baru** → edit `js/quest.js`
-- **NPC baru** → edit `js/npc.js`
-- **Variabel global baru** → tambahkan di `js/config.js`
+## Cara Deploy ke GitHub Pages
 
-### Variabel global (dari config.js)
-Variabel berikut tersedia di semua file:
-- `STATE` — state game utama (player, screen, location, dll)
-- `TILE_SIZE` — ukuran tile
-- `AudioService` — sistem audio
-- `db`, `analytics` — Firebase
+1. Upload semua file ke repo GitHub (pertahankan struktur folder)
+2. Aktifkan GitHub Pages dari Settings → Pages → Branch: `main`
+3. Pastikan folder `images/` juga ter-upload
 
-## 🚀 Deploy ke GitHub Pages
+## Cara Jalankan Lokal
 
-1. Upload semua folder ke repository GitHub
-2. Aktifkan GitHub Pages dari Settings → Pages
-3. Pilih branch `main`, folder `/ (root)`
-4. Akses via `https://username.github.io/nama-repo/`
+Butuh web server lokal (tidak bisa buka `index.html` langsung via file://):
 
-## 📝 Catatan Pengembangan
-
-Setiap kali menambah fitur baru:
 ```bash
-git add js/nama-file.js
-git commit -m "tambah fitur: deskripsi singkat"
-git push
+# Python
+python -m http.server 8080
+
+# Node.js (npx)
+npx serve .
 ```
-GitHub hanya upload file yang berubah — jauh lebih cepat dari sebelumnya!
+
+Lalu buka: `http://localhost:8080`

@@ -1,0 +1,45 @@
+        </script>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
+
+<!-- fv-hud-bar dihapus — statistik peri ada di tab Statistik kh-modal (Kastil Utama Peri) -->
+
+        <!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
+        <div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
+            <div id="fv-tut-panel">
+                <div id="fv-tut-header">
+                    <img id="fv-tut-avatar" src="images/rarawilis.png" alt="Rara Wilis" onerror="this.src=''">
+                    <div id="fv-tut-head-info">
+                        <div id="fv-tut-speaker">RARA WILIS</div>
+                        <div id="fv-tut-step-badge">Panduan 1 / 8</div>
+                    </div>
+                    <button id="fv-tut-skip" onclick="fvTutSkip()">Lewati ✕</button>
+                </div>
+                <div id="fv-tut-body">
+                    <div id="fv-tut-icon">✨</div>
+                    <div id="fv-tut-content">
+                        <div id="fv-tut-title">Selamat Datang!</div>
+                        <div id="fv-tut-text">Memuat panduan...</div>
+                    </div>
+                </div>
+                <div id="fv-tut-footer">
+                    <div id="fv-tut-dots"></div>
+                    <button id="fv-tut-prev" onclick="fvTutGo(-1)" disabled>◀ Kembali</button>
+                    <button id="fv-tut-next" onclick="fvTutGo(1)">Lanjut ▶</button>
+                </div>
+            </div>
+        </div>
+        <!-- Finger pointer for fairy tutorial -->
+        <div id="fv-tut-pointer">
+            <div id="fv-tut-ptr-label">LIHAT INI</div>
+            <div id="fv-tut-ptr-hand">👆</div>
+        </div>
+
+        <!-- ONLINE NOTIFICATION POPUP -->
+        <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
+
+</body>
+
+</html>
