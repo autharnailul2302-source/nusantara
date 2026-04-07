@@ -1,5 +1,10 @@
             const TILE_SIZE = 30;
-            const DEBUG_MAP_BOUNDARIES = false;
+            // DEBUG_MAP_BOUNDARIES sekarang mengikuti window.GAME_DEBUG dari Admin Panel
+            // Gunakan: if (DEBUG_MAP_BOUNDARIES) { ... }  — sama seperti sebelumnya
+            Object.defineProperty(window, 'DEBUG_MAP_BOUNDARIES', {
+                get: () => !!(window.GAME_DEBUG),
+                configurable: true
+            });
 
             function resize() {
                 /* UPDATE: FUNGSI RESIZE DINAMIS (FULL SCREEN ADAPTIVE) */
@@ -3037,19 +3042,25 @@ ${reward.tip}`,
             // UPDATE: INIT GAME MENJADI ASYNC UNTUK MEMASTIKAN KONEKSI
             async function initGame() {
                 try {
+                    // ─────────────────────────────────────────────────────────
+                    // FIX BLANK SCREEN: Tampilkan canvas SEBELUM resize().
+                    // Jika canvas masih display:none (sisa logout), resize() akan
+                    // menghasilkan canvas 0×0 → game blank.
+                    // ─────────────────────────────────────────────────────────
+                    const gcCanvas = document.getElementById('gameCanvas');
+                    if (gcCanvas) gcCanvas.style.display = 'block';
+
                     resize();
                     await DataService.init(true);
 
-                    // FIX: Pastikan semua layar overlay tersembunyi & canvas visible
+                    // Sembunyikan semua layar overlay
                     document.getElementById('start-screen').classList.add('hidden');
                     ['login-screen','title-screen','prologue-screen','gender-screen'].forEach(id => {
                         const el = document.getElementById(id);
                         if (el) { el.style.display = 'none'; el.classList.add('hidden'); }
                     });
 
-                    // FIX: Pastikan canvas & ui-layer tampil
-                    const gcCanvas = document.getElementById('gameCanvas');
-                    if (gcCanvas) gcCanvas.style.display = 'block';
+                    // Pastikan ui-layer tampil
                     const uiLayer = document.getElementById('ui-layer');
                     if (uiLayer) { uiLayer.style.display = 'flex'; uiLayer.classList.remove('hidden'); }
 
@@ -3063,6 +3074,49 @@ ${reward.tip}`,
                     if (window.saveIntervalId) {
                         clearInterval(window.saveIntervalId);
                         window.saveIntervalId = null;
+                    }
+                    // Beri jeda kecil agar frame lama benar-benar selesai sebelum loop baru dimulai
+                    await new Promise(r => setTimeout(r, 50));
+
+                    // ─────────────────────────────────────────────────────────
+                    // FIX LOGIN ULANG: Re-fetch saveData dari Firestore jika
+                    // DataService.user.saveData kosong (terjadi setelah logout
+                    // lalu login lagi tanpa reload halaman).
+                    // Tanpa ini, loadGame() return null → game blank.
+                    // ─────────────────────────────────────────────────────────
+                    if (DataService.user && !DataService.user.saveData) {
+                        // Coba ambil dari localStorage dulu (lebih cepat)
+                        const dbLocal = DataService.getDB();
+                        const localEntry = dbLocal[DataService.user.email];
+                        if (localEntry && localEntry.saveData) {
+                            DataService.user = { ...DataService.user, ...localEntry };
+                            console.log('[initGame] saveData dipulihkan dari localStorage.');
+                        } else if (DataService.mode === 'firebase' && typeof db !== 'undefined' && db) {
+                            // Fallback: ambil dari Firestore
+                            try {
+                                console.log('[initGame] Fetching saveData dari Firestore...');
+                                const docSnap = await db
+                                    .collection('artifacts')
+                                    .doc('nusantara-arsa')
+                                    .collection('users')
+                                    .doc(DataService.user.email)
+                                    .get();
+                                if (docSnap.exists) {
+                                    const cloudData = docSnap.data();
+                                    DataService.user = { ...DataService.user, ...cloudData };
+                                    // Simpan ke localStorage agar fetch berikutnya lebih cepat
+                                    const dbLocal2 = DataService.getDB();
+                                    dbLocal2[DataService.user.email] = {
+                                        ...(dbLocal2[DataService.user.email] || {}),
+                                        ...cloudData
+                                    };
+                                    DataService.saveDB(dbLocal2);
+                                    console.log('[initGame] saveData berhasil di-fetch dari Firestore.');
+                                }
+                            } catch (fetchErr) {
+                                console.warn('[initGame] Fetch Firestore gagal, lanjut dengan data kosong:', fetchErr);
+                            }
+                        }
                     }
 
                     const saved = DataService.loadGame();

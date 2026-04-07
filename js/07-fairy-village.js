@@ -4195,7 +4195,7 @@ function openRaraWilisDialog() {
     }});
 
     // TEST MODE: tombol test kelahiran — muncul jika isTestMode ATAU freeRoamMode aktif
-    if (fv.isTestMode || STATE.freeRoamMode) {
+    if (fv.isTestMode || STATE.freeRoamMode || window.GAME_DEBUG) {
         opts.push({ text: '🥚 [TEST] Lahirkan Peri Baru', action: testFairyBirth });
     }
 
@@ -5364,6 +5364,10 @@ function updateFVHUD(){
 // TEST MODE
 // ─────────────────────────────────────────────────────────────
 function openFairyTestMode(){
+    if (!window.GAME_DEBUG) {
+        showToast('⛔ Debug mode tidak aktif. Hubungi admin.');
+        return;
+    }
     const p=STATE.player;
     p.sylvariaQuestComplete=true;
     p.sylvariaQuest={stage:99,task1:true,task2:true,task3:true,task4:true};
@@ -5407,6 +5411,10 @@ function openFairyTestMode(){
 // Alur: set quest → monster muncul di peta → teleport dekat → klik → battle
 // ══════════════════════════════════════════════════════════════
 function openSkripsiThiefTestMode() {
+    if (!window.GAME_DEBUG) {
+        showToast('⛔ Debug mode tidak aktif. Hubungi admin.');
+        return;
+    }
     const p = STATE.player;
 
     // --- 1. Setup dasar player ---
@@ -5487,6 +5495,10 @@ function openSkripsiThiefTestMode() {
 
 // ── TEST: Trigger kelahiran peri manual (dari menu Rara Wilis di test mode) ──
 function testFairyBirth() {
+    if (!window.GAME_DEBUG) {
+        showToast('⛔ Debug mode tidak aktif.');
+        return;
+    }
     const fv = getFairyVillage();
     const g = Math.random() < 0.6 ? 'girl' : 'boy';
     const names = g==='girl' ? FAIRY_NAMES_GIRL : FAIRY_NAMES_BOY;

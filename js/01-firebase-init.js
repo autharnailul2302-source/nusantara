@@ -1,3 +1,173 @@
+            // ═══════════════════════════════════════════════════════════════
+            // 🛠️ SISTEM DEBUG GLOBAL — dikendalikan via Admin Panel
+            // ═══════════════════════════════════════════════════════════════
+            // Cara pakai di kode lain: if (window.GAME_DEBUG) console.log(...)
+            // ─────────────────────────────────────────────────────────────────
+            const _DEBUG_STORAGE_KEY = 'nusantara_debug_mode';
+
+            // Baca state dari localStorage saat halaman dimuat
+            window.GAME_DEBUG = localStorage.getItem(_DEBUG_STORAGE_KEY) === 'true';
+
+            // Simpan referensi console asli sebelum di-override
+            const _origConsole = {
+                log:   console.log.bind(console),
+                warn:  console.warn.bind(console),
+                info:  console.info.bind(console),
+            };
+
+            // Override console agar otomatis diam saat debug OFF
+            // (console.error selalu tampil untuk mendeteksi error kritis)
+            console.log  = (...a) => { if (window.GAME_DEBUG) _origConsole.log(...a); };
+            console.warn = (...a) => { if (window.GAME_DEBUG) _origConsole.warn(...a); };
+            console.info = (...a) => { if (window.GAME_DEBUG) _origConsole.info(...a); };
+
+            /**
+             * Aktifkan / nonaktifkan debug mode.
+             * Dipanggil dari Admin Panel.
+             */
+            function setDebugMode(enabled) {
+                window.GAME_DEBUG = !!enabled;
+                localStorage.setItem(_DEBUG_STORAGE_KEY, window.GAME_DEBUG ? 'true' : 'false');
+
+                // Sinkron ke Firestore agar admin lain juga tahu
+                if (typeof db !== 'undefined' && db) {
+                    db.collection('artifacts').doc('nusantara-arsa')
+                      .set({ debugMode: window.GAME_DEBUG }, { merge: true })
+                      .catch(e => _origConsole.warn('Debug sync fail:', e));
+                }
+
+                // Update tampilan flag di-game (HUD debug badge)
+                const badge = document.getElementById('debug-hud-badge');
+                if (badge) badge.style.display = window.GAME_DEBUG ? 'flex' : 'none';
+
+                // Tampilkan / sembunyikan tombol-tombol TEST MODE di HUD game
+                const _dbgBtns = [
+                    document.getElementById('fairy-test-btn'),
+                    document.getElementById('skripsi-test-btn'),
+                ];
+                _dbgBtns.forEach(btn => {
+                    if (btn) btn.style.display = window.GAME_DEBUG ? 'flex' : 'none';
+                });
+
+                // Update tombol di panel admin jika sedang terbuka
+                renderDebugPage();
+                _origConsole.log('[DEBUG]', window.GAME_DEBUG ? 'ON ✅' : 'OFF ⛔');
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // 🛠️ RENDER HALAMAN DEBUG DI ADMIN PANEL
+            // ═══════════════════════════════════════════════════════════════
+            function renderDebugPage() {
+                const container = document.getElementById('debug-page-content');
+                if (!container) return;
+
+                const isOn = window.GAME_DEBUG;
+                const statusColor  = isOn ? '#4ade80' : '#f87171';
+                const statusText   = isOn ? 'AKTIF ✅' : 'NON-AKTIF ⛔';
+                const statusBg     = isOn ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)';
+                const btnOnStyle   = isOn
+                    ? 'background:linear-gradient(135deg,#16a34a,#15803d); border:2px solid #4ade80; color:#fff; cursor:default; opacity:0.7;'
+                    : 'background:linear-gradient(135deg,#1e3a5f,#1d4ed8); border:2px solid #3b82f6; color:#fff; cursor:pointer;';
+                const btnOffStyle  = !isOn
+                    ? 'background:linear-gradient(135deg,#7f1d1d,#991b1b); border:2px solid #f87171; color:#fff; cursor:default; opacity:0.7;'
+                    : 'background:linear-gradient(135deg,#374151,#4b5563); border:2px solid #6b7280; color:#d1d5db; cursor:pointer;';
+
+                container.innerHTML = \`
+                <!-- STATUS BANNER -->
+                <div style="background:\${statusBg}; border:2px solid \${statusColor}; border-radius:16px; padding:20px 24px; margin-bottom:20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                    <div style="font-size:40px;">\${isOn ? '🟢' : '🔴'}</div>
+                    <div style="flex:1;">
+                        <div style="font-size:18px; font-weight:800; color:\${statusColor}; font-family:'Fredoka',sans-serif;">DEBUG MODE \${statusText}</div>
+                        <div style="font-size:11px; color:#64748b; margin-top:4px;">
+                            \${isOn
+                                ? 'Console log aktif · Boundary map tampil · HUD badge tampil di game'
+                                : 'Console log disembunyikan · Game berjalan bersih tanpa log'}
+                        </div>
+                    </div>
+                    <div style="font-size:10px; color:#94a3b8; text-align:right;">
+                        Tersimpan di localStorage<br>& Firestore (sync semua admin)
+                    </div>
+                </div>
+
+                <!-- TOGGLE BUTTONS -->
+                <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+                    <button onclick="setDebugMode(true)"
+                        style="\${btnOnStyle} padding:14px 28px; font-size:14px; font-family:'Fredoka',sans-serif; font-weight:700; border-radius:12px; transition:all 0.2s; min-width:160px;">
+                        🟢 Aktifkan Debug
+                    </button>
+                    <button onclick="setDebugMode(false)"
+                        style="\${btnOffStyle} padding:14px 28px; font-size:14px; font-family:'Fredoka',sans-serif; font-weight:700; border-radius:12px; transition:all 0.2s; min-width:160px;">
+                        ⛔ Matikan Debug
+                    </button>
+                </div>
+
+                <!-- PENJELASAN FITUR DEBUG -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-bottom:24px;">
+                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
+                        <div style="font-size:20px; margin-bottom:8px;">📋</div>
+                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Console Log</div>
+                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Semua console.log & console.warn tampil di DevTools' : '⛔ Semua log disembunyikan (tetap bisa lihat error kritis)'}</div>
+                    </div>
+                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
+                        <div style="font-size:20px; margin-bottom:8px;">🗺️</div>
+                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Map Boundaries</div>
+                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Garis collision & batas tile tampil di atas peta game' : '⛔ Boundary tersembunyi (tampilan bersih untuk siswa)'}</div>
+                    </div>
+                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
+                        <div style="font-size:20px; margin-bottom:8px;">🏷️</div>
+                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Debug HUD Badge</div>
+                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Badge "🛠️ DEBUG" tampil di pojok kiri atas layar game' : '⛔ Badge tersembunyi'}</div>
+                    </div>
+                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
+                        <div style="font-size:20px; margin-bottom:8px;">🔧</div>
+                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Test Mode Buttons</div>
+                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Tombol TEST MODE muncul di menu Rara Wilis (fairy village)' : '⛔ Test mode disembunyikan dari siswa'}</div>
+                    </div>
+                </div>
+
+                <!-- LIVE STATE SNAPSHOT -->
+                <div style="background:#0f172a; border-radius:12px; padding:16px; font-family:monospace;">
+                    <div style="color:#94a3b8; font-size:10px; margin-bottom:10px; letter-spacing:1px;">▶ LIVE STATE SNAPSHOT (hanya tampil di panel ini)</div>
+                    <div id="debug-snapshot" style="font-size:11px; color:#a3e635; line-height:1.9;"></div>
+                </div>
+                \`;
+
+                // Isi live snapshot
+                updateDebugSnapshot();
+            }
+
+            function updateDebugSnapshot() {
+                const el = document.getElementById('debug-snapshot');
+                if (!el) return;
+                try {
+                    const p = (typeof STATE !== 'undefined') ? STATE.player : null;
+                    const snap = p ? [
+                        \`window.GAME_DEBUG  = <span style="color:\${window.GAME_DEBUG?'#4ade80':'#f87171'}">\${window.GAME_DEBUG}</span>\`,
+                        \`STATE.screen       = "\${STATE.screen}"\`,
+                        \`STATE.location     = "\${STATE.location}"\`,
+                        \`STATE.day          = \${STATE.day} | season: \${STATE.season}\`,
+                        \`player.level       = \${p.level} | hp: \${p.hp}/\${p.maxHp}\`,
+                        \`player.role        = "\${p.role}" | money: \${p.money}\`,
+                        \`player.activeQuest = "\${p.activeQuest}"\`,
+                        \`DataService.mode   = "\${typeof DataService !== 'undefined' ? DataService.mode : 'n/a'}"\`,
+                    ] : [
+                        \`window.GAME_DEBUG = <span style="color:\${window.GAME_DEBUG?'#4ade80':'#f87171'}">\${window.GAME_DEBUG}</span>\`,
+                        '<span style="color:#fbbf24">STATE belum tersedia (game belum dimulai)</span>'
+                    ];
+                    el.innerHTML = snap.join('<br>');
+                } catch(e) {
+                    el.innerHTML = '<span style="color:#f87171">Error membaca STATE: ' + e.message + '</span>';
+                }
+            }
+
+            // Refresh snapshot tiap 2 detik saat halaman debug terbuka
+            setInterval(() => {
+                if (document.getElementById('debug-page-content') &&
+                    !document.getElementById('page-debug').classList.contains('hidden')) {
+                    updateDebugSnapshot();
+                }
+            }, 2000);
+
             /** * FIREBASE CONFIGURATION */
             const firebaseConfig = {
                 apiKey: "AIzaSyAdqApOvuUXrZUO19NfiqZCLSyUYR74w5M",
@@ -1977,7 +2147,14 @@
                             loaded++;
                             const pct = Math.floor((loaded / total) * 100);
                             if (loadingBar) loadingBar.style.width = pct + "%";
-                            if (loadingText) loadingText.innerText = `MEMUAT ASET (${loaded}/${total})... ${pct}%`;
+                            // Tampilkan nama file di akhir agar tidak terasa beku
+                            const fname = item.src ? item.src.split('/').pop() : '...';
+                            const phase = pct < 20 ? '🖼️ Aset Utama'
+                                        : pct < 50 ? '🎨 Karakter & Peta'
+                                        : pct < 80 ? '🌿 Lingkungan'
+                                        : pct < 95 ? '✨ Finishing...'
+                                        : '🏁 Hampir Selesai!';
+                            if (loadingText) loadingText.innerText = `${phase}  (${loaded}/${total}) ${pct}%`;
 
                             // Jika ini elemen map, simpan referensi gambar yang SUDAH DILOAD
                             if (item.element) {
@@ -1991,7 +2168,8 @@
                             loaded++;
                             const pct = Math.floor((loaded / total) * 100);
                             if (loadingBar) loadingBar.style.width = pct + "%";
-                            if (loadingText) loadingText.innerText = `MEMUAT ASET (${loaded}/${total})... ${pct}%`;
+                            const phase = pct < 95 ? '⚠️ Melewati aset...' : '🏁 Hampir Selesai!';
+                            if (loadingText) loadingText.innerText = `${phase}  (${loaded}/${total}) ${pct}%`;
 
                             // Jangan reject agar game tetap jalan (gunakan fallback nanti)
                             resolve();
@@ -2002,14 +2180,60 @@
                     });
                 };
 
-                // Jalankan semua (Parallel Loading)
-                // Kita pakai Promise.all agar browser mengunduh bersamaan
-                await Promise.all(uniqueImages.map(item => loadImage(item)));
+                // ─────────────────────────────────────────────────────────
+                // OPTIMASI: BATCHED LOADING (ganti Promise.all sekaligus)
+                //
+                // Masalah Promise.all biasa: semua 200 request dikirim bersamaan.
+                // Browser punya limit ~6 koneksi per domain → aset ke-7 dst antri
+                // → progress bar "stuck" di 90% karena 150 aset masih dalam antrian.
+                //
+                // Solusi: kirim dalam batch kecil (BATCH_SIZE aset per gelombang).
+                // Ini menjaga antrian browser tidak terlalu panjang sehingga
+                // progress bar bergerak lebih merata & tidak terasa macet di akhir.
+                // ─────────────────────────────────────────────────────────
+                const BATCH_SIZE = 12; // 12 = sweet spot: tidak terlalu lambat, tidak flood browser
+
+                // Pisahkan aset kritis (UI, player, bg) agar dimuat di batch pertama
+                const CRITICAL_KEYWORDS = [
+                    'bg.png', 'landinggame', 'lobby', 'boy.png', 'girl.png',
+                    'boy-idle', 'girl-idle', 'boy-walk', 'girl-walk',
+                    'scene-1', 'scene-2', 'scene-3',
+                ];
+                const criticalImages = uniqueImages.filter(item =>
+                    CRITICAL_KEYWORDS.some(k => item.src && item.src.includes(k))
+                );
+                const normalImages = uniqueImages.filter(item =>
+                    !CRITICAL_KEYWORDS.some(k => item.src && item.src.includes(k))
+                );
+                const orderedImages = [...criticalImages, ...normalImages];
+
+                // Fungsi bantu: proses array dalam batch berurutan
+                async function loadInBatches(items, batchSize) {
+                    for (let i = 0; i < items.length; i += batchSize) {
+                        const batch = items.slice(i, i + batchSize);
+                        await Promise.all(batch.map(item => loadImage(item)));
+                    }
+                }
+
+                await loadInBatches(orderedImages, BATCH_SIZE);
             }
 
             // UPDATE: FUNGSI INIT PERTAMA KALI
             function startGameSequence() {
                 try {
+                    // ── INIT DEBUG MODE dari localStorage (jalankan sebelum apapun) ──
+                    // Ini memastikan tombol test & badge langsung muncul jika debug sudah ON
+                    // dari sesi admin sebelumnya tanpa perlu buka panel lagi.
+                    (function _initDebugVisuals() {
+                        const isDebug = window.GAME_DEBUG;
+                        const badge = document.getElementById('debug-hud-badge');
+                        if (badge) badge.style.display = isDebug ? 'flex' : 'none';
+                        ['fairy-test-btn', 'skripsi-test-btn'].forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) el.style.display = isDebug ? 'flex' : 'none';
+                        });
+                    })();
+
                     // Cek sesi login terakhir untuk prefill
                     try {
                         let lastUser = localStorage.getItem(SESSION_KEY);

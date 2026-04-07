@@ -455,6 +455,20 @@
                     titleScreen.classList.remove('hidden');
                     titleScreen.style.display = ''; // reset inline display jika ada
                 }
+
+                // ─────────────────────────────────────────────────────────
+                // FIX LOGIN ULANG: Reset flag-flag game agar saat player
+                // login kembali, initGame() memulai dengan state bersih.
+                // Tanpa ini, loop lama / flag screen lama bisa menyebabkan
+                // canvas blank saat masuk game lagi.
+                // ─────────────────────────────────────────────────────────
+                window.gameLoopId = null;
+                STATE.isPrologue = false;
+                STATE.gameOverTriggered = false;
+                STATE.gameFinished = false;
+                STATE.location = 'house';
+                if (typeof STATE.enemies !== 'undefined') STATE.enemies = [];
+                if (typeof STATE.particles !== 'undefined') STATE.particles = [];
                 STATE.screen = 'title';
 
                 // 8. Reset audio ke musik opening
@@ -763,9 +777,15 @@
                     titleEl.innerHTML = "ADMINISTRATOR<br>CONTROL PANEL";
                     titleEl.style.color = "#ef4444";
                     titleEl.style.textShadow = "0 0 10px rgba(239, 68, 68, 0.3)";
-                    // Admin: tampilkan menu statistik, buka langsung halaman statistik
+                    // Admin: tampilkan menu statistik & developer mode
                     const navStats = document.getElementById('nav-statistik');
                     if (navStats) navStats.style.display = '';
+                    // Tampilkan nav Developer Mode khusus admin
+                    const navDebug = document.getElementById('nav-debug');
+                    if (navDebug) navDebug.style.display = '';
+                    // Sync status debug badge dari localStorage
+                    const debugBadge = document.getElementById('debug-hud-badge');
+                    if (debugBadge) debugBadge.style.display = window.GAME_DEBUG ? 'flex' : 'none';
                     // Langsung buka statistik untuk admin
                     document.querySelectorAll('.dash-page').forEach(el => el.classList.add('hidden'));
                     const statsPage = document.getElementById('page-statistik');
@@ -1290,6 +1310,7 @@
                 if (page === 'ranking') renderRanking();
                 if (page === 'bk') renderBKDashboard();
                 if (page === 'gempita') renderGempitaLeaderboard();
+                if (page === 'debug') renderDebugPage();
             }
 
             // ═══════════════════════════════════════════════════════
