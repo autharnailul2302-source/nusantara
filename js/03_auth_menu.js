@@ -41,12 +41,8 @@
                 }
             };
 
-            // Jalankan saat HTML sudah siap (Lebih cepat dari window.onload)
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', startGameSequence);
-            } else {
-                startGameSequence();
-            }
+            // NOTE: startGameSequence() dipanggil dari js/25_start.js (file terakhir)
+            // agar semua konstanta & fungsi sudah tersedia saat dipanggil.
 
             // UPDATE: HANDLE PILIHAN AUDIO -> LANJUT KE LOADING ASET
             function handleAudioChoice(enable) {
