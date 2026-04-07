@@ -1,169 +1,111 @@
             // ═══════════════════════════════════════════════════════════════
-            // 🛠️ SISTEM DEBUG GLOBAL — dikendalikan via Admin Panel
+            // SISTEM DEBUG GLOBAL — dikendalikan via Admin Panel
+            // Cara pakai: if (window.GAME_DEBUG) console.log(...)
             // ═══════════════════════════════════════════════════════════════
-            // Cara pakai di kode lain: if (window.GAME_DEBUG) console.log(...)
-            // ─────────────────────────────────────────────────────────────────
-            const _DEBUG_STORAGE_KEY = 'nusantara_debug_mode';
+
+            var _DEBUG_STORAGE_KEY = 'nusantara_debug_mode';
 
             // Baca state dari localStorage saat halaman dimuat
             window.GAME_DEBUG = localStorage.getItem(_DEBUG_STORAGE_KEY) === 'true';
 
-            // Simpan referensi console asli sebelum di-override
-            const _origConsole = {
-                log:   console.log.bind(console),
-                warn:  console.warn.bind(console),
-                info:  console.info.bind(console),
-            };
+            // PENTING: JANGAN override console.log/warn di sini karena akan
+            // merusak Firebase SDK dan library lain yang butuh console saat init.
+            // Console filtering hanya berlaku untuk log game buatan kita sendiri.
+            // Gunakan pola:  if (window.GAME_DEBUG) console.log("...")
 
-            // Override console agar otomatis diam saat debug OFF
-            // (console.error selalu tampil untuk mendeteksi error kritis)
-            console.log  = (...a) => { if (window.GAME_DEBUG) _origConsole.log(...a); };
-            console.warn = (...a) => { if (window.GAME_DEBUG) _origConsole.warn(...a); };
-            console.info = (...a) => { if (window.GAME_DEBUG) _origConsole.info(...a); };
-
-            /**
-             * Aktifkan / nonaktifkan debug mode.
-             * Dipanggil dari Admin Panel.
-             */
             function setDebugMode(enabled) {
                 window.GAME_DEBUG = !!enabled;
                 localStorage.setItem(_DEBUG_STORAGE_KEY, window.GAME_DEBUG ? 'true' : 'false');
 
-                // Sinkron ke Firestore agar admin lain juga tahu
+                // Sinkron ke Firestore
                 if (typeof db !== 'undefined' && db) {
                     db.collection('artifacts').doc('nusantara-arsa')
                       .set({ debugMode: window.GAME_DEBUG }, { merge: true })
-                      .catch(e => _origConsole.warn('Debug sync fail:', e));
+                      .catch(function(e) { console.warn('Debug sync fail:', e); });
                 }
 
-                // Update tampilan flag di-game (HUD debug badge)
-                const badge = document.getElementById('debug-hud-badge');
+                // Update HUD badge
+                var badge = document.getElementById('debug-hud-badge');
                 if (badge) badge.style.display = window.GAME_DEBUG ? 'flex' : 'none';
 
-                // Tampilkan / sembunyikan tombol-tombol TEST MODE di HUD game
-                const _dbgBtns = [
-                    document.getElementById('fairy-test-btn'),
-                    document.getElementById('skripsi-test-btn'),
-                ];
-                _dbgBtns.forEach(btn => {
+                // Tampilkan / sembunyikan tombol TEST MODE di HUD
+                ['fairy-test-btn', 'skripsi-test-btn'].forEach(function(id) {
+                    var btn = document.getElementById(id);
                     if (btn) btn.style.display = window.GAME_DEBUG ? 'flex' : 'none';
                 });
 
-                // Update tombol di panel admin jika sedang terbuka
+                // Update tampilan panel debug
                 renderDebugPage();
-                _origConsole.log('[DEBUG]', window.GAME_DEBUG ? 'ON ✅' : 'OFF ⛔');
             }
 
-            // ═══════════════════════════════════════════════════════════════
-            // 🛠️ RENDER HALAMAN DEBUG DI ADMIN PANEL
-            // ═══════════════════════════════════════════════════════════════
             function renderDebugPage() {
-                const container = document.getElementById('debug-page-content');
+                var container = document.getElementById('debug-page-content');
                 if (!container) return;
 
-                const isOn = window.GAME_DEBUG;
-                const statusColor  = isOn ? '#4ade80' : '#f87171';
-                const statusText   = isOn ? 'AKTIF ✅' : 'NON-AKTIF ⛔';
-                const statusBg     = isOn ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)';
-                const btnOnStyle   = isOn
-                    ? 'background:linear-gradient(135deg,#16a34a,#15803d); border:2px solid #4ade80; color:#fff; cursor:default; opacity:0.7;'
-                    : 'background:linear-gradient(135deg,#1e3a5f,#1d4ed8); border:2px solid #3b82f6; color:#fff; cursor:pointer;';
-                const btnOffStyle  = !isOn
-                    ? 'background:linear-gradient(135deg,#7f1d1d,#991b1b); border:2px solid #f87171; color:#fff; cursor:default; opacity:0.7;'
-                    : 'background:linear-gradient(135deg,#374151,#4b5563); border:2px solid #6b7280; color:#d1d5db; cursor:pointer;';
+                var isOn = window.GAME_DEBUG;
+                var statusColor = isOn ? '#4ade80' : '#f87171';
+                var statusText  = isOn ? 'AKTIF' : 'NON-AKTIF';
+                var statusBg    = isOn ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)';
+                var btnOnActive  = isOn  ? 'opacity:0.6; cursor:default;' : 'cursor:pointer;';
+                var btnOffActive = !isOn ? 'opacity:0.6; cursor:default;' : 'cursor:pointer;';
 
-                container.innerHTML = \`
-                <!-- STATUS BANNER -->
-                <div style="background:\${statusBg}; border:2px solid \${statusColor}; border-radius:16px; padding:20px 24px; margin-bottom:20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-                    <div style="font-size:40px;">\${isOn ? '🟢' : '🔴'}</div>
-                    <div style="flex:1;">
-                        <div style="font-size:18px; font-weight:800; color:\${statusColor}; font-family:'Fredoka',sans-serif;">DEBUG MODE \${statusText}</div>
-                        <div style="font-size:11px; color:#64748b; margin-top:4px;">
-                            \${isOn
-                                ? 'Console log aktif · Boundary map tampil · HUD badge tampil di game'
-                                : 'Console log disembunyikan · Game berjalan bersih tanpa log'}
-                        </div>
-                    </div>
-                    <div style="font-size:10px; color:#94a3b8; text-align:right;">
-                        Tersimpan di localStorage<br>& Firestore (sync semua admin)
-                    </div>
-                </div>
+                var html = '';
+                html += '<div style="background:' + statusBg + '; border:2px solid ' + statusColor + '; border-radius:16px; padding:20px 24px; margin-bottom:20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">';
+                html += '  <div style="font-size:40px;">' + (isOn ? '🟢' : '🔴') + '</div>';
+                html += '  <div style="flex:1;">';
+                html += '    <div style="font-size:18px; font-weight:800; color:' + statusColor + '; font-family:Fredoka,sans-serif;">DEBUG MODE ' + statusText + '</div>';
+                html += '    <div style="font-size:11px; color:#64748b; margin-top:4px;">' + (isOn ? 'Console log aktif · Map boundary tampil · HUD badge tampil' : 'Game berjalan bersih untuk siswa') + '</div>';
+                html += '  </div>';
+                html += '</div>';
 
-                <!-- TOGGLE BUTTONS -->
-                <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
-                    <button onclick="setDebugMode(true)"
-                        style="\${btnOnStyle} padding:14px 28px; font-size:14px; font-family:'Fredoka',sans-serif; font-weight:700; border-radius:12px; transition:all 0.2s; min-width:160px;">
-                        🟢 Aktifkan Debug
-                    </button>
-                    <button onclick="setDebugMode(false)"
-                        style="\${btnOffStyle} padding:14px 28px; font-size:14px; font-family:'Fredoka',sans-serif; font-weight:700; border-radius:12px; transition:all 0.2s; min-width:160px;">
-                        ⛔ Matikan Debug
-                    </button>
-                </div>
+                html += '<div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">';
+                html += '  <button onclick="setDebugMode(true)" style="' + btnOnActive + ' background:linear-gradient(135deg,#16a34a,#15803d); border:2px solid #4ade80; color:#fff; padding:14px 28px; font-size:14px; font-family:Fredoka,sans-serif; font-weight:700; border-radius:12px; min-width:160px;">🟢 Aktifkan Debug</button>';
+                html += '  <button onclick="setDebugMode(false)" style="' + btnOffActive + ' background:linear-gradient(135deg,#374151,#4b5563); border:2px solid #6b7280; color:#d1d5db; padding:14px 28px; font-size:14px; font-family:Fredoka,sans-serif; font-weight:700; border-radius:12px; min-width:160px;">⛔ Matikan Debug</button>';
+                html += '</div>';
 
-                <!-- PENJELASAN FITUR DEBUG -->
-                <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-bottom:24px;">
-                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
-                        <div style="font-size:20px; margin-bottom:8px;">📋</div>
-                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Console Log</div>
-                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Semua console.log & console.warn tampil di DevTools' : '⛔ Semua log disembunyikan (tetap bisa lihat error kritis)'}</div>
-                    </div>
-                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
-                        <div style="font-size:20px; margin-bottom:8px;">🗺️</div>
-                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Map Boundaries</div>
-                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Garis collision & batas tile tampil di atas peta game' : '⛔ Boundary tersembunyi (tampilan bersih untuk siswa)'}</div>
-                    </div>
-                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
-                        <div style="font-size:20px; margin-bottom:8px;">🏷️</div>
-                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Debug HUD Badge</div>
-                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Badge "🛠️ DEBUG" tampil di pojok kiri atas layar game' : '⛔ Badge tersembunyi'}</div>
-                    </div>
-                    <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;">
-                        <div style="font-size:20px; margin-bottom:8px;">🔧</div>
-                        <div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Test Mode Buttons</div>
-                        <div style="font-size:11px; color:#64748b; line-height:1.6;">\${isOn ? '✅ Tombol TEST MODE muncul di menu Rara Wilis (fairy village)' : '⛔ Test mode disembunyikan dari siswa'}</div>
-                    </div>
-                </div>
+                html += '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-bottom:24px;">';
+                html += '  <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;"><div style="font-size:20px; margin-bottom:8px;">📋</div><div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Console Log</div><div style="font-size:11px; color:#64748b; line-height:1.6;">' + (isOn ? '✅ console.log & console.warn tampil di DevTools' : '⛔ Sembunyikan log — pakai if(GAME_DEBUG) sendiri') + '</div></div>';
+                html += '  <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;"><div style="font-size:20px; margin-bottom:8px;">🗺️</div><div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Map Boundaries</div><div style="font-size:11px; color:#64748b; line-height:1.6;">' + (isOn ? '✅ Garis collision tampil di peta' : '⛔ Boundary tersembunyi') + '</div></div>';
+                html += '  <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;"><div style="font-size:20px; margin-bottom:8px;">🏷️</div><div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Debug HUD Badge</div><div style="font-size:11px; color:#64748b; line-height:1.6;">' + (isOn ? '✅ Badge DEBUG ON tampil di kiri atas' : '⛔ Badge tersembunyi') + '</div></div>';
+                html += '  <div style="background:#fff; border-radius:12px; padding:16px; border:2px solid #e2e8f0;"><div style="font-size:20px; margin-bottom:8px;">🔧</div><div style="font-weight:700; color:#1e293b; font-size:12px; margin-bottom:4px;">Test Mode Buttons</div><div style="font-size:11px; color:#64748b; line-height:1.6;">' + (isOn ? '✅ Tombol 🧚 Test Peri & 👹 Test Skripsi muncul di HUD' : '⛔ Test mode disembunyikan dari siswa') + '</div></div>';
+                html += '</div>';
 
-                <!-- LIVE STATE SNAPSHOT -->
-                <div style="background:#0f172a; border-radius:12px; padding:16px; font-family:monospace;">
-                    <div style="color:#94a3b8; font-size:10px; margin-bottom:10px; letter-spacing:1px;">▶ LIVE STATE SNAPSHOT (hanya tampil di panel ini)</div>
-                    <div id="debug-snapshot" style="font-size:11px; color:#a3e635; line-height:1.9;"></div>
-                </div>
-                \`;
+                html += '<div style="background:#0f172a; border-radius:12px; padding:16px; font-family:monospace;">';
+                html += '  <div style="color:#94a3b8; font-size:10px; margin-bottom:10px; letter-spacing:1px;">▶ LIVE STATE SNAPSHOT</div>';
+                html += '  <div id="debug-snapshot" style="font-size:11px; color:#a3e635; line-height:1.9;"></div>';
+                html += '</div>';
 
-                // Isi live snapshot
+                container.innerHTML = html;
                 updateDebugSnapshot();
             }
 
             function updateDebugSnapshot() {
-                const el = document.getElementById('debug-snapshot');
+                var el = document.getElementById('debug-snapshot');
                 if (!el) return;
                 try {
-                    const p = (typeof STATE !== 'undefined') ? STATE.player : null;
-                    const snap = p ? [
-                        \`window.GAME_DEBUG  = <span style="color:\${window.GAME_DEBUG?'#4ade80':'#f87171'}">\${window.GAME_DEBUG}</span>\`,
-                        \`STATE.screen       = "\${STATE.screen}"\`,
-                        \`STATE.location     = "\${STATE.location}"\`,
-                        \`STATE.day          = \${STATE.day} | season: \${STATE.season}\`,
-                        \`player.level       = \${p.level} | hp: \${p.hp}/\${p.maxHp}\`,
-                        \`player.role        = "\${p.role}" | money: \${p.money}\`,
-                        \`player.activeQuest = "\${p.activeQuest}"\`,
-                        \`DataService.mode   = "\${typeof DataService !== 'undefined' ? DataService.mode : 'n/a'}"\`,
-                    ] : [
-                        \`window.GAME_DEBUG = <span style="color:\${window.GAME_DEBUG?'#4ade80':'#f87171'}">\${window.GAME_DEBUG}</span>\`,
-                        '<span style="color:#fbbf24">STATE belum tersedia (game belum dimulai)</span>'
-                    ];
-                    el.innerHTML = snap.join('<br>');
+                    var p = (typeof STATE !== 'undefined') ? STATE.player : null;
+                    var lines = [];
+                    lines.push('window.GAME_DEBUG = ' + window.GAME_DEBUG);
+                    if (p) {
+                        lines.push('STATE.screen     = "' + STATE.screen + '"');
+                        lines.push('STATE.location   = "' + STATE.location + '"');
+                        lines.push('STATE.day        = ' + STATE.day + ' | season: ' + STATE.season);
+                        lines.push('player.level     = ' + p.level + ' | hp: ' + p.hp + '/' + p.maxHp);
+                        lines.push('player.role      = "' + p.role + '" | money: ' + p.money);
+                        lines.push('DataService.mode = "' + (typeof DataService !== 'undefined' ? DataService.mode : 'n/a') + '"');
+                    } else {
+                        lines.push('STATE belum tersedia (game belum dimulai)');
+                    }
+                    el.innerText = lines.join('\n');
                 } catch(e) {
-                    el.innerHTML = '<span style="color:#f87171">Error membaca STATE: ' + e.message + '</span>';
+                    el.innerText = 'Error membaca STATE: ' + e.message;
                 }
             }
 
             // Refresh snapshot tiap 2 detik saat halaman debug terbuka
-            setInterval(() => {
-                if (document.getElementById('debug-page-content') &&
-                    !document.getElementById('page-debug').classList.contains('hidden')) {
+            setInterval(function() {
+                var page = document.getElementById('page-debug');
+                if (page && !page.classList.contains('hidden')) {
                     updateDebugSnapshot();
                 }
             }, 2000);
