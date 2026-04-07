@@ -69,21 +69,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
-    <!-- CSS Eksternal (dipecah dari inline <style>) -->
-    <link rel="stylesheet" href="style.css">
 
+    <!-- ═══ STYLES ═══ -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-
-    <!-- 🛠️ DEBUG HUD BADGE — hanya tampil saat debug mode aktif (dikendalikan Admin Panel) -->
-    <div id="debug-hud-badge" style="display:none; position:fixed; top:6px; left:6px; z-index:99999;
-        background:rgba(139,92,246,0.92); color:#fff; font-size:10px; font-family:monospace;
-        padding:3px 10px; border-radius:6px; pointer-events:none; align-items:center; gap:5px;
-        box-shadow:0 2px 8px rgba(0,0,0,0.4); letter-spacing:0.5px;">
-        🛠️ DEBUG ON
-    </div>
-
 
     <!-- PHONE OVERLAY (UI HP) -->
     <div id="phone-modal">
@@ -740,8 +731,8 @@
             <div class="login-card">
                 <div class="login-tabs">
                     <button class="tab-btn active" id="tab-siswa" onclick="switchRole('siswa')">SISWA</button>
+                    <button class="tab-btn" id="tab-umum" onclick="switchRole('umum')">UMUM</button>
                     <button class="tab-btn" id="tab-guru" onclick="switchRole('guru')">GURU</button>
-                    <!-- NEW: TAB ADMIN -->
                     <button class="tab-btn" id="tab-admin" onclick="switchRole('admin')">ADMIN</button>
                 </div>
 
@@ -780,6 +771,24 @@
                     <button type="button" class="google-btn" onclick="handleGoogleLogin('siswa')">
                         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
                         Masuk dengan Google
+                    </button>
+                </form>
+
+                <!-- FORM UMUM (Mode Penjelajah) -->
+                <form id="form-umum" style="display:none;" onsubmit="event.preventDefault(); handleUmumPlay(this.querySelector('.auth-btn'))">
+                    <div style="background:rgba(251,191,36,0.15);border:1.5px solid #fbbf24;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#92400e;line-height:1.6;">
+                        🌍 <b>Mode Penjelajah</b> — Mainkan tanpa akun siswa.<br>
+                        Progress tersimpan otomatis. Login Google untuk bisa lanjut di perangkat lain.
+                    </div>
+                    <input type="text" id="umum-nama" class="form-input" placeholder="Nama Panggilan (opsional)" autocomplete="name" name="nama">
+                    <div style="background:rgba(255,255,255,0.5);border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#6b7280;display:flex;align-items:center;gap:8px;">
+                        👤 <span>Mentor: <b style="color:#374151;">Penjelajah Nusantara Arsa</b> (default)</span>
+                    </div>
+                    <button type="submit" class="auth-btn" style="background:linear-gradient(90deg,#d97706,#b45309);">🌍 MAIN SEKARANG</button>
+                    <div class="google-divider">atau simpan & sync antar perangkat</div>
+                    <button type="button" class="google-btn" onclick="handleGoogleLogin('umum')">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                        Lanjutkan dengan Google
                     </button>
                 </form>
 
@@ -863,8 +872,8 @@
                         <li onclick="showDashPage('validation')">✅ Competency</li>
                         <li onclick="showDashPage('bk')" style="color: #a78bfa;">🧭 Dashboard BK</li>
                         <li onclick="showDashPage('gempita')" style="color:#f59e0b; font-weight:700; background:linear-gradient(90deg,rgba(245,158,11,0.15),transparent); border-left:3px solid #f59e0b; margin-left:-3px; padding-left:5px;">🏅 Gempita Season</li>
+                        <li onclick="showDashPage('debugmode')" id="nav-debugmode" style="color:#a78bfa; font-weight:700;">🔧 Debug Mode</li>
                         <li onclick="showDashPage('reset')" style="color: #f87171;">⚠️ Reset Data</li>
-                        <li onclick="showDashPage('debug')" id="nav-debug" style="color:#a78bfa; font-weight:700; display:none;">🛠️ Developer Mode</li>
 
                         <!-- NEW: TOMBOL FORCE SYNC -->
                         <li onclick="refreshDashboardData()" id="dash-refresh-btn"
@@ -1847,8 +1856,47 @@
                         </div>
                     </div>
 
+                    <!-- ===================== DEBUG MODE PAGE ===================== -->
+                    <div id="page-debugmode" class="dash-page hidden">
+                        <h2 style="color:#7c3aed; margin-top:0; display:flex; align-items:center; gap:10px;">🔧 Pengaturan Debug Mode</h2>
+                        <div class="dash-card" style="border-left:4px solid #7c3aed; max-width:540px;">
+                            <h3 style="color:#1e3a5f; font-size:14px; margin-top:0;">🧪 Mode Testing / Debugging</h3>
+                            <p style="font-size:12px; color:#64748b; line-height:1.7; margin-bottom:10px;">
+                                Aktifkan <strong>Debug Mode</strong> untuk menampilkan tombol-tombol testing di HUD game
+                                (hanya di browser/perangkat ini). Tombol yang akan muncul:
+                            </p>
+                            <ul style="font-size:12px; color:#475569; line-height:2.2; margin:0 0 12px 0; padding-left:18px;">
+                                <li>🧚 <strong>Test Peri</strong> — Masuk Kahyangan Wilis dengan resource penuh &amp; fairy siap</li>
+                                <li>👹 <strong>Test Skripsi</strong> — Spawn monster pencuri naskah langsung di peta</li>
+                            </ul>
+                            <p style="font-size:11px; color:#b45309; background:#fefce8; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; margin:0;">
+                                ⚠️ <strong>Catatan:</strong> Setting ini tersimpan di browser ini saja dan <u>tidak mempengaruhi akun siswa manapun</u>.
+                                Siswa tidak akan melihat tombol ini kecuali kamu mengaktifkan debug di browser mereka.
+                            </p>
+                            <div style="margin-top:20px; padding:14px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0;">
+                                <div style="font-size:10px; color:#94a3b8; margin-bottom:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase;">Status Saat Ini</div>
+                                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                    <div id="debug-status-badge"
+                                        style="padding:8px 20px; border-radius:20px; font-weight:700; font-size:14px; font-family:'Fredoka',sans-serif; background:#f1f5f9; color:#64748b; border:2px solid #cbd5e1; transition:all 0.3s;">
+                                        ⬜ NON-AKTIF
+                                    </div>
+                                    <div id="debug-detail-status" style="font-size:12px; color:#475569; flex:1;">Memuat...</div>
+                                </div>
+                            </div>
+                            <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                                <button onclick="toggleDebugMode(true)"
+                                    style="padding:11px 22px; background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border:none; border-radius:10px; font-family:'Fredoka',sans-serif; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 4px 0 #5b21b6;">
+                                    ✅ AKTIFKAN DEBUG
+                                </button>
+                                <button onclick="toggleDebugMode(false)"
+                                    style="padding:11px 22px; background:linear-gradient(135deg,#64748b,#475569); color:#fff; border:none; border-radius:10px; font-family:'Fredoka',sans-serif; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 4px 0 #334155;">
+                                    ❌ MATIKAN DEBUG
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="page-reset" class="dash-page hidden">
-                        <h2 style="color:#ef4444; margin-top:0;">⚠️ Admin Zone: Reset Data</h2>
                         <div class="dash-card" style="border-left: 4px solid #ef4444;">
                             <p style="font-size:12px; color:#64748b;">
                                 <strong>PERINGATAN:</strong> Tindakan ini akan menghapus seluruh progress permainan
@@ -1868,16 +1916,6 @@
                                 </thead>
                                 <tbody id="reset-body"></tbody>
                             </table>
-                        </div>
-                    </div>
-
-                    <!-- ═══════════════════════════════════════════════════════ -->
-                    <!-- 🛠️ PAGE: DEVELOPER MODE (Admin Only)                    -->
-                    <!-- ═══════════════════════════════════════════════════════ -->
-                    <div id="page-debug" class="dash-page hidden">
-                        <h2 style="color:#0f172a; margin-top:0;">🛠️ Developer Mode</h2>
-                        <div id="debug-page-content">
-                            <!-- Diisi oleh renderDebugPage() -->
                         </div>
                     </div>
 
@@ -2604,14 +2642,14 @@
                             style="margin-top:5px; cursor:pointer; font-size:9px; color:#94a3b8; background:rgba(15, 23, 42, 0.8); padding:4px 8px; border-radius:12px; border:1px solid #334155; display:flex; align-items:center; gap:4px; transition:0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
                             <span id="sync-icon">☁️</span> <span id="sync-text">Sync Data</span>
                         </div>
-                        <!-- 🧚 TOMBOL TEST MODE DUNIA PERI -->
+                        <!-- 🧚 TOMBOL TEST MODE DUNIA PERI — disembunyikan by default, dikontrol admin via Debug Mode -->
                         <div id="fairy-test-btn" onclick="openFairyTestMode()"
-                            style="margin-top:4px; cursor:pointer; font-size:9px; color:#e9d5ff; background:rgba(88,28,135,0.7); padding:4px 8px; border-radius:12px; border:1px solid #a855f7; display:none; align-items:center; gap:4px; transition:0.2s; box-shadow:0 2px 5px rgba(168,85,247,0.4);">
+                            style="display:none; margin-top:4px; cursor:pointer; font-size:9px; color:#e9d5ff; background:rgba(88,28,135,0.7); padding:4px 8px; border-radius:12px; border:1px solid #a855f7; align-items:center; gap:4px; transition:0.2s; box-shadow:0 2px 5px rgba(168,85,247,0.4);">
                             🧚 Test Peri
                         </div>
-                        <!-- 👹 TOMBOL TEST MODE MONSTER PENCURI SKRIPSI -->
+                        <!-- 👹 TOMBOL TEST MODE MONSTER PENCURI SKRIPSI — disembunyikan by default -->
                         <div id="skripsi-test-btn" onclick="openSkripsiThiefTestMode()"
-                            style="margin-top:4px; cursor:pointer; font-size:9px; color:#fde68a; background:rgba(120,53,15,0.75); padding:4px 8px; border-radius:12px; border:1px solid #d97706; display:none; align-items:center; gap:4px; transition:0.2s; box-shadow:0 2px 5px rgba(217,119,6,0.4);">
+                            style="display:none; margin-top:4px; cursor:pointer; font-size:9px; color:#fde68a; background:rgba(120,53,15,0.75); padding:4px 8px; border-radius:12px; border:1px solid #d97706; align-items:center; gap:4px; transition:0.2s; box-shadow:0 2px 5px rgba(217,119,6,0.4);">
                             👹 Test Skripsi
                         </div>
                     </div>
@@ -2782,13 +2820,41 @@
             <div id="autosave-indicator" style="position:fixed; bottom:8px; right:8px; background:rgba(0,0,0,0.55); color:#86efac; font-size:10px; font-family:Fredoka,sans-serif; padding:3px 8px; border-radius:20px; opacity:0; transition:opacity 0.5s; pointer-events:none; z-index:9999;">☁️ Tersimpan</div>
         </div>
 
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- 📦 JAVASCRIPT MODULES (per fungsi)              -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <script src="js/00_config_debug.js"></script> <!-- Firebase Config, Asset Loader, Sound, Debug -->
+    <script src="js/01_quest_system.js"></script> <!-- Quest System (Daily/Weekly/Monthly/Yearly) -->
+    <script src="js/02_asset_preload.js"></script> <!-- Asset Preload -->
+    <script src="js/03_auth_menu.js"></script> <!-- Auth, Login, Register, DataService -->
+    <script src="js/04_mode_umum.js"></script> <!-- Mode Umum (Guest Play) -->
+    <script src="js/05_dashboard_admin.js"></script> <!-- Dashboard Admin/Guru -->
+    <script src="js/06_dashboard_bk.js"></script> <!-- Dashboard BK + Analitik Prediktif -->
+    <script src="js/07_gempita_event.js"></script> <!-- Gempita Season Event -->
+    <script src="js/08_fairy_village_ui.js"></script> <!-- Kahyangan Wilis UI -->
+    <script src="js/09_game_init.js"></script> <!-- Game Init & Welcome -->
+    <script src="js/10_tutorial.js"></script> <!-- Tutorial System -->
+    <script src="js/11_conflict_system.js"></script> <!-- Konflik Kerja, Akademik, Wirausaha -->
+    <script src="js/12_home_activities.js"></script> <!-- Aktivitas Rumah Tangga -->
+    <script src="js/13_npc_mentor.js"></script> <!-- NPC, Relasi, Mentor Cerdas, Ki Lamong -->
+    <script src="js/14_side_quest.js"></script> <!-- Side Quest: Kisah Leluhur -->
+    <script src="js/15_ethics_system.js"></script> <!-- Ethics System -->
+    <script src="js/16_cinematic_festival.js"></script> <!-- Cinematic Engine & Festival -->
+    <script src="js/17_festival_sfx.js"></script> <!-- Festival Desa & SFX -->
+    <script src="js/18_fishing_misc.js"></script> <!-- Fishing, Konsekuensi, Career Check -->
+    <script src="js/19_report_engine.js"></script> <!-- Potret Masa Depan / Laporan Akhir -->
+    <script src="js/20_fairy_core.js"></script> <!-- Fairy Village Core -->
+    <script src="js/21_fairy_tutorial.js"></script> <!-- Fairy Village Tutorial -->
+    <script src="js/22_fairy_map.js"></script> <!-- Fairy Village Map -->
+    <script src="js/23_fairy_gameplay.js"></script> <!-- Fairy Village Gameplay Loop -->
+    <script src="js/24_fairy_dialog.js"></script> <!-- Fairy Dialog, Test Mode, Stubs -->
+
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
-
 <!-- fv-hud-bar dihapus — statistik peri ada di tab Statistik kh-modal (Kastil Utama Peri) -->
-
         <!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
         <div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
             <div id="fv-tut-panel">
@@ -2819,22 +2885,48 @@
             <div id="fv-tut-ptr-label">LIHAT INI</div>
             <div id="fv-tut-ptr-hand">👆</div>
         </div>
-
         <!-- ONLINE NOTIFICATION POPUP -->
         <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
 
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- JS — dimuat terakhir agar DOM sudah siap               -->
-    <!-- Urutan WAJIB dipertahankan (saling bergantung)         -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <script src="js/01-firebase-init.js"></script>
-    <script src="js/02-login-dashboard.js"></script>
-    <script src="js/03-jurnal-portofolio.js"></script>
-    <script src="js/04-game-engine.js"></script>
-    <script src="js/05-konflik-sistem.js"></script>
-    <script src="js/06-quest-karir.js"></script>
-    <script src="js/07-fairy-village.js"></script>
+<!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
+<div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
+    <div id="fv-tut-panel">
+        <div id="fv-tut-header">
+            <img id="fv-tut-avatar" src="images/rarawilis.png" alt="Rara Wilis" onerror="this.src=''">
+            <div id="fv-tut-head-info">
+                <div id="fv-tut-speaker">RARA WILIS</div>
+                <div id="fv-tut-step-badge">Panduan 1 / 8</div>
+            </div>
+            <button id="fv-tut-skip" onclick="fvTutSkip()">Lewati ✕</button>
+        </div>
+        <div id="fv-tut-body">
+            <div id="fv-tut-icon">✨</div>
+            <div id="fv-tut-content">
+                <div id="fv-tut-title">Selamat Datang!</div>
+                <div id="fv-tut-text">Memuat panduan...</div>
+            </div>
+        </div>
+        <div id="fv-tut-footer">
+            <div id="fv-tut-dots"></div>
+            <button id="fv-tut-prev" onclick="fvTutGo(-1)" disabled>◀ Kembali</button>
+            <button id="fv-tut-next" onclick="fvTutGo(1)">Lanjut ▶</button>
+        </div>
+    </div>
+</div>
+<!-- Finger pointer for fairy tutorial -->
+<div id="fv-tut-pointer">
+    <div id="fv-tut-ptr-label">LIHAT INI</div>
+    <div id="fv-tut-ptr-hand">👆</div>
+</div>
+
+<!-- ONLINE NOTIFICATION POPUP -->
+<div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
+
 
 </body>
 </html>

@@ -1,51 +1,66 @@
-# Nusantara Arsa: Rise of Student
-## Struktur Proyek (Setelah Dipecah)
+# 🎮 Nusantara Arsa: Rise of Student
 
-File asli `index183.html` (~2.9 MB, 48.455 baris) sudah dipecah menjadi beberapa file agar ringan dan bisa di-upload ke GitHub tanpa error.
+Game edukasi berbasis web (HTML/CSS/JS) + Firebase.
 
----
-
-## Struktur Folder
+## 📁 Struktur File
 
 ```
-/
-├── index.html                  (~200 KB) — Kerangka HTML utama
-├── style.css                   (~197 KB) — Semua CSS
-├── images/                               — Aset gambar (tidak berubah)
-└── js/
-    ├── 01-firebase-init.js     (~197 KB) — Firebase config, login page, sesi
-    ├── 02-login-dashboard.js   (~134 KB) — Google login, dashboard admin/guru
-    ├── 03-jurnal-portofolio.js (~104 KB) — Jurnal siswa, portofolio, Gempita
-    ├── 04-game-engine.js       (~515 KB) — Engine game: TILE, STATE, rendering, pet
-    ├── 05-konflik-sistem.js    (~606 KB) — Konflik akademik & pernikahan dini
-    ├── 06-quest-karir.js       (~570 KB) — Quest, part-time, lowongan, minigame
-    └── 07-fairy-village.js     (~284 KB) — Pasar grosir, Kahyangan Wilis, peri
+nusantara-arsa/
+├── index.html              ← Entry point utama (HTML + load semua JS/CSS)
+├── css/
+│   └── style.css           ← Semua styling game (tema farm, kartun, UI)
+├── js/                     ← Dipecah per fungsi agar mudah update
+│   ├── 00_config_debug.js  ← Firebase config, asset loader, sound system, debug mode
+│   ├── 01_quest_system.js  ← Quest harian/mingguan/bulanan/tahunan
+│   ├── 02_asset_preload.js ← Preload & manajemen aset gambar
+│   ├── 03_auth_menu.js     ← Login, register, auth, DataService, main menu
+│   ├── 04_mode_umum.js     ← Mode Umum (main tanpa akun / localStorage)
+│   ├── 05_dashboard_admin.js← Dashboard guru/admin, statistik, monitoring
+│   ├── 06_dashboard_bk.js  ← Dashboard BK + analitik prediktif
+│   ├── 07_gempita_event.js ← Gempita Season Event tahunan
+│   ├── 08_fairy_village_ui.js← Kahyangan Wilis UI & peta peri
+│   ├── 09_game_init.js     ← Inisialisasi game, animasi selamat datang
+│   ├── 10_tutorial.js      ← Sistem tutorial (step by step)
+│   ├── 11_conflict_system.js← Konflik kerja, akademik, wirausaha
+│   ├── 12_home_activities.js← Menu aktivitas rumah tangga
+│   ├── 13_npc_mentor.js    ← NPC personality, relasi, mentor cerdas, Ki Lamong
+│   ├── 14_side_quest.js    ← Side quest: Kisah Leluhur Lamongan
+│   ├── 15_ethics_system.js ← Ethics system & dampak nyata
+│   ├── 16_cinematic_festival.js← Cinematic engine & festival desa
+│   ├── 17_festival_sfx.js  ← Festival sistem & SFX global
+│   ├── 18_fishing_misc.js  ← Fishing, konsekuensi nyata, career check
+│   ├── 19_report_engine.js ← Potret masa depanku / laporan akhir
+│   ├── 20_fairy_core.js    ← Fairy village world map core
+│   ├── 21_fairy_tutorial.js← Tutorial kahyangan wilis
+│   ├── 22_fairy_map.js     ← Fairy village map refresh
+│   ├── 23_fairy_gameplay.js← Fairy village: game loop, build queue, draw
+│   └── 24_fairy_dialog.js  ← Dialog Rara Wilis, test modes, stubs
+└── images/                 ← Folder aset gambar (tidak berubah)
 ```
 
-## ⚠️ PENTING: Urutan Script
+## 🔧 Cara Update per Fungsi
 
-Urutan `<script>` di `index.html` **WAJIB** dipertahankan karena setiap file bergantung pada variabel/fungsi dari file sebelumnya:
+| Ingin update apa? | Edit file ini |
+|---|---|
+| Tampilan / tema warna | `css/style.css` |
+| Login / register / auth | `js/03_auth_menu.js` |
+| Quest & reward | `js/01_quest_system.js` |
+| Dashboard guru / admin | `js/05_dashboard_admin.js` |
+| Dashboard BK | `js/06_dashboard_bk.js` |
+| Tutorial pertama main | `js/10_tutorial.js` |
+| Dialog NPC / mentor | `js/13_npc_mentor.js` |
+| Sistem konflik | `js/11_conflict_system.js` |
+| Kahyangan Wilis (peri) | `js/20_fairy_core.js` - `js/24_fairy_dialog.js` |
+| Festival desa | `js/16_cinematic_festival.js` |
+| Fishing minigame | `js/18_fishing_misc.js` |
+| Laporan akhir siswa | `js/19_report_engine.js` |
 
-```
-01 → 02 → 03 → 04 → 05 → 06 → 07
-```
+## ⚡ Deploy ke GitHub Pages
 
-## Cara Deploy ke GitHub Pages
+1. Upload semua file ke repo GitHub
+2. Enable GitHub Pages dari Settings → Pages → Branch: main
+3. Buka `https://username.github.io/repo-name/`
 
-1. Upload semua file ke repo GitHub (pertahankan struktur folder)
-2. Aktifkan GitHub Pages dari Settings → Pages → Branch: `main`
-3. Pastikan folder `images/` juga ter-upload
-
-## Cara Jalankan Lokal
-
-Butuh web server lokal (tidak bisa buka `index.html` langsung via file://):
-
-```bash
-# Python
-python -m http.server 8080
-
-# Node.js (npx)
-npx serve .
-```
-
-Lalu buka: `http://localhost:8080`
+> **Catatan:** File `index184.html` original (~2.9MB, 48K baris) sudah dipecah menjadi
+> 25 file JS + 1 CSS, masing-masing di bawah 6000 baris. GitHub limit per file = 100MB,
+> tapi agar mudah review, tiap file dijaga <6000 baris.
