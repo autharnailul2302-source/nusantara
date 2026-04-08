@@ -1,55 +1,70 @@
 # 🎮 Nusantara Arsa: Rise of Student
 
-Game RPG edukasi berbasis web — dipecah per modul agar mudah diupdate.
+Game RPG edukasi berbasis browser — dikembangkan oleh Nailul Authar, TKJ SMKN 1 Brondong.
 
-## Struktur File
+---
+
+## 📁 Struktur Proyek
 
 ```
-index.html              ← Entry point utama
-css/
-└── styles.css          ← Semua CSS (~5.900 baris)
-js/
-├── 01-firebase-config.js                ← Firebase Config + Init
-├── 02-debug-milestone.js                ← Debug Mode + Milestone Quest Tahunan
-├── 03-admin-google-login.js             ← Google Login + Admin Dashboard
-├── 04-jurnal-portfolio.js               ← Jurnal Siswa + Portofolio Guru
-├── 05-bk-analitik-gempita.js            ← Dashboard BK + Analitik Prediktif + Gempita Season
-├── 06-kahyangan-widadari.js             ← Kahyangan Wilis / Dunia Widadari
-├── 07-pet-system.js                     ← Sistem Peliharaan (PET_CATALOG)
-├── 08-maps-data.js                      ← Data Peta + Fairy Village Map
-├── 09-animasi-welcome.js                ← Animasi Selamat Datang
-├── 10-konflik-kerja.js                  ← Sistem Konflik Tempat Kerja
-├── 11-konflik-akademik.js               ← Sistem Konflik Akademik (Mahasiswa)
-├── 12-konflik-bisnis.js                 ← Sistem Konflik Wirausaha (Entrepreneur)
-├── 13-rumah-tangga.js                   ← Aktivitas Rumah Tangga
-├── 14-npc-mentor.js                     ← NPC Kepribadian + Mentor Cerdas
-├── 15-quest-sidequest.js                ← Side Quest + Ritual Kahyangan + Ethics
-├── 16-jurnal-refleksi.js                ← Jurnal Refleksi + Quest Media
-├── 17-kerja-parttime.js                 ← Sistem Part-Time
-├── 18-minigame-lamaran.js               ← Minigame Lamaran Kerja + Lowongan DB
-├── 19-cinematic-festival.js             ← Cinematic Engine + Festival Desa
-├── 20-sfx-pasar-audio.js                ← SFX Global + Logika Pasar Grosir
-├── 21-fv-world-map.js                   ← Fairy Village World Map (BoF4 Style)
-├── 22-fv-tutorial.js                    ← Tutorial Kahyangan Wilis
-├── 23-fv-map-refresh.js                 ← Refresh + Init Fairy Village Map
-├── 24-fv-gameloop-draw.js               ← Game Loop + Build Queue + Draw Fairy Village
-├── 25-fv-dialog-npc.js                  ← Dialog NPC Peri + Rara Wilis + Istana
-├── 26-fv-collect-partikel.js            ← Collect Dust + Partikel Effect
-├── 27-fv-hud-testmode.js                ← HUD Fairy Village + Test Mode
+nusantara/
+├── index.html              ← Entry point utama (2.800 baris)
+├── css/
+│   └── style.css           ← Semua styling game (5.900 baris)
+├── js/
+│   ├── 01-config-firebase.js   ← Konfigurasi Firebase, Asset Loader, Audio System
+│   ├── 02-quest-system.js      ← Quest harian, milestone, daily reward
+│   ├── 03-init-loading.js      ← Inisialisasi awal & loading bar
+│   ├── 04-leaderboard-datasvc.js ← Leaderboard publik & DataService
+│   ├── 05-auth-login.js        ← Google Login & alur autentikasi
+│   ├── 06-admin-dashboard.js   ← Dashboard guru/admin, grading, export
+│   ├── 07-maps-world.js        ← Data map, tileset, interior map
+│   ├── 08-npc-calendar.js      ← Data NPC, kalender event, dialog sosial
+│   ├── 09-pet-system.js        ← Katalog pet, legendary battle, pet HUD
+│   ├── 10-input-movement.js    ← Sistem input touch & pergerakan player
+│   ├── 11-init-game.js         ← initGame(), tutorial steps
+│   ├── 12-exam-minigame.js     ← Ujian masuk kuliah, minigame worker
+│   ├── 13-materi-kuliah.js     ← Database 48 topik materi kuliah
+│   ├── 14-ui-hud.js            ← HUD toggle, inventory, shop UI
+│   ├── 15-gameloop-core.js     ← Game loop utama, update, collision, time
+│   ├── 16-journal-partime.js   ← Jurnal harian berbasis role
+│   ├── 17-career-marriage.js   ← Karir, part-time, pernikahan, role
+│   ├── 18-render-draw.js       ← Render: objek, NPC, musuh, canvas
+│   ├── 19-minimap-warnet.js    ← Minimap, warnet, sertifikat, misc UI
+│   └── 20-fairy-village.js     ← Fairy Village Minigame (Kahyangan Wilis)
+└── images/                     ← Semua aset gambar (tidak termasuk di repo ini)
 ```
 
-## Cara Update Modul
+---
 
-Setiap file JS diberi nomor urut dan nama fungsi. Kalau mau update:
-- **Tambah fitur konflik kerja** → edit `js/10-konflik-kerja.js`
-- **Update sistem peri** → edit `js/21-27-fv-*.js`
-- **Ubah tampilan** → edit `css/styles.css`
-- **Update koneksi Firebase** → edit `js/01-firebase-config.js`
+## ⚠️ Urutan Load JS WAJIB Dijaga
 
-> ⚠️ Jangan ubah urutan `<script>` di `index.html` — modul saling bergantung!
+File JS sudah diberi nomor urut `01-` s.d `20-`. Urutan di `index.html` **tidak boleh diacak**
+karena tiap modul bergantung pada variabel yang didefinisikan modul sebelumnya.
 
-## Deploy ke GitHub Pages
+---
+
+## 🔧 Cara Update per Modul
+
+| Ingin update apa? | Edit file ini |
+|---|---|
+| Konfigurasi Firebase | `js/01-config-firebase.js` |
+| Quest / milestone baru | `js/02-quest-system.js` |
+| Dashboard guru | `js/06-admin-dashboard.js` |
+| Tambah/edit NPC | `js/08-npc-calendar.js` |
+| Pet baru | `js/09-pet-system.js` |
+| Map / interior baru | `js/07-maps-world.js` |
+| Materi kuliah | `js/13-materi-kuliah.js` |
+| Fairy Village | `js/20-fairy-village.js` |
+| Logika utama game | `js/15-gameloop-core.js` |
+| Tampilan / CSS | `css/style.css` |
+| Struktur HTML | `index.html` |
+
+---
+
+## 🚀 Deploy ke GitHub Pages
 
 1. Push semua file ke repo GitHub
-2. Aktifkan GitHub Pages dari Settings → Pages → branch `main` / folder `/root`
-3. Akses game di `https://<username>.github.io/<repo>/`
+2. Aktifkan **Settings → Pages → Deploy from branch: `main` / folder: `root`**
+3. Pastikan folder `images/` juga ter-upload (atau gunakan CDN)
+

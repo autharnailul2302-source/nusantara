@@ -3,32 +3,31 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nusantara Arsa: Rise of Student</title>
 
-    <!-- PWA / Mobile Web App Meta Tags (Agar Full Screen saat Add to Home Screen) -->
+    <!-- PWA / Mobile Web App Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
 
-    <!-- OPTIMASI CACHE: Preload Aset Kritis (Phase 1 saja — yang dibutuhkan saat layar pertama tampil) -->
+    <!-- Preload Aset Kritis Phase 1 -->
     <link rel="preload" as="image" href="images/bg.png">
     <link rel="preload" as="image" href="images/landinggame.png">
     <link rel="preload" as="image" href="images/lobby.png">
     <link rel="preload" as="image" href="images/boy.png">
     <link rel="preload" as="image" href="images/girl.png">
-    <!-- Aset lainnya dimuat bertahap oleh preloadAllGameAssets() —— tidak perlu duplikasi di sini -->
 
-    <!-- Firebase SDK (Compat Version for HTML) -->
+    <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
-
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- CSS Utama -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
 
 </head>
 
@@ -2780,36 +2779,49 @@
         </div>
 
 
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!-- GAME MODULES — Jangan ubah urutan! Setiap file = 1 modul -->
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <script src="js/01-firebase-config.js"></script>
-    <script src="js/02-debug-milestone.js"></script>
-    <script src="js/03-admin-google-login.js"></script>
-    <script src="js/04-jurnal-portfolio.js"></script>
-    <script src="js/05-bk-analitik-gempita.js"></script>
-    <script src="js/06-kahyangan-widadari.js"></script>
-    <script src="js/07-pet-system.js"></script>
-    <script src="js/08-maps-data.js"></script>
-    <script src="js/09-animasi-welcome.js"></script>
-    <script src="js/10-konflik-kerja.js"></script>
-    <script src="js/11-konflik-akademik.js"></script>
-    <script src="js/12-konflik-bisnis.js"></script>
-    <script src="js/13-rumah-tangga.js"></script>
-    <script src="js/14-npc-mentor.js"></script>
-    <script src="js/15-quest-sidequest.js"></script>
-    <script src="js/16-jurnal-refleksi.js"></script>
-    <script src="js/17-kerja-parttime.js"></script>
-    <script src="js/18-minigame-lamaran.js"></script>
-    <script src="js/19-cinematic-festival.js"></script>
-    <script src="js/20-sfx-pasar-audio.js"></script>
-    <script src="js/21-fv-world-map.js"></script>
-    <script src="js/22-fv-tutorial.js"></script>
-    <script src="js/23-fv-map-refresh.js"></script>
-    <script src="js/24-fv-gameloop-draw.js"></script>
-    <script src="js/25-fv-dialog-npc.js"></script>
-    <script src="js/26-fv-collect-partikel.js"></script>
-    <script src="js/27-fv-hud-testmode.js"></script>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT MODULES — Urutan load WAJIB dijaga               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 01. Konfigurasi Firebase, Asset Loader, Audio System -->
+<script src="js/01-config-firebase.js"></script>
+<!-- 02. Sistem Quest Harian, Milestone, Reward -->
+<script src="js/02-quest-system.js"></script>
+<!-- 03. Inisialisasi Awal & Loading Bar -->
+<script src="js/03-init-loading.js"></script>
+<!-- 04. Leaderboard & DataService -->
+<script src="js/04-leaderboard-datasvc.js"></script>
+<!-- 05. Auth & Google Login -->
+<script src="js/05-auth-login.js"></script>
+<!-- 06. Dashboard Admin / Guru -->
+<script src="js/06-admin-dashboard.js"></script>
+<!-- 07. Map Dunia & Tileset -->
+<script src="js/07-maps-world.js"></script>
+<!-- 08. Data NPC, Kalender & Dialog Sosial -->
+<script src="js/08-npc-calendar.js"></script>
+<!-- 09. Sistem Pet (Katalog, Battle, HUD) -->
+<script src="js/09-pet-system.js"></script>
+<!-- 10. Input & Pergerakan (Touch/Joystick) -->
+<script src="js/10-input-movement.js"></script>
+<!-- 11. initGame & Tutorial Steps -->
+<script src="js/11-init-game.js"></script>
+<!-- 12. Ujian Masuk, Minigame Worker, Database Soal -->
+<script src="js/12-exam-minigame.js"></script>
+<!-- 13. Database Materi Kuliah (48 Topik) -->
+<script src="js/13-materi-kuliah.js"></script>
+<!-- 14. UI — HUD, Inventory, Shop -->
+<script src="js/14-ui-hud.js"></script>
+<!-- 15. Game Loop Utama (update, collision, time) -->
+<script src="js/15-gameloop-core.js"></script>
+<!-- 16. Jurnal & Sistem Part-Time -->
+<script src="js/16-journal-partime.js"></script>
+<!-- 17. Karir, Pernikahan, Role Progression -->
+<script src="js/17-career-marriage.js"></script>
+<!-- 18. Render & Draw (objek, NPC, enemy) -->
+<script src="js/18-render-draw.js"></script>
+<!-- 19. Minimap, Warnet, Sertifikat & UI Misc -->
+<script src="js/19-minimap-warnet.js"></script>
+<!-- 20. Fairy Village Minigame (Kahyangan Wilis) -->
+<script src="js/20-fairy-village.js"></script>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
@@ -2853,5 +2865,4 @@
         <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
 
 </body>
-</body>
-</html>
+
