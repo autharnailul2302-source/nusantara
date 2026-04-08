@@ -69,8 +69,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
-
-    <!-- ═══ STYLES ═══ -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -2820,42 +2818,33 @@
             <div id="autosave-indicator" style="position:fixed; bottom:8px; right:8px; background:rgba(0,0,0,0.55); color:#86efac; font-size:10px; font-family:Fredoka,sans-serif; padding:3px 8px; border-radius:20px; opacity:0; transition:opacity 0.5s; pointer-events:none; z-index:9999;">☁️ Tersimpan</div>
         </div>
 
-
-    <!-- ═══════════════════════════════════════════════ -->
-    <!-- 📦 JAVASCRIPT MODULES (per fungsi)              -->
-    <!-- ═══════════════════════════════════════════════ -->
-    <script src="js/00_config_debug.js" defer></script> <!-- Firebase Config, Asset Loader, Sound, Debug -->
-    <script src="js/01_quest_system.js" defer></script> <!-- Quest System (Daily/Weekly/Monthly/Yearly) -->
-    <script src="js/02_asset_preload.js" defer></script> <!-- Asset Preload -->
-    <script src="js/03_auth_menu.js" defer></script> <!-- Auth, Login, Register, DataService -->
-    <script src="js/04_mode_umum.js" defer></script> <!-- Mode Umum (Guest Play) -->
-    <script src="js/05_dashboard_admin.js" defer></script> <!-- Dashboard Admin/Guru -->
-    <script src="js/06_dashboard_bk.js" defer></script> <!-- Dashboard BK + Analitik Prediktif -->
-    <script src="js/07_gempita_event.js" defer></script> <!-- Gempita Season Event -->
-    <script src="js/08_fairy_village_ui.js" defer></script> <!-- Kahyangan Wilis UI -->
-    <script src="js/09_game_init.js" defer></script> <!-- Game Init & Welcome -->
-    <script src="js/10_tutorial.js" defer></script> <!-- Tutorial System -->
-    <script src="js/11_conflict_system.js" defer></script> <!-- Konflik Kerja, Akademik, Wirausaha -->
-    <script src="js/12_home_activities.js" defer></script> <!-- Aktivitas Rumah Tangga -->
-    <script src="js/13_npc_mentor.js" defer></script> <!-- NPC, Relasi, Mentor Cerdas, Ki Lamong -->
-    <script src="js/14_side_quest.js" defer></script> <!-- Side Quest: Kisah Leluhur -->
-    <script src="js/15_ethics_system.js" defer></script> <!-- Ethics System -->
-    <script src="js/16_cinematic_festival.js" defer></script> <!-- Cinematic Engine & Festival -->
-    <script src="js/17_festival_sfx.js" defer></script> <!-- Festival Desa & SFX -->
-    <script src="js/18_fishing_misc.js" defer></script> <!-- Fishing, Konsekuensi, Career Check -->
-    <script src="js/19_report_engine.js" defer></script> <!-- Potret Masa Depan / Laporan Akhir -->
-    <script src="js/20_fairy_core.js" defer></script> <!-- Fairy Village Core -->
-    <script src="js/21_fairy_tutorial.js" defer></script> <!-- Fairy Village Tutorial -->
-    <script src="js/22_fairy_map.js" defer></script> <!-- Fairy Village Map -->
-    <script src="js/23_fairy_gameplay.js" defer></script> <!-- Fairy Village Gameplay Loop -->
-    <script src="js/24_fairy_dialog.js" defer></script> <!-- Fairy Dialog, Test Mode, Stubs -->
-    <script src="js/25_start.js" defer></script> <!-- ⚡ ENTRY POINT — Jalankan setelah semua JS siap -->
+    <!-- JS Modules — dipecah per fungsi untuk kemudahan update -->
+    <script src="js/01_config_assets.js"></script>
+    <script src="js/02_quest_system.js"></script>
+    <script src="js/03_auth_login.js"></script>
+    <script src="js/04_dashboard_admin.js"></script>
+    <script src="js/05_dashboard_debug_bk.js"></script>
+    <script src="js/06_gempita_export.js"></script>
+    <script src="js/07_duel_minigame.js"></script>
+    <script src="js/08_game_init.js"></script>
+    <script src="js/09_kahyangan_wilis.js"></script>
+    <script src="js/10_fairy_village_map.js"></script>
+    <script src="js/11_game_world_events.js"></script>
+    <script src="js/12_household_npc.js"></script>
+    <script src="js/13_mentor_sidequest.js"></script>
+    <script src="js/14a_ethics_system.js"></script>
+    <script src="js/14b_cinematic_engine.js"></script>
+    <script src="js/14c_dialogue_renderer.js"></script>
+    <script src="js/15_festival_sfx.js"></script>
+    <script src="js/16_fairy_village_logic.js"></script>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 <div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
+
 <!-- fv-hud-bar dihapus — statistik peri ada di tab Statistik kh-modal (Kastil Utama Peri) -->
+
         <!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
         <div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
             <div id="fv-tut-panel">
@@ -2886,48 +2875,10 @@
             <div id="fv-tut-ptr-label">LIHAT INI</div>
             <div id="fv-tut-ptr-hand">👆</div>
         </div>
+
         <!-- ONLINE NOTIFICATION POPUP -->
         <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-<div id="fairy-village-modal" style="display:none;" aria-hidden="true"><!-- Fairy Village pakai gameCanvas utama --></div>
-
-<!-- FAIRY VILLAGE TUTORIAL OVERLAY -->
-<div id="fv-tutorial" role="dialog" aria-label="Tutorial Kahyangan Wilis">
-    <div id="fv-tut-panel">
-        <div id="fv-tut-header">
-            <img id="fv-tut-avatar" src="images/rarawilis.png" alt="Rara Wilis" onerror="this.src=''">
-            <div id="fv-tut-head-info">
-                <div id="fv-tut-speaker">RARA WILIS</div>
-                <div id="fv-tut-step-badge">Panduan 1 / 8</div>
-            </div>
-            <button id="fv-tut-skip" onclick="fvTutSkip()">Lewati ✕</button>
-        </div>
-        <div id="fv-tut-body">
-            <div id="fv-tut-icon">✨</div>
-            <div id="fv-tut-content">
-                <div id="fv-tut-title">Selamat Datang!</div>
-                <div id="fv-tut-text">Memuat panduan...</div>
-            </div>
-        </div>
-        <div id="fv-tut-footer">
-            <div id="fv-tut-dots"></div>
-            <button id="fv-tut-prev" onclick="fvTutGo(-1)" disabled>◀ Kembali</button>
-            <button id="fv-tut-next" onclick="fvTutGo(1)">Lanjut ▶</button>
-        </div>
-    </div>
-</div>
-<!-- Finger pointer for fairy tutorial -->
-<div id="fv-tut-pointer">
-    <div id="fv-tut-ptr-label">LIHAT INI</div>
-    <div id="fv-tut-ptr-hand">👆</div>
-</div>
-
-<!-- ONLINE NOTIFICATION POPUP -->
-<div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
-
-
 </body>
+
 </html>
