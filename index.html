@@ -13,55 +13,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
 
-    <!-- OPTIMASI CACHE: Preload Aset Berat agar tersimpan di memori browser lebih awal -->
+    <!-- OPTIMASI CACHE: Preload Aset Kritis (Phase 1 saja — yang dibutuhkan saat layar pertama tampil) -->
     <link rel="preload" as="image" href="images/bg.png">
     <link rel="preload" as="image" href="images/landinggame.png">
     <link rel="preload" as="image" href="images/lobby.png">
     <link rel="preload" as="image" href="images/boy.png">
     <link rel="preload" as="image" href="images/girl.png">
-    <!-- NEW: PRELOAD KURCACI -->
-    <link rel="preload" as="image" href="images/kurcacitani.png">
-    <!-- NEW: PRELOAD PERI PANEN -->
-    <link rel="preload" as="image" href="images/peripanen.png">
-    <!-- NEW: PRELOAD ORANG SAWAH -->
-    <link rel="preload" as="image" href="images/orangsawah.png">
-    <!-- NEW: PRELOAD LAHAN LIAR -->
-    <link rel="preload" as="image" href="images/lahan-liar.png">
-    <!-- NEW: PRELOAD FAIRY NPC -->
-    <link rel="preload" as="image" href="images/wening.png">
-    <link rel="preload" as="image" href="images/sekar.png">
-    <link rel="preload" as="image" href="images/bening.png">
-    <link rel="preload" as="image" href="images/juna.png">
-    <link rel="preload" as="image" href="images/pohonperi.png">
-    <!-- PRELOAD PERI LAHIR SPRITES -->
-    <link rel="preload" as="image" href="images/peri_pr1.png">
-    <link rel="preload" as="image" href="images/peri_pr2.png">
-    <link rel="preload" as="image" href="images/peri_pr3.png">
-    <link rel="preload" as="image" href="images/peri_pr4.png">
-    <link rel="preload" as="image" href="images/peri_lk1.png">
-    <link rel="preload" as="image" href="images/peri_lk2.png">
-    <!-- PRELOAD SENDANG TIER -->
-    <link rel="preload" as="image" href="images/sendang-tier1.png">
-    <link rel="preload" as="image" href="images/sendang-tier2.png">
-    <link rel="preload" as="image" href="images/sendang-tier3.png">
-    <!-- PRELOAD TAMAN TIER -->
-    <link rel="preload" as="image" href="images/taman-tier1.png">
-    <link rel="preload" as="image" href="images/taman-tier2.png">
-    <link rel="preload" as="image" href="images/taman-tier3.png">
-    <!-- PRELOAD SEKOLAH TIER -->
-    <link rel="preload" as="image" href="images/sekolah-tier1.png">
-    <link rel="preload" as="image" href="images/sekolah-tier2.png">
-    <link rel="preload" as="image" href="images/sekolah-tier3.png">
-    <!-- PRELOAD PASAR TIER -->
-    <link rel="preload" as="image" href="images/pasar-tier1.png">
-    <link rel="preload" as="image" href="images/pasar-tier2.png">
-    <link rel="preload" as="image" href="images/pasar-tier3.png">
-    <!-- PRELOAD MENARA TIER -->
-    <link rel="preload" as="image" href="images/menara-tier1.png">
-    <link rel="preload" as="image" href="images/menara-tier2.png">
-    <link rel="preload" as="image" href="images/menara-tier3.png">
-    <!-- PRELOAD ISTANA -->
-    <link rel="preload" as="image" href="images/istanaperi.png">
+    <!-- Aset lainnya dimuat bertahap oleh preloadAllGameAssets() —— tidak perlu duplikasi di sini -->
 
     <!-- Firebase SDK (Compat Version for HTML) -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -69,7 +27,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
 
-    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/styles.css">
+
 </head>
 
 <body>
@@ -582,6 +542,7 @@
                         <div id="loading-bar"></div>
                     </div>
                     <div id="loading-text">MENYIAPKAN DATA... 0%</div>
+                    <div id="loading-detail">Mempersiapkan game...</div>
                     <div id="splash-start-btn" style="display:none; margin-top:clamp(10px,1.8vh,18px); cursor:pointer;" class="resume-btn">
                         ▶ KETUK UNTUK MEMULAI
                     </div>
@@ -2818,25 +2779,37 @@
             <div id="autosave-indicator" style="position:fixed; bottom:8px; right:8px; background:rgba(0,0,0,0.55); color:#86efac; font-size:10px; font-family:Fredoka,sans-serif; padding:3px 8px; border-radius:20px; opacity:0; transition:opacity 0.5s; pointer-events:none; z-index:9999;">☁️ Tersimpan</div>
         </div>
 
-    <!-- JS Modules — dipecah per fungsi untuk kemudahan update -->
-    <script src="js/01_config_assets.js"></script>
-    <script src="js/02_quest_system.js"></script>
-    <script src="js/03_auth_login.js"></script>
-    <script src="js/04_dashboard_admin.js"></script>
-    <script src="js/05_dashboard_debug_bk.js"></script>
-    <script src="js/06_gempita_export.js"></script>
-    <script src="js/07_duel_minigame.js"></script>
-    <script src="js/08_game_init.js"></script>
-    <script src="js/09_kahyangan_wilis.js"></script>
-    <script src="js/10_fairy_village_map.js"></script>
-    <script src="js/11_game_world_events.js"></script>
-    <script src="js/12_household_npc.js"></script>
-    <script src="js/13_mentor_sidequest.js"></script>
-    <script src="js/14a_ethics_system.js"></script>
-    <script src="js/14b_cinematic_engine.js"></script>
-    <script src="js/14c_dialogue_renderer.js"></script>
-    <script src="js/15_festival_sfx.js"></script>
-    <script src="js/16_fairy_village_logic.js"></script>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- GAME MODULES — Jangan ubah urutan! Setiap file = 1 modul -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <script src="js/01-firebase-config.js"></script>
+    <script src="js/02-debug-milestone.js"></script>
+    <script src="js/03-admin-google-login.js"></script>
+    <script src="js/04-jurnal-portfolio.js"></script>
+    <script src="js/05-bk-analitik-gempita.js"></script>
+    <script src="js/06-kahyangan-widadari.js"></script>
+    <script src="js/07-pet-system.js"></script>
+    <script src="js/08-maps-data.js"></script>
+    <script src="js/09-animasi-welcome.js"></script>
+    <script src="js/10-konflik-kerja.js"></script>
+    <script src="js/11-konflik-akademik.js"></script>
+    <script src="js/12-konflik-bisnis.js"></script>
+    <script src="js/13-rumah-tangga.js"></script>
+    <script src="js/14-npc-mentor.js"></script>
+    <script src="js/15-quest-sidequest.js"></script>
+    <script src="js/16-jurnal-refleksi.js"></script>
+    <script src="js/17-kerja-parttime.js"></script>
+    <script src="js/18-minigame-lamaran.js"></script>
+    <script src="js/19-cinematic-festival.js"></script>
+    <script src="js/20-sfx-pasar-audio.js"></script>
+    <script src="js/21-fv-world-map.js"></script>
+    <script src="js/22-fv-tutorial.js"></script>
+    <script src="js/23-fv-map-refresh.js"></script>
+    <script src="js/24-fv-gameloop-draw.js"></script>
+    <script src="js/25-fv-dialog-npc.js"></script>
+    <script src="js/26-fv-collect-partikel.js"></script>
+    <script src="js/27-fv-hud-testmode.js"></script>
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- 🧚 FAIRY VILLAGE MODAL — WORLD MAP 45×30                    -->
@@ -2880,5 +2853,5 @@
         <div id="online-notif-popup" style="position:fixed; bottom:24px; right:24px; z-index:99998; display:flex; flex-direction:column; gap:8px; pointer-events:none;" aria-live="polite"></div>
 
 </body>
-
+</body>
 </html>

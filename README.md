@@ -1,60 +1,55 @@
 # 🎮 Nusantara Arsa: Rise of Student
 
-Game edukasi berbasis browser — dipecah per fungsi agar mudah di-update dan dikelola di GitHub.
+Game RPG edukasi berbasis web — dipecah per modul agar mudah diupdate.
 
-## 📁 Struktur File
+## Struktur File
 
 ```
-nusantara-arsa/
-├── index.html                    ← Entry point utama (HTML + referensi semua file)
-├── css/
-│   └── style.css                 ← Semua CSS (tema farm, HUD, modal, animasi)
-├── js/
-│   ├── 01_config_assets.js       ← 🔧 Firebase Config, Asset Loader, Audio
-│   ├── 02_quest_system.js        ← 📋 Quest Harian / Mingguan / Bulanan / Milestone
-│   ├── 03_auth_login.js          ← 🔐 Auth, Login, Mode Umum & Guru
-│   ├── 04_dashboard_admin.js     ← 📊 Dashboard Admin: Stats, Ranking, Jurnal
-│   ├── 05_dashboard_debug_bk.js  ← 🔧 Debug Mode & BK Dashboard
-│   ├── 06_gempita_export.js      ← 🎉 Gempita Season & Export CSV
-│   ├── 07_duel_minigame.js       ← ⚔️ Duel Minigame
-│   ├── 08_game_init.js           ← 🎮 startGame, resize, Map Setup, initGame
-│   ├── 09_kahyangan_wilis.js     ← 🧚 Kahyangan Wilis — Dunia Widadari Tersembunyi
-│   ├── 10_fairy_village_map.js   ← 🗺️ Fairy Village Map Integration
-│   ├── 11_game_world_events.js   ← 🌍 Welcome Anim, Konflik Kerja/Kampus/Bisnis
-│   ├── 12_household_npc.js       ← 🏠 Aktivitas Rumah Tangga & Kepribadian NPC
-│   ├── 13_mentor_sidequest.js    ← 🧠 Mentor Cerdas & Kisah Leluhur Quest
-│   ├── 14a_ethics_system.js      ← 📊 Ethics Berdampak Nyata
-│   ├── 14b_cinematic_engine.js   ← 🎬 Cinematic Engine
-│   ├── 14c_dialogue_renderer.js  ← 💬 Dialogue System & Main Game Renderer
-│   ├── 15_festival_sfx.js        ← 🎉 Festival Desa & SFX Global
-│   └── 16_fairy_village_logic.js ← 🧚 Fairy Village Logic & Test Mode
-└── images/                       ← (folder gambar — tidak berubah)
+index.html              ← Entry point utama
+css/
+└── styles.css          ← Semua CSS (~5.900 baris)
+js/
+├── 01-firebase-config.js                ← Firebase Config + Init
+├── 02-debug-milestone.js                ← Debug Mode + Milestone Quest Tahunan
+├── 03-admin-google-login.js             ← Google Login + Admin Dashboard
+├── 04-jurnal-portfolio.js               ← Jurnal Siswa + Portofolio Guru
+├── 05-bk-analitik-gempita.js            ← Dashboard BK + Analitik Prediktif + Gempita Season
+├── 06-kahyangan-widadari.js             ← Kahyangan Wilis / Dunia Widadari
+├── 07-pet-system.js                     ← Sistem Peliharaan (PET_CATALOG)
+├── 08-maps-data.js                      ← Data Peta + Fairy Village Map
+├── 09-animasi-welcome.js                ← Animasi Selamat Datang
+├── 10-konflik-kerja.js                  ← Sistem Konflik Tempat Kerja
+├── 11-konflik-akademik.js               ← Sistem Konflik Akademik (Mahasiswa)
+├── 12-konflik-bisnis.js                 ← Sistem Konflik Wirausaha (Entrepreneur)
+├── 13-rumah-tangga.js                   ← Aktivitas Rumah Tangga
+├── 14-npc-mentor.js                     ← NPC Kepribadian + Mentor Cerdas
+├── 15-quest-sidequest.js                ← Side Quest + Ritual Kahyangan + Ethics
+├── 16-jurnal-refleksi.js                ← Jurnal Refleksi + Quest Media
+├── 17-kerja-parttime.js                 ← Sistem Part-Time
+├── 18-minigame-lamaran.js               ← Minigame Lamaran Kerja + Lowongan DB
+├── 19-cinematic-festival.js             ← Cinematic Engine + Festival Desa
+├── 20-sfx-pasar-audio.js                ← SFX Global + Logika Pasar Grosir
+├── 21-fv-world-map.js                   ← Fairy Village World Map (BoF4 Style)
+├── 22-fv-tutorial.js                    ← Tutorial Kahyangan Wilis
+├── 23-fv-map-refresh.js                 ← Refresh + Init Fairy Village Map
+├── 24-fv-gameloop-draw.js               ← Game Loop + Build Queue + Draw Fairy Village
+├── 25-fv-dialog-npc.js                  ← Dialog NPC Peri + Rara Wilis + Istana
+├── 26-fv-collect-partikel.js            ← Collect Dust + Partikel Effect
+├── 27-fv-hud-testmode.js                ← HUD Fairy Village + Test Mode
 ```
 
-## 🔄 Panduan Update per Fitur
+## Cara Update Modul
 
-| Mau update apa? | Edit file ini |
-|---|---|
-| Tampilan / warna / animasi CSS | `css/style.css` |
-| Quest harian, mingguan, milestone | `js/02_quest_system.js` |
-| Login, auth, simpan data | `js/03_auth_login.js` |
-| Dashboard guru/admin | `js/04_dashboard_admin.js` |
-| Analitik / BK / debug | `js/05_dashboard_debug_bk.js` |
-| Event Gempita / export | `js/06_gempita_export.js` |
-| Dunia Kahyangan Wilis | `js/09_kahyangan_wilis.js` |
-| Peta & bangunan Fairy Village | `js/10_fairy_village_map.js` |
-| Event dunia, konflik, cuaca | `js/11_game_world_events.js` |
-| Aktivitas harian, NPC relasi | `js/12_household_npc.js` |
-| Mentor, quest kisah leluhur | `js/13_mentor_sidequest.js` |
-| Sistem etika, cutscene | `js/14a_ethics_system.js` + `14b` |
-| Dialogue & renderer utama | `js/14c_dialogue_renderer.js` |
-| Festival & sound effects | `js/15_festival_sfx.js` |
-| Fairy village gameplay | `js/16_fairy_village_logic.js` |
+Setiap file JS diberi nomor urut dan nama fungsi. Kalau mau update:
+- **Tambah fitur konflik kerja** → edit `js/10-konflik-kerja.js`
+- **Update sistem peri** → edit `js/21-27-fv-*.js`
+- **Ubah tampilan** → edit `css/styles.css`
+- **Update koneksi Firebase** → edit `js/01-firebase-config.js`
 
-## 🚀 Cara Deploy ke GitHub Pages
+> ⚠️ Jangan ubah urutan `<script>` di `index.html` — modul saling bergantung!
 
-1. Upload semua file ke repo GitHub
-2. Aktifkan **GitHub Pages** dari Settings → Pages → Branch: `main`
-3. Buka `https://[username].github.io/[repo-name]/`
+## Deploy ke GitHub Pages
 
-> ⚠️ Pastikan folder `images/` juga di-upload karena game memerlukan aset gambar lokal.
+1. Push semua file ke repo GitHub
+2. Aktifkan GitHub Pages dari Settings → Pages → branch `main` / folder `/root`
+3. Akses game di `https://<username>.github.io/<repo>/`
